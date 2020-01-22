@@ -180,10 +180,10 @@ def main():
     log.debug('start CDS prediction')
     data['cdss'] = bp.predict_cdss(config, data['contigs'], contigs_path)
     print("\tfound %i CDSs" % len(data['cdss']))
-    cdss_found, cdss_not_found = ups.lookup_upss(config, data['cdss'])
-    print("\tfound %i UPSs for CDSs" % len(cdss_found))
-    cdss_found, cdss_not_found = psc.search_pscs(config, cdss_not_found)
-    print("\tfound %i PSCs for CDSs" % len(cdss_found))
+    upss_found, cdss_not_found = ups.lookup_upss(config, data['cdss'])
+    print("\tfound %i UPSs for CDSs" % len(upss_found))
+    pscs_found, cdss_not_found = psc.search_pscs(config, cdss_not_found)
+    print("\tfound %i PSCs for CDSs" % len(pscs_found))
     psc.lookup_pscs(config, data['cdss'])
 
     ############################################################################
@@ -224,7 +224,7 @@ def main():
             data['r_rnas'],
             data['nc_rnas'],
             # data['crisprs'],
-            data['cds']
+            data['cdss']
     ]:
         for feature in feature_list:
             features.append(feature)

@@ -66,16 +66,21 @@ def search_pscs(config, cdss):
                 cds['psc'] = {
                     'uniref90_id': cluster_id
                 }
+
+    pscs_found, pscs_not_found = []
     for cds in cdss:
-        if('psc' not in cds):
+        if('psc' in cds):
+            pscs_found.append(cds)
+        else:
             cds['hypothetical'] = True
+            pscs_not_found.append(cds)
+    log.info('PSCs: # %i', len(pscs_found))
+    return pscs_found, pscs_not_found
 
 
 def lookup_pscs(config, cdss):
     """Lookup PCS information"""
     try:
-        seqs_found = []
-        seqs_not_found = []
         with sqlite3.connect("file:%s?mode=ro" % str(config['db'].joinpath('psc.db')), uri=True) as conn:
             conn.row_factory = sqlite3.Row
             c = conn.cursor()
@@ -101,16 +106,11 @@ def lookup_pscs(config, cdss):
                     cds['psc'] = psc
                     if('db_xrefs' not in cds):
                         cds['db_xrefs'] = []
-                    seqs_found.append(cds)
 
                     log.debug(
                         'PSC: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s',
                         cds['contig'], cds['gene'], cds['start'], cds['stop'], cds['strand'], psc['uniref90_id']
                     )
-                else:
-                    seqs_not_found.append(cds)
 
-        log.info('UPSs: # %i', len(seqs_found))
-        return seqs_found, seqs_not_found
     except Exception:
         log.exception('Could not read UPSs from db!')
