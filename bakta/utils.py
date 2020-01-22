@@ -10,6 +10,28 @@ from pathlib import Path
 log = logging.getLogger('utils')
 
 
+def log_cmd(logger, args, config):
+    logger.info('command line: %s', ' '.join(sys.argv))
+    logger.info('configuration: db-path=%s', config['db'])
+    logger.info('configuration: bundled binaries=%s', config['bundled-binaries'])
+    logger.info('configuration: tmp-path=%s', config['tmp'])
+    logger.info('parameters: genome=%s', config['genome_path'])
+    logger.info('parameters: output=%s', config['output_path'])
+    logger.info('parameters: prefix=%s', args.prefix)
+    logger.info('parameters: keep-contig-names=%s', args.keep_contig_names)
+    logger.info('parameters: locus=%s', args.locus)
+    logger.info('parameters: locus-tag=%s', args.locus_tag)
+    logger.info('parameters: genus=%s', args.genus)
+    logger.info('parameters: species=%s', args.species)
+    logger.info('parameters: strain=%s', args.strain)
+    logger.info('parameters: complete=%s', args.complete)
+    logger.info('options: gff3=%s', args.gff3)
+    logger.info('options: genbank=%s', args.genbank)
+    logger.info('options: embl=%s', args.embl)
+    logger.info('options: threads=%d', args.threads)
+    logger.info('options: pretty-json=%d', args.pretty_json)
+
+
 def setup_configuration():
     """Test environment and build a runtime configuration."""
 
@@ -142,12 +164,33 @@ def test_dependencies():
         pass
 
 
-def create_locus_prefix(contigs):
-    """Create sequence MD5 hex based locus prefix."""
-    hash = hashlib.md5()
-    for contig in contigs:
-        hash.update(str.encode(contig['sequence']))
-    return hash.hexdigest()[0:5]
+def create_locus_prefix(args, contigs):
+    """Create either genus/species or sequence MD5 hex based locus prefix.
+    Max locus name length is 37 for GenBank -> 32 + _ + 4 digits"""
+    if(args.genus != '' and args.species != ''):
+        locus_prefix = args.genus[:1] + args.species[:2]
+        return locus_prefix.upper()
+    else:
+        hash = hashlib.md5()
+        for contig in contigs:
+            hash.update(str.encode(contig['sequence']))
+        return hash.hexdigest()[0:5]
+
+
+def create_locus_tag_prefix(args, contigs):
+    """Create either genus/species or sequence MD5 hex based locus tag prefix."""
+    if(args.locus != ''):
+        return args.locus
+    elif(args.genus != '' and args.species != ''):
+        locus_prefix = args.genus[:1] + args.species[:2]
+        if(args.strain != ''):
+            locus_prefix += args.strain[:2]
+        return locus_prefix.upper()
+    else:
+        hash = hashlib.md5()
+        for contig in contigs:
+            hash.update(str.encode(contig['sequence']))
+        return hash.hexdigest()[0:5]
 
 
 def calc_aa_hash(seq):

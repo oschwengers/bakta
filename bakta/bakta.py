@@ -37,7 +37,9 @@ def main():
     parser.add_argument('--genbank', action='store_true', help='Write GenBank annotation file')
     parser.add_argument('--embl', action='store_true', help='Write EMBL annotation file')
 
-    parser.add_argument('--locus', '-l', action='store', default='', help='Locus tag prefix')
+    parser.add_argument('--keep-contig-names', action='store_true', dest='keep_contig_names', help='Keep original contig names')
+    parser.add_argument('--locus', action='store', default='', help='Locus prefix')
+    parser.add_argument('--locus-tag', action='store', default='', dest='locus_tag', help='Locus tag prefix')
     parser.add_argument('--genus', action='store', default='', help='Genus name')
     parser.add_argument('--species', action='store', default='', help='Species name')
     parser.add_argument('--strain', action='store', default='', help='Strain name')
@@ -91,29 +93,16 @@ def main():
     if(genome_path.stat().st_size == 0):
         log.error('empty genome file! path=%s', genome_path)
         sys.exit('ERROR: genome file (%s) is empty!' % genome_path)
+    config['genome_path'] = genome_path
 
     output_path = Path(args.output) if args.output else Path.cwd()
     if(not output_path.exists()):
         output_path.mkdir(parents=True, exist_ok=True)
         log.info('create output dir: path=%s', output_path)
     output_path = output_path.resolve()
+    config['output_path'] = output_path
 
-    log.info('configuration: db-path=%s', config['db'])
-    log.info('configuration: bundled binaries=%s', config['bundled-binaries'])
-    log.info('configuration: tmp-path=%s', config['tmp'])
-    log.info('parameters: genome=%s', genome_path)
-    log.info('parameters: output=%s', output_path)
-    log.info('parameters: prefix=%s', args.prefix)
-    log.info('parameters: locus=%s', args.locus)
-    log.info('parameters: genus=%s', args.genus)
-    log.info('parameters: species=%s', args.species)
-    log.info('parameters: strain=%s', args.strain)
-    log.info('parameters: complete=%s', args.complete)
-    log.info('options: gff3=%s', args.gff3)
-    log.info('options: genbank=%s', args.genbank)
-    log.info('options: embl=%s', args.embl)
-    log.info('options: threads=%d', args.threads)
-    log.info('options: pretty-json=%d', args.pretty_json)
+    bu.log_cmd(log, args, config)
     if(args.verbose):
         print("Bakta v%s" % bakta.__version__)
         print('Options and arguments:')
@@ -229,30 +218,24 @@ def main():
     ############################################################################
     print('select features and create locus tags...')
     log.debug('start feature selection and creation of locus tags')
-    annotations = {}
+    features = []
+    for feature_list in [
+            data['t_rnas'],
+            data['r_rnas'],
+            data['nc_rnas'],
+            # data['crisprs'],
+            data['cds']
+    ]:
+        for feature in feature_list:
+            features.append(feature)
+    features = sorted(feature, key=lambda k: k['start'])
+
     locus_tag_nr = 1
-    locus_prefix = args.locus if args.locus != '' else bu.create_locus_prefix(contigs)
-
-    # tRNAs
-    for t_rna in data['t_rnas']:
-        locus_tag = "%s%04d" % (locus_prefix, locus_tag_nr)
+    locus_prefix = bu.create_locus_tag_prefix(args, contigs)
+    for feature in features:
+        locus_tag = "%s%04i" % (locus_prefix, locus_tag_nr)
         locus_tag_nr += 1
-        t_rna['locus'] = locus_tag
-        annotations[locus_tag] = t_rna
-
-    # rRNAs
-    for r_rna in data['r_rnas']:
-        locus_tag = "%s%04d" % (locus_prefix, locus_tag_nr)
-        locus_tag_nr += 1
-        r_rna['locus'] = locus_tag
-        annotations[locus_tag] = r_rna
-
-    # ncRNAs
-    for nc_rna in data['nc_rnas']:
-        locus_tag = "%s%04d" % (locus_prefix, locus_tag_nr)
-        locus_tag_nr += 1
-        nc_rna['locus'] = locus_tag
-        annotations[locus_tag] = nc_rna
+        feature['locus'] = locus_tag
 
     ############################################################################
     # Write output files
