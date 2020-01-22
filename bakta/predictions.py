@@ -66,7 +66,8 @@ def predict_t_rnas(config, data, contigs_path):
                 'inference': 'tRNAscan-SE',
                 'score': float(score),
                 'pseudo': 'pseudo' in note,
-                'notes': ["tRNA-%s(%s)" % (type, anti_codon)]
+                'notes': ["tRNA-%s(%s)" % (type, anti_codon)],
+                'db_xrefs': ['SO:0001272']
             }
             key = "%s.trna%s" % (contig, trna_id)
             log.debug("key=%s", key)
@@ -207,10 +208,10 @@ def predict_nc_rnas(config, data, contigs_path):
                 (contig, accession, subject, subject_id, mdl, mdl_from, mdl_to,
                     start, stop, strand, trunc, passed, gc, bias, score, evalue,
                     inc, description) = line.strip().split()
-                db_xrefs = ['RFAM:%s' % subject_id]
-                key = "RFAM:%s" % subject_id
-                if(key in rfam2go):
-                    db_xrefs += rfam2go[key]
+                rfam_id = "RFAM:%s" % subject_id
+                db_xrefs = [rfam_id, 'SO:0001263']
+                if(rfam_id in rfam2go):
+                    db_xrefs += rfam2go[rfam_id]
                 ncrna = {
                     'type': bc.INSDC_FEATURE_NC_RNA,
                     'gene': subject,
@@ -230,6 +231,10 @@ def predict_nc_rnas(config, data, contigs_path):
                 )
     log.info('ncRNAs: # %i', len(contig['ncRNAs']))
     return ncrnas
+
+
+def predict_crispr(config, data, contigs_path):
+    pass  # SO:0001459 <- Sequence Ontology
 
 
 def predict_cdss(config, contigs, filtered_contigs_path):

@@ -94,18 +94,30 @@ def lookup_pscs(config, cdss):
                 rec = c.fetchone("select * from psc where uniref90_id=?", (uniref90_id,))
                 if(rec is not None):
                     psc = {
-                        'uniref90_id': bc.DB_PREFIX_UNIREF_90 + rec[DB_PSC_COL_UNIREF90],
-                        'cog_id': bc.DB_PREFIX_COG + rec[DB_PSC_COL_COG].split(';')[0],
-                        'cog_function': rec[DB_PSC_COL_COG],
-                        'ec': rec[DB_PSC_COL_EC],
+                        'uniref90_id': bc.DB_PREFIX_UNIREF_90 + rec[DB_PSC_COL_UNIREF90],  # must not be NULL/None
+                        'ec_id': rec[DB_PSC_COL_EC],
                         'is_id': rec[DB_PSC_COL_IS],
                         'gene': rec[DB_PSC_COL_GENE],
-                        'product': rec[DB_PSC_COL_PRODUCT],
-                        'go': rec[DB_PSC_COL_GO]
+                        'product': rec[DB_PSC_COL_PRODUCT]
                     }
+
+                    # reattach database prefixes to identifiers
+                    if(rec[DB_PSC_COL_COG] is not None):
+                        cog_id, cog_category = rec[DB_PSC_COL_COG].split(';')
+                        cog_id = bc.DB_PREFIX_COG + cog_id
+                        psc['cog_id'] = cog_id
+                        psc['cog_category'] = cog_category
+                    if(rec[DB_PSC_COL_GO] is not None):
+                        go_ids = []
+                        for go_id in rec[DB_PSC_COL_GO].split(';'):
+                            go_id.append("%s:%s" % (bc.DB_PREFIX_GO, go_id))
+                        psc['go_ids'] = go_ids
+
                     cds['psc'] = psc
                     if('db_xrefs' not in cds):
                         cds['db_xrefs'] = []
+                    db_xrefs = cds['db_xrefs']
+                    db_xrefs.append('SO:0001217')
 
                     log.debug(
                         'PSC: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s',

@@ -22,7 +22,7 @@ DB_XREF_UNIREF_90 = 'UniRef90'
 DB_XREF_UNIREF_50 = 'UniRef50'
 DB_XREF_UNIPARC = 'UniParc'
 DB_XREF_UNIPROTKB = 'UniProtKB'
-DB_XREF_REFSEQ_NRP = 'RefSeq_NRP'
+DB_XREF_REFSEQ_NRP = 'RefSeq'
 DB_XREF_EC = 'EC'
 DB_XREF_COG = 'COG'
 DB_XREF_PFAM = 'Pfam'
@@ -36,9 +36,12 @@ DB_XREF_GO = 'GO'
 DB_PREFIX_UNIREF_100 = 'UniRef100_'
 DB_PREFIX_UNIREF_90 = 'UniRef90_'
 DB_PREFIX_UNIREF_50 = 'UniRef50_'
-DB_PREFIX_UNIPARC = 'UPI'
+DB_PREFIX_UNIPARC = 'UPI'  # https://registry.identifiers.org/registry/uniparc
 DB_PREFIX_REFSEQ_NRP = 'WP_'
-DB_PREFIX_COG = 'COG'
+DB_PREFIX_GO = 'GO:'  # https://registry.identifiers.org/registry/go
+DB_PREFIX_COG = 'COG'  # https://www.ebi.ac.uk/miriam/main/collections/MIR:00000296
+DB_PREFIX_IS = 'IS'  # https://www.ebi.ac.uk/miriam/main/collections/MIR:00000173
+DB_PREFIX_PFAM = 'PF'  # https://registry.identifiers.org/registry/pfam
 
 ############################################################################
 # Inference tags
