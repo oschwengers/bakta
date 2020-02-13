@@ -3,6 +3,7 @@ import logging
 import subprocess as sp
 import sqlite3
 
+import bakta.config as cfg
 import bakta.constants as bc
 
 ############################################################################
@@ -19,14 +20,14 @@ DB_PSC_COL_PRODUCT = 'product'
 log = logging.getLogger('psc')
 
 
-def search_pscs(config, cdss):
+def search_pscs(cdss):
     """Conduct homology search of CDSs against PCS db."""
-    cds_fasta_path = config['tmp'].joinpath('cds.faa')
+    cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
     with cds_fasta_path.open(mode='w') as fh:
         for cds in cdss:
             fh.write(">%s\n%s\n" % (cds['tmp_id'], cds['sequence']))
-    ghostz_output_path = config['tmp'].joinpath('ghostz.tsv')
-    ghostz_db_path = config['db'].joinpath('psc')
+    ghostz_output_path = cfg.tmp_path.joinpath('ghostz.tsv')
+    ghostz_db_path = cfg.db_path.joinpath('psc')
     cmd = [
         'ghostz',
         'aln',
@@ -34,12 +35,12 @@ def search_pscs(config, cdss):
         '-i', str(cds_fasta_path),
         '-o', str(ghostz_output_path),
         '-b', '1',  # single best output
-        '-a', str(config['threads'])
+        '-a', str(cfg.threads)
     ]
     proc = sp.run(
         cmd,
-        cwd=str(config['tmp']),
-        env=config['env'],
+        cwd=str(cfg.tmp_path),
+        env=cfg.env,
         stdout=sp.PIPE,
         stderr=sp.PIPE,
         universal_newlines=True
@@ -78,10 +79,10 @@ def search_pscs(config, cdss):
     return pscs_found, pscs_not_found
 
 
-def lookup_pscs(config, cdss):
+def lookup_pscs(cdss):
     """Lookup PCS information"""
     try:
-        with sqlite3.connect("file:%s?mode=ro" % str(config['db'].joinpath('psc.db')), uri=True) as conn:
+        with sqlite3.connect("file:%s?mode=ro" % str(cfg.db_path.joinpath('psc.db')), uri=True) as conn:
             conn.row_factory = sqlite3.Row
             c = conn.cursor()
             for cds in cdss:

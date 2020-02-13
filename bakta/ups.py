@@ -2,6 +2,7 @@
 import logging
 import sqlite3
 
+import bakta.config as cfg
 import bakta.constants as bc
 import bakta.utils as bu
 
@@ -21,12 +22,12 @@ DB_UPS_COL_PRODUCT = 'product'
 log = logging.getLogger('ups')
 
 
-def lookup_upss(config, features):
+def lookup_upss(features):
     """Lookup UPS by hash values."""
     try:
         features_found = []
         features_not_found = []
-        with sqlite3.connect("file:%s?mode=ro" % str(config['db'].joinpath('ups.db')), uri=True) as conn:
+        with sqlite3.connect("file:%s?mode=ro" % str(cfg.db_path.joinpath('ups.db')), uri=True) as conn:
             conn.row_factory = sqlite3.Row
             c = conn.cursor()
             for feature in features:

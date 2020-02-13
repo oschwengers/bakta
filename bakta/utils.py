@@ -1,71 +1,61 @@
 
+import argparse
 import hashlib
 import logging
+import multiprocessing as mp
 import os
 import sys
-import tempfile
 import subprocess as sp
-from pathlib import Path
+
+import bakta
+import bakta.config as cfg
 
 log = logging.getLogger('utils')
 
 
-def log_cmd(logger, args, config):
-    logger.info('command line: %s', ' '.join(sys.argv))
-    logger.info('configuration: db-path=%s', config['db'])
-    logger.info('configuration: bundled binaries=%s', config['bundled-binaries'])
-    logger.info('configuration: tmp-path=%s', config['tmp'])
-    logger.info('parameters: genome=%s', config['genome_path'])
-    logger.info('parameters: output=%s', config['output_path'])
-    logger.info('parameters: prefix=%s', args.prefix)
-    logger.info('parameters: keep-contig-names=%s', args.keep_contig_names)
-    logger.info('parameters: locus=%s', args.locus)
-    logger.info('parameters: locus-tag=%s', args.locus_tag)
-    logger.info('parameters: genus=%s', args.genus)
-    logger.info('parameters: species=%s', args.species)
-    logger.info('parameters: strain=%s', args.strain)
-    logger.info('parameters: complete=%s', args.complete)
-    logger.info('options: gff3=%s', args.gff3)
-    logger.info('options: genbank=%s', args.genbank)
-    logger.info('options: embl=%s', args.embl)
-    logger.info('options: threads=%d', args.threads)
-    logger.info('options: pretty-json=%d', args.pretty_json)
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        prog='bakta',
+        description='Comprehensive and rapid annotation of bacterial genomes.'
+    )
+    parser.add_argument('genome', metavar='<genome>', help='(Draft) genome in fasta format')
+    parser.add_argument('--db', '-d', action='store', help='Database path (default = <bakta_path>/db)')
+    parser.add_argument('--verbose', '-v', action='store_true', help='Print verbose information')
+    parser.add_argument('--threads', '-t', action='store', type=int, default=mp.cpu_count(), help='Number of threads to use (default = number of available CPUs)')
+
+    parser.add_argument('--min-contig-length', '-m', action='store', type=int, default=1, dest='min_contig_length', help='Minimum contig size (default = 1)')
+    parser.add_argument('--prefix', '-p', action='store', default='', help='Prefix for output files')
+    parser.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
+    parser.add_argument('--pretty-json', action='store_true', dest='pretty_json', help='Write GFF3 annotation file')
+    parser.add_argument('--gff3', action='store_true', help='Write GFF3 annotation file')
+    parser.add_argument('--genbank', action='store_true', help='Write GenBank annotation file')
+    parser.add_argument('--embl', action='store_true', help='Write EMBL annotation file')
+
+    parser.add_argument('--keep-contig-names', action='store_true', dest='keep_contig_names', help='Keep original contig names')
+    parser.add_argument('--locus', action='store', default='', help='Locus prefix')
+    parser.add_argument('--locus-tag', action='store', default='', dest='locus_tag', help='Locus tag prefix')
+    parser.add_argument('--genus', action='store', default='', help='Genus name')
+    parser.add_argument('--species', action='store', default='', help='Species name')
+    parser.add_argument('--strain', action='store', default='', help='Strain name')
+    parser.add_argument('--plasmid', action='store', default='', help='Plasmid name')
+    parser.add_argument('--gram', action='store', default='', choices=['+', '-'], help="Gram type: ''/+/- (default = '')")
+    parser.add_argument('--complete', action='store_true', help="Replicons (chromosome/plasmid[s]) are complete")
+
+    parser.add_argument('--version', action='version', version='%(prog)s ' + bakta.__version__)
+    parser.add_argument('--citation', action='store_true', help='Print citation')
+    return parser.parse_args()
 
 
-def setup_configuration():
-    """Test environment and build a runtime configuration."""
-
-    config = {
-        'env': os.environ.copy(),
-        'tmp': Path(tempfile.mkdtemp()),
-        'bundled-binaries': False
-    }
-    base_dir = Path(__file__).parent.parent
-    share_dir = base_dir.joinpath('share')
-    log.debug('config: base-dir=%s', base_dir)
-    log.debug('config: share-dir=%s', share_dir)
-    if(os.access(str(share_dir), os.R_OK & os.X_OK)):
-        config['env']["PATH"] = str(share_dir) + ':' + config['env']["PATH"]
-        config['bundled-binaries'] = True
-    log.debug('config: bundled binaries=%s', config['bundled-binaries'])
-
-    db_path = base_dir.joinpath('db')
-    if(os.access(str(db_path), os.R_OK & os.X_OK)):
-        config['db'] = db_path
-        log.debug('config: use bundled db, db-path=%s', db_path)
-    return config
-
-
-def test_database(config):
+def test_database():
     """Test if database directory exists, is accessible and contains necessary files."""
 
-    if('db' not in config):
-        log.error('database directory not detected!')
-        sys.exit('ERROR: database directory not detected! Please provide a valid path to the database directory.')
+    if(cfg.db_path is None):
+        log.error('database directory not provided nor detected!')
+        sys.exit('ERROR: database directory not provided nor detected! Please provide a valid path to the database directory.')
 
-    if(not os.access(str(config['db']), os.R_OK & os.X_OK)):
-        log.error('database directory (%s) not readable/accessible!', config['db'])
-        sys.exit('ERROR: database directory (%s) not readable/accessible!' % config['db'])
+    if(not os.access(str(cfg.db_path), os.R_OK & os.X_OK)):
+        log.error('database directory (%s) not readable/accessible!', cfg.db_path)
+        sys.exit('ERROR: database directory (%s) not readable/accessible!' % cfg.db_path)
 
     file_names = [
         'rRNA.i1f',
@@ -88,7 +78,7 @@ def test_database(config):
     ]
 
     for file_name in file_names:
-        path = config['db'].joinpath(file_name)
+        path = cfg.db_path.joinpath(file_name)
         if(not os.access(str(path), os.R_OK) or not path.is_file()):
             log.error('database file not readable! file=%s', file_name)
             sys.exit('ERROR: database file (%s) not readable!' % file_name)

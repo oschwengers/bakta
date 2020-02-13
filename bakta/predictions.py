@@ -5,29 +5,30 @@ import subprocess as sp
 from Bio import SeqIO
 from Bio.Seq import Seq
 
+import bakta.config as cfg
 import bakta.constants as bc
 import bakta.utils as bu
 
 log = logging.getLogger('predictions')
 
 
-def predict_t_rnas(config, data, contigs_path):
+def predict_t_rnas(data, contigs_path):
     """Search for tRNA sequences."""
 
-    txt_output_path = config['tmp'].joinpath('trna.tsv')
-    fasta_output_path = config['tmp'].joinpath('trna.fasta')
+    txt_output_path = cfg.tmp_path.joinpath('trna.tsv')
+    fasta_output_path = cfg.tmp_path.joinpath('trna.fasta')
     cmd = [
         'tRNAscan-SE',
         '-B',
         '--output', str(txt_output_path),
         '--fasta', str(fasta_output_path),
-        '--thread', str(config['threads']),
+        '--thread', str(cfg.threads),
         str(contigs_path)
     ]
     proc = sp.run(
         cmd,
-        cwd=str(config['tmp']),
-        env=config['env'],
+        cwd=str(cfg.tmp_path),
+        env=cfg.env,
         stdout=sp.PIPE,
         stderr=sp.PIPE,
         universal_newlines=True
@@ -87,10 +88,10 @@ def predict_t_rnas(config, data, contigs_path):
     return trnas
 
 
-def predict_r_rnas(config, data, contigs_path):
+def predict_r_rnas(data, contigs_path):
     """Search for ribosomal RNA sequences."""
 
-    output_path = config['tmp'].joinpath('rrna.tsv')
+    output_path = cfg.tmp_path.joinpath('rrna.tsv')
 
     cmd = [
         'cmsearch',
@@ -98,15 +99,15 @@ def predict_r_rnas(config, data, contigs_path):
         '--noali',
         '--cut_tc',
         '--notrunc',
-        '--cpu', str(config['threads']),
+        '--cpu', str(cfg.threads),
         '--tblout', str(output_path),
-        str(config['db'].joinpath('rRNA')),
+        str(cfg.db_path.joinpath('rRNA')),
         str(contigs_path)
     ]
     proc = sp.run(
         cmd,
-        cwd=str(config['tmp']),
-        env=config['env'],
+        cwd=str(cfg.tmp_path),
+        env=cfg.env,
         stdout=sp.PIPE,
         stderr=sp.PIPE,
         universal_newlines=True
@@ -159,10 +160,10 @@ def predict_r_rnas(config, data, contigs_path):
     return rrnas
 
 
-def predict_nc_rnas(config, data, contigs_path):
+def predict_nc_rnas(data, contigs_path):
     """Search for non-coding RNA sequences."""
 
-    output_path = config['tmp'].joinpath('ncrna.tsv')
+    output_path = cfg.tmp_path.joinpath('ncrna.tsv')
     cmd = [
         'cmsearch',
         '-Z', str(data['genome_size'] // 1000000),
@@ -170,15 +171,15 @@ def predict_nc_rnas(config, data, contigs_path):
         '--cut_tc',
         '--notrunc',
         '--rfam',
-        '--cpu', str(config['threads']),
+        '--cpu', str(cfg.threads),
         '--tblout', str(output_path),
-        str(config['db'].joinpath('ncRNA')),
+        str(cfg.db_path.joinpath('ncRNA')),
         str(contigs_path)
     ]
     proc = sp.run(
         cmd,
-        cwd=str(config['tmp']),
-        env=config['env'],
+        cwd=str(cfg.tmp_path),
+        env=cfg.env,
         stdout=sp.PIPE,
         stderr=sp.PIPE,
         universal_newlines=True
@@ -192,7 +193,7 @@ def predict_nc_rnas(config, data, contigs_path):
         raise Exception("cmsearch error! error code: %i" % proc.returncode)
 
     rfam2go = {}
-    rfam2go_path = config['db'].joinpath('rfam-go.tsv')
+    rfam2go_path = cfg.db_path.joinpath('rfam-go.tsv')
     with rfam2go_path.open() as fh:
         for line in fh:
             (rfam, go) = line.split('\t')
@@ -233,15 +234,15 @@ def predict_nc_rnas(config, data, contigs_path):
     return ncrnas
 
 
-def predict_crispr(config, data, contigs_path):
+def predict_crispr(data, contigs_path):
     pass  # SO:0001459 <- Sequence Ontology
 
 
-def predict_cdss(config, contigs, filtered_contigs_path):
+def predict_cdss(contigs, filtered_contigs_path):
     """Predict open reading frames with Prodigal."""
 
-    proteins_path = config['tmp'].joinpath('proteins.faa')
-    gff_path = config['tmp'].joinpath('prodigal.gff')
+    proteins_path = cfg.tmp_path.joinpath('proteins.faa')
+    gff_path = cfg.tmp_path.joinpath('prodigal.gff')
     cmd = [
         'prodigal',
         '-i', str(filtered_contigs_path),
@@ -252,8 +253,8 @@ def predict_cdss(config, contigs, filtered_contigs_path):
     ]
     proc = sp.run(
         cmd,
-        cwd=str(config['tmp']),
-        env=config['env'],
+        cwd=str(cfg.tmp_path),
+        env=cfg.env,
         stdout=sp.PIPE,
         stderr=sp.PIPE,
         universal_newlines=True
@@ -323,8 +324,12 @@ def predict_cdss(config, contigs, filtered_contigs_path):
 def split_gff_annotation(annotation_string):
     annotations = {}
     for expr in annotation_string.split(';'):
-        key, value = expr.split('=')
-        annotations[key] = value
+        if(expr != ''):
+            try:
+                key, value = expr.split('=')
+                annotations[key] = value
+            except:
+                log.error('expr=%s' % expr)
     return annotations
 
 
