@@ -401,7 +401,7 @@ def predict_cdss(contigs, filtered_contigs_path):
     with proteins_path.open() as fh:
         for record in SeqIO.parse(fh, 'fasta'):
             cds = cdss[record.id]
-            seq = str(record.seq)
+            seq = str(record.seq)[:-1]  # discard trailing asterisk
             cds['sequence'] = seq
             cds['aa_hash'] = bu.calc_aa_hash(seq)
 
@@ -458,12 +458,12 @@ def extract_orfs(contigs):
                         else:
                             dna_start = len(seq) - frame - (aa_end + 1) * 3 + 1
                             dna_stop = len(seq) - frame - aa_start * 3
-                        sequence = aa_seq[aa_start:aa_end + 1]
+                        sequence = aa_seq[aa_start:aa_end]
 
                         test_dna_seq = Seq(contig['sequence'][dna_start - 1:dna_stop])
                         if(strand == '-'):
                             test_dna_seq = test_dna_seq.reverse_complement()
-                        test_seq = test_dna_seq.translate(table=11, stop_symbol='*', to_stop=False, cds=True, gap=None) + '*'
+                        test_seq = test_dna_seq.translate(table=11, stop_symbol='*', to_stop=False, cds=True, gap=None)
                         assert sequence == test_seq, "seqs not equal! a=%s, b=%s" % (sequence, test_seq)
 
                         orf = {
