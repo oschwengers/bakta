@@ -88,6 +88,75 @@ def predict_t_rnas(data, contigs_path):
     return trnas
 
 
+def predict_tm_rnas(data, contigs_path):
+    """Search for tmRNA sequences."""
+
+    contigs = {c['id']: c for c in data['contigs']}
+    txt_output_path = cfg.tmp_path.joinpath('tmrna.tsv')
+    cmd = [
+        'aragorn',
+        '-m',
+        '-gcbact',
+        '-o', str(txt_output_path),
+        str(contigs_path)
+    ]
+    proc = sp.run(
+        cmd,
+        cwd=str(cfg.tmp_path),
+        env=cfg.env,
+        stdout=sp.PIPE,
+        stderr=sp.PIPE,
+        universal_newlines=True
+    )
+    if(proc.returncode != 0):
+        log.debug(
+            'tmRNAs: cmd=%s, stdout=\'%s\', stderr=\'%s\'',
+            cmd, proc.stdout, proc.stderr
+        )
+        log.warning('tmRNAs failed! aragorn-error-code=%d', proc.returncode)
+        raise Exception("aragorn error! error code: %i" % proc.returncode)
+
+    tmrnas = []
+    with txt_output_path.open() as fh:
+        for contig_section in fh.read().split('>'):
+            lines = contig_section.split('\n')
+            contig = lines[0].strip()
+            for line in lines[2:]:  # skip first 2 lines
+                (nr, type, location, tag_location, tag_aa) = line.split()
+                strand = '+'
+                if(location[0] == 'c'):
+                    strand = '-'
+                    location = location[1:]
+                (start, stop) = location[1:-1].split(',')
+                start = int(start)
+                stop = int(stop)
+
+                # extract sequence
+                seq = contigs[contig][start:stop]
+                if(strand == '-'):
+                    seq = Seq(seq).reverse_complement()
+
+                tmrna = {
+                    'type': bc.INSDC_FEATURE_T_RNA,
+                    'gene': 'tmRNA',
+                    'product': 'tmRNA',
+                    'contig': contig,
+                    'start': start,
+                    'stop': stop,
+                    'strand': strand,
+                    'sequence': seq,
+                    'inference': 'aragorn',
+                    'db_xrefs': ['SO:0001272']
+                }
+                tmrnas.append(tmrna)
+                log.info(
+                    'tmRNA: contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
+                    tmrna['contig'], tmrna['gene'], tmrna['start'], tmrna['stop'], tmrna['strand']
+                )
+    log.info('tmRNAs: # %i', len(tmrnas))
+    return tmrnas
+
+
 def predict_r_rnas(data, contigs_path):
     """Search for ribosomal RNA sequences."""
 

@@ -83,6 +83,14 @@ def main(args):
     print("\tfound %i tRNAs" % len(data['t_rnas']))
 
     ############################################################################
+    # tmRNA prediction
+    ############################################################################
+    print('predict tmRNAs...')
+    log.debug('start tmRNA prediction')
+    data['tm_rnas'] = bp.predict_tm_rnas(data, contigs_path)
+    print("\tfound %i tmRNAs" % len(data['tm_rnas']))
+
+    ############################################################################
     # rRNA prediction
     ############################################################################
     print('predict rRNAs...')
