@@ -66,7 +66,7 @@ def test_database():
         'ncRNA.i1i',
         'ncRNA.i1m',
         'ncRNA.i1p',
-        'rfam-go.tsv'
+        'rfam-go.tsv',
         'bakta.db',
         'psc.dmnd'
     ]
