@@ -341,10 +341,12 @@ def predict_cdss(contigs, filtered_contigs_path):
         'prodigal',
         '-i', str(filtered_contigs_path),
         '-a', str(proteins_path),
-        '-c',  # closed ends
         '-f', 'gff',  # GFF output
         '-o', str(gff_path)  # prodigal output
     ]
+    if(cfg.complete == False):
+        cmd.append('-c')  # closed ends
+    
     proc = sp.run(
         cmd,
         cwd=str(cfg.tmp_path),
