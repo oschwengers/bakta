@@ -26,16 +26,20 @@ def search_pscs(cdss):
     with cds_fasta_path.open(mode='w') as fh:
         for cds in cdss:
             fh.write(">%s\n%s\n" % (cds['tmp_id'], cds['sequence']))
-    ghostz_output_path = cfg.tmp_path.joinpath('ghostz.tsv')
-    ghostz_db_path = cfg.db_path.joinpath('psc')
+    diamond_output_path = cfg.tmp_path.joinpath('diamond.tsv')
+    diamond_db_path = cfg.db_path.joinpath('psc')
     cmd = [
-        'ghostz',
-        'aln',
-        '-d', str(ghostz_db_path),
-        '-i', str(cds_fasta_path),
-        '-o', str(ghostz_output_path),
-        '-b', '1',  # single best output
-        '-a', str(cfg.threads)
+        'diamond',
+        'blastp',
+        '--db', str(diamond_db_path),
+        '--query', str(cds_fasta_path),
+        '--out', str(diamond_output_path),
+        '--id', str(int(bc.MIN_PROTEIN_IDENTITY * 100)), # '90',
+        '--query-cover', str(int(bc.MIN_PROTEIN_COVERAGE * 100)), # '80'
+        '--subject-cover', str(int(bc.MIN_PROTEIN_COVERAGE * 100)), # '80'
+        '--max-target-seqs', '1',  # single best output
+        '--outfmt', '6',
+        '--threads', str(cfg.threads)
     ]
     proc = sp.run(
         cmd,
@@ -47,19 +51,19 @@ def search_pscs(cdss):
     )
     if(proc.returncode != 0):
         log.warning(
-            'PSC failed! ghostz-error-code=%d', proc.returncode
+            'PSC failed! diamond-error-code=%d', proc.returncode
         )
         log.debug(
             'PSC: cmd=%s stdout=\'%s\', stderr=\'%s\'',
             cmd, proc.stdout, proc.stderr
         )
-        raise Exception("GhostZ error! error code: %i" % proc.returncode)
+        raise Exception("diamond error! error code: %i" % proc.returncode)
 
     cds_by_id = {cds['tmp_id']: cds for cds in cdss}
-    with ghostz_output_path.open() as fh:
+    with diamond_output_path.open() as fh:
         for line in fh:
             (cds_id, cluster_id, identity, alignment_length, align_mismatches,
-                align_gaps, query_start, query_stop, subject_start, subject_stop,
+                align_gaps, query_start, query_end, subject_start, subject_end,
                 evalue, bitscore) = line.split('\t')
             cds = cds_by_id[cds_id]
             if(int(alignment_length) / len(cds['sequence']) >= bc.MIN_PROTEIN_COVERAGE
@@ -121,7 +125,7 @@ def lookup_pscs(cdss):
                     db_xrefs.append('SO:0001217')
 
                     log.debug(
-                        'PSC: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s',
+                        'PSC: contig=%s, start=%i, end=%i, strand=%s, UniRef90=%s',
                         cds['contig'], cds['gene'], cds['start'], cds['stop'], cds['strand'], psc['uniref90_id']
                     )
 

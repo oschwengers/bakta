@@ -67,14 +67,8 @@ def test_database():
         'ncRNA.i1m',
         'ncRNA.i1p',
         'rfam-go.tsv'
-        # 'ups.db',
-        # 'psc.db',
-        # 'psc.inf',
-        # 'psc_0.inf',
-        # 'psc_0.nam',
-        # 'psc_0.off',
-        # 'psc_0.seq',
-        # 'psc_0.src'
+        'bakta.db',
+        'psc.dmnd'
     ]
 
     for file_name in file_names:
@@ -127,16 +121,16 @@ def test_dependencies():
     except:
         pass
 
-    # test ghostz
+    # test diamond
     try:
         sp.check_call(
-            ['ghostz'],
+            ['diamond', '--version'],
             stdout=sp.DEVNULL,
             stderr=sp.DEVNULL
         )
     except FileNotFoundError:
-        log.exception('ghostz not found!')
-        sys.exit('ERROR: \'ghostz\' not executable!')
+        log.exception('diamond not found!')
+        sys.exit('ERROR: \'diamond\' not executable!')
     except:
         pass
 
