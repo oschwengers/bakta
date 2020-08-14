@@ -1,0 +1,53 @@
+import argparse
+import sqlite3
+from pathlib import Path
+
+
+parser = argparse.ArgumentParser(
+    description='Annotate PSCs by ISfinder transposon protein sequences.'
+)
+parser.add_argument('--db', action='store', help='Path to Bakta db file.')
+parser.add_argument('--alignments', action='store', help='Path to diamond alignment file.')
+args = parser.parse_args()
+
+db_path = Path(args.db).resolve()
+alignments_path = Path(args.alignments).resolve()
+
+print('parse PSC alignments and add IS annotation...')
+ups_processed = 0
+ups_updated = 0
+with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
+    conn.execute('PRAGMA page_size = 4096;')
+    conn.execute('PRAGMA cache_size = 100000;')
+    conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
+    conn.execute("PRAGMA mmap_size = %i;" % (20 * 1024 * 1024 * 1024))
+    conn.execute('PRAGMA synchronous = OFF;')
+    conn.execute('PRAGMA journal_mode = OFF')
+    conn.execute('PRAGMA threads = 2;')
+    conn.commit()
+
+    for line in fh:
+        ups_processed += 1
+        (uniref90_id, sseqid, stitle, length, pident, qlen, slen, evalue) = line.strip().split('\t')
+        length = int(length)
+        qcov = length / int(qlen)
+        scov = length / int(slen)
+        if(qcov >= 0.99 and scov >= 0.99 and float(pident) >= 98. and float(evalue) < 1e-6):
+            descriptions = stitle.split(' ', 1)[1][3:-3].split('~~~')
+            if(descriptions[1].lower() == 'transposase'):
+                descriptions = descriptions[0].split('_')
+                is_name = descriptions[0]
+                is_family = descriptions[2]
+                product = "%s-like element %s family transposase" % (is_family, is_name)
+                gene = "tnp-%s" % is_name
+                # print("UPDATE psc SET gene=%s, product=%s WHERE uniref90_id=%s" % (gene, product, uniref90_id))
+                conn.execute('UPDATE psc SET gene=?, product=? WHERE uniref90_id=?', (gene, product, uniref90_id))
+                ups_updated += 1
+        if((ups_processed % 100) == 0):
+            conn.commit()
+            print("\t... %d" % ups_processed)
+    conn.commit()
+
+print('\n')
+print("PSCs processed: %d" % ups_processed)
+print("PSCs with annotated IS transposons: %d" % ups_updated)

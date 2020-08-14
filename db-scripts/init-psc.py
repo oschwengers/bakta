@@ -1,7 +1,7 @@
 
 import argparse
 import gzip
-import pickle
+import sqlite3
 import xml.etree.ElementTree as et
 from pathlib import Path
 
@@ -11,8 +11,14 @@ parser = argparse.ArgumentParser(
 )
 parser.add_argument('--taxonomy', action='store', help='Path to NCBI taxonomy node.dmp file.')
 parser.add_argument('--xml', action='store', help='Path to UniRef xml file.')
-parser.add_argument('--db', action='store', help='Path to Pickle db file.')
+parser.add_argument('--db', action='store', help='Path to Bakta sqlite3 db file.')
+parser.add_argument('--fasta', action='store', help='Path to PSC fasta file.')
 args = parser.parse_args()
+
+taxonomy_path = Path(args.taxonomy).resolve()
+xml_path = Path(args.xml).resolve()
+db_path = Path(args.db)
+fasta_path = Path(args.fasta)
 
 
 def is_taxon_child(child, LCA, taxonomy):
@@ -25,69 +31,76 @@ def is_taxon_child(child, LCA, taxonomy):
     return False
 
 
+print('parse & store NCBI taxonomy...')
 taxonomy = {}
-taxonomy_path = Path(args.taxonomy).resolve()
 with taxonomy_path.open() as fh:
     for line in fh:
         cols = line.split('\t|\t', maxsplit=2)
         taxonomy[cols[0]] = cols[1]
+print("\tstored tax ids: %d" % len(taxonomy))
 
 
-unique_seqs = {}
-unique_clusters = {}
+print('parse & store PSC information...')
 ns = 'http://uniprot.org/uniref'
-xml_path = Path(args.xml).resolve()
-with gzip.open(str(xml_path), mode="rt") as fh:
-    for event, elem in et.iterparse(fh):
-        # print(elem)
-        if(elem.tag == "{%s}entry" % ns):
+with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
+    conn.execute('PRAGMA page_size = 4096;')
+    conn.execute('PRAGMA cache_size = 100000;')
+    conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
+    conn.execute("PRAGMA mmap_size = %i;" % (20 * 1024 * 1024 * 1024))
+    conn.execute('PRAGMA synchronous = OFF;')
+    conn.execute('PRAGMA journal_mode = OFF')
+    conn.execute('PRAGMA threads = 2;')
+    conn.commit()
+
+    with gzip.open(str(xml_path), mode='rt') as fh_xml, fasta_path.open(mode='wt') as fh_fasta:
+        psc_entries = []
+        i = 0
+        for event, elem in et.iterparse(fh_xml):
             # print(elem)
-            if('Fragment' in elem.find("./{%s}name" % ns).text):  # skip protein fragments
-                continue
-            tax_id = elem.find("./{%s}property[@type='common taxon ID']" % ns).attrib['value']
-            # print("tax-id=%s" % tax_id)
-            if is_taxon_child(tax_id, '2', taxonomy):
-                # print("tax-id=%s" % tax_id)
-                uniref90_id = elem.attrib['id']
-                if(uniref90_id in unique_seqs):
-                    raise Exception('duplicated hashes! hash=%s, seq-a-id: %s, seq-b-id: %s' % (hash, unique_seqs[hash].uniref100_id), uniref100_id)
-                else:
-                    rep_member = elem.find("./{%s}representativeMember/{%s}dbReference" % (ns, ns))
-                    try:
-                        uniparc_id = rep_member.find("./{%s}property[@type='UniParc ID']" % ns).attrib['value']
-                    except Exception:
-                        uniparc_id = ''
-                    uniref100_id = rep_member.find("./{%s}property[@type='UniRef100 ID']" % ns).attrib['value']
-                    prot_name = rep_member.find("./{%s}property[@type='protein name']" % ns).attrib['value']
-                    seq = elem.find("./{%s}representativeMember/{%s}sequence" % (ns, ns)).text.upper()
-                    # cluster = Cluster(uniref90_id, len(seq), seq, prot_name, uniref100_id, uniparc_id)
-                    cluster = {
-                        'id': uniref90_id,
-                        'length': len(seq),
-                        'product': prot_name,
-                        'uniref100': uniref100_id,
-                        'uniparc': uniparc_id
-                    }
-                    unique_clusters[uniref90_id] = cluster
-                    unique_seqs[uniref90_id] = seq
-                    # print(seq)
+            if(elem.tag == "{%s}entry" % ns):
+                # print(elem)
+                if('Fragment' not in elem.find("./{%s}name" % ns).text):  # skip protein fragments
+                    tax_property = elem.find("./{%s}property[@type='common taxon ID']" % ns)
+                    if(tax_property is not None):
+                        tax_id = tax_property.attrib['value']
+                        if is_taxon_child(tax_id, '2', taxonomy):
+                            # print("tax-id=%s" % tax_id)
+                            uniref90_id = elem.attrib['id'][9:]  # remove 'UniRef90_' prefix
+                            rep_member = elem.find("./{%s}representativeMember/{%s}dbReference" % (ns, ns))
+                            try:
+                                prot_name = rep_member.find("./{%s}property[@type='protein name']" % ns).attrib['value']
+                            except:
+                                prot_name = ''
+                            seq = elem.find("./{%s}representativeMember/{%s}sequence" % (ns, ns)).text.upper()
+                            # cluster = Cluster(uniref90_id, len(seq), seq, prot_name, uniref100_id, uniparc_id)
+                            cluster = (
+                                uniref90_id,
+                                '',  # gene
+                                prot_name,  # product
+                                '',  # EC
+                                '',  # IS
+                                '',  # COG id
+                                '',  # COG category
+                                ''  # GO ids
+                            )
+                            fh_fasta.write(">%s\n%s\n" % (uniref90_id, seq))
+                            psc_entries.append(cluster)
+                            i += 1
 
-
-db_path = Path(args.db)
-with db_path.open('wb') as fh:
-    pickle.dump(unique_clusters, fh, pickle.HIGHEST_PROTOCOL)
-
-
-with open('pcs.faa', 'w') as fh_faa:
-    for k, v in unique_clusters.items():
-        fh_faa.write(">%s\n%s\n" % (k, v))
-
-
-# with open('pcs.tsv', 'w') as fh_tsv, open('pc.faa', 'w') as fh_faa:
-#     for k, v in unique_seqs.items():
-#         # print id    length  product
-#         fh_tsv.write(
-#             "%s\t%s\t%s\n"
-#             % (k[9:], v.length, v.product)
-#         )
-#         fh_faa.write(">%s\n%s\n" % (v.id, v.seq))
+                            if((i % 1000000) == 0):
+                                conn.executemany(
+                                    "INSERT INTO psc (uniref90_id, gene, product, ec_id, is_id, cog_id, cog_category, go_ids) VALUES (?,?,?,?,?,?,?,?)",
+                                    psc_entries
+                                )
+                                conn.commit()
+                                print("\t... %i" % i)
+                                psc_entries = []
+                elem.clear()  # forstall out of memory errors
+    conn.executemany(
+        "INSERT INTO psc (uniref90_id, gene, product, ec_id, is_id, cog_id, cog_category, go_ids) VALUES (?,?,?,?,?,?,?,?)",
+        psc_entries
+    )
+    conn.commit()
+    psc_entries = []
+    print("\tparsed PSC: %d" % i)
+print("\nsuccessfully initialized PSC table!")
