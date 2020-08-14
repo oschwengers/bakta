@@ -1,0 +1,11 @@
+name: bakta
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - prodigal=2.6.3
+  - infernal=1.1.2
+  - blast=2.10.1
+  - trnascan-se=2.0.5
+  - diamond=2.0.2
