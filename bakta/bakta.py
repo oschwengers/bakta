@@ -1,7 +1,7 @@
 
 import logging
 import sys
-# import shutil
+import shutil
 
 import bakta
 import bakta.constants as bc
