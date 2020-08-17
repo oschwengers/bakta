@@ -33,7 +33,7 @@ def lookup_upss(features):
             for feature in features:
                 c.execute("select * from ups where hash=?", (feature['aa_hash'],))
                 rec = c.fetchone()
-                if(rec is not None):
+                if(rec is not None and rec[DB_UPS_COL_LENGTH] == len(feature['sequence'])):
                     ups = {
                         DB_UPS_COL_UNIREF100: bc.DB_PREFIX_UNIREF_100 + rec[DB_UPS_COL_UNIREF100],  # must not be NULL/None
                         DB_UPS_COL_UNIPROTKB: rec[DB_UPS_COL_UNIPROTKB],
@@ -70,8 +70,8 @@ def lookup_upss(features):
                     features_found.append(feature)
 
                     log.debug(
-                        'UPS: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, UniRef100=%s, NCBI NRP=%s, UniRef90=%s',
-                        feature['contig'], feature['start'], feature['stop'], feature['strand'], ups[DB_UPS_COL_GENE], ups[DB_UPS_COL_UNIREF100], ups[DB_UPS_COL_REFSEQ_NRP], ups[DB_UPS_COL_UNIREF90]
+                        'UPS: contig=%s, start=%i, stop=%i, aa-length=%i, strand=%s, gene=%s, UniRef100=%s, NCBI NRP=%s, UniRef90=%s',
+                        feature['contig'], feature['start'], feature['stop'], len(feature['sequence']), feature['strand'], ups[DB_UPS_COL_GENE], ups[DB_UPS_COL_UNIREF100], ups[DB_UPS_COL_REFSEQ_NRP], ups[DB_UPS_COL_UNIREF90]
                     )
                 else:
                     features_not_found.append(feature)
