@@ -97,7 +97,8 @@ def lookup_pscs(cdss):
                 elif('ups' in cds):
                     uniref90_id = cds['ups'][DB_PSC_COL_UNIREF90]
                 else:
-                    continue  # skip this cds object
+                    cds['hypothetical'] = True
+                    continue  # skip PSC lookup for this cds object
                 c.execute("select * from psc where uniref90_id=?", (uniref90_id,))
                 rec = c.fetchone()
                 if(rec is not None):
