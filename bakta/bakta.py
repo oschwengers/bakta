@@ -174,12 +174,12 @@ def main(args):
             features.append(feature)
     features = sorted(feature, key=lambda k: k['start'])
 
-    locus_tag_nr = 1
+    locus_tag_nr = 5
     locus_prefix = bu.create_locus_tag_prefix(args, contigs)
     for feature in features:
         locus_tag = "%s%04i" % (locus_prefix, locus_tag_nr)
         feature['locus'] = locus_tag
-        locus_tag_nr += 1
+        locus_tag_nr += 5
 
     ############################################################################
     # Write output files
