@@ -162,17 +162,24 @@ def main(args):
     ############################################################################
     print('select features and create locus tags...')
     log.debug('start feature selection and creation of locus tags')
-    features = []
+    features_by_contig = {}
     for feature_list in [
             data['t_rnas'],
             data['r_rnas'],
             data['nc_rnas'],
             # data['crisprs'],
             data['cdss']
-    ]:
+        ]:
         for feature in feature_list:
-            features.append(feature)
-    features = sorted(feature, key=lambda k: k['start'])
+            contig_features = features_by_contig.get(feature['contig'])
+            if(contig_features is None):
+                contig_features = []
+                features_by_contig[feature['contig']] = contig_features
+            contig_features.append(feature)
+    features = []
+    for contig in contigs:
+        contig_features = features_by_contig[contig['id']]
+        features.extend(sorted(contig_features, key=lambda k: k['start']))
 
     locus_tag_nr = 5
     locus_prefix = bu.create_locus_tag_prefix(args, contigs)
