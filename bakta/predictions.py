@@ -447,7 +447,7 @@ def extract_orfs(contigs):
                     seq_frame = seq_frame[:-residue]
 
                 # print("contig=%s, strand=%s, frame=%s, length=%i, dna=%s" % (contig['id'], strand, frame, len(seq_frame), seq_frame[:200]))
-                aa_seq = str(seq_frame.translate(table=11, stop_symbol='*', to_stop=False, cds=False, gap=None))
+                aa_seq = str(seq_frame.translate(table=11, stop_symbol='*', to_stop=False, cds=False))
                 # print("\taa length=%i" % len(aa_seq))
                 # print("\taa seq=%s" % aa_seq[:200])
                 aa_start = aa_seq.find('M')
@@ -467,7 +467,7 @@ def extract_orfs(contigs):
                         test_dna_seq = Seq(contig['sequence'][dna_start - 1:dna_stop])
                         if(strand == '-'):
                             test_dna_seq = test_dna_seq.reverse_complement()
-                        test_seq = test_dna_seq.translate(table=11, stop_symbol='*', to_stop=False, cds=True, gap=None)
+                        test_seq = test_dna_seq.translate(table=11, stop_symbol='*', to_stop=False, cds=True)
                         assert sequence == test_seq, "seqs not equal! a=%s, b=%s" % (sequence, test_seq)
 
                         orf = {
@@ -509,14 +509,14 @@ def overlap_filter_orfs(data, orfs_raw):
         cdss = contig_cdss[cds['contig']]
         cdss.append(cds)
 
-    contig_rrna = {k['id']: [] for k in data['contigs']}
-    for rrna in data['rrnas']:
-        rrnas = contig_rrna[rrna['contig']]
+    contig_rrnas = {k['id']: [] for k in data['contigs']}
+    for rrna in data['r_rnas']:
+        rrnas = contig_rrnas[rrna['contig']]
         rrnas.append(rrna)
 
-    contig_trna = {k['id']: [] for k in data['contigs']}
-    for trna in data['trnas']:
-        trnas = contig_trna[trna['contig']]
+    contig_trnas = {k['id']: [] for k in data['contigs']}
+    for trna in data['t_rnas']:
+        trnas = contig_trnas[trna['contig']]
         trnas.append(trna)
 
     contig_orfs = {k['id']: [] for k in data['contigs']}
@@ -547,20 +547,54 @@ def overlap_filter_orfs(data, orfs_raw):
                             # in-frame ORF completely overlapped by CDS
                             orfs.remove(orf)
                             discarded_orfs.append(orf)
-                        elif(orf['start'] < cds['stop'] and orf['stop'] > cds['start']):
+                        elif(orf['start'] < cds['stop'] and orf['stop'] > cds['stop']):
                             # in-frame ORF partially overlapping CDS downstream
                             orfs.remove(orf)
                             discarded_orfs.append(orf)
                     else:
-                        pass
+                        if(orf['start'] < cds['start'] and orf['stop'] > cds['start']):
+                            # out-of-frame ORF partially overlapping CDS upstream
+                            # ToDo: add max overlap threshold
+                            pass
+                        elif(orf['start'] >= cds['start'] and orf['stop'] <= cds['stop']):
+                            # out-of-frame ORF completely overlapped by CDS
+                            orfs.remove(orf)
+                            discarded_orfs.append(orf)
+                        elif(orf['start'] < cds['stop'] and orf['stop'] > cds['stop']):
+                            # out-of-frame ORF partially overlapping CDS downstream
+                            # ToDo: add max overlap threshold
+                            pass
                 else:
                     if(orf['frame'] == cds['frame']):
-                        pass
+                        if(orf['start'] < cds['start'] and orf['stop'] > cds['start']):
+                            # in-frame ORF partially overlapping CDS upstream
+                            # ToDo: add max overlap threshold
+                            pass
+                        elif(orf['start'] >= cds['start'] and orf['stop'] <= cds['stop']):
+                            # in-frame ORF completely overlapped by CDS
+                            orfs.remove(orf)
+                            discarded_orfs.append(orf)
+                        elif(orf['start'] < cds['stop'] and orf['stop'] > cds['stop']):
+                            # in-frame ORF partially overlapping CDS downstream
+                            # ToDo: add max overlap threshold
+                            pass
                     else:
-                        pass
+                        # ToDo: add out-of-frame filters
+                        if(orf['start'] < cds['start'] and orf['stop'] > cds['start']):
+                            # in-frame ORF partially overlapping CDS upstream
+                            # ToDo: add max overlap threshold
+                            pass
+                        elif(orf['start'] >= cds['start'] and orf['stop'] <= cds['stop']):
+                            # in-frame ORF completely overlapped by CDS
+                            orfs.remove(orf)
+                            discarded_orfs.append(orf)
+                        elif(orf['start'] < cds['stop'] and orf['stop'] > cds['stop']):
+                            # in-frame ORF partially overlapping CDS downstream
+                            # ToDo: add max overlap threshold
+                            pass
 
         # filter rRNA overlapping ORFs
-        for rrna in contig_cdss[contig['id']]:
+        for rrna in contig_rrnas[contig['id']]:
             log.debug('filter ORFs by rRNA: %s[%i->%i]', rrna['strand'], rrna['start'], rrna['stop'])
             for orf in orfs[:]:
                 if(orf['start'] >= rrna['start'] and orf['stop'] <= rrna['stop']):
@@ -570,7 +604,7 @@ def overlap_filter_orfs(data, orfs_raw):
                     continue
 
         # filter tRNA overlapping ORFs
-        for trna in contig_cdss[contig['id']]:
+        for trna in contig_trnas[contig['id']]:
             log.debug('filter ORFs by tRNA: %s[%i->%i]', trna['strand'], trna['start'], trna['stop'])
             for orf in orfs[:]:
                 if(orf['start'] < trna['start'] and orf['stop'] > trna['start']):
@@ -591,5 +625,5 @@ def overlap_filter_orfs(data, orfs_raw):
         for orf in orfs:
             valid_orfs.append(orf)
 
-    log.info('ORF filter: # valid=%i, # discarded=%i', (len(valid_orfs), len(discarded_orfs)))
+    log.info('ORF filter: # valid=%i, # discarded=%i', len(valid_orfs), len(discarded_orfs))
     return valid_orfs, discarded_orfs

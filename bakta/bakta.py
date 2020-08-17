@@ -137,21 +137,21 @@ def main(args):
     # - lookup UPS matches for ORFs
     # - filter ORFs w/o UPS match
     ############################################################################
-    print('predict ORFs...')
-    log.debug('start ORF prediction')
+    print('predict short open reading frames (sORFs)...')
+    log.debug('start sORF prediction')
     orfs = bp.extract_orfs(data['contigs'])
-    print("\tfound %i ORFs" % len(orfs))
+    print("\tfound %i potential sORFs" % len(orfs))
 
-    print('filter ORFs...')
-    log.debug('start ORF filtering')
+    print('filter potential sORFs by overlaps...')
+    log.debug('start sORF filtering')
     orfs, discarded_orfs = bp.overlap_filter_orfs(data, orfs)
-    print("\tdiscarded %i ORFs, %i remaining" % (len(discarded_orfs), len(orfs)))
+    print("\tdiscarded %i sORFs, %i remaining" % (len(discarded_orfs), len(orfs)))
 
     orfs_found, orfs_not_found = ups.lookup_upss(orfs)
-    print("\tfound %i UPSs for ORFs, %i discarded" % (len(orfs_found), len(orfs_not_found)))
+    print("\tfound %i UPSs for sORFs, %i discarded" % (len(orfs_found), len(orfs_not_found)))
     for orf in orfs_found:
-        orf['type'] = 'cds'  # change seq type from ORF to CDS
-        orf['inference'] = 'UniProtKB'
+        orf['type'] = 'cds'  # change feature type from ORF to CDS
+        orf['inference'] = 'UniRef100'
     data['cdss'] += orfs_found  # add ORFs identified by an UPS to CDSs
 
     ############################################################################
@@ -213,7 +213,7 @@ def main(args):
         io.write_embl(features, embl_path)
 
     # remove tmp dir
-    # shutil.rmtree(str(cfg.tmp_path))
+    shutil.rmtree(str(cfg.tmp_path))
     log.debug('removed tmp dir: %s', cfg.tmp_path)
 
 
