@@ -228,6 +228,10 @@ def predict_r_rnas(data, contigs_path):
                 (contig, accession, subject, subject_id, mdl, mdl_from, mdl_to,
                     start, stop, strand, trunc, passed, gc, bias, score, evalue,
                     inc, description) = line.strip().split()
+                
+                if(strand == '-'):
+                    (start, stop) = (stop, start)
+                
                 db_xrefs = ['GO:0005840', 'GO:0003735']
                 if(subject_id == 'RF00001'):
                     rrna_tag = '5S'
@@ -310,6 +314,10 @@ def predict_nc_rnas(data, contigs_path):
                 (contig, accession, subject, subject_id, mdl, mdl_from, mdl_to,
                     start, stop, strand, trunc, passed, gc, bias, score, evalue,
                     inc, description) = line.strip().split()
+                
+                if(strand == '-'):
+                    (start, stop) = (stop, start)
+                
                 rfam_id = "RFAM:%s" % subject_id
                 db_xrefs = [rfam_id, 'SO:0001263']
                 if(rfam_id in rfam2go):
