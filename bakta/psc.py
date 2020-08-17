@@ -10,10 +10,11 @@ import bakta.constants as bc
 # PSC DB columns
 ############################################################################
 DB_PSC_COL_UNIREF90 = 'uniref90_id'
-DB_PSC_COL_COG = 'cog_id_function'
-DB_PSC_COL_EC = 'ec'
-DB_PSC_COL_GO = 'go'
-DB_PSC_COL_IS = 'is'
+DB_PSC_COL_COG_ID = 'cog_id'
+DB_PSC_COL_COG_CAT = 'cog_category'
+DB_PSC_COL_EC = 'ec_id'
+DB_PSC_COL_GO = 'go_ids'
+DB_PSC_COL_IS = 'is_id'
 DB_PSC_COL_GENE = 'gene'
 DB_PSC_COL_PRODUCT = 'product'
 
@@ -65,14 +66,15 @@ def search_pscs(cdss):
             (cds_id, cluster_id, identity, alignment_length, align_mismatches,
                 align_gaps, query_start, query_end, subject_start, subject_end,
                 evalue, bitscore) = line.split('\t')
-            cds = cds_by_id[cds_id]
+            cds = cds_by_id[int(cds_id)]
             if(int(alignment_length) / len(cds['sequence']) >= bc.MIN_PROTEIN_COVERAGE
                     and float(identity) >= bc.MIN_PROTEIN_IDENTITY):
                 cds['psc'] = {
-                    'uniref90_id': cluster_id
+                    DB_PSC_COL_UNIREF90: cluster_id
                 }
 
-    pscs_found, pscs_not_found = []
+    pscs_found = []
+    pscs_not_found = []
     for cds in cdss:
         if('psc' in cds):
             pscs_found.append(cds)
@@ -86,37 +88,37 @@ def search_pscs(cdss):
 def lookup_pscs(cdss):
     """Lookup PCS information"""
     try:
-        with sqlite3.connect("file:%s?mode=ro" % str(cfg.db_path.joinpath('psc.db')), uri=True) as conn:
+        with sqlite3.connect("file:%s?mode=ro" % str(cfg.db_path.joinpath('bakta.db')), uri=True) as conn:
             conn.row_factory = sqlite3.Row
             c = conn.cursor()
             for cds in cdss:
                 if('psc' in cds):
-                    uniref90_id = cds['psc']['uniref90_id']
+                    uniref90_id = cds['psc'][DB_PSC_COL_UNIREF90]
                 elif('ups' in cds):
-                    uniref90_id = cds['ups']['uniref90_id']
+                    uniref90_id = cds['ups'][DB_PSC_COL_UNIREF90]
                 else:
                     continue  # skip this cds object
-                rec = c.fetchone("select * from psc where uniref90_id=?", (uniref90_id,))
+                c.execute("select * from psc where uniref90_id=?", (uniref90_id,))
+                rec = c.fetchone()
                 if(rec is not None):
                     psc = {
-                        'uniref90_id': bc.DB_PREFIX_UNIREF_90 + rec[DB_PSC_COL_UNIREF90],  # must not be NULL/None
-                        'ec_id': rec[DB_PSC_COL_EC],
-                        'is_id': rec[DB_PSC_COL_IS],
-                        'gene': rec[DB_PSC_COL_GENE],
-                        'product': rec[DB_PSC_COL_PRODUCT]
+                        DB_PSC_COL_UNIREF90: bc.DB_PREFIX_UNIREF_90 + rec[DB_PSC_COL_UNIREF90],  # must not be NULL/None
+                        DB_PSC_COL_EC: rec[DB_PSC_COL_EC],
+                        DB_PSC_COL_IS: rec[DB_PSC_COL_IS],
+                        DB_PSC_COL_GENE: rec[DB_PSC_COL_GENE],
+                        DB_PSC_COL_PRODUCT: rec[DB_PSC_COL_PRODUCT]
                     }
 
                     # reattach database prefixes to identifiers
-                    if(rec[DB_PSC_COL_COG] is not None):
-                        cog_id, cog_category = rec[DB_PSC_COL_COG].split(';')
-                        cog_id = bc.DB_PREFIX_COG + cog_id
-                        psc['cog_id'] = cog_id
-                        psc['cog_category'] = cog_category
+                    if(rec[DB_PSC_COL_COG_ID] is not None):
+                        psc[DB_PSC_COL_COG_ID] = bc.DB_PREFIX_COG + rec[DB_PSC_COL_COG_ID]
+                    if(rec[DB_PSC_COL_COG_CAT] is not None):
+                        psc[DB_PSC_COL_COG_CAT] = rec[DB_PSC_COL_COG_CAT]
                     if(rec[DB_PSC_COL_GO] is not None):
                         go_ids = []
                         for go_id in rec[DB_PSC_COL_GO].split(';'):
-                            go_id.append("%s:%s" % (bc.DB_PREFIX_GO, go_id))
-                        psc['go_ids'] = go_ids
+                            go_ids.append("%s:%s" % (bc.DB_PREFIX_GO, go_id))
+                        psc[DB_PSC_COL_GO] = go_ids
 
                     cds['psc'] = psc
                     if('db_xrefs' not in cds):
@@ -125,9 +127,10 @@ def lookup_pscs(cdss):
                     db_xrefs.append('SO:0001217')
 
                     log.debug(
-                        'PSC: contig=%s, start=%i, end=%i, strand=%s, UniRef90=%s',
-                        cds['contig'], cds['gene'], cds['start'], cds['stop'], cds['strand'], psc['uniref90_id']
+                        'PSC: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, IS=%s, gene=%s, product=%s',
+                        cds['contig'], cds['start'], cds['stop'], cds['strand'], psc[DB_PSC_COL_UNIREF90], psc[DB_PSC_COL_EC], psc[DB_PSC_COL_IS], psc[DB_PSC_COL_GENE], psc[DB_PSC_COL_PRODUCT]
                     )
 
-    except Exception:
-        log.exception('Could not read UPSs from db!')
+    except Exception as ex:
+        log.exception('Could not read PSCs from db!', ex)
+        raise Exception("SQL error!", ex)

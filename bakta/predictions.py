@@ -163,7 +163,7 @@ def predict_tm_rnas(data, contigs_path):
                 (start, stop) = location[1:-1].split(',')
                 start = int(start)
                 stop = int(stop)
-    
+
                 # extract sequence
                 seq = contigs[contig]['sequence'][start:stop]
                 if(strand == '-'):
@@ -257,7 +257,7 @@ def predict_r_rnas(data, contigs_path):
                     'rRNA: contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
                     rrna['contig'], rrna['gene'], rrna['start'], rrna['stop'], rrna['strand']
                 )
-    log.info('rRNAs: # %i', len(contig['rrnas']))
+    log.info('rRNAs: # %i', len(rrnas))
     return rrnas
 
 
@@ -331,7 +331,7 @@ def predict_nc_rnas(data, contigs_path):
                     'ncRNA: contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
                     ncrna['contig'], ncrna['gene'], ncrna['start'], ncrna['stop'], ncrna['strand']
                 )
-    log.info('ncRNAs: # %i', len(contig['ncRNAs']))
+    log.info('ncRNAs: # %i', len(ncrnas))
     return ncrnas
 
 
@@ -380,20 +380,19 @@ def predict_cdss(contigs, filtered_contigs_path):
     with gff_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
-                cols = line.split('\t')
-                annotations = split_gff_annotation(cols[8])
-                # contig_orf_id = cols[8].split(';')[0].split('=')[1].split('_')[1]
-                contig_orf_id = annotations['ID'].split['_'][1]
+                (contig, inference, _, start, stop, score, strand, _, annotations_raw) = line.strip().split('\t')
+                gff_annotations = split_gff_annotation(annotations_raw)
+                contig_orf_id = gff_annotations['ID'].split('_')[1]
                 cds = {
                     'type': bc.INSDC_FEATURE_CDS,
-                    'contig': cols[0],
-                    'start': int(cols[3]),
-                    'stop': int(cols[4]),
-                    'strand': cols[6],
-                    'inference': 'prodigal',
+                    'contig': contig,
+                    'start': int(start),
+                    'stop': int(stop),
+                    'strand': strand,
+                    'inference': inference,
                     'tmp_id': cds_id,
-                    'start_type': annotations['start_type'],
-                    'rbs_motif': annotations['rbs_motif']
+                    'start_type': gff_annotations['start_type'],
+                    'rbs_motif': gff_annotations['rbs_motif']
                 }
                 cds_id += 1
                 if(cds['strand'] == '+'):
@@ -416,10 +415,6 @@ def predict_cdss(contigs, filtered_contigs_path):
 
     gff_path.unlink()
     proteins_path.unlink()
-
-    # for cds in sorted(filter(lambda k: len(k['sequence']) < 50, cdss.values()), key=lambda k: len(k['sequence']), reverse=True):
-    #     print("CDS: contig=%s, start=%i, stop=%i, strand=%s, length=%i" % (cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['sequence'])))
-
     log.info('CDSs: # %i', len(cdss))
     return list(cdss.values())
 
