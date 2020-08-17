@@ -120,11 +120,17 @@ def predict_tm_rnas(data, contigs_path):
     txt_output_path = cfg.tmp_path.joinpath('tmrna.tsv')
     cmd = [
         'aragorn',
-        '-m',
+        '-m',  # detect tmRNAs
         '-gcbact',
+        '-w',  # batch mode
         '-o', str(txt_output_path),
         str(contigs_path)
     ]
+    if(cfg.complete == True):
+        cmd.append('-c')  # complete circular sequence(s)
+    else:
+        cmd.append('-l')  # linear sequence(s)
+
     proc = sp.run(
         cmd,
         cwd=str(cfg.tmp_path),
@@ -143,10 +149,12 @@ def predict_tm_rnas(data, contigs_path):
 
     tmrnas = []
     with txt_output_path.open() as fh:
-        for contig_section in fh.read().split('>'):
-            lines = contig_section.split('\n')
-            contig = lines[0].strip()
-            for line in lines[2:]:  # skip first 2 lines
+        for line in fh:
+            line = line.strip()
+            cols = line.split()
+            if(line[0] == '>'):
+                contig = cols[0][1:]
+            elif( len(cols) == 5 ):
                 (nr, type, location, tag_location, tag_aa) = line.split()
                 strand = '+'
                 if(location[0] == 'c'):
@@ -155,16 +163,15 @@ def predict_tm_rnas(data, contigs_path):
                 (start, stop) = location[1:-1].split(',')
                 start = int(start)
                 stop = int(stop)
-
+    
                 # extract sequence
-                seq = contigs[contig][start:stop]
+                seq = contigs[contig]['sequence'][start:stop]
                 if(strand == '-'):
                     seq = Seq(seq).reverse_complement()
-
                 tmrna = {
-                    'type': bc.INSDC_FEATURE_T_RNA,
-                    'gene': 'tmRNA',
-                    'product': 'tmRNA',
+                    'type': bc.INSDC_FEATURE_TM_RNA,
+                    'gene': 'ssrA',
+                    'product': 'transfer-messenger RNA, SsrA',
                     'contig': contig,
                     'start': start,
                     'stop': stop,
