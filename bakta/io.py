@@ -41,13 +41,10 @@ def export_contigs(contigs, fasta_path):
             fh.write(">%s\n%s\n" % (c['id'], c['sequence']))
 
 
-def write_json(annotations, json_path, pretty_json):
+def write_json(annotations, json_path):
     """Export annotations as comprehensive JSON file."""
     with json_path.open('w') as fh:
-        if(pretty_json):
-            json.dump(annotations, fh, sort_keys=True, indent=4)
-        else:
-            json.dump(annotations, fh, sort_keys=True, separators=(',', ':'))
+        json.dump(annotations, fh, sort_keys=True, indent=4)
     return
 
 
