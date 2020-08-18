@@ -37,7 +37,7 @@ def main(args):
     cfg.setup(args)  # check parameters and prepare global configuration
     bu.test_database()
     bu.test_dependencies()
-    if(args.verbose):
+    if(cfg.verbose):
         print("Bakta v%s" % bakta.__version__)
         print('Options and arguments:')
         for label, value in [
@@ -58,7 +58,7 @@ def main(args):
     ############################################################################
     print('parse genome...')
     try:
-        contigs, discarded_contigs = io.import_contigs(cfg.genome_path, args.min_contig_length)
+        contigs, discarded_contigs = io.import_contigs(cfg.genome_path, cfg.min_contig_length)
     except:
         log.error('wrong genome file format!', exc_info=True)
         sys.exit('ERROR: wrong genome file format!')
@@ -182,7 +182,7 @@ def main(args):
         features.extend(sorted(contig_features, key=lambda k: k['start']))
 
     locus_tag_nr = 5
-    locus_prefix = bu.create_locus_tag_prefix(args, contigs)
+    locus_prefix = bu.create_locus_tag_prefix(contigs)
     for feature in features:
         locus_tag = "%s%04i" % (locus_prefix, locus_tag_nr)
         feature['locus'] = locus_tag
@@ -199,7 +199,7 @@ def main(args):
 
     prefix = cfg.genome_path.stem if cfg.prefix is None else cfg.prefix
     json_path = cfg.output_path.joinpath("%s.json" % prefix)
-    io.write_json(features, json_path, cfg.pretty_json)
+    io.write_json(features, json_path)
 
     if(cfg.gff3):
         print('write GFF3 output...')

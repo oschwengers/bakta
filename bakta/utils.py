@@ -154,11 +154,11 @@ def test_dependencies():
         pass
 
 
-def create_locus_prefix(args, contigs):
+def create_locus_prefix(contigs):
     """Create either genus/species or sequence MD5 hex based locus prefix.
     Max locus name length is 37 for GenBank -> 32 + _ + 4 digits"""
-    if(args.genus != '' and args.species != ''):
-        locus_prefix = args.genus[:1] + args.species[:2]
+    if(cfg.genus != '' and cfg.species != ''):
+        locus_prefix = cfg.genus[:1] + cfg.species[:2]
         return locus_prefix.upper()
     else:
         hash = hashlib.md5()
@@ -167,14 +167,14 @@ def create_locus_prefix(args, contigs):
         return hash.hexdigest()[0:5]
 
 
-def create_locus_tag_prefix(args, contigs):
+def create_locus_tag_prefix(contigs):
     """Create either genus/species or sequence MD5 hex based locus tag prefix."""
-    if(args.locus != ''):
-        return args.locus
-    elif(args.genus != '' and args.species != ''):
-        locus_prefix = args.genus[:1] + args.species[:2]
-        if(args.strain != ''):
-            locus_prefix += args.strain[:2]
+    if(cfg.locus != ''):
+        return cfg.locus
+    elif(cfg.genus != '' and cfg.species != ''):
+        locus_prefix = cfg.genus[:1] + cfg.species[:2]
+        if(cfg.strain != ''):
+            locus_prefix += cfg.strain[:2]
         return locus_prefix.upper()
     else:
         hash = hashlib.md5()

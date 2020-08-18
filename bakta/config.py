@@ -30,7 +30,6 @@ complete = False
 plasmid = False
 
 # input / output configurations
-pretty_json = False
 gff3 = False
 genbank = False
 embl = False
@@ -39,7 +38,7 @@ embl = False
 def setup(args):
     """Test environment and build a runtime configuration."""
     # runtime configurations
-    global env, bundled_binaries, threads
+    global env, bundled_binaries, threads, verbose
     base_dir = Path(__file__).parent.parent
     share_dir = base_dir.joinpath('share')
     log.debug('base-dir=%s', base_dir)
@@ -51,6 +50,8 @@ def setup(args):
     log.info('bundled-binaries=%s', bundled_binaries)
     threads = args.threads
     log.info('threads=%i', threads)
+    verbose = args.verbose
+    log.info('verbose=%i', verbose)
 
     # input / output path configurations
     global db_path, tmp_path, genome_path, output_path
@@ -97,34 +98,41 @@ def setup(args):
         sys.exit('ERROR: could not set/create output directory (%s)!' % args.output)
     log.info('output-path=%s', output_path)
 
-    # genome configurations
-    global prefix, locus, locus_tag, genus, species, strain, keep_contig_names, complete, plasmid
+    # input / output configurations
+    global min_contig_length, output, prefix, gff3, genbank, embl
+    min_contig_length = args.min_contig_length
+    log.info('min_contig_length=%s', min_contig_length)
     prefix = args.prefix if args.prefix != '' else None
     log.info('prefix=%s', prefix)
-    locus = args.locus if args.locus != '' else None
-    log.info('locus=%s', locus)
-    locus_tag = args.locus_tag if args.locus_tag != '' else None
-    log.info('locus-tag=%s', locus_tag)
-    genus = args.genus if args.genus != '' else None
-    log.info('genus=%s', genus)
-    species = args.species if args.species != '' else None
-    log.info('species=%s', species)
-    strain = args.strain if args.strain != '' else None
-    log.info('strain=%s', strain)
-    keep_contig_names = args.keep_contig_names
-    log.info('keep-contig-names=%s', keep_contig_names)
-    complete = args.complete
-    log.info('complete=%s', complete)
-    plasmid = args.plasmid
-    log.info('plasmid=%s', plasmid)
-
-    # input / output configurations
-    global pretty_json, gff3, genbank, embl
-    pretty_json = args.pretty_json
-    log.info('pretty-json=%s', pretty_json)
+    output = args.output
+    log.info('output=%s', output)
     gff3 = args.gff3
     log.info('gff3=%s', gff3)
     genbank = args.genbank
     log.info('genbank=%s', genbank)
     embl = args.embl
     log.info('embl=%s', embl)
+
+    # organism configurations
+    global genus, species, strain, plasmid
+    genus = args.genus if args.genus != '' else None
+    log.info('genus=%s', genus)
+    species = args.species if args.species != '' else None
+    log.info('species=%s', species)
+    strain = args.strain if args.strain != '' else None
+    log.info('strain=%s', strain)
+    plasmid = args.plasmid
+    log.info('plasmid=%s', plasmid)
+
+    # annotation configurations
+    global keep_contig_names, locus, locus_tag, gram, complete
+    keep_contig_names = args.keep_contig_names
+    log.info('keep_contig_names=%s', keep_contig_names)
+    locus = args.locus if args.locus != '' else None
+    log.info('locus=%s', locus)
+    locus_tag = args.locus_tag if args.locus_tag != '' else None
+    log.info('locus-tag=%s', locus_tag)
+    gram = args.gram
+    log.info('gram=%s', gram)
+    complete = args.complete
+    log.info('complete=%s', complete)
