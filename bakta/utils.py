@@ -26,7 +26,6 @@ def parse_arguments():
     parser.add_argument('--min-contig-length', '-m', action='store', type=int, default=1, dest='min_contig_length', help='Minimum contig size (default = 1)')
     parser.add_argument('--prefix', '-p', action='store', default='', help='Prefix for output files')
     parser.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
-    parser.add_argument('--pretty-json', action='store_true', dest='pretty_json', help='Write GFF3 annotation file')
     parser.add_argument('--gff3', action='store_true', help='Write GFF3 annotation file')
     parser.add_argument('--genbank', action='store_true', help='Write GenBank annotation file')
     parser.add_argument('--embl', action='store_true', help='Write EMBL annotation file')
