@@ -102,6 +102,8 @@ def lookup_pscs(cdss):
 
                 if(uniref90_id == ''):
                     continue  # skip PSC lookup for this cds without a valid UniRef90 id
+                elif(bc.DB_PREFIX_UNIREF_90 in uniref90_id):
+                    uniref90_id = uniref90_id[9:]  # remove 'UniRef90_' prefix
                 
                 c.execute("select * from psc where uniref90_id=?", (uniref90_id,))
                 rec = c.fetchone()
@@ -122,8 +124,10 @@ def lookup_pscs(cdss):
                     if(rec[DB_PSC_COL_GO] is not None):
                         go_ids = []
                         for go_id in rec[DB_PSC_COL_GO].split(';'):
-                            go_ids.append("%s:%s" % (bc.DB_PREFIX_GO, go_id))
-                        psc[DB_PSC_COL_GO] = go_ids
+                            if(go_id is not ''):
+                                go_ids.append(bc.DB_PREFIX_GO + go_id)
+                        if(len(go_ids) != 0):
+                            psc[DB_PSC_COL_GO] = go_ids
 
                     cds['psc'] = psc
                     if('db_xrefs' not in cds):
