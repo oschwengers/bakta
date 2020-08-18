@@ -16,32 +16,39 @@ log = logging.getLogger('utils')
 def parse_arguments():
     parser = argparse.ArgumentParser(
         prog='bakta',
-        description='Comprehensive and rapid annotation of bacterial genomes.'
+        description='Comprehensive and rapid annotation of bacterial genomes.',
+        add_help=False
     )
     parser.add_argument('genome', metavar='<genome>', help='(Draft) genome in fasta format')
-    parser.add_argument('--db', '-d', action='store', help='Database path (default = <bakta_path>/db)')
-    parser.add_argument('--verbose', '-v', action='store_true', help='Print verbose information')
-    parser.add_argument('--threads', '-t', action='store', type=int, default=mp.cpu_count(), help='Number of threads to use (default = number of available CPUs)')
 
-    parser.add_argument('--min-contig-length', '-m', action='store', type=int, default=1, dest='min_contig_length', help='Minimum contig size (default = 1)')
-    parser.add_argument('--prefix', '-p', action='store', default='', help='Prefix for output files')
-    parser.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
-    parser.add_argument('--gff3', action='store_true', help='Write GFF3 annotation file')
-    parser.add_argument('--genbank', action='store_true', help='Write GenBank annotation file')
-    parser.add_argument('--embl', action='store_true', help='Write EMBL annotation file')
+    arg_group_io = parser.add_argument_group('Input / Output')
+    arg_group_io.add_argument('--db', '-d', action='store', help='Database path (default = <bakta_path>/db)')
+    arg_group_io.add_argument('--min-contig-length', '-m', action='store', type=int, default=1, dest='min_contig_length', help='Minimum contig size (default = 1)')
+    arg_group_io.add_argument('--prefix', '-p', action='store', default='', help='Prefix for output files')
+    arg_group_io.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
+    arg_group_io.add_argument('--gff3', action='store_true', help='Write GFF3 annotation file')
+    arg_group_io.add_argument('--genbank', action='store_true', help='Write GenBank annotation file')
+    arg_group_io.add_argument('--embl', action='store_true', help='Write EMBL annotation file')
 
-    parser.add_argument('--keep-contig-names', action='store_true', dest='keep_contig_names', help='Keep original contig names')
-    parser.add_argument('--locus', action='store', default='', help='Locus prefix')
-    parser.add_argument('--locus-tag', action='store', default='', dest='locus_tag', help='Locus tag prefix')
-    parser.add_argument('--genus', action='store', default='', help='Genus name')
-    parser.add_argument('--species', action='store', default='', help='Species name')
-    parser.add_argument('--strain', action='store', default='', help='Strain name')
-    parser.add_argument('--plasmid', action='store', default='', help='Plasmid name')
-    parser.add_argument('--gram', action='store', default='', choices=['+', '-'], help="Gram type: ''/+/- (default = '')")
-    parser.add_argument('--complete', action='store_true', help="Replicons (chromosome/plasmid[s]) are complete")
+    arg_group_organism = parser.add_argument_group('Organism')
+    arg_group_organism.add_argument('--genus', action='store', default='', help='Genus name')
+    arg_group_organism.add_argument('--species', action='store', default='', help='Species name')
+    arg_group_organism.add_argument('--strain', action='store', default='', help='Strain name')
+    arg_group_organism.add_argument('--plasmid', action='store', default='', help='Plasmid name')
+    
+    arg_group_annotation = parser.add_argument_group('Annotation')
+    arg_group_annotation.add_argument('--keep-contig-names', action='store_true', dest='keep_contig_names', help='Keep original contig names')
+    arg_group_annotation.add_argument('--locus', action='store', default='', help='Locus prefix')
+    arg_group_annotation.add_argument('--locus-tag', action='store', default='', dest='locus_tag', help='Locus tag prefix')
+    arg_group_annotation.add_argument('--gram', action='store', default='?', choices=['+', '-', '?'], help="Gram type: +/-/? (default = '?')")
+    arg_group_annotation.add_argument('--complete', action='store_true', help="Replicons (chromosome/plasmid[s]) are complete")
 
-    parser.add_argument('--version', action='version', version='%(prog)s ' + bakta.__version__)
-    parser.add_argument('--citation', action='store_true', help='Print citation')
+    arg_group_general = parser.add_argument_group('General')
+    arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
+    arg_group_general.add_argument('--verbose', '-v', action='store_true', help='Print verbose information')
+    arg_group_general.add_argument('--threads', '-t', action='store', type=int, default=mp.cpu_count(), help='Number of threads to use (default = number of available CPUs)')
+    arg_group_general.add_argument('--version', action='version', version='%(prog)s ' + bakta.__version__)
+    arg_group_general.add_argument('--citation', action='store_true', help='Print citation')
     return parser.parse_args()
 
 
