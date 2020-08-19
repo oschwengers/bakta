@@ -70,18 +70,18 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                             try:
                                 prot_name = rep_member.find("./{%s}property[@type='protein name']" % ns).attrib['value']
                             except:
-                                prot_name = ''
+                                prot_name = None
+                            try:
+                                uniref50_id = rep_member.find("./{%s}property[@type='UniRef50 ID']" % ns).attrib['value']
+                                uniref50_id = uniref50_id[9:]  # remove 'UniRef50_' prefix
+                            except:
+                                uniref50_id = None
                             seq = elem.find("./{%s}representativeMember/{%s}sequence" % (ns, ns)).text.upper()
-                            # cluster = Cluster(uniref90_id, len(seq), seq, prot_name, uniref100_id, uniparc_id)
+                            # cluster = Cluster(uniref90_id, uniref50_id, prot_name)
                             cluster = (
                                 uniref90_id,
-                                '',  # gene
-                                prot_name,  # product
-                                '',  # EC
-                                '',  # IS
-                                '',  # COG id
-                                '',  # COG category
-                                ''  # GO ids
+                                uniref50_id,  # UniRef50
+                                prot_name
                             )
                             fh_fasta.write(">%s\n%s\n" % (uniref90_id, seq))
                             psc_entries.append(cluster)
@@ -89,7 +89,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
 
                             if((i % 1000000) == 0):
                                 conn.executemany(
-                                    "INSERT INTO psc (uniref90_id, gene, product, ec_id, is_id, cog_id, cog_category, go_ids) VALUES (?,?,?,?,?,?,?,?)",
+                                    "INSERT INTO psc (uniref90_id, uniref50_id, product) VALUES (?,?,?)",
                                     psc_entries
                                 )
                                 conn.commit()
@@ -97,7 +97,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                                 psc_entries = []
                 elem.clear()  # forstall out of memory errors
     conn.executemany(
-        "INSERT INTO psc (uniref90_id, gene, product, ec_id, is_id, cog_id, cog_category, go_ids) VALUES (?,?,?,?,?,?,?,?)",
+        "INSERT INTO psc (uniref90_id, uniref50_id, product) VALUES (?,?,?)",
         psc_entries
     )
     conn.commit()

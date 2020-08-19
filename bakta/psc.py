@@ -10,11 +10,11 @@ import bakta.constants as bc
 # PSC DB columns
 ############################################################################
 DB_PSC_COL_UNIREF90 = 'uniref90_id'
+DB_PSC_COL_UNIREF50 = 'uniref50_id'
 DB_PSC_COL_COG_ID = 'cog_id'
 DB_PSC_COL_COG_CAT = 'cog_category'
 DB_PSC_COL_EC = 'ec_id'
 DB_PSC_COL_GO = 'go_ids'
-DB_PSC_COL_IS = 'is_id'
 DB_PSC_COL_GENE = 'gene'
 DB_PSC_COL_PRODUCT = 'product'
 
@@ -124,8 +124,8 @@ def lookup_pscs(cdss):
                     db_xrefs.append('SO:0001217')
 
                     log.debug(
-                        'PSC: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, IS=%s, gene=%s, product=%s',
-                        cds['contig'], cds['start'], cds['stop'], cds['strand'], psc.get(DB_PSC_COL_UNIREF90, ''), psc.get(DB_PSC_COL_EC, ''), psc.get(DB_PSC_COL_IS, ''), psc.get(DB_PSC_COL_GENE, ''), psc.get(DB_PSC_COL_PRODUCT, '')
+                        'PSC: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, gene=%s, product=%s',
+                        cds['contig'], cds['start'], cds['stop'], cds['strand'], psc.get(DB_PSC_COL_UNIREF90, ''), psc.get(DB_PSC_COL_EC, ''), psc.get(DB_PSC_COL_GENE, ''), psc.get(DB_PSC_COL_PRODUCT, '')
                     )
                 else:
                     log.debug('no PSC found! uniref90_id=%s', uniref90_id)
@@ -147,8 +147,8 @@ def parse_psc_annotation(rec):
         psc[DB_PSC_COL_PRODUCT] = rec[DB_PSC_COL_PRODUCT]
     if(rec[DB_PSC_COL_EC]):
         psc[DB_PSC_COL_EC] = rec[DB_PSC_COL_EC]
-    if(rec[DB_PSC_COL_IS]):
-        psc[DB_PSC_COL_IS] = rec[DB_PSC_COL_IS]
+    if(rec[DB_PSC_COL_UNIREF50]):
+        psc[DB_PSC_COL_UNIREF50] = bc.DB_PREFIX_UNIREF_50 + rec[DB_PSC_COL_UNIREF50]
     if(rec[DB_PSC_COL_COG_ID]):
         psc[DB_PSC_COL_COG_ID] = bc.DB_PREFIX_COG + rec[DB_PSC_COL_COG_ID]
     if(rec[DB_PSC_COL_COG_CAT]):

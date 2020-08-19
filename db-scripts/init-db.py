@@ -25,8 +25,8 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('''CREATE TABLE ups (
         hash TEXT PRIMARY KEY,
         length INTEGER NOT NULL,
-        uniref90_id TEXT,
         uniref100_id TEXT NOT NULL,
+        uniref90_id TEXT,
         uniparc_id TEXT,
         ncbi_nrp_id TEXT,
         uniprotkb_acc TEXT,
@@ -40,10 +40,10 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('DROP TABLE IF EXISTS psc;')
     conn.execute('''CREATE TABLE psc (
         uniref90_id TEXT PRIMARY KEY,
+        uniref50_id TEXT,
         gene TEXT,
         product TEXT,
         ec_id TEXT,
-        is_id TEXT,
         cog_id TEXT,
         cog_category TEXT,
         go_ids TEXT
