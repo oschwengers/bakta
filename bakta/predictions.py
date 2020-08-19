@@ -96,7 +96,6 @@ def predict_t_rnas(data, contigs_path):
             }
 
             key = "%s.trna%s" % (contig, trna_id)
-            log.debug("key=%s", key)
             trnas[key] = trna
             log.info(
                 'tRNA: contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
@@ -105,7 +104,6 @@ def predict_t_rnas(data, contigs_path):
 
     with fasta_output_path.open() as fh:
         for record in SeqIO.parse(fh, 'fasta'):
-            log.debug("key=%s", record.id)
             trna = trnas[record.id]
             trna['sequence'] = str(record.seq)
     trnas = list(trnas.values())
@@ -408,7 +406,7 @@ def predict_cdss(contigs, filtered_contigs_path):
                 else:
                     cds['frame'] = (contigs[cds['contig']]['length'] - cds['stop']) % 3 + 1
                 cdss["%s_%s" % (cds['contig'], contig_orf_id)] = cds
-                log.info(
+                log.debug(
                     'cds: contig=%s, start=%i, stop=%i, strand=%s',
                     cds['contig'], cds['start'], cds['stop'], cds['strand']
                 )
@@ -454,15 +452,11 @@ def extract_orfs(contigs):
                 if(residue != 0):
                     seq_frame = seq_frame[:-residue]
 
-                # print("contig=%s, strand=%s, frame=%s, length=%i, dna=%s" % (contig['id'], strand, frame, len(seq_frame), seq_frame[:200]))
                 aa_seq = str(seq_frame.translate(table=11, stop_symbol='*', to_stop=False, cds=False))
-                # print("\taa length=%i" % len(aa_seq))
-                # print("\taa seq=%s" % aa_seq[:200])
                 aa_start = aa_seq.find('M')
                 aa_end = aa_seq.find('*', aa_start)
                 while aa_start > -1 and aa_end > -1:
                     orf_length = aa_end - aa_start + 1
-                    # print("\tM: %i, *: %i" % (aa_start, aa_end))
                     if(orf_length >= bc.MIN_ORF_LENGTH and orf_length <= bc.MAX_ORF_LENGTH):  # get all CDS starts (M)
                         if(strand == '+'):
                             dna_start = aa_start * 3 + frame + 1  # +1: 0 based idx to 1 based
@@ -490,15 +484,15 @@ def extract_orfs(contigs):
                             'aa_hash': bu.calc_aa_hash(sequence)
                         }
                         orfs.append(orf)
-                        # print(
-                        #     "\tORF: contig=%s, strand=%s, frame=%i, start=%i, stop=%i, seq=%s..%s, length=%i" %
-                        #     (contig['id'], strand, frame, orf['start'], orf['stop'], sequence[:min(30, len(sequence) - 5)], sequence[-3:], len(sequence))
-                        # )
+                        log.debug(
+                            'ORF: contig=%s, start=%i, stop=%i, strand=%s, frame=%i, length=%i, seq=%s',
+                            contig['id'], orf['start'], orf['stop'], strand, frame, len(sequence), sequence
+                        )
                     aa_start = aa_seq.find('M', aa_start + 1)
                     if(aa_start > aa_end):
                         aa_end = aa_seq.find('*', aa_start)
 
-    log.info('ORFs: # %i', len(orfs))
+    log.info('# short ORFs: # %i', len(orfs))
     return orfs
 
 
@@ -534,12 +528,12 @@ def overlap_filter_orfs(data, orfs_raw):
 
     discarded_orfs = []
     for contig in data['contigs']:
-        log.debug('filter ORFs on contig: %s', contig['id'])
+        log.debug('filter short ORFs on contig: %s', contig['id'])
         orfs = contig_orfs[contig['id']]
 
         # filter CDS overlapping ORFs
         for cds in contig_cdss[contig['id']]:
-            log.debug('filter ORFs by CDS: %s%i[%i->%i]', cds['strand'], cds['frame'], cds['start'], cds['stop'])
+            log.debug('filter short ORFs by CDS: %s%i[%i->%i]', cds['strand'], cds['frame'], cds['start'], cds['stop'])
             for orf in orfs[:]:
                 if(orf['strand'] == cds['strand']):
                     if(orf['frame'] == cds['frame']):
@@ -603,7 +597,7 @@ def overlap_filter_orfs(data, orfs_raw):
 
         # filter rRNA overlapping ORFs
         for rrna in contig_rrnas[contig['id']]:
-            log.debug('filter ORFs by rRNA: %s[%i->%i]', rrna['strand'], rrna['start'], rrna['stop'])
+            log.debug('filter short ORFs by rRNA: %s[%i->%i]', rrna['strand'], rrna['start'], rrna['stop'])
             for orf in orfs[:]:
                 if(orf['start'] >= rrna['start'] and orf['stop'] <= rrna['stop']):
                     # ORF completely overlapped by rRNA
@@ -613,7 +607,7 @@ def overlap_filter_orfs(data, orfs_raw):
 
         # filter tRNA overlapping ORFs
         for trna in contig_trnas[contig['id']]:
-            log.debug('filter ORFs by tRNA: %s[%i->%i]', trna['strand'], trna['start'], trna['stop'])
+            log.debug('filter short ORFs by tRNA: %s[%i->%i]', trna['strand'], trna['start'], trna['stop'])
             for orf in orfs[:]:
                 if(orf['start'] < trna['start'] and orf['stop'] > trna['start']):
                     # in-frame ORF partially overlapping tRNA upstream
@@ -633,5 +627,5 @@ def overlap_filter_orfs(data, orfs_raw):
         for orf in orfs:
             valid_orfs.append(orf)
 
-    log.info('ORF filter: # valid=%i, # discarded=%i', len(valid_orfs), len(discarded_orfs))
+    log.info('short ORF filter: # valid=%i, # discarded=%i', len(valid_orfs), len(discarded_orfs))
     return valid_orfs, discarded_orfs
