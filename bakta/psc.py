@@ -67,11 +67,18 @@ def search_pscs(cdss):
                 align_gaps, query_start, query_end, subject_start, subject_end,
                 evalue, bitscore) = line.split('\t')
             cds = cds_by_id[int(cds_id)]
-            if(int(alignment_length) / len(cds['sequence']) >= bc.MIN_PROTEIN_COVERAGE
-                    and float(identity) >= bc.MIN_PROTEIN_IDENTITY):
+            query_cov = int(alignment_length) / len(cds['sequence'])
+            identity = float(identity) / 100
+            if(query_cov >= bc.MIN_PROTEIN_COVERAGE and identity >= bc.MIN_PROTEIN_IDENTITY):
                 cds['psc'] = {
-                    DB_PSC_COL_UNIREF90: cluster_id
+                    DB_PSC_COL_UNIREF90: cluster_id,
+                    'query-cov': query_cov,
+                    'identity': identity
                 }
+                log.debug(
+                    'PSC: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, UniRef90=%s',
+                     cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['sequence']), query_cov, identity, cluster_id
+                )
 
     pscs_found = []
     pscs_not_found = []
@@ -93,43 +100,24 @@ def lookup_pscs(cdss):
             c = conn.cursor()
             for cds in cdss:
                 if('psc' in cds):
-                    uniref90_id = cds['psc'][DB_PSC_COL_UNIREF90]
+                    uniref90_id = cds['psc'].get(DB_PSC_COL_UNIREF90, None)
                 elif('ups' in cds):
-                    uniref90_id = cds['ups'][DB_PSC_COL_UNIREF90]
+                    uniref90_id = cds['ups'].get(DB_PSC_COL_UNIREF90, None)
                 else:
                     cds['hypothetical'] = True
                     continue  # skip PSC lookup for this cds object
 
-                if(uniref90_id == ''):
+                if(not uniref90_id):
                     continue  # skip PSC lookup for this cds without a valid UniRef90 id
-                elif(bc.DB_PREFIX_UNIREF_90 in uniref90_id):
+                if(bc.DB_PREFIX_UNIREF_90 in uniref90_id):
                     uniref90_id = uniref90_id[9:]  # remove 'UniRef90_' prefix
                 
                 c.execute("select * from psc where uniref90_id=?", (uniref90_id,))
                 rec = c.fetchone()
                 if(rec is not None):
-                    psc = {
-                        DB_PSC_COL_UNIREF90: bc.DB_PREFIX_UNIREF_90 + rec[DB_PSC_COL_UNIREF90],  # must not be NULL/None
-                        DB_PSC_COL_EC: rec[DB_PSC_COL_EC],
-                        DB_PSC_COL_IS: rec[DB_PSC_COL_IS],
-                        DB_PSC_COL_GENE: rec[DB_PSC_COL_GENE],
-                        DB_PSC_COL_PRODUCT: rec[DB_PSC_COL_PRODUCT]
-                    }
-
-                    # reattach database prefixes to identifiers
-                    if(rec[DB_PSC_COL_COG_ID] is not None):
-                        psc[DB_PSC_COL_COG_ID] = bc.DB_PREFIX_COG + rec[DB_PSC_COL_COG_ID]
-                    if(rec[DB_PSC_COL_COG_CAT] is not None):
-                        psc[DB_PSC_COL_COG_CAT] = rec[DB_PSC_COL_COG_CAT]
-                    if(rec[DB_PSC_COL_GO] is not None):
-                        go_ids = []
-                        for go_id in rec[DB_PSC_COL_GO].split(';'):
-                            if(go_id is not ''):
-                                go_ids.append(bc.DB_PREFIX_GO + go_id)
-                        if(len(go_ids) != 0):
-                            psc[DB_PSC_COL_GO] = go_ids
-
+                    psc = parse_psc_annotation(rec)
                     cds['psc'] = psc
+                    
                     if('db_xrefs' not in cds):
                         cds['db_xrefs'] = []
                     db_xrefs = cds['db_xrefs']
@@ -137,9 +125,40 @@ def lookup_pscs(cdss):
 
                     log.debug(
                         'PSC: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, IS=%s, gene=%s, product=%s',
-                        cds['contig'], cds['start'], cds['stop'], cds['strand'], psc[DB_PSC_COL_UNIREF90], psc[DB_PSC_COL_EC], psc[DB_PSC_COL_IS], psc[DB_PSC_COL_GENE], psc[DB_PSC_COL_PRODUCT]
+                        cds['contig'], cds['start'], cds['stop'], cds['strand'], psc.get(DB_PSC_COL_UNIREF90, ''), psc.get(DB_PSC_COL_EC, ''), psc.get(DB_PSC_COL_IS, ''), psc.get(DB_PSC_COL_GENE, ''), psc.get(DB_PSC_COL_PRODUCT, '')
                     )
+                else:
+                    log.debug('no PSC found! uniref90_id=%s', uniref90_id)
 
     except Exception as ex:
         log.exception('Could not read PSCs from db!', ex)
         raise Exception("SQL error!", ex)
+
+
+def parse_psc_annotation(rec):
+    psc = {
+        DB_PSC_COL_UNIREF90: bc.DB_PREFIX_UNIREF_90 + rec[DB_PSC_COL_UNIREF90],  # must not be NULL/None
+    }
+
+    # add non-empty PSC annotations and attach database prefixes to identifiers
+    if(rec[DB_PSC_COL_GENE]):
+        psc[DB_PSC_COL_GENE] = rec[DB_PSC_COL_GENE]
+    if(rec[DB_PSC_COL_PRODUCT]):
+        psc[DB_PSC_COL_PRODUCT] = rec[DB_PSC_COL_PRODUCT]
+    if(rec[DB_PSC_COL_EC]):
+        psc[DB_PSC_COL_EC] = rec[DB_PSC_COL_EC]
+    if(rec[DB_PSC_COL_IS]):
+        psc[DB_PSC_COL_IS] = rec[DB_PSC_COL_IS]
+    if(rec[DB_PSC_COL_COG_ID]):
+        psc[DB_PSC_COL_COG_ID] = bc.DB_PREFIX_COG + rec[DB_PSC_COL_COG_ID]
+    if(rec[DB_PSC_COL_COG_CAT]):
+        psc[DB_PSC_COL_COG_CAT] = rec[DB_PSC_COL_COG_CAT]
+    if(rec[DB_PSC_COL_GO]):
+        go_ids = []
+        for go_id in rec[DB_PSC_COL_GO].split(';'):
+            if(go_id is not ''):
+                go_ids.append(bc.DB_PREFIX_GO + go_id)
+        if(len(go_ids) != 0):
+            psc[DB_PSC_COL_GO] = go_
+    
+    return psc

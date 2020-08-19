@@ -128,8 +128,7 @@ def main(args):
     print("\tfound %i UPSs for CDSs" % len(upss_found))
     pscs_found, cdss_not_found = psc.search_pscs(cdss_not_found)
     print("\tfound %i PSCs for CDSs" % len(pscs_found))
-    psc.lookup_pscs(data['cdss'])
-
+    
     ############################################################################
     # ORF prediction
     # - in-mem ORF extraction
@@ -153,6 +152,9 @@ def main(args):
         orf['type'] = 'cds'  # change feature type from ORF to CDS
         orf['inference'] = 'UniRef100'
     data['cdss'] += orfs_found  # add ORFs identified by an UPS to CDSs
+
+    print("lookup PSC annotations for PSCs, UPSs and sORFs...")
+    psc.lookup_pscs(data['cdss'])  # lookup PSC info
 
     ############################################################################
     # Create annotations
