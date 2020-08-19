@@ -57,12 +57,12 @@ INSDC_FEATURE_TM_RNA = 'tmRNA'
 INSDC_FEATURE_R_RNA = 'rRNA'
 # rRNA size via /product
 INSDC_FEATURE_NC_RNA = 'ncRNA'
-# mandatory: /ncRNA_class="TYPE"
+INSDC_FEATURE_NC_RNA_TYPE = 'ncRNA_class'  # mandatory: /ncRNA_class="TYPE"
 INSDC_FEATURE_REPEAT_REGION = 'repeat_region'
-# /rpt_family="text"
-# /rpt_type=<repeat_type>
-# /rpt_unit_range=<base_range>
-# /rpt_unit_seq="text"
+INSDC_FEATURE_REPEAT_FAMILY = 'rpt_family'  # /rpt_family="text"  # CRISPR
+INSDC_FEATURE_REPEAT_TYPE = 'rpt_Type' # /rpt_type=<repeat_type>  # 'direct'
+INSDC_FEATURE_REPEAT_UNIT_RANGE = 'rpt_unit_range'  # /rpt_unit_range=<base_range>
+INSDC_FEATURE_REPEAT_UNIT_SEQ = 'rpt_unit_seq'  # /rpt_unit_seq="text"
 INSDC_FEATURE_CDS = 'CDS'
 
 ############################################################################
