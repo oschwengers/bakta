@@ -24,7 +24,7 @@ with cog_ids_path.open() as fh:
         if(line[0] != '#'):
             (id, cat, annotation) = line.strip().split('\t')
             cog_id_fclass[id] = {
-                'id': id,
+                'id': id[3:],
                 'cat': cat
             }
 print("\tstored COG ids: %d" % len(cog_id_fclass))
