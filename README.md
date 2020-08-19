@@ -9,14 +9,18 @@
 # Bakta: comprehensive annotation of bacterial genomes.
 
 ## Contents
--   [Description](#description)
--   [Input/Output](#inputoutput)
--   [Installation](#installation)
--   [Usage](#usage)
--   [Examples](#examples)
--   [Database](#database)
--   [Dependencies](#dependencies)
--   [Citation](#citation)
+- [Description](#description)
+- [Input/Output](#inputoutput)
+- [Annotation workflow](#annoation_workflow)
+- [Installation](#installation)
+  - [Bioconda](#bioconda)
+  - [GitHub](#github)
+  - [Pip](#pip)
+- [Usage](#usage)
+- [Examples](#examples)
+- [Database](#database)
+- [Dependencies](#dependencies)
+- [Citation](#citation)
 
 ## Description
 **TL;DR**
@@ -45,6 +49,18 @@ Bakta can be installed/used in 3 different ways.
 In all cases, the custom database must be downloaded which we provide for download:
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3349651.svg)](https://doi.org/10.5281/zenodo.3349651)
 
+### BioConda
+1.  install Bakta via Conda
+2.  download & extract the database
+
+Example:
+```
+$ conda install -c conda-forge -c bioconda -c defaults bakta
+$ wget https://zenodo.org/record/3358926/files/db.tar.gz
+$ tar -xzf db.tar.gz
+$ rm db.tar.gz
+$ bakta --db ./db genome.fasta
+```
 
 ### GitHub
 1.  clone the the repository
@@ -52,24 +68,11 @@ In all cases, the custom database must be downloaded which we provide for downlo
 
 Example:
 ```
-$ git clone git@github.com:oschwengers/bacanno.git
+$ git clone git@github.com:oschwengers/bakta.git
 $ wget <XYZ>/db.tar.gz
 $ tar -xzf db.tar.gz
 $ rm db.tar.gz
-$ bacanno/bin/bacanno --db ./db genome.fasta
-```
-
-### Conda
-1.  install Bakta via Conda
-2.  download & extract the database
-
-Example:
-```
-$ conda install -c conda-forge -c bioconda -c defaults bacanno
-$ wget https://zenodo.org/record/3358926/files/db.tar.gz
-$ tar -xzf db.tar.gz
-$ rm db.tar.gz
-$ bacanno --db ./db genome.fasta
+$ bakta/bin/bakta --db ./db genome.fasta
 ```
 
 ### Pip
@@ -79,24 +82,66 @@ $ bacanno --db ./db genome.fasta
 
 Bakta/database (1./2.):
 ```
-$ pip3 install cb-bacanno
+$ pip3 install bakta
 $ wget https://zenodo.org/record/3358926/files/db.tar.gz
 $ tar -xzf db.tar.gz
 $ rm db.tar.gz
-$ bacanno --db ./db genome.fasta
+$ bakta --db ./db genome.fasta
 ```
 
 3rd party dependencies on Ubuntu (3.):
 ```
-$ sudo apt install ncbi-blast+ prodigal infernal hmmer
-$ wget http://www.bi.cs.titech.ac.jp/ghostz/releases/ghostz-1.0.2.tar.gz
-$ tar -xzf ghostz-1.0.2.tar.gz
-$ cd ghostz-1.0.2/
-$ make
-$ sudo cp ghostz /usr/bin/
+$ sudo apt install ncbi-blast+ prodigal infernal hmmer diamond-aligner
 ```
 If there are any issues compiling ghostz, please make sure you have everything
 correctly setup, e.g. `$ sudo apt install build-essential`.
+
+## Annotation workflow
+### RNA
+1.  tRNA: tRNAscan-SE 2.0
+2.  tmRNA: Aragorn
+3.  rRNA: Infernal vs. Rfam rRNA covariance models
+4.  ncRNA: Infernal vs. Rfam ncRNA covariance models
+5.  CDS: Prodigal
+        a) UPS vs. UniRef100
+        b) PSC vs. UniRef90
+6.  sORFs: UPS vs. UniRef100
+
+### Coding sequences
+The structural annotation is conducted via Prodigal and is complemented by a
+custom detection of short open reading freames (**sORF**) smaller than 30 aa.
+
+CDS detected via Prodigal:
+1. Lookup of unique protein sequence (**UPS**) via **MD5** hashes.
+2. Alignment via Diamond vs. UniProt's UniRef90 based protein sequence clusters (**PSC**).
+
+sORFs:
+1. Strict filtering by overlaps with other detected features.
+2. Lookup of unique protein sequence (**UPS**) via **MD5** hashes.
+Only **sORF** which are detected by their identity (100% coverage & 100% sequence identity)
+will be included in the annotation.
+
+
+## Database
+Bakta provides and depends on a custom database based on:
+- UniProt UniRef100
+- UniProt UniRef90
+which is implemented in a compact SQLite database for the sake of performance.
+
+This db has been comprehensively annotated on a compute cluster integrating
+annotations & database cross references (db xrefs) from:
+- NCBI non-redundant proteins (exact matches)
+- NCBI COG db (80% coverage & 90% identity)
+- GO
+- E.C.
+- NCBI AMRFinderPlus (exact matches)
+- ISFinder db (90% coverage & 99% identity)
+
+This obligatory database can be downloaded here:
+(zipped x.y Gb, unzipped x.y Gb)
+[![DOI](https://zenodo.org/badge/DOI/<DOI>.svg)](https://doi.org/<DOI>)
+-   [<DB_URL>](<DB_URL>)
+
 
 ## Usage
 Usage:
@@ -107,57 +152,38 @@ Usage:
 ## Examples
 Simple:
 ```
-$ bacanno -db ~/db genome.fasta
+$ bakta -db ~/db genome.fasta
 ```
 
 Expert: writing results to `results` directory with verbose output using 8 threads:
 ```
-$ bacanno -db ~/db --output results/ --verbose --threads 8 genome.fasta
+$ bakta -db ~/db --output results/ --verbose --threads 8 genome.fasta
 ```
-
-## Database
-Bakta depends on a custom database based on:
--   UniProt UniRef100
--   UniProt UniRef90
-
-comprising annotations from:
--   NCBI non-redundant proteins
--   NCBI RefSeq
--   NCBI AMRFinderPlus
--   COG
--   GO
--   E.C.
--   ISFinder db
-
-This database can be downloaded here:
-(zipped x.y Gb, unzipped x.y Gb)
-[![DOI](https://zenodo.org/badge/DOI/<DOI>.svg)](https://doi.org/<DOI>)
--   [<DB_URL>](<DB_URL>)
 
 ## Dependencies
 Bakta was developed and tested in Python 3.5 and depends on BioPython (>=1.71).
 
 Additionally, it depends on the following 3rd party executables:
--   Prodigal (2.6.3) <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2848648> <https://github.com/hyattpd/Prodigal>
--   Ghostz (1.0.2) <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4393512> <http://www.bi.cs.titech.ac.jp/ghostz>
--   Blast+ (2.7.1) <https://www.ncbi.nlm.nih.gov/pubmed/2231712> <https://blast.ncbi.nlm.nih.gov>
--   HMMER (3.2.1) <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3695513/> <http://hmmer.org/>
--   INFERNAL (1.1.2) <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3810854> <http://eddylab.org/infernal>
+-   Prodigal (2.6.3) <https://dx.doi.org/10.1186%2F1471-2105-11-119> <https://github.com/hyattpd/Prodigal>
+-   Diamond (2.0.2) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
+-   Blast+ (2.7.1) <https://doi.org/10.1016/s0022-2836(05)80360-2> <https://blast.ncbi.nlm.nih.gov>
+-   HMMER (3.2.1) <https://dx.doi.org/10.1093%2Fnar%2Fgkt263> <http://hmmer.org/>
+-   INFERNAL (1.1.2) <https://dx.doi.org/10.1093%2Fbioinformatics%2Fbtt509> <http://eddylab.org/infernal>
 
 ## Citation
 A manuscript is in preparation... stay tuned!
 To temporarily cite our work, please transitionally refer to:
-> Schwengers O., Goesmann A. (2019) Bakta: comprehensive annotation of bacterial genomes. GitHub https://github.com/oschwengers/bacanno
+> Schwengers O., Goesmann A. (2019) Bakta: comprehensive annotation of bacterial genomes. GitHub https://github.com/oschwengers/bakta
 
 As Bakta takes advantage of ISFinder database, please also cite:
 > <ISFinder_citation>
 
 ## Issues
 If you run into any issues with Bakta, we'd be happy to hear about it!
-Please, start the pipeline with `-v` (verbose) and do not hesitate
+Please, execute bakta in verbose mode (`-v`) and do not hesitate
 to file an issue including as much of the following as possible:
--   a detailed description of the issue
--   the bacanno cmd line output
--   the `<prefix>.json` file if possible
--   if possible a reproducible example of the issue with an input file that you can share
-(helps us identify whether the issue is specific to a particular computer, operating system, and/or dataset).
+-  a detailed description of the issue
+-  command line output
+-  log file (`<prefix>.log`)
+-  result file (`<prefix>.json`) _if possible_
+-  a reproducible example of the issue with an input file that you can share _if possible_
