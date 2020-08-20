@@ -2,8 +2,8 @@
 ############################################################################
 # ORF prediction setttings
 ############################################################################
-MIN_ORF_LENGTH = 7  # smallest non-fragmentated protein found in UniProtKB/Swiss-Prot
-MAX_ORF_LENGTH = 30  # smallest ORF length detected by Prodigal
+MIN_SORF_LENGTH = 7  # smallest non-fragmentated protein found in UniProtKB/Swiss-Prot
+MAX_SORF_LENGTH = 30  # smallest ORF length detected by Prodigal
 
 
 ############################################################################
