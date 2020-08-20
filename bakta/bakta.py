@@ -6,7 +6,10 @@ import shutil
 import bakta
 import bakta.constants as bc
 import bakta.config as cfg
-import bakta.io as io
+import bakta.io.fasta
+import bakta.io.gff
+import bakta.io.embl
+import bakta.io.genbank
 import bakta.utils as bu
 import bakta.predictions as bp
 import bakta.ups as ups
@@ -58,7 +61,7 @@ def main(args):
     ############################################################################
     print('parse genome...')
     try:
-        contigs, discarded_contigs = io.import_contigs(cfg.genome_path, cfg.min_contig_length)
+        contigs, discarded_contigs = fasta.import_contigs(cfg.genome_path, cfg.min_contig_length)
     except:
         log.error('wrong genome file format!', exc_info=True)
         sys.exit('ERROR: wrong genome file format!')
@@ -68,7 +71,7 @@ def main(args):
         log.warning('no valid contigs!')
         sys.exit('Error: input file contains no valid contigs.')
     contigs_path = cfg.tmp_path.joinpath('contigs.fna')
-    io.export_contigs(contigs, contigs_path)
+    fasta.export_contigs(contigs, contigs_path)
     data = {
         'genome_size': sum(map(lambda k: k['length'], contigs)),
         'contigs': contigs
@@ -209,25 +212,26 @@ def main(args):
 
     prefix = cfg.genome_path.stem if cfg.prefix is None else cfg.prefix
     json_path = cfg.output_path.joinpath("%s.json" % prefix)
-    io.write_json(features, json_path)
+    with json_path.open('w') as fh:
+        json.dump(features, fh, sort_keys=True, indent=4)
 
     if(cfg.gff3):
         print('write GFF3 output...')
         log.debug('write GFF3 output')
         gff3_path = cfg.output_path.resolve("%s.gff3" % prefix)
-        io.write_gff3(features, gff3_path)
+        gff.write_gff3(features, gff3_path)
 
     if(cfg.genbank):
         print('write GenBank output...')
         log.debug('write GenBank output')
         genbank_path = cfg.output_path.resolve("%s.gbff" % prefix)
-        io.write_genbank(features, genbank_path)
+        genbank.write_genbank(features, genbank_path)
 
     if(cfg.embl):
         print('write EMBL output...')
         log.debug('write EMBL output')
         embl_path = cfg.output_path.resolve("%s.embl" % prefix)
-        io.write_embl(features, embl_path)
+        embl.write_embl(features, embl_path)
 
     # remove tmp dir
     shutil.rmtree(str(cfg.tmp_path))

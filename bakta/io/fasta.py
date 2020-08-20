@@ -1,11 +1,10 @@
 
 import logging
-import json
 
 from Bio import SeqIO
 
 
-log = logging.getLogger('io')
+log = logging.getLogger('io:fasta')
 
 
 def import_contigs(contigs_path, min_length):
@@ -41,23 +40,4 @@ def export_contigs(contigs, fasta_path):
             fh.write(">%s\n%s\n" % (c['id'], c['sequence']))
 
 
-def write_json(annotations, json_path):
-    """Export annotations as comprehensive JSON file."""
-    with json_path.open('w') as fh:
-        json.dump(annotations, fh, sort_keys=True, indent=4)
-    return
 
-
-def write_gff3(annotations, gff3_path):
-    """Export annotations in GFF3 format."""
-    return
-
-
-def write_genbank(annotations, genbank_path):
-    """Export annotations in GenBank format."""
-    return
-
-
-def write_embl(annotations, embl_path):
-    """Export annotations in EMBL format."""
-    return
