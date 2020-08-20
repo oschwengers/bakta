@@ -5,6 +5,7 @@ import subprocess as sp
 from Bio import SeqIO
 from Bio.Seq import Seq
 
+import bakta
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.utils as bu
@@ -88,7 +89,6 @@ def predict_t_rnas(data, contigs_path):
                 'start': start,
                 'stop': stop,
                 'strand': strand,
-                'inference': 'tRNAscan-SE',
                 'score': float(score),
                 'pseudo': 'pseudo' in note,
                 'notes': ["tRNA-%s(%s)" % (type, anti_codon)],
@@ -175,7 +175,6 @@ def predict_tm_rnas(data, contigs_path):
                     'stop': stop,
                     'strand': strand,
                     'sequence': seq,
-                    'inference': 'aragorn',
                     'db_xrefs': ['SO:0000584']
                 }
                 tmrnas.append(tmrna)
@@ -249,7 +248,6 @@ def predict_r_rnas(data, contigs_path):
                     'start': int(start),
                     'stop': int(stop),
                     'strand': strand,
-                    'inference': 'infernal',
                     'score': float(score),
                     'evalue': float(evalue),
                     'db_xrefs': db_xrefs
@@ -327,7 +325,6 @@ def predict_nc_rna_genes(data, contigs_path):
                     'start': int(start),
                     'stop': int(stop),
                     'strand': strand,
-                    'inference': 'infernal',
                     'score': float(score),
                     'evalue': float(evalue),
                     'db_xrefs': db_xrefs
@@ -404,7 +401,6 @@ def predict_nc_rna_regions(data, contigs_path):
                     'start': int(start),
                     'stop': int(stop),
                     'strand': strand,
-                    'inference': 'infernal',
                     'score': float(score),
                     'evalue': float(evalue),
                     'db_xrefs': db_xrefs
@@ -472,7 +468,6 @@ def predict_cdss(contigs, filtered_contigs_path):
                     'start': int(start),
                     'stop': int(stop),
                     'strand': strand,
-                    'inference': inference,
                     'tmp_id': cds_id,
                     'start_type': gff_annotations['start_type'],
                     'rbs_motif': gff_annotations['rbs_motif']
@@ -556,7 +551,6 @@ def extract_sorfs(contigs):
                             'stop': dna_stop,
                             'strand': strand,
                             'frame': frame + 1,
-                            'inference': 'bakta',
                             'sequence': sequence,
                             'aa_hash': bu.calc_aa_hash(sequence)
                         }
