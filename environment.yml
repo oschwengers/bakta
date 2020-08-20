@@ -4,8 +4,8 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - prodigal=2.6.3
-  - infernal=1.1.2
-  - blast=2.10.1
   - trnascan-se=2.0.5
+  - aragorn=1.2.38-3
+  - infernal=1.1.2
+  - prodigal=2.6.3
   - diamond=2.0.2
