@@ -263,10 +263,10 @@ def predict_r_rnas(data, contigs_path):
     return rrnas
 
 
-def predict_nc_rnas(data, contigs_path):
-    """Search for non-coding RNA sequences."""
+def predict_nc_rna_genes(data, contigs_path):
+    """Search for non-coding RNA genes."""
 
-    output_path = cfg.tmp_path.joinpath('ncrna.tsv')
+    output_path = cfg.tmp_path.joinpath('ncrna-genes.tsv')
     cmd = [
         'cmsearch',
         '-Z', str(data['genome_size'] // 1000000),
@@ -276,7 +276,7 @@ def predict_nc_rnas(data, contigs_path):
         '--rfam',
         '--cpu', str(cfg.threads),
         '--tblout', str(output_path),
-        str(cfg.db_path.joinpath('ncRNA')),
+        str(cfg.db_path.joinpath('ncRNA-genes')),
         str(contigs_path)
     ]
     proc = sp.run(
@@ -288,9 +288,9 @@ def predict_nc_rnas(data, contigs_path):
         universal_newlines=True
     )
     if(proc.returncode != 0):
-        log.warning('ncRNAs failed! cmscan-error-code=%d', proc.returncode)
+        log.warning('ncRNA genes failed! cmscan-error-code=%d', proc.returncode)
         log.debug(
-            'ncRNAs: cmd=%s, stdout=\'%s\', stderr=\'%s\'',
+            'ncRNA genes: cmd=%s, stdout=\'%s\', stderr=\'%s\'',
             cmd, proc.stdout, proc.stderr
         )
         raise Exception("cmsearch error! error code: %i" % proc.returncode)
@@ -334,10 +334,87 @@ def predict_nc_rnas(data, contigs_path):
                 }
                 ncrnas.append(ncrna)
                 log.debug(
-                    'ncRNA: contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
+                    'ncRNA genes: contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
                     ncrna['contig'], ncrna['gene'], ncrna['start'], ncrna['stop'], ncrna['strand']
                 )
-    log.info('ncRNAs: # %i', len(ncrnas))
+    log.info('ncRNA genes: # %i', len(ncrnas))
+    return ncrnas
+
+
+def predict_nc_rna_regions(data, contigs_path):
+    """Search for non-coding RNA regions."""
+
+    output_path = cfg.tmp_path.joinpath('ncrna-regions.tsv')
+    cmd = [
+        'cmsearch',
+        '-Z', str(data['genome_size'] // 1000000),
+        '--noali',
+        '--cut_tc',
+        '--notrunc',
+        '--rfam',
+        '--cpu', str(cfg.threads),
+        '--tblout', str(output_path),
+        str(cfg.db_path.joinpath('ncRNA-regions')),
+        str(contigs_path)
+    ]
+    proc = sp.run(
+        cmd,
+        cwd=str(cfg.tmp_path),
+        env=cfg.env,
+        stdout=sp.PIPE,
+        stderr=sp.PIPE,
+        universal_newlines=True
+    )
+    if(proc.returncode != 0):
+        log.warning('ncRNA regions failed! cmscan-error-code=%d', proc.returncode)
+        log.debug(
+            'ncRNA regions: cmd=%s, stdout=\'%s\', stderr=\'%s\'',
+            cmd, proc.stdout, proc.stderr
+        )
+        raise Exception("cmsearch error! error code: %i" % proc.returncode)
+
+    rfam2go = {}
+    rfam2go_path = cfg.db_path.joinpath('rfam-go.tsv')
+    with rfam2go_path.open() as fh:
+        for line in fh:
+            (rfam, go) = line.split('\t')
+            if(rfam in rfam2go):
+                rfam2go[rfam].append(go)
+            else:
+                rfam2go[rfam] = [go]
+
+    ncrnas = []
+    with output_path.open() as fh:
+        for line in fh:
+            if(line[0] != '#'):
+                (contig, accession, subject, subject_id, mdl, mdl_from, mdl_to,
+                    start, stop, strand, trunc, passed, gc, bias, score, evalue,
+                    inc, description) = line.strip().split()
+                
+                if(strand == '-'):
+                    (start, stop) = (stop, start)
+                
+                rfam_id = "RFAM:%s" % subject_id
+                db_xrefs = [rfam_id, 'SO:0001263']
+                if(rfam_id in rfam2go):
+                    db_xrefs += rfam2go[rfam_id]
+                ncrna = {
+                    'type': bc.INSDC_FEATURE_NC_RNA,
+                    'contig': contig,
+                    'start': int(start),
+                    'stop': int(stop),
+                    'strand': strand,
+                    'inference': 'infernal',
+                    'score': float(score),
+                    'evalue': float(evalue),
+                    'db_xrefs': db_xrefs
+                }
+                ncrnas.append(ncrna)
+                log.debug(
+                    'ncRNA regions: contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
+                    ncrna['contig'], ncrna['gene'], ncrna['start'], ncrna['stop'], ncrna['strand']
+                )
+    log.info('ncRNA regions: # %i', len(ncrnas))
     return ncrnas
 
 

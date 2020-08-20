@@ -99,12 +99,20 @@ def main(args):
     print("\tfound %i rRNAs" % len(data['r_rnas']))
 
     ############################################################################
-    # ncRNA prediction
+    # ncRNA gene prediction
     ############################################################################
-    print('predict ncRNAs...')
-    log.debug('start ncRNA prediction')
-    data['nc_rnas'] = bp.predict_nc_rnas(data, contigs_path)
-    print("\tfound %i ncRNAs" % len(data['nc_rnas']))
+    print('predict ncRNA genes...')
+    log.debug('start ncRNA gene prediction')
+    data['nc_rna_genes'] = bp.predict_nc_rna_genes(data, contigs_path)
+    print("\tfound %i ncRNA genes" % len(data['nc_rna_genes']))
+
+    ############################################################################
+    # ncRNA region prediction
+    ############################################################################
+    print('predict ncRNA regions...')
+    log.debug('start ncRNA region prediction')
+    data['nc_rna_regions'] = bp.predict_nc_rna_regions(data, contigs_path)
+    print("\tfound %i ncRNA regions" % len(data['nc_rna_regions']))
 
     ############################################################################
     # CRISPR prediction
@@ -168,7 +176,7 @@ def main(args):
     for feature_list in [
             data['t_rnas'],
             data['r_rnas'],
-            data['nc_rnas'],
+            data['nc_rna_genes'],
             # data['crisprs'],
             data['cdss']
         ]:

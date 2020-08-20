@@ -19,17 +19,28 @@ cmpress rRNA
 rm -r Rfam rRNA
 
 
-# download and extract ncRNA covariance models from Rfam
-printf "\n2/X: download ncRNA covariance models from Rfam ...\n"
-mysql --user rfamro --host mysql-rfam-public.ebi.ac.uk --port 4497 --database Rfam < ncRNA.sql > rfam.raw.txt
-tail -n +2 rfam.raw.txt > rfam.txt
+# download and extract ncRNA gene covariance models from Rfam
+printf "\n2/X: download ncRNA gene covariance models from Rfam ...\n"
+mysql --user rfamro --host mysql-rfam-public.ebi.ac.uk --port 4497 --database Rfam < ncRNA-genes.sql > rfam-genes.raw.txt
+tail -n +2 rfam-genes.raw.txt > rfam-genes.txt
 wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
 pigz -d Rfam.cm.gz
-cmfetch -o ncRNA -f Rfam.cm rfam.txt
-cmpress ncRNA
+cmfetch -o ncRNA-genes -f Rfam.cm rfam-genes.txt
+cmpress ncRNA-genes
 wget http://current.geneontology.org/ontology/external2go/rfam2go
 awk -F ' ' '{print $1 "\t" $NF}' rfam2go > rfam-go.tsv
-rm rfam.raw.txt rfam.txt Rfam.cm rfam2go
+rm rfam-genes.raw.txt rfam-genes.txt Rfam.cm rfam2go
+
+
+# download and extract ncRNA regions (cis reg elements) covariance models from Rfam
+printf "\n2/X: download ncRNA region covariance models from Rfam ...\n"
+mysql --user rfamro --host mysql-rfam-public.ebi.ac.uk --port 4497 --database Rfam < ncRNA-regions.sql > rfam-regions.raw.txt
+tail -n +2 rfam-regions.raw.txt > rfam-regions.txt
+wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
+pigz -d Rfam.cm.gz
+cmfetch -o ncRNA-regions -f Rfam.cm rfam-regions.txt
+cmpress ncRNA-regions
+rm rfam-regions.raw.txt rfam-regions.txt Rfam.cm
 
 
 # download NCBI Taxonomy DB
