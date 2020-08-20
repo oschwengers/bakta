@@ -514,7 +514,7 @@ def split_gff_annotation(annotation_string):
     return annotations
 
 
-def extract_orfs(contigs):
+def extract_sorfs(contigs):
     """Predict open reading frames in mem via BioPython."""
 
     orfs = []
@@ -581,7 +581,7 @@ def get_feature_stop(feature):
     return feature['stop'] if feature['strand'] == '+' else feature['start']
 
 
-def overlap_filter_orfs(data, orfs_raw):
+def overlap_filter_sorfs(data, orfs_raw):
     """Filter in-mem ORFs by overlapping CDSs."""
     contig_cdss = {k['id']: [] for k in data['contigs']}
     for cds in data[bc.FEATURE_CDS]:

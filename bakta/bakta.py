@@ -146,12 +146,12 @@ def main(args):
     ############################################################################
     print('predict short open reading frames (sORFs)...')
     log.debug('start sORF prediction')
-    orfs = bp.extract_orfs(data['contigs'])
+    orfs = bp.extract_sorfs(data['contigs'])
     print("\tfound %i potential sORFs" % len(orfs))
 
     print('filter potential sORFs by overlaps...')
     log.debug('start sORF filtering')
-    orfs, discarded_orfs = bp.overlap_filter_orfs(data, orfs)
+    orfs, discarded_orfs = bp.overlap_filter_sorfs(data, orfs)
     print("\tdiscarded %i sORFs, %i remaining" % (len(discarded_orfs), len(orfs)))
 
     orfs_found, orfs_not_found = ups.lookup_upss(orfs)
