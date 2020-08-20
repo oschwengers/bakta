@@ -79,48 +79,48 @@ def main(args):
     ############################################################################
     print('predict tRNAs...')
     log.debug('start tRNA prediction')
-    data['t_rnas'] = bp.predict_t_rnas(data, contigs_path)
-    print("\tfound %i tRNAs" % len(data['t_rnas']))
+    data[bc.FEATURE_T_RNA] = bp.predict_t_rnas(data, contigs_path)
+    print("\tfound %i tRNAs" % len(data[bc.FEATURE_T_RNA]))
 
     ############################################################################
     # tmRNA prediction
     ############################################################################
     print('predict tmRNAs...')
     log.debug('start tmRNA prediction')
-    data['tm_rnas'] = bp.predict_tm_rnas(data, contigs_path)
-    print("\tfound %i tmRNAs" % len(data['tm_rnas']))
+    data[bc.FEATURE_TM_RNA] = bp.predict_tm_rnas(data, contigs_path)
+    print("\tfound %i tmRNAs" % len(data[bc.FEATURE_TM_RNA]))
 
     ############################################################################
     # rRNA prediction
     ############################################################################
     print('predict rRNAs...')
     log.debug('start rRNA prediction')
-    data['r_rnas'] = bp.predict_r_rnas(data, contigs_path)
-    print("\tfound %i rRNAs" % len(data['r_rnas']))
+    data[bc.FEATURE_R_RNA] = bp.predict_r_rnas(data, contigs_path)
+    print("\tfound %i rRNAs" % len(data[bc.FEATURE_R_RNA]))
 
     ############################################################################
     # ncRNA gene prediction
     ############################################################################
     print('predict ncRNA genes...')
     log.debug('start ncRNA gene prediction')
-    data['nc_rna_genes'] = bp.predict_nc_rna_genes(data, contigs_path)
-    print("\tfound %i ncRNA genes" % len(data['nc_rna_genes']))
+    data[bc.FEATURE_NC_RNA_GENE] = bp.predict_nc_rna_genes(data, contigs_path)
+    print("\tfound %i ncRNA genes" % len(data[bc.FEATURE_NC_RNA_GENE]))
 
     ############################################################################
     # ncRNA region prediction
     ############################################################################
     print('predict ncRNA regions...')
     log.debug('start ncRNA region prediction')
-    data['nc_rna_regions'] = bp.predict_nc_rna_regions(data, contigs_path)
-    print("\tfound %i ncRNA regions" % len(data['nc_rna_regions']))
+    data[bc.FEATURE_NC_RNA_REGION] = bp.predict_nc_rna_regions(data, contigs_path)
+    print("\tfound %i ncRNA regions" % len(data[bc.FEATURE_NC_RNA_REGION]))
 
     ############################################################################
     # CRISPR prediction
     ############################################################################
     # print('predict CRISPR cassettes...')
     # log.debug('start CRISPR prediction')
-    # data['crisprs'] = bp.predict_crispr(data, contigs_path)
-    # print("\tfound %i CRISPR cassettes" % len(data['crisprs']))
+    # data[bc.FEATURE_CRISPR] = bp.predict_crispr(data, contigs_path)
+    # print("\tfound %i CRISPR cassettes" % len(data[bc.FEATURE_CRISPR]))
 
     ############################################################################
     # CDS prediction
@@ -130,19 +130,19 @@ def main(args):
     ############################################################################
     print('predict CDSs...')
     log.debug('start CDS prediction')
-    data['cdss'] = bp.predict_cdss(data['contigs'], contigs_path)
-    print("\tfound %i CDSs" % len(data['cdss']))
-    upss_found, cdss_not_found = ups.lookup_upss(data['cdss'])
+    data[bc.FEATURE_CDS] = bp.predict_cdss(data['contigs'], contigs_path)
+    print("\tfound %i CDSs" % len(data[bc.FEATURE_CDS]))
+    upss_found, cdss_not_found = ups.lookup_upss(data[bc.FEATURE_CDS])
     print("\tfound %i UPSs for CDSs" % len(upss_found))
     pscs_found, cdss_not_found = psc.search_pscs(cdss_not_found)
     print("\tfound %i PSCs for CDSs" % len(pscs_found))
     
     ############################################################################
-    # ORF prediction
-    # - in-mem ORF extraction
+    # sORF prediction
+    # - in-mem sORF extraction
     # - overlap filtering (tRNA, rRNA, CDS)
-    # - lookup UPS matches for ORFs
-    # - filter ORFs w/o UPS match
+    # - lookup UPS matches for sORFs
+    # - filter sORFs w/o UPS match
     ############################################################################
     print('predict short open reading frames (sORFs)...')
     log.debug('start sORF prediction')
@@ -157,12 +157,12 @@ def main(args):
     orfs_found, orfs_not_found = ups.lookup_upss(orfs)
     print("\tfound %i UPSs for sORFs, %i discarded" % (len(orfs_found), len(orfs_not_found)))
     for orf in orfs_found:
-        orf['type'] = 'cds'  # change feature type from ORF to CDS
+        orf['type'] = bc.FEATURE_CDS  # change feature type from ORF to CDS
         orf['inference'] = 'UniRef100'
-    data['cdss'] += orfs_found  # add ORFs identified by an UPS to CDSs
+    data[bc.FEATURE_CDS] += orfs_found  # add ORFs identified by an UPS to CDSs
 
     print("lookup PSC annotations for PSCs, UPSs and sORFs...")
-    psc.lookup_pscs(data['cdss'])  # lookup PSC info
+    psc.lookup_pscs(data[bc.FEATURE_CDS])  # lookup PSC info
 
     ############################################################################
     # Create annotations

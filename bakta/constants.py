@@ -48,6 +48,17 @@ DB_PREFIX_PFAM = 'PF'  # https://registry.identifiers.org/registry/pfam
 ############################################################################
 INFERENCE_T_RNA = 'COORDINATES:profile:tRNAscan-SE'
 
+############################################################################
+# Bakta feature tags
+############################################################################
+FEATURE_T_RNA = 'tRNA'
+FEATURE_TM_RNA = 'tmRNA'
+FEATURE_R_RNA = 'rRNA'
+FEATURE_NC_RNA = 'ncRNA'
+FEATURE_CRISPR = 'crispr'
+FEATURE_ORF = 'orf'
+FEATURE_SORF = 'sorf'
+FEATURE_CDS = 'cds'
 
 ############################################################################
 # INSDC feature tags

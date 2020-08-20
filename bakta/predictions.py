@@ -81,7 +81,7 @@ def predict_t_rnas(data, contigs_path):
             }
 
             trna = {
-                'type': bc.INSDC_FEATURE_T_RNA,
+                'type': bc.FEATURE_T_RNA,
                 'gene': "%s_trna" % type,
                 'product': "tRNA-%s" % type,
                 'contig': contig.strip(),
@@ -167,7 +167,7 @@ def predict_tm_rnas(data, contigs_path):
                 if(strand == '-'):
                     seq = Seq(seq).reverse_complement()
                 tmrna = {
-                    'type': bc.INSDC_FEATURE_TM_RNA,
+                    'type': bc.FEATURE_TM_RNA,
                     'gene': 'ssrA',
                     'product': 'transfer-messenger RNA, SsrA',
                     'contig': contig,
@@ -242,7 +242,7 @@ def predict_r_rnas(data, contigs_path):
                     db_xrefs += ['RFAM:RF02541', 'SO:0001001']
 
                 rrna = {
-                    'type': bc.INSDC_FEATURE_R_RNA,
+                    'type': bc.FEATURE_R_RNA,
                     'gene': "%s_rrna" % rrna_tag,
                     'product': "%s ribosomal RNA" % rrna_tag,
                     'contig': contig,
@@ -321,7 +321,7 @@ def predict_nc_rna_genes(data, contigs_path):
                 if(rfam_id in rfam2go):
                     db_xrefs += rfam2go[rfam_id]
                 ncrna = {
-                    'type': bc.INSDC_FEATURE_NC_RNA,
+                    'type': bc.FEATURE_NC_RNA_GENES,
                     'gene': subject,
                     'contig': contig,
                     'start': int(start),
@@ -399,7 +399,7 @@ def predict_nc_rna_regions(data, contigs_path):
                 if(rfam_id in rfam2go):
                     db_xrefs += rfam2go[rfam_id]
                 ncrna = {
-                    'type': bc.INSDC_FEATURE_NC_RNA,
+                    'type': bc.FEATURE_NC_RNA_REGIONS,
                     'contig': contig,
                     'start': int(start),
                     'stop': int(stop),
@@ -550,7 +550,7 @@ def extract_orfs(contigs):
                         assert sequence == test_seq, "seqs not equal! a=%s, b=%s" % (sequence, test_seq)
 
                         orf = {
-                            'type': 'orf',
+                            'type': bc.INSDC_FEATURE_SORF,
                             'contig': contig['id'],
                             'start': dna_start,
                             'stop': dna_stop,
@@ -584,17 +584,17 @@ def get_feature_stop(feature):
 def overlap_filter_orfs(data, orfs_raw):
     """Filter in-mem ORFs by overlapping CDSs."""
     contig_cdss = {k['id']: [] for k in data['contigs']}
-    for cds in data['cdss']:
+    for cds in data[bc.FEATURE_CDS]:
         cdss = contig_cdss[cds['contig']]
         cdss.append(cds)
 
     contig_rrnas = {k['id']: [] for k in data['contigs']}
-    for rrna in data['r_rnas']:
+    for rrna in data[bc.FEATURE_R_RNA]:
         rrnas = contig_rrnas[rrna['contig']]
         rrnas.append(rrna)
 
     contig_trnas = {k['id']: [] for k in data['contigs']}
-    for trna in data['t_rnas']:
+    for trna in data[bc.FEATURE_T_RNA]:
         trnas = contig_trnas[trna['contig']]
         trnas.append(trna)
 
