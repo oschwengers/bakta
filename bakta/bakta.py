@@ -186,6 +186,7 @@ def main(args):
     features_by_contig = {}
     for feature_list in [
             data[bc.FEATURE_T_RNA],
+            data[bc.FEATURE_TM_RNA],
             data[bc.FEATURE_R_RNA],
             data[bc.FEATURE_NC_RNA],
             data[bc.FEATURE_NC_RNA_REGION],
