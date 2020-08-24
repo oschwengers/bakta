@@ -188,6 +188,7 @@ def main(args):
             data[bc.FEATURE_T_RNA],
             data[bc.FEATURE_R_RNA],
             data[bc.FEATURE_NC_RNA],
+            data[bc.FEATURE_NC_RNA_REGION],
             # data['crisprs'],
             data[bc.FEATURE_CDS]
         ]:

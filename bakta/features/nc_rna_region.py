@@ -71,14 +71,15 @@ def predict_nc_rna_regions(data, contigs_path):
                     'start': int(start),
                     'stop': int(stop),
                     'strand': strand,
+                    'product': description,
                     'score': float(score),
                     'evalue': float(evalue),
                     'db_xrefs': db_xrefs
                 }
                 ncrnas.append(ncrna)
                 log.debug(
-                    'ncRNA regions: contig=%s, start=%i, stop=%i, strand=%s',
-                    ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand']
+                    'ncRNA regions: contig=%s, start=%i, stop=%i, strand=%s, product=%s',
+                    ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['product']
                 )
     log.info('ncRNA regions: # %i', len(ncrnas))
     return ncrnas

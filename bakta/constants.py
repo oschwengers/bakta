@@ -1,6 +1,6 @@
 
 ############################################################################
-# ORF prediction setttings
+# sORF prediction setttings
 ############################################################################
 MIN_SORF_LENGTH = 7  # smallest non-fragmentated protein found in UniProtKB/Swiss-Prot
 MAX_SORF_LENGTH = 30  # smallest ORF length detected by Prodigal
@@ -43,10 +43,6 @@ DB_PREFIX_COG = 'COG'  # https://www.ebi.ac.uk/miriam/main/collections/MIR:00000
 DB_PREFIX_IS = 'IS'  # https://www.ebi.ac.uk/miriam/main/collections/MIR:00000173
 DB_PREFIX_PFAM = 'PF'  # https://registry.identifiers.org/registry/pfam
 
-############################################################################
-# Inference tags
-############################################################################
-INFERENCE_T_RNA = 'COORDINATES:profile:tRNAscan-SE'
 
 ############################################################################
 # Bakta feature tags
@@ -55,6 +51,7 @@ FEATURE_T_RNA = 'tRNA'
 FEATURE_TM_RNA = 'tmRNA'
 FEATURE_R_RNA = 'rRNA'
 FEATURE_NC_RNA = 'ncRNA'
+FEATURE_NC_RNA_REGION = 'ncRNA-region'
 FEATURE_CRISPR = 'crispr'
 FEATURE_ORF = 'orf'
 FEATURE_SORF = 'sorf'
@@ -79,4 +76,6 @@ INSDC_FEATURE_CDS = 'CDS'
 ############################################################################
 # Miscellaneous feature tags
 ############################################################################
+
+
 CITATION = 'Schwengers O., Goesmann A. (2020)\nBakta: comprehensive and rapid annotation of bacterial genomes.\nGitHub https://github.com/oschwengers/bakta'

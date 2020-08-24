@@ -67,19 +67,20 @@ def predict_nc_rnas(data, contigs_path):
                     db_xrefs += rfam2go[rfam_id]
                 ncrna = {
                     'type': bc.FEATURE_NC_RNA,
-                    'gene': subject,
                     'contig': contig,
                     'start': int(start),
                     'stop': int(stop),
                     'strand': strand,
+                    'gene': subject,
+                    'product': description,
                     'score': float(score),
                     'evalue': float(evalue),
                     'db_xrefs': db_xrefs
                 }
                 ncrnas.append(ncrna)
                 log.debug(
-                    'ncRNAs: contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
-                    ncrna['contig'], ncrna['gene'], ncrna['start'], ncrna['stop'], ncrna['strand']
+                    'ncRNAs: contig=%s, start=%i, stop=%i, strand=%s, gene=%s',
+                    ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['gene']
                 )
     log.info('ncRNAs: # %i', len(ncrnas))
     return ncrnas
