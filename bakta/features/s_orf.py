@@ -217,8 +217,8 @@ def overlap_filter_sorfs(data, orfs_raw):
                     pass
                 elif(orf['start'] >= nc_rna['start'] and orf['stop'] <= nc_rna['stop']):
                     # ORF completely overlapped by ncRNA
-                    orfs.remove(orf)
-                    discarded_orfs.append(orf)
+                    # ToDo: allow sORF / leader overlap, test other overlaps
+                    pass
                 elif(orf['start'] < nc_rna['stop'] and orf['stop'] > nc_rna['start']):
                     # ORF partially overlapping ncRNA downstream
                     # ToDo: add max overlap threshold
