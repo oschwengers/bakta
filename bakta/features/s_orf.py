@@ -231,3 +231,17 @@ def overlap_filter_sorfs(data, orfs_raw):
 
     log.info('short ORF filter: # valid=%i, # discarded=%i', len(valid_orfs), len(discarded_orfs))
     return valid_orfs, discarded_orfs
+
+
+def mark_hypotheticals(sorfs):
+    for sorf in sorfs:
+        ups = sorf['ups']  # must exist, otherwise filtered before
+        product = ups.get('product', '')
+        if(product == ''):
+            psc = sorf.get('psc', None)
+            if(psc):
+                product = psc.get('product', '')
+                if(product == '' or 'uncharacterized' in product.lower()):
+                    sorf['hypothetical'] = True
+            else:
+                sorf['hypothetical'] = True

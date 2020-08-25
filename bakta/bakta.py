@@ -147,6 +147,9 @@ def main(args):
     print("\tfound %i UPSs for CDSs" % len(upss_found))
     pscs_found, cdss_not_found = psc.search_pscs(cdss_not_found)
     print("\tfound %i PSCs for CDSs" % len(pscs_found))
+    print("lookup PSC annotations for PSCs and UPSs and mark hypotheticals...")
+    psc.lookup_pscs(data[bc.FEATURE_CDS])  # lookup PSC info
+    cds.mark_hypotheticals(data[bc.FEATURE_CDS])  # mark hypotheticals
     
     ############################################################################
     # sORF prediction
@@ -165,15 +168,13 @@ def main(args):
     orfs, discarded_orfs = s_orf.overlap_filter_sorfs(data, orfs)
     print("\tdiscarded %i sORFs, %i remaining" % (len(discarded_orfs), len(orfs)))
 
-    orfs_found, orfs_not_found = ups.lookup_upss(orfs)
-    print("\tfound %i UPSs for sORFs, %i discarded" % (len(orfs_found), len(orfs_not_found)))
-    for orf in orfs_found:
-        orf['type'] = bc.FEATURE_CDS  # change feature type from ORF to CDS
-        orf['inference'] = 'UniRef100'
-    data[bc.FEATURE_CDS] += orfs_found  # add ORFs identified by an UPS to CDSs
+    print('lookup UPSs for sORFs...')
+    data[bc.FEATURE_SORF], orfs_not_found = ups.lookup_upss(orfs)
+    print("\tfound %i UPSs for sORFs, %i discarded" % (len(data[bc.FEATURE_SORF]), len(orfs_not_found)))
 
-    print("lookup PSC annotations for PSCs, UPSs and sORFs...")
-    psc.lookup_pscs(data[bc.FEATURE_CDS])  # lookup PSC info
+    print("lookup PSC annotations for sORFs...")
+    psc.lookup_pscs(data[bc.FEATURE_SORF])  # lookup PSC info
+    s_orf.mark_hypotheticals(data[bc.FEATURE_SORF])  # mark hypotheticals
 
     ############################################################################
     # Create annotations
@@ -191,7 +192,8 @@ def main(args):
             data[bc.FEATURE_NC_RNA],
             data[bc.FEATURE_NC_RNA_REGION],
             # data['crisprs'],
-            data[bc.FEATURE_CDS]
+            data[bc.FEATURE_CDS],
+            data[bc.FEATURE_SORF]
         ]:
         for feature in feature_list:
             contig_features = features_by_contig.get(feature['contig'])
@@ -229,7 +231,7 @@ def main(args):
         print('write GFF3 output...')
         log.debug('write GFF3 output')
         gff3_path = cfg.output_path.resolve("%s.gff3" % prefix)
-        gff.write_gff3(features, gff3_path)
+        gff.write_gff3(contigs, features_by_contig, gff3_path)
 
     if(cfg.genbank):
         print('write GenBank output...')

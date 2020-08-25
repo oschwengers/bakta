@@ -92,23 +92,22 @@ def search_pscs(cdss):
     return pscs_found, pscs_not_found
 
 
-def lookup_pscs(cdss):
+def lookup_pscs(features):
     """Lookup PCS information"""
     try:
         with sqlite3.connect("file:%s?mode=ro" % str(cfg.db_path.joinpath('bakta.db')), uri=True) as conn:
             conn.row_factory = sqlite3.Row
             c = conn.cursor()
-            for cds in cdss:
-                if('psc' in cds):
-                    uniref90_id = cds['psc'].get(DB_PSC_COL_UNIREF90, None)
-                elif('ups' in cds):
-                    uniref90_id = cds['ups'].get(DB_PSC_COL_UNIREF90, None)
+            for feature in features:
+                if('psc' in feature):
+                    uniref90_id = feature['psc'].get(DB_PSC_COL_UNIREF90, None)
+                elif('ups' in feature):
+                    uniref90_id = feature['ups'].get(DB_PSC_COL_UNIREF90, None)
                 else:
-                    cds['hypothetical'] = True
-                    continue  # skip PSC lookup for this cds object
+                    continue  # skip PSC lookup for this feature object
 
                 if(not uniref90_id):
-                    continue  # skip PSC lookup for this cds without a valid UniRef90 id
+                    continue  # skip PSC lookup for this feature without a valid UniRef90 id
                 if(bc.DB_PREFIX_UNIREF_90 in uniref90_id):
                     uniref90_id = uniref90_id[9:]  # remove 'UniRef90_' prefix
                 
@@ -116,16 +115,16 @@ def lookup_pscs(cdss):
                 rec = c.fetchone()
                 if(rec is not None):
                     psc = parse_psc_annotation(rec)
-                    cds['psc'] = psc
+                    feature['psc'] = psc
                     
-                    if('db_xrefs' not in cds):
-                        cds['db_xrefs'] = []
-                    db_xrefs = cds['db_xrefs']
+                    if('db_xrefs' not in feature):
+                        feature['db_xrefs'] = []
+                    db_xrefs = feature['db_xrefs']
                     db_xrefs.append('SO:0001217')
 
                     log.debug(
                         'PSC: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, gene=%s, product=%s',
-                        cds['contig'], cds['start'], cds['stop'], cds['strand'], psc.get(DB_PSC_COL_UNIREF90, ''), psc.get(DB_PSC_COL_EC, ''), psc.get(DB_PSC_COL_GENE, ''), psc.get(DB_PSC_COL_PRODUCT, '')
+                        feature['contig'], feature['start'], feature['stop'], feature['strand'], psc.get(DB_PSC_COL_UNIREF90, ''), psc.get(DB_PSC_COL_EC, ''), psc.get(DB_PSC_COL_GENE, ''), psc.get(DB_PSC_COL_PRODUCT, '')
                     )
                 else:
                     log.debug('no PSC found! uniref90_id=%s', uniref90_id)
@@ -147,8 +146,8 @@ def parse_psc_annotation(rec):
         psc[DB_PSC_COL_PRODUCT] = rec[DB_PSC_COL_PRODUCT]
     if(rec[DB_PSC_COL_EC]):
         psc[DB_PSC_COL_EC] = rec[DB_PSC_COL_EC]
-    if(rec[DB_PSC_COL_UNIREF50]):
-        psc[DB_PSC_COL_UNIREF50] = bc.DB_PREFIX_UNIREF_50 + rec[DB_PSC_COL_UNIREF50]
+    # if(rec[DB_PSC_COL_UNIREF50]):
+        # psc[DB_PSC_COL_UNIREF50] = bc.DB_PREFIX_UNIREF_50 + rec[DB_PSC_COL_UNIREF50]
     if(rec[DB_PSC_COL_COG_ID]):
         psc[DB_PSC_COL_COG_ID] = bc.DB_PREFIX_COG + rec[DB_PSC_COL_COG_ID]
     if(rec[DB_PSC_COL_COG_CAT]):
