@@ -125,7 +125,23 @@ def setup(args):
     log.info('plasmid=%s', plasmid)
 
     # annotation configurations
-    global keep_contig_names, locus, locus_tag, gram, complete
+    global prodigal_tf, keep_contig_names, locus, locus_tag, gram, complete
+    prodigal_tf = args.prodigal_tf if args.prodigal_tf != '' else None
+    if prodigal_tf is not None:
+        try:
+            prodigal_tf_path = Path(args.prodigal_tf).resolve()
+            if(not os.access(str(prodigal_tf_path), os.R_OK)):
+                log.error('prodigal training file not readable! path=%s', prodigal_tf_path)
+                sys.exit('ERROR: Prodigal training file (%s) not readable!' % prodigal_tf_path)
+            if(genome_path.stat().st_size == 0):
+                log.error('empty prodigal training file! path=%s', prodigal_tf_path)
+                sys.exit('ERROR: Prodigal training file (%s) is empty!' % prodigal_tf_path)
+            prodigal_tf = prodigal_tf_path
+        except:
+            log.error('provided prodigal training file not valid! path=%s', args.prodigal_tf)
+            sys.exit('ERROR: Prodigal training file (%s) not valid!' % args.prodigal_tf)
+    log.info('prodigal_tf=%s', prodigal_tf)
+    
     keep_contig_names = args.keep_contig_names
     log.info('keep_contig_names=%s', keep_contig_names)
     locus = args.locus if args.locus != '' else None

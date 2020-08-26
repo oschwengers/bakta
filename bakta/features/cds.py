@@ -25,7 +25,9 @@ def predict_cdss(contigs, filtered_contigs_path):
     ]
     if(cfg.complete == False):
         cmd.append('-c')  # closed ends
-    
+    if(cfg.prodigal_tf):
+        cmd.append('-t')  # use supplied prodigal training file
+        cmd.append(str(cfg.prodigal_tf))
     proc = sp.run(
         cmd,
         cwd=str(cfg.tmp_path),

@@ -57,7 +57,8 @@ def main(args):
             ('output path', cfg.output_path),
             ('tmp path', cfg.tmp_path),
             ('# threads', cfg.threads),
-            ('complete replicons', cfg.complete)
+            ('complete replicons', cfg.complete),
+            ('prodigal training file', cfg.prodigal_tf)
         ]:
             print("\t%s: %s" % (label, str(value)))
 
