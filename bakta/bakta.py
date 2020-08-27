@@ -232,6 +232,12 @@ def main(args):
     with json_path.open('w') as fh:
         json.dump(features, fh, sort_keys=True, indent=4)
 
+    if(cfg.tsv):
+        print('write TSV output...')
+        log.debug('write tsv output')
+        tsv_path = cfg.output_path.joinpath("%s.tsv" % prefix)
+        tsv.write_tsv(contigs, features_by_contig, tsv_path)
+
     if(cfg.gff3):
         print('write GFF3 output...')
         log.debug('write GFF3 output')

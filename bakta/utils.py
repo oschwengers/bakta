@@ -26,6 +26,7 @@ def parse_arguments():
     arg_group_io.add_argument('--min-contig-length', '-m', action='store', type=int, default=1, dest='min_contig_length', help='Minimum contig size (default = 1)')
     arg_group_io.add_argument('--prefix', '-p', action='store', default='', help='Prefix for output files')
     arg_group_io.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
+    arg_group_io.add_argument('--tsv', action='store_true', help='Write TSV annotation file')
     arg_group_io.add_argument('--gff3', action='store_true', help='Write GFF3 annotation file')
     arg_group_io.add_argument('--genbank', action='store_true', help='Write GenBank annotation file')
     arg_group_io.add_argument('--embl', action='store_true', help='Write EMBL annotation file')

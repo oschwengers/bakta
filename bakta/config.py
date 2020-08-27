@@ -99,13 +99,15 @@ def setup(args):
     log.info('output-path=%s', output_path)
 
     # input / output configurations
-    global min_contig_length, output, prefix, gff3, genbank, embl
+    global min_contig_length, output, prefix, tsv, gff3, genbank, embl
     min_contig_length = args.min_contig_length
     log.info('min_contig_length=%s', min_contig_length)
     prefix = args.prefix if args.prefix != '' else None
     log.info('prefix=%s', prefix)
     output = args.output
     log.info('output=%s', output)
+    tsv = args.tsv
+    log.info('tsv=%s', tsv)
     gff3 = args.gff3
     log.info('gff3=%s', gff3)
     genbank = args.genbank
