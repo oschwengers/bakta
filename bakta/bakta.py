@@ -211,12 +211,13 @@ def main(args):
     features = []
     for contig in contigs:
         contig_features = features_by_contig[contig['id']]
-        features.extend(sorted(contig_features, key=lambda k: k['start']))
+        contig_features.sort(key=lambda k: k['start'])
+        features.extend(contig_features)
 
     locus_tag_nr = 5
     locus_prefix = bu.create_locus_tag_prefix(contigs)
     for feature in features:
-        locus_tag = "%s%04i" % (locus_prefix, locus_tag_nr)
+        locus_tag = "%s%05d" % (locus_prefix, locus_tag_nr)
         feature['locus'] = locus_tag
         locus_tag_nr += 5
 
