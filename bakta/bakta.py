@@ -8,9 +8,11 @@ import bakta
 import bakta.constants as bc
 import bakta.config as cfg
 import bakta.io.fasta as fasta
-import bakta.io.gff
-import bakta.io.embl
-import bakta.io.genbank
+import bakta.io.tsv as tsv
+import bakta.io.gff as gff
+import bakta.io.embl as embl
+import bakta.io.genbank as genbank
+import bakta.features.annotation as anno
 import bakta.features.t_rna as t_rna
 import bakta.features.tm_rna as tm_rna
 import bakta.features.r_rna as r_rna
@@ -241,19 +243,19 @@ def main(args):
     if(cfg.gff3):
         print('write GFF3 output...')
         log.debug('write GFF3 output')
-        gff3_path = cfg.output_path.resolve("%s.gff3" % prefix)
+        gff3_path = cfg.output_path.joinpath("%s.gff3" % prefix)
         gff.write_gff3(contigs, features_by_contig, gff3_path)
 
     if(cfg.genbank):
         print('write GenBank output...')
         log.debug('write GenBank output')
-        genbank_path = cfg.output_path.resolve("%s.gbff" % prefix)
+        genbank_path = cfg.output_path.joinpath("%s.gbff" % prefix)
         genbank.write_genbank(features, genbank_path)
 
     if(cfg.embl):
         print('write EMBL output...')
         log.debug('write EMBL output')
-        embl_path = cfg.output_path.resolve("%s.embl" % prefix)
+        embl_path = cfg.output_path.joinpath("%s.embl" % prefix)
         embl.write_embl(features, embl_path)
 
     # remove tmp dir
