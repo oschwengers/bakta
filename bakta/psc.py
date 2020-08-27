@@ -77,7 +77,7 @@ def search_pscs(cdss):
                     'identity': identity
                 }
                 log.debug(
-                    'PSC: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, UniRef90=%s',
+                    'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, UniRef90=%s',
                      cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['sequence']), query_cov, identity, cluster_id
                 )
 
@@ -136,11 +136,11 @@ def lookup_pscs(features):
                         db_xrefs.append('%s:%s' % (bc.DB_XREF_EC, psc[DB_PSC_COL_EC]))
 
                     log.debug(
-                        'PSC: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, gene=%s, product=%s',
+                        'lookup: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, gene=%s, product=%s',
                         feature['contig'], feature['start'], feature['stop'], feature['strand'], psc.get(DB_PSC_COL_UNIREF90, ''), psc.get(DB_PSC_COL_EC, ''), psc.get(DB_PSC_COL_GENE, ''), psc.get(DB_PSC_COL_PRODUCT, '')
                     )
                 else:
-                    log.debug('no PSC found! uniref90_id=%s', uniref90_id)
+                    log.debug('lookup failed! uniref90_id=%s', uniref90_id)
 
     except Exception as ex:
         log.exception('Could not read PSCs from db!', ex)

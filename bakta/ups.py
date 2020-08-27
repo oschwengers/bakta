@@ -53,7 +53,7 @@ def lookup_upss(features):
                     features_found.append(feature)
 
                     log.debug(
-                        'UPS: contig=%s, start=%i, stop=%i, aa-length=%i, strand=%s, gene=%s, UniRef100=%s, NCBI NRP=%s, UniRef90=%s',
+                        'lookup: contig=%s, start=%i, stop=%i, aa-length=%i, strand=%s, gene=%s, UniRef100=%s, NCBI NRP=%s, UniRef90=%s',
                          feature['contig'], feature['start'], feature['stop'], len(feature['sequence']), feature['strand'], ups.get(DB_UPS_COL_GENE, ''), ups.get(DB_UPS_COL_UNIREF100, ''), ups.get(DB_UPS_COL_REFSEQ_NRP, ''), ups.get(DB_UPS_COL_UNIREF90, '')
                     )
                 else:
