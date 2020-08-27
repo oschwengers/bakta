@@ -87,7 +87,6 @@ def search_pscs(cdss):
         if('psc' in cds):
             pscs_found.append(cds)
         else:
-            cds['hypothetical'] = True
             pscs_not_found.append(cds)
     log.info('PSCs: # %i', len(pscs_found))
     return pscs_found, pscs_not_found
