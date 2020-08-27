@@ -5,6 +5,7 @@ import sqlite3
 
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.utils as bu
 
 ############################################################################
 # PSC DB columns
@@ -121,6 +122,18 @@ def lookup_pscs(features):
                         feature['db_xrefs'] = []
                     db_xrefs = feature['db_xrefs']
                     db_xrefs.append('SO:0001217')
+                    if(bu.has_annotation(psc, DB_PSC_COL_UNIREF90)):
+                        db_xrefs.append('%s:%s' % (bc.DB_XREF_UNIREF_90, psc[DB_PSC_COL_UNIREF90]))
+                    if(bu.has_annotation(psc, DB_PSC_COL_UNIREF50)):
+                        db_xrefs.append('%s:%s' % (bc.DB_XREF_UNIREF_50, psc[DB_PSC_COL_UNIREF50]))
+                    if(bu.has_annotation(psc, DB_PSC_COL_COG_ID)):
+                        db_xrefs.append('%s:%s' % (bc.DB_XREF_COG, psc[DB_PSC_COL_COG_ID]))
+                    if(bu.has_annotation(psc, DB_PSC_COL_COG_CAT)):
+                        db_xrefs.append('%s:%s' % (bc.DB_XREF_COG, psc[DB_PSC_COL_COG_CAT]))
+                    if(bu.has_annotation(psc, DB_PSC_COL_GO)):
+                        db_xrefs.append('%s:%s' % (bc.DB_XREF_GO, psc[DB_PSC_COL_GO]))
+                    if(bu.has_annotation(psc, DB_PSC_COL_EC)):
+                        db_xrefs.append('%s:%s' % (bc.DB_XREF_EC, psc[DB_PSC_COL_EC]))
 
                     log.debug(
                         'PSC: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, gene=%s, product=%s',
@@ -158,6 +171,6 @@ def parse_psc_annotation(rec):
             if(go_id is not ''):
                 go_ids.append(bc.DB_PREFIX_GO + go_id)
         if(len(go_ids) != 0):
-            psc[DB_PSC_COL_GO] = go_
+            psc[DB_PSC_COL_GO] = go_ids
     
     return psc

@@ -151,6 +151,8 @@ def main(args):
     print("lookup PSC annotations for PSCs and UPSs and mark hypotheticals...")
     psc.lookup_pscs(data[bc.FEATURE_CDS])  # lookup PSC info
     cds.mark_hypotheticals(data[bc.FEATURE_CDS])  # mark hypotheticals
+    for feat in data[bc.FEATURE_CDS]:
+        anno.combine_ups_psc_annotation(feat) # combine UPS and PSC annotations
     
     ############################################################################
     # sORF prediction
@@ -176,6 +178,8 @@ def main(args):
     print("lookup PSC annotations for sORFs...")
     psc.lookup_pscs(data[bc.FEATURE_SORF])  # lookup PSC info
     s_orf.mark_hypotheticals(data[bc.FEATURE_SORF])  # mark hypotheticals
+    for feat in data[bc.FEATURE_SORF]:
+        anno.combine_ups_psc_annotation(feat) # combine UPS and PSC annotations
 
     ############################################################################
     # Create annotations
