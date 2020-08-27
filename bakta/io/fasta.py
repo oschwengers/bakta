@@ -6,6 +6,7 @@ from Bio import SeqIO
 
 log = logging.getLogger('io:fasta')
 
+FASTA_LINE_WRAPPING = 60
 
 def import_contigs(contigs_path, min_length):
     """Apply min-length filters and rename contig headers."""
@@ -40,4 +41,14 @@ def export_contigs(contigs, fasta_path):
             fh.write(">%s\n%s\n" % (c['id'], c['sequence']))
 
 
-
+def format_fasta(contig, line_wrapping=False):
+    lines = '>%s\n' % contig['id']
+    if line_wrapping:
+        seq = contig['sequence']
+        while len(seq) > FASTA_LINE_WRAPPING:
+            lines += seq[:FASTA_LINE_WRAPPING] + '\n'
+            seq = seq[FASTA_LINE_WRAPPING:]
+        lines += seq + '\n'
+    else:
+        lines += contig['sequence'] + '\n'
+    return lines
