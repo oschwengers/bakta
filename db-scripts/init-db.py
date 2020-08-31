@@ -31,7 +31,9 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
         ncbi_nrp_id TEXT,
         uniprotkb_acc TEXT,
         gene TEXT,
-        product TEXT
+        product TEXT,
+        ec_id TEXT,
+        go_ids TEXT
         ) WITHOUT ROWID;''')
     conn.commit()
     print('\t...done')
