@@ -158,8 +158,8 @@ def parse_psc_annotation(rec):
         psc[DB_PSC_COL_PRODUCT] = rec[DB_PSC_COL_PRODUCT]
     if(rec[DB_PSC_COL_EC]):
         psc[DB_PSC_COL_EC] = rec[DB_PSC_COL_EC]
-    # if(rec[DB_PSC_COL_UNIREF50]):
-        # psc[DB_PSC_COL_UNIREF50] = bc.DB_PREFIX_UNIREF_50 + rec[DB_PSC_COL_UNIREF50]
+    if(rec[DB_PSC_COL_UNIREF50]):
+        psc[DB_PSC_COL_UNIREF50] = bc.DB_PREFIX_UNIREF_50 + rec[DB_PSC_COL_UNIREF50]
     if(rec[DB_PSC_COL_COG_ID]):
         psc[DB_PSC_COL_COG_ID] = bc.DB_PREFIX_COG + rec[DB_PSC_COL_COG_ID]
     if(rec[DB_PSC_COL_COG_CAT]):
