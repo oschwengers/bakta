@@ -16,7 +16,7 @@ args = parser.parse_args()
 db_path = Path(args.db).resolve()
 nrp_path = Path(args.amr).resolve()
 
-print('lookup UPS by NRP id W(P_*) and update gene/product annotations...')
+print('lookup UPS by NRP id (WP_*) and update gene/product annotations...')
 nrps_processed = 0
 ups_updated = 0
 with nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
@@ -31,33 +31,24 @@ with nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='EXCLU
 
     for line in fh:
         nrps_processed += 1
-        (allele, gene_family, whitelisted_taxa, product_name, scope, type,
+        (allele, gene_family, whitelisted_taxa, product_name, scope, amr_type,
             subtype, clazz, subclazz, refseq_protein_accession,
             refseq_nucleotide_accession, curated_refseq_start,
             genbank_protein_accession, genbank_nucleotide_accession,
             genbank_strand_orientation, genbank_cds_start, genbank_cds_stop,
-            pubmed_reference, blacklisted_taxa, db_version) = line.strip().split('\t')
+            pubmed_reference, blacklisted_taxa, db_version) = line.split('\t')
         try:
-            if(refseq_protein_accession != ''):
+            if(refseq_protein_accession != '' and 'WP_' in refseq_protein_accession):
                 if(scope == 'core'):
-                    if(type == 'AMR' and subtype == 'AMR'):
+                    if(amr_type == 'AMR' and subtype == 'AMR'):
                         if(allele == ''):
-                            print("UPDATE ups SET product=%s WHERE uniref90_id=%s" % (product_name, refseq_protein_accession[3:]))
-                            # conn.execute('UPDATE ups SET product=? WHERE uniref90_id=?', (product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
+                            # print("UPDATE ups SET product=%s WHERE ncbi_nrp_id=%s" % (product_name, refseq_protein_accession[3:]))
+                            conn.execute('UPDATE ups SET product=? WHERE ncbi_nrp_id=?', (product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
                             ups_updated += 1
                         else:
-                            print("UPDATE ups SET gene=%s, product%s?WHERE uniref90_id=%s", (allele, product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
-                            # conn.execute('UPDATE ups SET gene=?, product=? WHERE uniref90_id=?', (allele, product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
+                            # print("UPDATE ups SET gene=%s, product=%s WHERE ncbi_nrp_id=%s" % (allele, product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
+                            conn.execute('UPDATE ups SET gene=?, product=? WHERE ncbi_nrp_id=?', (allele, product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
                             ups_updated += 1
-                    elif(type == 'AMR' and subtype == 'POINT'):
-                        if('ribosomal' not in product_name.lower):
-                            print("UPDATE ups SET gene=%s, product=%s WHERE uniref90_id=%s", (gene_family, product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
-                            # conn.execute('UPDATE ups SET gene=?, product=? WHERE uniref90_id=?', (gene_family, product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
-                            ups_updated += 1
-                    elif(type == 'STRESS'):
-                        print("UPDATE ups SET gene=%s, product=%s WHERE uniref90_id=%s", (gene_family, product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
-                        # conn.execute('UPDATE ups SET gene=?, product=? WHERE uniref90_id=?', (gene_family, product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
-                        ups_updated += 1
 
                 elif(scope == 'plus'):
                     pass
