@@ -19,7 +19,7 @@ gi_cog_mapping_path = Path(args.gi_cog_mapping).resolve()
 
 print('import NCBI COG id / function class information...')
 cog_id_fclass = {}
-with cog_ids_path.open() as fh:
+with cog_ids_path.open(encoding='windows-1252') as fh:
     for line in fh:
         if(line[0] != '#'):
             (id, cat, annotation) = line.strip().split('\t')
