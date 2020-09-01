@@ -53,54 +53,51 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.commit()
 
     with gzip.open(str(xml_path), mode='rt') as fh_xml, fasta_path.open(mode='wt') as fh_fasta:
-        psc_entries = []
         i = 0
         for event, elem in et.iterparse(fh_xml):
             # print(elem)
             if(elem.tag == "{%s}entry" % ns):
                 # print(elem)
                 if('Fragment' not in elem.find("./{%s}name" % ns).text):  # skip protein fragments
-                    tax_property = elem.find("./{%s}property[@type='common taxon ID']" % ns)
-                    if(tax_property is not None):
-                        tax_id = tax_property.attrib['value']
-                        if is_taxon_child(tax_id, '2', taxonomy):
-                            # print("tax-id=%s" % tax_id)
-                            uniref90_id = elem.attrib['id'][9:]  # remove 'UniRef90_' prefix
-                            rep_member = elem.find("./{%s}representativeMember/{%s}dbReference" % (ns, ns))
-                            try:
-                                prot_name = rep_member.find("./{%s}property[@type='protein name']" % ns).attrib['value']
-                            except:
+                    try:
+                        tax_id = elem.find("./{%s}property[@type='common taxon ID']" % ns).attrib['value']
+                    except:
+                        tax_id = 1
+                    rep_member = elem.find("./{%s}representativeMember/{%s}dbReference" % (ns, ns))
+                    try:
+                        rep_member_tax_id = rep_member.find("./{%s}property[@type='NCBI taxonomy']" % ns).attrib['value']
+                    except:
+                        rep_member_tax_id = 1
+                    
+                    if(is_taxon_child(tax_id, '2', taxonomy) or is_taxon_child(rep_member_tax_id, '2', taxonomy)):
+                        uniref90_id = elem.attrib['id'][9:]  # remove 'UniRef90_' prefix
+                        try:
+                            prot_name = rep_member.find("./{%s}property[@type='protein name']" % ns).attrib['value']
+                            if prot_name.lower() == 'hypothetical protein':
                                 prot_name = None
-                            try:
-                                uniref50_id = rep_member.find("./{%s}property[@type='UniRef50 ID']" % ns).attrib['value']
-                                uniref50_id = uniref50_id[9:]  # remove 'UniRef50_' prefix
-                            except:
-                                uniref50_id = None
-                            seq = elem.find("./{%s}representativeMember/{%s}sequence" % (ns, ns)).text.upper()
-                            # cluster = Cluster(uniref90_id, uniref50_id, prot_name)
-                            cluster = (
-                                uniref90_id,
-                                uniref50_id,  # UniRef50
-                                prot_name
-                            )
-                            fh_fasta.write(">%s\n%s\n" % (uniref90_id, seq))
-                            psc_entries.append(cluster)
-                            i += 1
-
-                            if((i % 1000000) == 0):
-                                conn.executemany(
-                                    "INSERT INTO psc (uniref90_id, uniref50_id, product) VALUES (?,?,?)",
-                                    psc_entries
-                                )
-                                conn.commit()
-                                print("\t... %i" % i)
-                                psc_entries = []
+                            elif prot_name.lower() == 'Uncharacterized protein':
+                                prot_name = None
+                        except:
+                            prot_name = None
+                        try:
+                            uniref50_id = rep_member.find("./{%s}property[@type='UniRef50 ID']" % ns).attrib['value']
+                            uniref50_id = uniref50_id[9:]  # remove 'UniRef50_' prefix
+                        except:
+                            uniref50_id = None
+                        seq = elem.find("./{%s}representativeMember/{%s}sequence" % (ns, ns)).text.upper()
+                        psc = (
+                            uniref90_id,
+                            uniref50_id,  # UniRef50
+                            prot_name
+                        )
+                        # fh_fasta.write(">%s\n%s\n" % (uniref90_id, seq))
+                        i += 1
+                        # conn.execute("INSERT INTO psc (uniref90_id, uniref50_id, product) VALUES (?,?,?)", psc)
+                        print("INSERT INTO psc (uniref90_id, uniref50_id, product) VALUES (%s,%s,%s)" % psc)
+                        if((i % 1000000) == 0):
+                            # conn.commit()
+                            print("\t... %i" % i)
                 elem.clear()  # forstall out of memory errors
-    conn.executemany(
-        "INSERT INTO psc (uniref90_id, uniref50_id, product) VALUES (?,?,?)",
-        psc_entries
-    )
-    conn.commit()
-    psc_entries = []
+    # conn.commit()
     print("\tparsed PSC: %d" % i)
 print("\nsuccessfully initialized PSC table!")
