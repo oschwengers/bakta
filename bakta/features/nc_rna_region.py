@@ -14,7 +14,6 @@ def predict_nc_rna_regions(data, contigs_path):
     output_path = cfg.tmp_path.joinpath('ncrna-regions.tsv')
     cmd = [
         'cmsearch',
-        '-Z', str(data['genome_size'] // 1000000),
         '--noali',
         '--cut_tc',
         '--notrunc',
@@ -24,6 +23,9 @@ def predict_nc_rna_regions(data, contigs_path):
         str(cfg.db_path.joinpath('ncRNA-regions')),
         str(contigs_path)
     ]
+    if(data['genome_size'] >= 1000000):
+        cmd.append('-Z')
+        cmd.append(str(data['genome_size'] // 1000000))
     proc = sp.run(
         cmd,
         cwd=str(cfg.tmp_path),

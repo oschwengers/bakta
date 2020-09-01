@@ -15,7 +15,6 @@ def predict_r_rnas(data, contigs_path):
 
     cmd = [
         'cmsearch',
-        '-Z', str(data['genome_size'] // 1000000),
         '--noali',
         '--cut_tc',
         '--notrunc',
@@ -24,6 +23,9 @@ def predict_r_rnas(data, contigs_path):
         str(cfg.db_path.joinpath('rRNA')),
         str(contigs_path)
     ]
+    if(data['genome_size'] >= 1000000):
+        cmd.append('-Z')
+        cmd.append(str(data['genome_size'] // 1000000))
     proc = sp.run(
         cmd,
         cwd=str(cfg.tmp_path),
