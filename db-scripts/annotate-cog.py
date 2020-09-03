@@ -59,7 +59,7 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
         length = int(length)
         qcov = length / int(qlen)
         scov = length / int(slen)
-        if(qcov > 0.8 and scov > 0.8 and float(pident) > 90. and float(evalue) < 1e-6):
+        if(qcov >= 0.8 and scov >= 0.8 and float(pident) >= 90. and float(evalue) < 1e-6):
             gb_id = sseqid.split('|')[1]
             cog = gb_id_cog.get(gb_id, None)
             if(cog is not None):
