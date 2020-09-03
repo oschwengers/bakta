@@ -41,13 +41,14 @@ with nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='EXCLU
             if(refseq_protein_accession != '' and 'WP_' in refseq_protein_accession):
                 if(scope == 'core'):
                     if(amr_type == 'AMR' and subtype == 'AMR'):
-                        if(allele == ''):
+                        gene = allele if allele != '' else gene_family
+                        if(gene == ''):
                             # print("UPDATE ups SET product=%s WHERE ncbi_nrp_id=%s" % (product_name, refseq_protein_accession[3:]))
                             conn.execute('UPDATE ups SET product=? WHERE ncbi_nrp_id=?', (product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
                             ups_updated += 1
                         else:
-                            # print("UPDATE ups SET gene=%s, product=%s WHERE ncbi_nrp_id=%s" % (allele, product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
-                            conn.execute('UPDATE ups SET gene=?, product=? WHERE ncbi_nrp_id=?', (allele, product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
+                            # print("UPDATE ups SET gene=%s, product=%s WHERE ncbi_nrp_id=%s" % (gene, product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
+                            conn.execute('UPDATE ups SET gene=?, product=? WHERE ncbi_nrp_id=?', (gene, product_name, refseq_protein_accession[3:]))  # annotate UPS with NCBI nrp id (WP_*)
                             ups_updated += 1
 
                 elif(scope == 'plus'):
