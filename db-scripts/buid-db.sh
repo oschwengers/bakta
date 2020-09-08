@@ -31,7 +31,7 @@ cmfetch -o ncRNA-genes -f Rfam.cm rfam-genes.txt
 cmpress ncRNA-genes
 wget http://current.geneontology.org/ontology/external2go/rfam2go
 awk -F ' ' '{print $1 "\t" $NF}' rfam2go > rfam-go.tsv
-rm rfam-genes.raw.txt rfam-genes.txt Rfam.cm.gz rfam2go ncRNA-genes
+rm rfam-genes.raw.txt rfam-genes.txt rfam2go ncRNA-genes
 
 
 # download and extract ncRNA regions (cis reg elements) covariance models from Rfam
