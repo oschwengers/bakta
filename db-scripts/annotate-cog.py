@@ -1,4 +1,5 @@
 import argparse
+import logging
 import sqlite3
 from pathlib import Path
 
@@ -12,10 +13,21 @@ parser.add_argument('--cog-ids', action='store', dest='cog_ids', help='Path to N
 parser.add_argument('--gi-cog-mapping', action='store', dest='gi_cog_mapping', help='Path to GI / COG mapping file.')
 args = parser.parse_args()
 
+
 db_path = Path(args.db).resolve()
 alignments_path = Path(args.alignments).resolve()
 cog_ids_path = Path(args.cog_ids).resolve()
 gi_cog_mapping_path = Path(args.gi_cog_mapping).resolve()
+
+
+logging.basicConfig(
+    filename='bakta.db.log',
+    filemode='a',
+    format='%(name)s - COG - %(levelname)s - %(message)s',
+    level=logging.DEBUG
+)
+log = logging.getLogger('PSC')
+
 
 print('import NCBI COG id / function class information...')
 cog_id_fclass = {}
@@ -64,8 +76,9 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
             cog = gb_id_cog.get(gb_id, None)
             if(cog is not None):
                 conn.execute('UPDATE psc SET cog_id=?, cog_category=? WHERE uniref90_id=?', (cog['id'], cog['cat'], uniref90_id))
+                log.info('UPDATE psc SET cog_id=%s, cog_category=%s WHERE uniref90_id=%s', cog['id'], cog['cat'], uniref90_id)
                 psc_updated += 1
-        if((psc_processed % 1000000) == 0):
+        if((psc_processed % 100000) == 0):
             conn.commit()
             print("\t... %d" % psc_processed)
     conn.commit()
@@ -73,3 +86,4 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
 print('\n')
 print("PSCs processed: %d" % psc_processed)
 print("PSCs with annotated COG id/category: %d" % psc_updated)
+log.debug('summary: PSC annotated=%d', psc_updated)

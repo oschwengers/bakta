@@ -1,4 +1,5 @@
 import argparse
+import logging
 import sqlite3
 from pathlib import Path
 
@@ -10,8 +11,19 @@ parser.add_argument('--db', action='store', help='Path to Bakta db file.')
 parser.add_argument('--alignments', action='store', help='Path to diamond alignment file.')
 args = parser.parse_args()
 
+
 db_path = Path(args.db).resolve()
 alignments_path = Path(args.alignments).resolve()
+
+
+logging.basicConfig(
+    filename='bakta.db.log',
+    filemode='a',
+    format='%(name)s - IS - %(levelname)s - %(message)s',
+    level=logging.DEBUG
+)
+log = logging.getLogger('PSC')
+
 
 print('parse PSC alignments and add IS annotation...')
 ups_processed = 0
@@ -40,10 +52,10 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
                 is_family = descriptions[2]
                 product = "%s-like element %s family transposase" % (is_family, is_name)
                 gene = "tnp-%s" % is_name
-                # print("UPDATE psc SET gene=%s, product=%s WHERE uniref90_id=%s" % (gene, product, uniref90_id))
                 conn.execute('UPDATE psc SET gene=?, product=? WHERE uniref90_id=?', (gene, product, uniref90_id))
+                log.info('UPDATE psc SET gene=%s, product=%s WHERE uniref90_id=%s', gene, product, uniref90_id)
                 ups_updated += 1
-        if((ups_processed % 100) == 0):
+        if((ups_processed % 1000) == 0):
             conn.commit()
             print("\t... %d" % ups_processed)
     conn.commit()
@@ -51,3 +63,4 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
 print('\n')
 print("PSCs processed: %d" % ups_processed)
 print("PSCs with annotated IS transposons: %d" % ups_updated)
+log.debug('summary: PSC annotated=%d', ups_updated)

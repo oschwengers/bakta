@@ -1,4 +1,5 @@
 import argparse
+import logging
 import hashlib
 import gzip
 import sqlite3
@@ -14,9 +15,20 @@ parser.add_argument('--xml', action='store', help='Path to SwissProt xml file.')
 parser.add_argument('--db', action='store', help='Path to Bakta sqlite3 db file.')
 args = parser.parse_args()
 
+
 taxonomy_path = Path(args.taxonomy).resolve()
 xml_path = Path(args.xml).resolve()
 db_path = Path(args.db)
+
+
+logging.basicConfig(
+    filename='bakta.db.log',
+    filemode='a',
+    format='%(name)s - SwissProt - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger_ups = logging.getLogger('UPS')
+logger_psc = logging.getLogger('PSC')
 
 
 def is_taxon_child(child, LCA, taxonomy):
@@ -86,49 +98,49 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                             c.execute('SELECT * FROM ups WHERE hash=?', (hash,))
                             r = c.fetchone()
                             if(r is None):
-                                print("WARNING: could not find UPS! swissprot-acc=%s, hash=%s" % (acc, hash))
+                                print("UPS hash not found! swissprot-id=%s, hash=%s" % (acc, hash))
                                 sp_not_found += 1
                                 continue
                             elif(r['length'] != len(seq)):
-                                print("WARNING: length mismatch! swissprot-acc=%s, hash=%s, ups-length=%d, swissprot-length=%d" % (acc, hash, r['length'], len(seq)))
+                                print("UPS length mismatch! swissprot-id=%s, hash=%s, ups-length=%d, swissprot-length=%d" % (acc, hash, r['length'], len(seq)))
                                 sp_lenth_mm += 1
                                 continue
                             else:
-                                # print("parse SP: acc=%s, gene=%s, product=%s, ec=%s" % (acc, gene, product, ec_id))
-                                # print("found ups: uniref100=%s, uniref90=%s, gene=%s, product=%s, ec=%s" % (r['uniref100_id'], r['uniref90_id'], r['gene'], r['product'], r['ec_id']))
+                                logger_ups.debug(
+                                    'swissprot-id=%s, uniref100-id=%s, hash=%s, uniref90-id=%s, gene=%s, product=%s, ec=%s', 
+                                    acc, r['uniref100_id'], hash, r['uniref90_id'], gene, product, ec_id
+                                )
                                 c.execute('SELECT * FROM psc WHERE uniref90_id=?', (r['uniref90_id'],))
                                 r = c.fetchone()
                                 if(r is None):  # no PSC found -> annotate UPS
-                                    # print("no PSC found! annotate UPS")
                                     update = False
                                     if(gene):
-                                        # print("UPDATE ups SET gene=%s WHERE hash=%s" % (gene, hash))
                                         c.execute('UPDATE ups SET gene=? WHERE hash=?', (gene, hash))
+                                        logger_ups.info('UPDATE ups SET gene=%s WHERE hash=%s', gene, hash)
                                         update = True
                                     if(product):
-                                        # print("UPDATE ups SET product=%s WHERE hash=%s" % (product, hash))
                                         c.execute('UPDATE ups SET product=? WHERE hash=?', (product, hash))
+                                        logger_ups.info('UPDATE ups SET product=%s WHERE hash=%s', product, hash)
                                         update = True
                                     if(ec_id):
-                                        # print("UPDATE ups SET ec_id=%s WHERE hash=%s" % (ec_id, hash))
                                         c.execute('UPDATE ups SET ec_id=? WHERE hash=?', (ec_id, hash))
+                                        logger_ups.info('UPDATE ups SET ec_id=%s WHERE hash=%s', ec_id, hash)
                                         update = True
                                     if(update):
                                         ups_annotated += 1
                                 else:  # PSC found -> annotate PSC
-                                    # print("PSC found! annotate PSC")
                                     update = False
                                     if(gene):
-                                        # print("UPDATE psc SET gene=%s WHERE uniref90_id=%s" % (gene, r['uniref90_id']))
                                         c.execute('UPDATE psc SET gene=? WHERE uniref90_id=?', (gene, r['uniref90_id']))
+                                        logger_psc.info('UPDATE psc SET gene=%s WHERE uniref90_id=%s', gene, r['uniref90_id'])
                                         update = True
                                     if(product):
-                                        # print("UPDATE psc SET product=%s WHERE uniref90_id=%s" % (product, r['uniref90_id']))
                                         c.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (product, r['uniref90_id']))
+                                        logger_psc.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', product, r['uniref90_id'])
                                         update = True
                                     if(ec_id):
-                                        # print("UPDATE psc SET ec_id=%s WHERE uniref90_id=%s" % (ec_id, r['uniref90_id']))
                                         c.execute('UPDATE psc SET ec_id=? WHERE uniref90_id=?', (ec_id, r['uniref90_id']))
+                                        logger_psc.info('UPDATE psc SET ec_id=%s WHERE uniref90_id=%s', ec_id, r['uniref90_id'])
                                         update = True
                                     if(update):
                                         psc_annotated += 1
@@ -145,4 +157,6 @@ print("SwissProt proteins not found: %d" % sp_not_found)
 print("Hash protein length collision: %d" % sp_lenth_mm)
 
 print("UPSs annotated: %d" % ups_annotated)
+logger_ups.debug('summary: UPS annotated=%d', ups_annotated)
 print("PSCs annotated: %d" % psc_annotated)
+logger_psc.debug('summary: PSC annotated=%d', psc_annotated)

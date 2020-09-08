@@ -1,5 +1,6 @@
 
 import argparse
+import logging
 import hashlib
 import gzip
 import sqlite3
@@ -15,9 +16,19 @@ parser.add_argument('--xml', action='store', help='Path to UniRef xml file.')
 parser.add_argument('--db', action='store', help='Path to Bakta sqlite3 db file.')
 args = parser.parse_args()
 
+
 taxonomy_path = Path(args.taxonomy).resolve()
 xml_path = Path(args.xml).resolve()
 db_path = Path(args.db)
+
+
+logging.basicConfig(
+    filename='bakta.db.log',
+    filemode='a',
+    format='%(name)s - UniRef100 - %(levelname)s - %(message)s',
+    level=logging.DEBUG
+)
+log = logging.getLogger('UPS')
 
 
 def is_taxon_child(child, LCA, taxonomy):
@@ -55,9 +66,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     with gzip.open(str(xml_path), mode="rt") as fh:
         i = 0
         for event, elem in et.iterparse(fh):
-            # print(elem)
             if(elem.tag == "{%s}entry" % ns):
-                # print(elem)
                 if('Fragment' not in elem.find("./{%s}name" % ns).text):  # skip protein fragments
                     try:
                         common_tax_id = elem.find("./{%s}property[@type='common taxon ID']" % ns).attrib['value']
@@ -70,8 +79,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                         rep_member_tax_id = 1
                     
                     if(is_taxon_child(common_tax_id, '2', taxonomy) or is_taxon_child(rep_member_tax_id, '2', taxonomy)):
-                        # print("tax-id=%s" % tax_id)
-                        uniref100_id = elem.attrib['id']
+                        uniref100_id = elem.attrib['id'][10:]
                         seq_representative = elem.find("./{%s}representativeMember/{%s}sequence" % (ns, ns))
                         seq = seq_representative.text.upper()
                         hash = hashlib.md5(seq.encode()).hexdigest()
@@ -87,35 +95,42 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                             uniprot_acc = rep_member.find("./{%s}property[@type='UniProtKB accession']" % ns)
                             if(uniprot_acc is not None):
                                 uniprot_acc = uniprot_acc.attrib['value']
+                            try:
+                                product = rep_member.find("./{%s}property[@type='protein name']" % ns).attrib['value']
+                                if product.lower() == 'hypothetical protein':
+                                    product = None
+                                elif product.lower() == 'Uncharacterized protein':
+                                    product = None
+                            except:
+                                product = None
+                            
                             ups = (
                                 hash,  # aa_hash
                                 int(seq_representative.attrib['length']),  # length
+                                uniref100_id,
                                 uniref90_id,
-                                uniref100_id[10:],
                                 uniparc_id,
                                 uniprot_acc
                             )
                             upss[hash] = uniref100_id
+                            log.debug(
+                                'uniref100-id=%s, common-tax-id=%s, rep-tax-id=%s, hash=%s, uniref90-id=%s, uniparc-id=%s, uniprot-id=%s, product=%s', 
+                                uniref100_id, common_tax_id, rep_member_tax_id, hash, uniref90_id, uniparc_id, uniprot_acc, product
+                            )
+
                             if(uniref90_id):  # UniRef90 cluster available -> skip gene and product
-                                # conn.execute("INSERT INTO ups (hash, length, uniref90_id, uniref100_id, uniparc_id, uniprotkb_acc) VALUES (?,?,?,?,?,?)", ups)
-                                print("INSERT INTO ups (hash, length, uniref90_id, uniref100_id, uniparc_id, uniprotkb_acc) VALUES (%s,%d,%s,%s,%s,%s)" % ups)
+                                conn.execute("INSERT INTO ups (hash, length, uniref100_id, uniref90_id, uniparc_id, uniprotkb_acc) VALUES (?,?,?,?,?,?)", ups)
+                                log.info('INSERT INTO ups (hash, length, uniref100_id, uniref90_id, uniparc_id, uniprotkb_acc) VALUES (%s,%s,%s,%s,%s,%s)', *ups)
                             else:
-                                try:
-                                    prot_name = rep_member.find("./{%s}property[@type='protein name']" % ns).attrib['value']
-                                    if prot_name.lower() == 'hypothetical protein':
-                                        prot_name = None
-                                    elif prot_name.lower() == 'Uncharacterized protein':
-                                        prot_name = None
-                                except:
-                                    prot_name = None
-                                ups += (prot_name, )
-                                # conn.execute("INSERT INTO ups (hash, length, uniref90_id, uniref100_id, uniparc_id, uniprotkb_acc, product) VALUES (?,?,?,?,?,?,?)", ups)
-                                print("INSERT INTO ups (hash, length, uniref90_id, uniref100_id, uniparc_id, uniprotkb_acc, product) VALUES (%s,%d,%s,%s,%s,%s,%s)" % ups)
+                                ups += (product, )
+                                conn.execute("INSERT INTO ups (hash, length, uniref100_id, uniref90_id, uniparc_id, uniprotkb_acc, product) VALUES (?,?,?,?,?,?,?)", ups)
+                                log.info('INSERT INTO ups (hash, length, uniref100_id, uniref90_id, uniparc_id, uniprotkb_acc, product) VALUES (%s,%s,%s,%s,%s,%s,%s)', *ups)
                             i += 1
                             if((i % 1000000) == 0):
-                                # conn.commit()
+                                conn.commit()
                                 print("\t... %i" % i)
                 elem.clear()  # forstall out of memory errors
-        # conn.commit()
-        print("\tparsed UPS: %d" % i)
+    conn.commit()
+    print("\tparsed UPS: %d" % i)
+    log.debug('summary: # UPS=%d', i)
 print("\nsuccessfully initialized UPS table!")
