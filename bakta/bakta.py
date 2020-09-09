@@ -232,6 +232,7 @@ def main(args):
     log.debug('write JSON output')
 
     prefix = cfg.genome_path.stem if cfg.prefix is None else cfg.prefix
+    log.info('file prefix: %s', prefix)
     json_path = cfg.output_path.joinpath("%s.json" % prefix)
     with json_path.open('w') as fh:
         json.dump(features, fh, sort_keys=True, indent=4)
