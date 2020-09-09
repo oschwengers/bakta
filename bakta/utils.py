@@ -49,6 +49,7 @@ def parse_arguments():
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
     arg_group_general.add_argument('--verbose', '-v', action='store_true', help='Print verbose information')
     arg_group_general.add_argument('--threads', '-t', action='store', type=int, default=mp.cpu_count(), help='Number of threads to use (default = number of available CPUs)')
+    arg_group_general.add_argument('--tmp-dir', action='store', default=None, dest='tmp_dir', help='Location for temporary files (default = system dependent auto detection)')
     arg_group_general.add_argument('--version', action='version', version='%(prog)s ' + bakta.__version__)
     arg_group_general.add_argument('--citation', action='store_true', help='Print citation')
     return parser.parse_args()
@@ -175,14 +176,14 @@ def create_locus_prefix(contigs):
 
 def create_locus_tag_prefix(contigs):
     """Create either genus/species or sequence MD5 hex based locus tag prefix."""
-    if(cfg.locus != ''):
+    if(cfg.locus):  # user provided a valid locus (not None/non-empty)
         return cfg.locus
-    elif(cfg.genus != '' and cfg.species != ''):
+    elif(cfg.genus and cfg.species):  # user provided valid genus & species (not None/non-empty)
         locus_prefix = cfg.genus[:1] + cfg.species[:2]
         if(cfg.strain != ''):
             locus_prefix += cfg.strain[:2]
         return locus_prefix.upper()
-    else:
+    else:  # create a sequence based locus prefix
         hash = hashlib.md5()
         for contig in contigs:
             hash.update(str.encode(contig['sequence']))

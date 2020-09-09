@@ -216,6 +216,7 @@ def main(args):
 
     locus_tag_nr = 5
     locus_prefix = bu.create_locus_tag_prefix(contigs)
+    log.info('locus prefix: %s', locus_prefix)
     for feature in features:
         locus_tag = "%s%05d" % (locus_prefix, locus_tag_nr)
         feature['locus'] = locus_tag
