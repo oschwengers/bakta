@@ -69,7 +69,17 @@ def setup(args):
             log.debug('found bundled db=%s', tmp)
             db_path = tmp
     log.info('db-path=%s', db_path)
-    tmp_path = Path(tempfile.mkdtemp())
+
+    if(args.tmp_dir):
+        tmp_path = Path(args.tmp_dir)
+        if(not tmp_path.exists()):
+            log.debug('dedicated temp dir does not exist! tmp-dir=%s', tmp_path)
+            sys.exit('ERROR: dedicated temp dir (%s) does not exist!' % tmp_path)
+        else:
+            log.info('use dedicated temp dir: path=%s', tmp_path)
+            tmp_path = Path(tempfile.mkdtemp(dir=str(tmp_path)))
+    else:
+        tmp_path = Path(tempfile.mkdtemp())
     log.info('tmp-path=%s', tmp_path)
 
     try:

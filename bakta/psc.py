@@ -41,7 +41,8 @@ def search_pscs(cdss):
         '--subject-cover', str(int(bc.MIN_PROTEIN_COVERAGE * 100)), # '80'
         '--max-target-seqs', '1',  # single best output
         '--outfmt', '6',
-        '--threads', str(cfg.threads)
+        '--threads', str(cfg.threads),
+        '--tmpdir', str(cfg.tmp_path)  # use tmp folder
     ]
     log.debug('cmd=%s', cmd)
     proc = sp.run(
