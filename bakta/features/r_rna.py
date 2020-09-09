@@ -26,6 +26,7 @@ def predict_r_rnas(data, contigs_path):
     if(data['genome_size'] >= 1000000):
         cmd.append('-Z')
         cmd.append(str(data['genome_size'] // 1000000))
+    log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
         cwd=str(cfg.tmp_path),
@@ -35,11 +36,8 @@ def predict_r_rnas(data, contigs_path):
         universal_newlines=True
     )
     if(proc.returncode != 0):
+        log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('rRNAs failed! cmscan-error-code=%d', proc.returncode)
-        log.debug(
-            'rRNAs: cmd=%s, stdout=\'%s\', stderr=\'%s\'',
-            cmd, proc.stdout, proc.stderr
-        )
         raise Exception("cmsearch error! error code: %i" % proc.returncode)
 
     rrnas = []
@@ -78,8 +76,8 @@ def predict_r_rnas(data, contigs_path):
                 }
                 rrnas.append(rrna)
                 log.debug(
-                    'rRNA: contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
+                    'contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
                     rrna['contig'], rrna['gene'], rrna['start'], rrna['stop'], rrna['strand']
                 )
-    log.info('rRNAs: # %i', len(rrnas))
+    log.info('# %i', len(rrnas))
     return rrnas

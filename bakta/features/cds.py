@@ -28,6 +28,7 @@ def predict_cdss(contigs, filtered_contigs_path):
     if(cfg.prodigal_tf):
         cmd.append('-t')  # use supplied prodigal training file
         cmd.append(str(cfg.prodigal_tf))
+    log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
         cwd=str(cfg.tmp_path),
@@ -37,13 +38,8 @@ def predict_cdss(contigs, filtered_contigs_path):
         universal_newlines=True
     )
     if(proc.returncode != 0):
-        log.warning(
-            'ORFs failed! prodigal-error-code=%d', proc.returncode
-        )
-        log.debug(
-            'ORFs: cmd=%s stdout=\'%s\', stderr=\'%s\'',
-            cmd, proc.stdout, proc.stderr
-        )
+        log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
+        log.warning('ORFs failed! prodigal-error-code=%d', proc.returncode)
         raise Exception("prodigal error! error code: %i" % proc.returncode)
 
     # parse orfs
@@ -74,7 +70,7 @@ def predict_cdss(contigs, filtered_contigs_path):
                     cds['frame'] = (contigs[cds['contig']]['length'] - cds['stop']) % 3 + 1
                 cdss["%s_%s" % (cds['contig'], contig_orf_id)] = cds
                 log.debug(
-                    'cds: contig=%s, start=%i, stop=%i, strand=%s',
+                    'contig=%s, start=%i, stop=%i, strand=%s',
                     cds['contig'], cds['start'], cds['stop'], cds['strand']
                 )
 
@@ -88,7 +84,7 @@ def predict_cdss(contigs, filtered_contigs_path):
 
     gff_path.unlink()
     proteins_path.unlink()
-    log.info('CDSs: # %i', len(cdss))
+    log.info('# %i', len(cdss))
     return list(cdss.values())
 
 

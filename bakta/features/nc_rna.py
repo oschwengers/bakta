@@ -26,6 +26,7 @@ def predict_nc_rnas(data, contigs_path):
     if(data['genome_size'] >= 1000000):
         cmd.append('-Z')
         cmd.append(str(data['genome_size'] // 1000000))
+    log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
         cwd=str(cfg.tmp_path),
@@ -35,11 +36,8 @@ def predict_nc_rnas(data, contigs_path):
         universal_newlines=True
     )
     if(proc.returncode != 0):
+        log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('ncRNAs failed! cmscan-error-code=%d', proc.returncode)
-        log.debug(
-            'ncRNAs: cmd=%s, stdout=\'%s\', stderr=\'%s\'',
-            cmd, proc.stdout, proc.stderr
-        )
         raise Exception("cmsearch error! error code: %i" % proc.returncode)
 
     rfam2go = {}
@@ -81,8 +79,8 @@ def predict_nc_rnas(data, contigs_path):
                 }
                 ncrnas.append(ncrna)
                 log.debug(
-                    'ncRNAs: contig=%s, start=%i, stop=%i, strand=%s, gene=%s',
+                    'contig=%s, start=%i, stop=%i, strand=%s, gene=%s',
                     ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['gene']
                 )
-    log.info('ncRNAs: # %i', len(ncrnas))
+    log.info('# %i', len(ncrnas))
     return ncrnas

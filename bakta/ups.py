@@ -59,7 +59,7 @@ def lookup_upss(features):
                 else:
                     features_not_found.append(feature)
 
-        log.info('UPSs: # %i', len(features_found))
+        log.info('# %i', len(features_found))
         return features_found, features_not_found
     except Exception as ex:
         log.exception('Could not read UPSs from db!', ex)

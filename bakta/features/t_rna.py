@@ -48,6 +48,7 @@ def predict_t_rnas(data, contigs_path):
         '--thread', str(cfg.threads),
         str(contigs_path)
     ]
+    log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
         cwd=str(cfg.tmp_path),
@@ -57,10 +58,7 @@ def predict_t_rnas(data, contigs_path):
         universal_newlines=True
     )
     if(proc.returncode != 0):
-        log.debug(
-            'tRNAs: cmd=%s, stdout=\'%s\', stderr=\'%s\'',
-            cmd, proc.stdout, proc.stderr
-        )
+        log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('tRNAs failed! tRNAscan-SE-error-code=%d', proc.returncode)
         raise Exception("tRNAscan-SE error! error code: %i" % proc.returncode)
 
@@ -96,7 +94,7 @@ def predict_t_rnas(data, contigs_path):
             key = "%s.trna%s" % (contig, trna_id)
             trnas[key] = trna
             log.info(
-                'tRNA: contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
+                'contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
                 trna['contig'], trna['gene'], trna['start'], trna['stop'], trna['strand']
             )
 
@@ -105,5 +103,5 @@ def predict_t_rnas(data, contigs_path):
             trna = trnas[record.id]
             trna['sequence'] = str(record.seq)
     trnas = list(trnas.values())
-    log.info('tRNAs: # %i', len(trnas))
+    log.info('# %i', len(trnas))
     return trnas

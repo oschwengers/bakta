@@ -43,6 +43,7 @@ def search_pscs(cdss):
         '--outfmt', '6',
         '--threads', str(cfg.threads)
     ]
+    log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
         cwd=str(cfg.tmp_path),
@@ -52,13 +53,8 @@ def search_pscs(cdss):
         universal_newlines=True
     )
     if(proc.returncode != 0):
-        log.warning(
-            'PSC failed! diamond-error-code=%d', proc.returncode
-        )
-        log.debug(
-            'PSC: cmd=%s stdout=\'%s\', stderr=\'%s\'',
-            cmd, proc.stdout, proc.stderr
-        )
+        log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
+        log.warning('PSC failed! diamond-error-code=%d', proc.returncode)
         raise Exception("diamond error! error code: %i" % proc.returncode)
 
     cds_by_id = {cds['tmp_id']: cds for cds in cdss}
@@ -78,7 +74,7 @@ def search_pscs(cdss):
                 }
                 log.debug(
                     'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, UniRef90=%s',
-                     cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['sequence']), query_cov, identity, cluster_id
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['sequence']), query_cov, identity, cluster_id
                 )
 
     pscs_found = []
@@ -88,12 +84,13 @@ def search_pscs(cdss):
             pscs_found.append(cds)
         else:
             pscs_not_found.append(cds)
-    log.info('PSCs: # %i', len(pscs_found))
+    log.info('homology: # %i', len(pscs_found))
     return pscs_found, pscs_not_found
 
 
 def lookup_pscs(features):
     """Lookup PCS information"""
+    no_psc_lookups = 0
     try:
         with sqlite3.connect("file:%s?mode=ro" % str(cfg.db_path.joinpath('bakta.db')), uri=True) as conn:
             conn.row_factory = sqlite3.Row
@@ -116,6 +113,7 @@ def lookup_pscs(features):
                 if(rec is not None):
                     psc = parse_psc_annotation(rec)
                     feature['psc'] = psc
+                    no_psc_lookups += 1
                     
                     if('db_xrefs' not in feature):
                         feature['db_xrefs'] = []
@@ -140,10 +138,10 @@ def lookup_pscs(features):
                     )
                 else:
                     log.debug('lookup failed! uniref90_id=%s', uniref90_id)
-
     except Exception as ex:
         log.exception('Could not read PSCs from db!', ex)
         raise Exception("SQL error!", ex)
+    log.info('lookup: # %i', no_psc_lookups)
 
 
 def parse_psc_annotation(rec):

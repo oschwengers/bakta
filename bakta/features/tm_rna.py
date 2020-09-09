@@ -27,7 +27,8 @@ def predict_tm_rnas(data, contigs_path):
         cmd.append('-c')  # complete circular sequence(s)
     else:
         cmd.append('-l')  # linear sequence(s)
-
+    
+    log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
         cwd=str(cfg.tmp_path),
@@ -37,10 +38,7 @@ def predict_tm_rnas(data, contigs_path):
         universal_newlines=True
     )
     if(proc.returncode != 0):
-        log.debug(
-            'tmRNAs: cmd=%s, stdout=\'%s\', stderr=\'%s\'',
-            cmd, proc.stdout, proc.stderr
-        )
+        log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('tmRNAs failed! aragorn-error-code=%d', proc.returncode)
         raise Exception("aragorn error! error code: %i" % proc.returncode)
 
@@ -78,8 +76,8 @@ def predict_tm_rnas(data, contigs_path):
                 }
                 tmrnas.append(tmrna)
                 log.info(
-                    'tmRNA: contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
+                    'contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
                     tmrna['contig'], tmrna['gene'], tmrna['start'], tmrna['stop'], tmrna['strand']
                 )
-    log.info('tmRNAs: # %i', len(tmrnas))
+    log.info('# %i', len(tmrnas))
     return tmrnas

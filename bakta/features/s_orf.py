@@ -58,14 +58,14 @@ def extract_sorfs(contigs):
                         }
                         orfs.append(orf)
                         log.debug(
-                            'ORF: contig=%s, start=%i, stop=%i, strand=%s, frame=%i, length=%i, seq=%s',
+                            'contig=%s, start=%i, stop=%i, strand=%s, frame=%i, length=%i, seq=%s',
                             contig['id'], orf['start'], orf['stop'], strand, frame, len(sequence), sequence
                         )
                     aa_start = aa_seq.find('M', aa_start + 1)
                     if(aa_start > aa_end):
                         aa_end = aa_seq.find('*', aa_start)
 
-    log.info('# short ORFs: # %i', len(orfs))
+    log.info('# %i', len(orfs))
     return orfs
 
 
