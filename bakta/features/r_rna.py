@@ -14,10 +14,12 @@ def predict_r_rnas(data, contigs_path):
     output_path = cfg.tmp_path.joinpath('rrna.tsv')
 
     cmd = [
-        'cmsearch',
+        'cmscan',
         '--noali',
         '--cut_tc',
-        '--notrunc',
+        '-g',  # activate glocal mode
+        '--nohmmonly',  # strictly use CM models
+        '--rfam',
         '--cpu', str(cfg.threads),
         '--tblout', str(output_path),
         str(cfg.db_path.joinpath('rRNA')),
@@ -44,40 +46,63 @@ def predict_r_rnas(data, contigs_path):
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
-                (contig, accession, subject, subject_id, mdl, mdl_from, mdl_to,
+                (subject, subject_id, contig, accession, mdl, mdl_from, mdl_to,
                     start, stop, strand, trunc, passed, gc, bias, score, evalue,
                     inc, description) = line.strip().split()
                 
                 if(strand == '-'):
                     (start, stop) = (stop, start)
-                
+                (start, stop) = (int(start), int(stop))
+                length = stop - start + 1
+                partial = trunc != 'no'
+
                 db_xrefs = ['GO:0005840', 'GO:0003735']
                 if(subject_id == 'RF00001'):
                     rrna_tag = '5S'
                     db_xrefs += ['RFAM:RF00001', 'SO:0000652']
+                    consensus_length = 119
                 elif(subject_id == 'RF00177'):
                     rrna_tag = '16S'
                     db_xrefs += ['RFAM:RF00177', 'SO:0001000']
+                    consensus_length = 1533
                 elif(subject_id == 'RF02541'):
                     rrna_tag = '23S'
                     db_xrefs += ['RFAM:RF02541', 'SO:0001001']
+                    consensus_length = 2925
+                
+                coverage = length / consensus_length
+                if( coverage < 0.8):
+                    partial = True
+                
+                if(coverage < 0.3):
+                    log.debug(
+                        'discard low coverage: contig=%s, rRNA=%s, start=%i, stop=%i, strand=%s, length=%i, coverage=%0.3f',
+                        contig, rrna_tag, start, stop, strand, length, coverage
+                    )
+                else:
+                    rrna = {
+                        'type': bc.FEATURE_R_RNA,
+                        'gene': "%s_rrna" % rrna_tag,
+                        'product': "(partial) %s ribosomal RNA" % rrna_tag if partial else "%s ribosomal RNA" % rrna_tag,
+                        'contig': contig,
+                        'start': start,
+                        'stop': stop,
+                        'strand': strand,
+                        'partial': partial,
+                        'coverage': coverage,
+                        'score': float(score),
+                        'evalue': float(evalue),
+                        'db_xrefs': db_xrefs
+                    }
+                    if('5' in trunc):
+                        rrna['trunc_5'] = True
+                    if('3' in trunc):
+                        rrna['trunc_3'] = True
+                    rrnas.append(rrna)
+                    log.info(
+                        'contig=%s, gene=%s, start=%i, stop=%i, strand=%s, partial=%s, length=%i, coverage=%0.3f',
+                        rrna['contig'], rrna['gene'], rrna['start'], rrna['stop'], rrna['strand'], partial, length, coverage
+                    )
 
-                rrna = {
-                    'type': bc.FEATURE_R_RNA,
-                    'gene': "%s_rrna" % rrna_tag,
-                    'product': "%s ribosomal RNA" % rrna_tag,
-                    'contig': contig,
-                    'start': int(start),
-                    'stop': int(stop),
-                    'strand': strand,
-                    'score': float(score),
-                    'evalue': float(evalue),
-                    'db_xrefs': db_xrefs
-                }
-                rrnas.append(rrna)
-                log.debug(
-                    'contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
-                    rrna['contig'], rrna['gene'], rrna['start'], rrna['stop'], rrna['strand']
-                )
     log.info('# %i', len(rrnas))
     return rrnas
