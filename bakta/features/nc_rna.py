@@ -25,7 +25,7 @@ def predict_nc_rnas(data, contigs_path):
     ]
     if(data['genome_size'] >= 1000000):
         cmd.append('-Z')
-        cmd.append(str(data['genome_size'] // 1000000))
+        cmd.append(str(2 * data['genome_size'] // 1000000))
     log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
