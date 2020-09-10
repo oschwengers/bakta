@@ -8,4 +8,4 @@ dependencies:
   - aragorn=1.2.38
   - infernal=1.1.2
   - prodigal=2.6.3
-  - diamond=2.0.2
+  - diamond=2.0.4
