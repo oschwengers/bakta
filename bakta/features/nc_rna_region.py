@@ -1,5 +1,6 @@
 
 import logging
+import re
 import subprocess as sp
 
 import bakta.config as cfg
@@ -13,10 +14,11 @@ def predict_nc_rna_regions(data, contigs_path):
 
     output_path = cfg.tmp_path.joinpath('ncrna-regions.tsv')
     cmd = [
-        'cmsearch',
+        'cmscan',
         '--noali',
         '--cut_tc',
-        '--notrunc',
+        '-g',  # activate glocal mode
+        '--nohmmonly',  # strictly use CM models
         '--rfam',
         '--cpu', str(cfg.threads),
         '--tblout', str(output_path),
@@ -54,32 +56,48 @@ def predict_nc_rna_regions(data, contigs_path):
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
-                (contig, accession, subject, subject_id, mdl, mdl_from, mdl_to,
+                (subject, accession, contig_id, contig_acc, mdl, mdl_from, mdl_to,
                     start, stop, strand, trunc, passed, gc, bias, score, evalue,
-                    inc, description) = line.strip().split()
+                    inc, description) = re.split('\s+', line.strip(), maxsplit=17)
                 
                 if(strand == '-'):
                     (start, stop) = (stop, start)
+                (start, stop) = (int(start), int(stop))
+                evalue = float(evalue)
+                length = stop - start + 1
+                partial = trunc != 'no'
                 
-                rfam_id = "RFAM:%s" % subject_id
-                db_xrefs = [rfam_id, 'SO:0001263']
-                if(rfam_id in rfam2go):
-                    db_xrefs += rfam2go[rfam_id]
-                ncrna = {
-                    'type': bc.FEATURE_NC_RNA_REGION,
-                    'contig': contig,
-                    'start': int(start),
-                    'stop': int(stop),
-                    'strand': strand,
-                    'product': description,
-                    'score': float(score),
-                    'evalue': float(evalue),
-                    'db_xrefs': db_xrefs
-                }
-                ncrnas.append(ncrna)
-                log.debug(
-                    'contig=%s, start=%i, stop=%i, strand=%s, product=%s',
-                    ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['product']
-                )
+                if(evalue > 1E-6):
+                    log.debug(
+                        'discard low E value: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, partial=%s, length=%i, evalue=%f',
+                        contig_id, start, stop, strand, subject, partial, length, evalue
+                    )
+                else:
+                    rfam_id = "RFAM:%s" % accession
+                    db_xrefs = [rfam_id, 'SO:0001263']
+                    if(rfam_id in rfam2go):
+                        db_xrefs += rfam2go[rfam_id]
+                    ncrna = {
+                        'type': bc.FEATURE_NC_RNA,
+                        'contig': contig_id,
+                        'start': start,
+                        'stop': stop,
+                        'strand': strand,
+                        'partial': partial,
+                        'gene': subject,
+                        'product': "(partial) %s" % description if partial else description,
+                        'score': float(score),
+                        'evalue': evalue,
+                        'db_xrefs': db_xrefs
+                    }
+                    if('5' in trunc):
+                        ncrna['trunc_5'] = True
+                    if('3' in trunc):
+                        ncrna['trunc_3'] = True
+                    ncrnas.append(ncrna)
+                    log.debug(
+                        'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, partial=%s, length=%i, evalue=%f',
+                        ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['gene'], ncrna['partial'], length, ncrna['evalue']
+                    )
     log.info('# %i', len(ncrnas))
     return ncrnas

@@ -1,5 +1,6 @@
 
 import logging
+import re
 import subprocess as sp
 
 import bakta.config as cfg
@@ -46,9 +47,9 @@ def predict_r_rnas(data, contigs_path):
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
-                (subject, subject_id, contig, accession, mdl, mdl_from, mdl_to,
+                (subject, accession, contig_id, contig_acc, mdl, mdl_from, mdl_to,
                     start, stop, strand, trunc, passed, gc, bias, score, evalue,
-                    inc, description) = line.strip().split()
+                    inc, description) = re.split('\s+', line.strip(), maxsplit=17)
                 
                 if(strand == '-'):
                     (start, stop) = (stop, start)
@@ -57,15 +58,15 @@ def predict_r_rnas(data, contigs_path):
                 partial = trunc != 'no'
 
                 db_xrefs = ['GO:0005840', 'GO:0003735']
-                if(subject_id == 'RF00001'):
+                if(accession == 'RF00001'):
                     rrna_tag = '5S'
                     db_xrefs += ['RFAM:RF00001', 'SO:0000652']
                     consensus_length = 119
-                elif(subject_id == 'RF00177'):
+                elif(accession == 'RF00177'):
                     rrna_tag = '16S'
                     db_xrefs += ['RFAM:RF00177', 'SO:0001000']
                     consensus_length = 1533
-                elif(subject_id == 'RF02541'):
+                elif(accession == 'RF02541'):
                     rrna_tag = '23S'
                     db_xrefs += ['RFAM:RF02541', 'SO:0001001']
                     consensus_length = 2925
@@ -77,14 +78,14 @@ def predict_r_rnas(data, contigs_path):
                 if(coverage < 0.3):
                     log.debug(
                         'discard low coverage: contig=%s, rRNA=%s, start=%i, stop=%i, strand=%s, length=%i, coverage=%0.3f',
-                        contig, rrna_tag, start, stop, strand, length, coverage
+                        contig_id, rrna_tag, start, stop, strand, length, coverage
                     )
                 else:
                     rrna = {
                         'type': bc.FEATURE_R_RNA,
                         'gene': "%s_rrna" % rrna_tag,
                         'product': "(partial) %s ribosomal RNA" % rrna_tag if partial else "%s ribosomal RNA" % rrna_tag,
-                        'contig': contig,
+                        'contig': contig_id,
                         'start': start,
                         'stop': stop,
                         'strand': strand,
