@@ -148,8 +148,9 @@ def main(args):
     print("\tfound %i CDSs" % len(data[bc.FEATURE_CDS]))
     upss_found, cdss_not_found = ups.lookup_upss(data[bc.FEATURE_CDS])
     print("\tfound %i UPSs for CDSs" % len(upss_found))
-    pscs_found, cdss_not_found = psc.search_pscs(cdss_not_found)
-    print("\tfound %i PSCs for CDSs" % len(pscs_found))
+    if(len(cdss_not_found) > 0):
+        pscs_found, cdss_not_found = psc.search_pscs(cdss_not_found)
+        print("\tfound %i PSCs for CDSs" % len(pscs_found))
     print("lookup PSC annotations for PSCs and UPSs and mark hypotheticals...")
     psc.lookup_pscs(data[bc.FEATURE_CDS])  # lookup PSC info
     cds.mark_hypotheticals(data[bc.FEATURE_CDS])  # mark hypotheticals
