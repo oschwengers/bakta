@@ -65,10 +65,10 @@ def predict_t_rnas(data, contigs_path):
     trnas = {}
     with txt_output_path.open() as fh:
         for line in fh.readlines()[3:]:  # skip first 3 lines
-            (contig, trna_id, start, stop, type, anti_codon, intron_begin, bounds_end, score, note) = line.split('\t')
+            (contig, trna_id, start, stop, trna_type, anti_codon, intron_begin, bounds_end, score, note) = line.split('\t')
 
-            if(type == 'Undet'):
-                type = ''
+            if(trna_type == 'Undet'):
+                trna_type = ''
 
             start, stop, strand = int(start), int(stop), '+'
             if(start > stop):  # reverse
@@ -79,23 +79,31 @@ def predict_t_rnas(data, contigs_path):
 
             trna = {
                 'type': bc.FEATURE_T_RNA,
-                'gene': "%s_trna" % type,
-                'product': "tRNA-%s" % type,
                 'contig': contig.strip(),
                 'start': start,
                 'stop': stop,
                 'strand': strand,
                 'score': float(score),
-                'pseudo': 'pseudo' in note,
-                'notes': ["tRNA-%s(%s)" % (type, anti_codon)],
-                'db_xrefs': SO_TERMS.get(type.lower(), [])
+                'db_xrefs': SO_TERMS.get(trna_type.lower(), [])
             }
+
+            if(trna_type == ''):
+                trna['product'] = 'tRNA-Xxx'
+            else:
+                trna['gene'] = "%s_trna" % trna_type
+                trna['product'] = "tRNA-%s" % trna_type
+                trna['notes'] = ["tRNA-%s(%s)" % (trna_type, anti_codon)]
+
+            if('pseudo' in note):
+                trna['gene'] = ''
+                trna['product'] = "(pseudo) %s" % trna['product']
+                trna['pseudo'] = True
 
             key = "%s.trna%s" % (contig, trna_id)
             trnas[key] = trna
             log.info(
                 'contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
-                trna['contig'], trna['gene'], trna['start'], trna['stop'], trna['strand']
+                trna['contig'], trna.get('gene', ''), trna['start'], trna['stop'], trna['strand']
             )
 
     with fasta_output_path.open() as fh:

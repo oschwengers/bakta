@@ -35,11 +35,13 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                         'ID': feat['locus'],
                         'NAME': feat['product'],
                         'locus_tag': feat['locus'],
-                        'gene': feat['gene'],
                         'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
-                    if feat['pseudo']:
+                    # add gene annotation if available
+                    if(feat.get('gene', None)):
+                        annotations['gene'] = feat['gene']
+                    if(feat.get('pseudo', False)):
                         annotations['pseudo'] = True
                     annotations = encode_annotations(annotations)
                     fh.write('\t'.join([feat['contig'], 'tRNAscan-SE', 'tRNA', str(feat['start']), str(feat['stop']), 'NA', feat['strand'], '', annotations]))
