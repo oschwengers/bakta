@@ -154,6 +154,23 @@ def setup(args):
             sys.exit('ERROR: Prodigal training file (%s) not valid!' % args.prodigal_tf)
     log.info('prodigal_tf=%s', prodigal_tf)
     
+    # workflow configurations
+    global skip_trna, skip_tmrna, skip_rrna, skip_ncrna, skip_ncrna_region, skip_cds, skip_sorf
+    skip_trna = args.skip_trna
+    log.info('skip-tRNA=%s', skip_trna)
+    skip_tmrna = args.skip_tmrna
+    log.info('skip-tmRNA=%s', skip_tmrna)
+    skip_rrna = args.skip_rrna
+    log.info('skip-rRNA=%s', skip_rrna)
+    skip_ncrna = args.skip_ncrna
+    log.info('skip-ncRNA=%s', skip_ncrna)
+    skip_ncrna_region = args.skip_ncrna_region
+    log.info('skip-ncRNA-region=%s', skip_ncrna_region)
+    skip_cds = args.skip_cds
+    log.info('skip-CDS=%s', skip_cds)
+    skip_sorf = args.skip_sorf
+    log.info('skip-sORF=%s', skip_sorf)
+
     keep_contig_names = args.keep_contig_names
     log.info('keep_contig_names=%s', keep_contig_names)
     locus = args.locus if args.locus != '' else None

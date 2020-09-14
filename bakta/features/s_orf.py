@@ -81,28 +81,28 @@ def overlap_filter_sorfs(data, orfs_raw):
     """Filter in-mem ORFs by overlapping CDSs."""
 
     contig_t_rnas = {k['id']: [] for k in data['contigs']}
-    for t_rna in data[bc.FEATURE_T_RNA]:
+    for t_rna in data.get(bc.FEATURE_T_RNA, []):
         t_rnas = contig_t_rnas[t_rna['contig']]
         t_rnas.append(t_rna)
-    for tm_rna in data[bc.FEATURE_TM_RNA]:
+    for tm_rna in data.get(bc.FEATURE_TM_RNA, []):
         t_rnas = contig_t_rnas[tm_rna['contig']]
         t_rnas.append(tm_rna)
 
     contig_r_rnas = {k['id']: [] for k in data['contigs']}
-    for r_rna in data[bc.FEATURE_R_RNA]:
+    for r_rna in data.get(bc.FEATURE_R_RNA, []):
         r_rnas = contig_r_rnas[r_rna['contig']]
         r_rnas.append(r_rna)
 
     contig_nc_rnas = {k['id']: [] for k in data['contigs']}
-    for nc_rna in data[bc.FEATURE_NC_RNA]:
+    for nc_rna in data.get(bc.FEATURE_NC_RNA, []):
         nc_rnas = contig_nc_rnas[nc_rna['contig']]
         nc_rnas.append(nc_rna)
-    for nc_rna in data[bc.FEATURE_NC_RNA_REGION]:
+    for nc_rna in data.get(bc.FEATURE_NC_RNA_REGION, []):
         nc_rnas = contig_nc_rnas[nc_rna['contig']]
         nc_rnas.append(nc_rna)
 
     contig_cdss = {k['id']: [] for k in data['contigs']}
-    for cds in data[bc.FEATURE_CDS]:
+    for cds in data.get(bc.FEATURE_CDS, []):
         cdss = contig_cdss[cds['contig']]
         cdss.append(cds)
 

@@ -45,6 +45,15 @@ def parse_arguments():
     arg_group_annotation.add_argument('--gram', action='store', default='?', choices=['+', '-', '?'], help="Gram type: +/-/? (default = '?')")
     arg_group_annotation.add_argument('--complete', action='store_true', help="Replicons (chromosome/plasmid[s]) are complete")
 
+    arg_group_workflow = parser.add_argument_group('Workflow')
+    arg_group_workflow.add_argument('--skip-trna', action='store_true', dest='skip_trna', help="Skip tRNA detection & annotation")
+    arg_group_workflow.add_argument('--skip-tmrna', action='store_true', dest='skip_tmrna', help="Skip tmRNA detection & annotation")
+    arg_group_workflow.add_argument('--skip-rrna', action='store_true', dest='skip_rrna', help="Skip rRNA detection & annotation")
+    arg_group_workflow.add_argument('--skip-ncrna', action='store_true', dest='skip_ncrna', help="Skip ncRNA detection & annotation")
+    arg_group_workflow.add_argument('--skip-ncrna-region', action='store_true', dest='skip_ncrna_region', help="Skip ncRNA region detection & annotation")
+    arg_group_workflow.add_argument('--skip-cds', action='store_true', dest='skip_cds', help="Skip CDS detection & annotation")
+    arg_group_workflow.add_argument('--skip-sorf', action='store_true', dest='skip_sorf', help="Skip sORF detection & annotation")
+
     arg_group_general = parser.add_argument_group('General')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
     arg_group_general.add_argument('--verbose', '-v', action='store_true', help='Print verbose information')
