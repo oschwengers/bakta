@@ -62,7 +62,7 @@ def predict_tm_rnas(data, contigs_path):
                 # extract sequence
                 seq = contigs[contig]['sequence'][start:stop]
                 if(strand == '-'):
-                    seq = Seq(seq).reverse_complement()
+                    seq = str(Seq(seq).reverse_complement())
                 tmrna = {
                     'type': bc.FEATURE_TM_RNA,
                     'gene': 'ssrA',
