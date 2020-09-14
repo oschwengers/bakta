@@ -7,6 +7,7 @@ from Bio.Seq import Seq
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.utils as bu
+import bakta.psc as psc
 
 log = logging.getLogger('features:sorf')
 
@@ -234,10 +235,6 @@ def overlap_filter(data, orfs_raw):
 
 
 def annotation_filter(sorfs):
-    return sorfs
-    
-
-def mark_hypotheticals(sorfs):
     for sorf in sorfs:
         ips = sorf.get('ips', None)  # must exist, otherwise filtered before
         if(ips is None):
@@ -252,3 +249,73 @@ def mark_hypotheticals(sorfs):
                     product = psc.get('product', '')
                     if(product == '' or 'uncharacterized' in product.lower()):
                         sorf['hypothetical'] = True
+    return sorfs
+    
+
+def search_pscs(sorfs):
+    """Conduct homology search of sORFs against sORF db."""
+    sorf_fasta_path = cfg.tmp_path.joinpath('sorf.faa')
+    with sorf_fasta_path.open(mode='w') as fh:
+        for sorf in sorfs:
+            fh.write(">%s\n%s\n" % (sorf['aa_hash'], sorf['sequence']))
+    diamond_output_path = cfg.tmp_path.joinpath('diamond.sorf.tsv')
+    diamond_db_path = cfg.db_path.joinpath('sorf.dmnd')
+    cmd = [
+        'diamond',
+        'blastp',
+        '--db', str(diamond_db_path),
+        '--query', str(sorf_fasta_path),
+        '--out', str(diamond_output_path),
+        '--id', str(int(bc.MIN_PROTEIN_IDENTITY * 100)), # '90',
+        '--query-cover', str(int(bc.MIN_SORF_COVERAGE * 100)), # '90'
+        '--subject-cover', str(int(bc.MIN_SORF_COVERAGE * 100)), # '90'
+        '--max-target-seqs', '1',  # single best output
+        '--outfmt', '6',
+        '--threads', str(cfg.threads),
+        '--tmpdir', str(cfg.tmp_path),  # use tmp folder
+        '--block-size', '3'  # slightly increase block size for faster executions
+    ]
+    log.debug('cmd=%s', cmd)
+    proc = sp.run(
+        cmd,
+        cwd=str(cfg.tmp_path),
+        env=cfg.env,
+        stdout=sp.PIPE,
+        stderr=sp.PIPE,
+        universal_newlines=True
+    )
+    if(proc.returncode != 0):
+        log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
+        log.warning('sORF failed! diamond-error-code=%d', proc.returncode)
+        raise Exception("diamond error! error code: %i" % proc.returncode)
+
+    sorf_by_aa_hash = {sorf['aa_hash']: sorf for sorf in sorfs}
+    with diamond_output_path.open() as fh:
+        for line in fh:
+            (sorf_hash, cluster_id, identity, alignment_length, align_mismatches,
+                align_gaps, query_start, query_end, subject_start, subject_end,
+                evalue, bitscore) = line.split('\t')
+            sorf = sorf_by_aa_hash[sorf_hash]
+            query_cov = int(alignment_length) / len(sorf['sequence'])
+            identity = float(identity) / 100
+            if(query_cov >= bc.MIN_PROTEIN_COVERAGE and identity >= bc.MIN_PROTEIN_IDENTITY):
+                sorf['psc'] = {
+                    psc.DB_PSC_COL_UNIREF90: cluster_id,
+                    'query-cov': query_cov,
+                    'identity': identity
+                }
+                log.debug(
+                    'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, UniRef90=%s',
+                    sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], len(sorf['sequence']), query_cov, identity, cluster_id
+                )
+
+    pscs_found = []
+    pscs_not_found = []
+    for sorf in sorfs:
+        if('psc' in sorf):
+            pscs_found.append(sorf)
+        else:
+            pscs_not_found.append(sorf)
+    log.info('homology: # %i', len(pscs_found))
+    return pscs_found, pscs_not_found
+    

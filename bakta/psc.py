@@ -28,7 +28,7 @@ def search(cdss):
     with cds_fasta_path.open(mode='w') as fh:
         for cds in cdss:
             fh.write(">%s\n%s\n" % (cds['tmp_id'], cds['sequence']))
-    diamond_output_path = cfg.tmp_path.joinpath('diamond.tsv')
+    diamond_output_path = cfg.tmp_path.joinpath('diamond.cds.tsv')
     diamond_db_path = cfg.db_path.joinpath('psc.dmnd')
     cmd = [
         'diamond',
@@ -101,7 +101,7 @@ def lookup(features):
                 if('psc' in feature):
                     uniref90_id = feature['psc'].get(DB_PSC_COL_UNIREF90, None)
                 elif('ips' in feature):
-                    uniref90_id = feature['ips'].get(DB_PSC_COL_UNIREF90, None)
+                    uniref90_id = feature['ips'].get(DB_IPS_COL_UNIREF90, None)
                 else:
                     continue  # skip PSC lookup for this feature object
 

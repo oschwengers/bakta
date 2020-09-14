@@ -11,6 +11,7 @@ MAX_SORF_LENGTH = 30  # smallest ORF length detected by Prodigal
 ############################################################################
 MIN_PROTEIN_IDENTITY = 0.9  # min protein identity for PSC detection
 MIN_PROTEIN_COVERAGE = 0.8  # min protein coverage for PSC detection
+MIN_SORF_COVERAGE = 0.9  # min sORF coverage for PSC detection
 HYPOTHETICAL_PROTEIN = 'hypothetical protein'  # hypothetical protein product description
 
 

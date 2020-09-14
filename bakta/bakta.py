@@ -194,23 +194,28 @@ def main(args):
         sorfs = s_orf.extract(data['contigs'])
         print("\textracted potential sORFs: %i" % len(sorfs))
 
-        print('filter potential sORFs by overlaps...')
+        print('apply sORF overlap filter...')
         log.debug('apply sORF overlap filter')
         sorfs, discarded_sorfs = s_orf.overlap_filter(data, sorfs)
         print("\tdiscarded sORFs: %i, %i remaining" % (len(discarded_sorfs), len(sorfs)))
 
-        print('lookup UPSs...')
+        print('lookup sORFs UPSs/IPSs...')
         sorf_upss, sorfs_not_found = ups.lookup(sorfs)
-        print("\tfound UPSs: %i" % len(sorf_upss))
+        sorf_ipss, tmp = ips.lookup(sorf_upss)
+        sorfs_not_found.extend(tmp)
+        print("\tfound UPSs/IPSs: %i" % len(sorf_ipss))
 
-        print('lookup IPSs...')
-        sorf_ipss, orfs_not_found = ips.lookup(sorf_upss)
-        print("\tfound IPSs: %i" % len(sorf_ipss))
+        sorf_pscs = []
+        if(len(sorfs_not_found) > 0):
+            print('search sORFs PSCs...')
+            tmp, sorfs_not_found = s_orf.search_pscs(sorfs_not_found)
+            sorf_pscs.extend(tmp)
+            print("\tfound PSCs: %i" % len(sorf_pscs))
 
         print("lookup PSC annotations for sORFs...")
-        psc.lookup(sorf_ipss)  # lookup PSC info
+        sorf_pscs.extend(sorf_ipss)
+        psc.lookup(sorf_pscs)  # lookup PSC info
         data[bc.FEATURE_SORF] = s_orf.annotation_filter(sorfs)
-        s_orf.mark_hypotheticals(data[bc.FEATURE_SORF])  # mark hypotheticals
         for feat in data[bc.FEATURE_SORF]:
             anno.combine_ups_psc_annotation(feat) # combine IPS and PSC annotations
 
