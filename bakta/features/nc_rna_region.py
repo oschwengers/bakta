@@ -78,7 +78,7 @@ def predict_nc_rna_regions(data, contigs_path):
                     if(rfam_id in rfam2go):
                         db_xrefs += rfam2go[rfam_id]
                     ncrna = {
-                        'type': bc.FEATURE_NC_RNA,
+                        'type': bc.FEATURE_NC_RNA_REGION,
                         'contig': contig_id,
                         'start': start,
                         'stop': stop,
