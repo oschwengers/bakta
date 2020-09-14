@@ -13,7 +13,6 @@ def predict_r_rnas(data, contigs_path):
     """Search for ribosomal RNA sequences."""
 
     output_path = cfg.tmp_path.joinpath('rrna.tsv')
-
     cmd = [
         'cmscan',
         '--noali',
@@ -22,13 +21,13 @@ def predict_r_rnas(data, contigs_path):
         '--nohmmonly',  # strictly use CM models
         '--rfam',
         '--cpu', str(cfg.threads),
-        '--tblout', str(output_path),
-        str(cfg.db_path.joinpath('rRNA')),
-        str(contigs_path)
+        '--tblout', str(output_path)
     ]
     if(data['genome_size'] >= 1000000):
         cmd.append('-Z')
         cmd.append(str(2 * data['genome_size'] // 1000000))
+    cmd.append(str(cfg.db_path.joinpath('rRNA')))
+    cmd.append(str(contigs_path))
     log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
@@ -41,7 +40,7 @@ def predict_r_rnas(data, contigs_path):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('rRNAs failed! cmscan-error-code=%d', proc.returncode)
-        raise Exception("cmsearch error! error code: %i" % proc.returncode)
+        raise Exception("cmscan error! error code: %i" % proc.returncode)
 
     rrnas = []
     with output_path.open() as fh:

@@ -21,13 +21,13 @@ def predict_nc_rnas(data, contigs_path):
         '--nohmmonly',  # strictly use CM models
         '--rfam',
         '--cpu', str(cfg.threads),
-        '--tblout', str(output_path),
-        str(cfg.db_path.joinpath('ncRNA-genes')),
-        str(contigs_path)
+        '--tblout', str(output_path)
     ]
     if(data['genome_size'] >= 1000000):
         cmd.append('-Z')
         cmd.append(str(2 * data['genome_size'] // 1000000))
+    cmd.append(str(cfg.db_path.joinpath('ncRNA-genes')))
+    cmd.append(str(contigs_path))
     log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
@@ -40,7 +40,7 @@ def predict_nc_rnas(data, contigs_path):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('ncRNAs failed! cmscan-error-code=%d', proc.returncode)
-        raise Exception("cmsearch error! error code: %i" % proc.returncode)
+        raise Exception("cmscan error! error code: %i" % proc.returncode)
 
     rfam2go = {}
     rfam2go_path = cfg.db_path.joinpath('rfam-go.tsv')
