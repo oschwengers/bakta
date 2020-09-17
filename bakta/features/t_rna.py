@@ -83,20 +83,24 @@ def predict_t_rnas(data, contigs_path):
                 'start': start,
                 'stop': stop,
                 'strand': strand,
-                'score': float(score),
-                'db_xrefs': SO_TERMS.get(trna_type.lower(), [])
+                'score': float(score)
             }
 
-            if(trna_type == ''):
+            if(trna_type == 'Undet'):
+                trna['gene'] = ''
                 trna['product'] = 'tRNA-Xxx'
             else:
                 trna['gene'] = "%s_trna" % trna_type
                 trna['product'] = "tRNA-%s" % trna_type
+                trna['anti_codon'] = anti_codon
                 trna['notes'] = ["tRNA-%s(%s)" % (trna_type, anti_codon)]
-
+                db_xrefs = SO_TERMS.get(trna_type.lower(), None)
+                if(db_xrefs):
+                    trna['db_xrefs'] = db_xrefs
+            
             if('pseudo' in note):
                 trna['gene'] = ''
-                trna['product'] = "(pseudo) %s" % trna['product']
+                trna['product'] = '(pseudo) %s' % trna['product']
                 trna['pseudo'] = True
 
             key = "%s.trna%s" % (contig, trna_id)
