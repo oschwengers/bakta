@@ -106,7 +106,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                             
                             ups = (
                                 hash,  # aa_hash
-                                int(seq_representative.attrib['length']),  # length
+                                len(seq),  # length
                                 uniref100_id,
                                 uniref90_id,
                                 uniparc_id,
