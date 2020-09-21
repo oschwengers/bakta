@@ -11,18 +11,18 @@ import bakta.utils as bu
 # PSC DB columns
 ############################################################################
 DB_PSC_COL_UNIREF90 = 'uniref90_id'
+DB_PSC_COL_GENE = 'gene'
+DB_PSC_COL_PRODUCT = 'product'
 DB_PSC_COL_UNIREF50 = 'uniref50_id'
 DB_PSC_COL_COG_ID = 'cog_id'
 DB_PSC_COL_COG_CAT = 'cog_category'
 DB_PSC_COL_EC = 'ec_id'
 DB_PSC_COL_GO = 'go_ids'
-DB_PSC_COL_GENE = 'gene'
-DB_PSC_COL_PRODUCT = 'product'
 
 log = logging.getLogger('psc')
 
 
-def search_pscs(cdss):
+def search(cdss):
     """Conduct homology search of CDSs against PCS db."""
     cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
     with cds_fasta_path.open(mode='w') as fh:
@@ -90,7 +90,7 @@ def search_pscs(cdss):
     return pscs_found, pscs_not_found
 
 
-def lookup_pscs(features):
+def lookup(features):
     """Lookup PCS information"""
     no_psc_lookups = 0
     try:
@@ -100,8 +100,8 @@ def lookup_pscs(features):
             for feature in features:
                 if('psc' in feature):
                     uniref90_id = feature['psc'].get(DB_PSC_COL_UNIREF90, None)
-                elif('ups' in feature):
-                    uniref90_id = feature['ups'].get(DB_PSC_COL_UNIREF90, None)
+                elif('ips' in feature):
+                    uniref90_id = feature['ips'].get(DB_PSC_COL_UNIREF90, None)
                 else:
                     continue  # skip PSC lookup for this feature object
 
@@ -113,7 +113,7 @@ def lookup_pscs(features):
                 c.execute("select * from psc where uniref90_id=?", (uniref90_id,))
                 rec = c.fetchone()
                 if(rec is not None):
-                    psc = parse_psc_annotation(rec)
+                    psc = parse_annotation(rec)
                     feature['psc'] = psc
                     no_psc_lookups += 1
                     
@@ -146,7 +146,7 @@ def lookup_pscs(features):
     log.info('lookup: # %i', no_psc_lookups)
 
 
-def parse_psc_annotation(rec):
+def parse_annotation(rec):
     psc = {
         DB_PSC_COL_UNIREF90: bc.DB_PREFIX_UNIREF_90 + rec[DB_PSC_COL_UNIREF90],  # must not be NULL/None
     }

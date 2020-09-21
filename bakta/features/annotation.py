@@ -2,7 +2,7 @@
 import bakta.constants as bc
 
 def combine_ups_psc_annotation(feature):
-    ups = feature.get('ups', None)
+    ips = feature.get('ips', None)
     psc = feature.get('psc', None)
 
     gene = ''
@@ -14,12 +14,12 @@ def combine_ups_psc_annotation(feature):
         psc_product = psc.get('product', None)
         if(psc_product):
             product = psc_product
-    if(ups):
-        ups_gene = ups.get('gene', None)
-        if(ups_gene):
-            gene = ups_gene
-        ups_product = ups.get('product', None)
-        if(ups_product):
-            product = ups_product
+    if(ips):
+        ips_gene = ips.get('gene', None)
+        if(ips_gene):
+            gene = ips_gene
+        ips_product = ips.get('product', None)
+        if(ips_product):
+            product = ips_product
     feature['gene'] = gene
     feature['product'] = product

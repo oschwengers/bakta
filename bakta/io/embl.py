@@ -80,7 +80,7 @@ log = logging.getLogger('io:embl')
 # ncRNA regions: 'profile:Rfam:%s' % subject_id
 # CDS hyp: 'ab initio prediction:Prodigal:2.6'
 # CDS PSC: 'similar to AA sequence:UniProtKB:%s' % psc[DB_PSC_COL_UNIREF90]
-# CDS UPS: 'similar to AA sequence:UniProtKB:%s' % psc[DB_PSC_COL_UNIREF100]
+# CDS IPS: 'similar to AA sequence:UniProtKB:%s' % psc[DB_PSC_COL_UNIREF100]
 # CDS sORF: 'similar to AA sequence:UniProtKB:%s' % psc[DB_PSC_COL_UNIREF100]
 ############################################################################
 

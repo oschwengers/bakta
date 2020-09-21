@@ -18,7 +18,7 @@ log = logging.getLogger('io:gff')
 # ncRNA regions: 'Rfam:%s' % subject_id
 # CDS hyp: 'Prodigal'
 # CDS PSC: 'UniProtKB:%s' % psc[DB_PSC_COL_UNIREF90]
-# CDS UPS: 'UniProtKB:%s' % psc[DB_PSC_COL_UNIREF100]
+# CDS IPS: 'UniProtKB:%s' % psc[DB_PSC_COL_UNIREF100]
 # CDS sORF: 'similar to AA sequence:UniProtKB:%s' % psc[DB_PSC_COL_UNIREF100]
 ############################################################################
 

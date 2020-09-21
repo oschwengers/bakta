@@ -11,7 +11,7 @@ import bakta.utils as bu
 log = logging.getLogger('features:cds')
 
 
-def predict_cdss(contigs, filtered_contigs_path):
+def predict(contigs, filtered_contigs_path):
     """Predict open reading frames with Prodigal."""
 
     proteins_path = cfg.tmp_path.joinpath('proteins.faa')
@@ -102,5 +102,5 @@ def split_gff_annotation(annotation_string):
 
 def mark_hypotheticals(cdss):
     for cds in cdss:
-        if('ups' not in cds and 'psc' not in cds):
+        if('ips' not in cds and 'psc' not in cds):
             cds['hypothetical'] = True

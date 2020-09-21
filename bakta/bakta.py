@@ -23,6 +23,7 @@ import bakta.features.cds as cds
 import bakta.features.s_orf as s_orf
 import bakta.utils as bu
 import bakta.ups as ups
+import bakta.ips as ips
 import bakta.psc as psc
 
 
@@ -154,56 +155,66 @@ def main(args):
     ############################################################################
     # CDS prediction
     # - Prodigal prediction
-    # - lookup UPS matches for CDSs
-    # - search PSC for unannotated CDS
+    # - lookup UPS matches
+    # - lookup IPS matches
+    # - search PSC for unannotated CDSs
     ############################################################################
     if(cfg.skip_cds):
         print('skip CDS prediction...')
     else:
         print('predict CDSs...')
         log.debug('start CDS prediction')
-        data[bc.FEATURE_CDS] = cds.predict_cdss(data['contigs'], contigs_path)
-        print("\tfound %i CDSs" % len(data[bc.FEATURE_CDS]))
-        upss_found, cdss_not_found = ups.lookup_upss(data[bc.FEATURE_CDS])
-        print("\tfound %i UPSs for CDSs" % len(upss_found))
+        data[bc.FEATURE_CDS] = cds.predict(data['contigs'], contigs_path)
+        print("\tfound CDSs: %i " % len(data[bc.FEATURE_CDS]))
+        cdss_ups, cdss_not_found = ups.lookup(data[bc.FEATURE_CDS])
+        print("\tfound UPSs: %i " % len(cdss_ups))
+        cdss_ips, tmp = ips.lookup(cdss_ups)
+        cdss_not_found.append(tmp)
+        print("\tfound IPSs: %i " % len(cdss_ips))
         if(len(cdss_not_found) > 0):
-            pscs_found, cdss_not_found = psc.search_pscs(cdss_not_found)
-            print("\tfound %i PSCs for CDSs" % len(pscs_found))
-        print("lookup PSC annotations for PSCs and UPSs and mark hypotheticals...")
+            cdss_psc, cdss_not_found = psc.search(cdss_not_found)
+            print("\tfound PSCs: %i " % len(cdss_psc))
+        print("lookup PSC annotations for PSCs and IPSs and mark hypotheticals...")
         psc.lookup_pscs(data[bc.FEATURE_CDS])  # lookup PSC info
         cds.mark_hypotheticals(data[bc.FEATURE_CDS])  # mark hypotheticals
         for feat in data[bc.FEATURE_CDS]:
-            anno.combine_ups_psc_annotation(feat) # combine UPS and PSC annotations
+            anno.combine_ups_psc_annotation(feat) # combine IPS and PSC annotations
     
     ############################################################################
     # sORF prediction
     # - in-mem sORF extraction
-    # - overlap filtering (tRNA, rRNA, CDS)
-    # - lookup UPS matches for sORFs
-    # - filter sORFs w/o UPS match
+    # - overlap filtering (tRNA, tmRNA, rRNA, CDS)
+    # - lookup UPS matches
+    # - lookup IPS matches
+    # - filter sORFs w/o IPS match
     ############################################################################
     if(cfg.skip_sorf):
         print('skip sORF prediction...')
     else:
-        print('predict sORF...')
+        print('extract sORF...')
         log.debug('start sORF prediction')
-        orfs = s_orf.extract_sorfs(data['contigs'])
-        print("\tfound %i potential sORFs" % len(orfs))
+        sorfs = s_orf.extract(data['contigs'])
+        print("\textracted potential sORFs: %i" % len(sorfs))
 
         print('filter potential sORFs by overlaps...')
-        log.debug('start sORF filtering')
-        orfs, discarded_orfs = s_orf.overlap_filter_sorfs(data, orfs)
-        print("\tdiscarded %i sORFs, %i remaining" % (len(discarded_orfs), len(orfs)))
+        log.debug('apply sORF overlap filter')
+        sorfs, discarded_sorfs = s_orf.overlap_filter(data, sorfs)
+        print("\tdiscarded sORFs: %i, %i remaining" % (len(discarded_sorfs), len(sorfs)))
 
-        print('lookup UPSs for sORFs...')
-        data[bc.FEATURE_SORF], orfs_not_found = ups.lookup_upss(orfs)
-        print("\tfound %i UPSs for sORFs, %i discarded" % (len(data[bc.FEATURE_SORF]), len(orfs_not_found)))
+        print('lookup UPSs...')
+        sorf_upss, sorfs_not_found = ups.lookup(sorfs)
+        print("\tfound UPSs: %i" % (len(sorf_upss), len(sorfs_not_found)))
+
+        print('lookup IPSs...')
+        sorf_ipss, orfs_not_found = ips.lookup(sorf_upss)
+        print("\tfound IPSs: %i" % (len(sorf_ipss), len(orfs_not_found)))
 
         print("lookup PSC annotations for sORFs...")
-        psc.lookup_pscs(data[bc.FEATURE_SORF])  # lookup PSC info
+        psc.lookup_pscs(sorf_ipss)  # lookup PSC info
+        data[bc.FEATURE_SORF] = s_orf.annotation_filter(sorfs)
         s_orf.mark_hypotheticals(data[bc.FEATURE_SORF])  # mark hypotheticals
         for feat in data[bc.FEATURE_SORF]:
-            anno.combine_ups_psc_annotation(feat) # combine UPS and PSC annotations
+            anno.combine_ups_psc_annotation(feat) # combine IPS and PSC annotations
 
     ############################################################################
     # Create annotations

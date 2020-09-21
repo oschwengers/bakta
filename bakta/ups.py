@@ -11,18 +11,14 @@ import bakta.utils as bu
 ############################################################################
 DB_UPS_COL_HASH = 'hash'
 DB_UPS_COL_LENGTH = 'length'
-DB_UPS_COL_UNIREF90 = 'uniref90_id'
-DB_UPS_COL_UNIREF100 = 'uniref100_id'
 DB_UPS_COL_UNIPARC = 'uniparc_id'
 DB_UPS_COL_REFSEQ_NRP = 'ncbi_nrp_id'
-DB_UPS_COL_UNIPROTKB = 'uniprotkb_acc'
-DB_UPS_COL_GENE = 'gene'
-DB_UPS_COL_PRODUCT = 'product'
+DB_UPS_COL_UNIREF100 = 'uniref100_id'
 
 log = logging.getLogger('ups')
 
 
-def lookup_upss(features):
+def lookup(features):
     """Lookup UPS by hash values."""
     try:
         features_found = []
@@ -34,7 +30,7 @@ def lookup_upss(features):
                 c.execute("select * from ups where hash=?", (feature['aa_hash'],))
                 rec = c.fetchone()
                 if(rec is not None and rec[DB_UPS_COL_LENGTH] == len(feature['sequence'])):
-                    ups = parse_ups_annotation(rec)
+                    ups = parse_annotation(rec)
                     feature['ups'] = ups
 
                     if('db_xrefs' not in feature):
@@ -42,19 +38,15 @@ def lookup_upss(features):
                     db_xrefs = feature['db_xrefs']
                     db_xrefs.append('SO:0001217')
                     db_xrefs.append('%s:%s' % (bc.DB_XREF_UNIREF_100, ups[DB_UPS_COL_UNIREF100]))
-                    if(bu.has_annotation(ups, DB_UPS_COL_UNIREF90)):
-                        db_xrefs.append('%s:%s' % (bc.DB_XREF_UNIREF_90, ups[DB_UPS_COL_UNIREF90]))
                     if(bu.has_annotation(ups, DB_UPS_COL_UNIPARC)):
                         db_xrefs.append('%s:%s' % (bc.DB_XREF_UNIPARC, ups[DB_UPS_COL_UNIPARC]))
                     if(bu.has_annotation(ups, DB_UPS_COL_REFSEQ_NRP)):
                         db_xrefs.append('%s:%s' % (bc.DB_XREF_REFSEQ_NRP, ups[DB_UPS_COL_REFSEQ_NRP]))
-                    if(bu.has_annotation(ups, DB_UPS_COL_UNIPROTKB)):
-                        db_xrefs.append('%s:%s' % (bc.DB_XREF_UNIPROTKB, ups[DB_UPS_COL_UNIPROTKB]))
                     features_found.append(feature)
 
                     log.debug(
-                        'lookup: contig=%s, start=%i, stop=%i, aa-length=%i, strand=%s, gene=%s, UniRef100=%s, NCBI NRP=%s, UniRef90=%s',
-                         feature['contig'], feature['start'], feature['stop'], len(feature['sequence']), feature['strand'], ups.get(DB_UPS_COL_GENE, ''), ups.get(DB_UPS_COL_UNIREF100, ''), ups.get(DB_UPS_COL_REFSEQ_NRP, ''), ups.get(DB_UPS_COL_UNIREF90, '')
+                        'lookup: contig=%s, start=%i, stop=%i, aa-length=%i, strand=%s, UniParc=%s, UniRef100=%s, NCBI NRP=%s',
+                        feature['contig'], feature['start'], feature['stop'], len(feature['sequence']), feature['strand'], ups.get(DB_UPS_COL_UNIPARC, ''), ups.get(DB_UPS_COL_UNIREF100, ''), ups.get(DB_UPS_COL_REFSEQ_NRP, '')
                     )
                 else:
                     features_not_found.append(feature)
@@ -66,21 +58,15 @@ def lookup_upss(features):
         raise Exception("SQL error!", ex)
 
 
-def parse_ups_annotation(rec):
-    ups = {
-        DB_UPS_COL_UNIREF100: bc.DB_PREFIX_UNIREF_100 + rec[DB_UPS_COL_UNIREF100]  # must not be NULL/None
-    }
+def parse_annotation(rec):
+    ups = {}
 
     # add non-empty PSC annotations and attach database prefixes to identifiers
-    if(rec[DB_UPS_COL_GENE]):
-        ups[DB_UPS_COL_GENE] = rec[DB_UPS_COL_GENE]
-    if(rec[DB_UPS_COL_PRODUCT]):
-        ups[DB_UPS_COL_PRODUCT] = rec[DB_UPS_COL_PRODUCT]
-    if(rec[DB_UPS_COL_UNIREF90]):
-        ups[DB_UPS_COL_UNIREF90] = bc.DB_PREFIX_UNIREF_90 + rec[DB_UPS_COL_UNIREF90]
     if(rec[DB_UPS_COL_UNIPARC]):
         ups[DB_UPS_COL_UNIPARC] = bc.DB_PREFIX_UNIPARC + rec[DB_UPS_COL_UNIPARC]
     if(rec[DB_UPS_COL_REFSEQ_NRP]):
         ups[DB_UPS_COL_REFSEQ_NRP] = bc.DB_PREFIX_REFSEQ_NRP + rec[DB_UPS_COL_REFSEQ_NRP]
+    if(rec[DB_UPS_COL_UNIREF100]):
+        ups[DB_UPS_COL_UNIREF100] = bc.DB_PREFIX_UNIREF_100 + rec[DB_UPS_COL_UNIREF100]
     
     return ups

@@ -11,7 +11,7 @@ import bakta.utils as bu
 log = logging.getLogger('features:sorf')
 
 
-def extract_sorfs(contigs):
+def extract(contigs):
     """Predict open reading frames in mem via BioPython."""
 
     orfs = []
@@ -77,7 +77,7 @@ def get_feature_stop(feature):
     return feature['stop'] if feature['strand'] == '+' else feature['start']
 
 
-def overlap_filter_sorfs(data, orfs_raw):
+def overlap_filter(data, orfs_raw):
     """Filter in-mem ORFs by overlapping CDSs."""
 
     contig_t_rnas = {k['id']: [] for k in data['contigs']}
@@ -233,10 +233,14 @@ def overlap_filter_sorfs(data, orfs_raw):
     return valid_orfs, discarded_orfs
 
 
+def annotation_filter(sorfs):
+    return sorfs
+    
+
 def mark_hypotheticals(sorfs):
     for sorf in sorfs:
-        ups = sorf['ups']  # must exist, otherwise filtered before
-        product = ups.get('product', '')
+        ips = sorf['ips']  # must exist, otherwise filtered before
+        product = ips.get('product', '')
         if(product == ''):
             psc = sorf.get('psc', None)
             if(psc):
