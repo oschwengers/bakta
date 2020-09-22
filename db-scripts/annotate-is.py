@@ -57,10 +57,10 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
                 ups_updated += 1
         if((ups_processed % 1000) == 0):
             conn.commit()
-            print("\t... %d" % ups_processed)
+            print("\t... %i" % ups_processed)
     conn.commit()
 
 print('\n')
-print("PSCs processed: %d" % ups_processed)
-print("PSCs with annotated IS transposons: %d" % ups_updated)
-log.debug('summary: PSC annotated=%d', ups_updated)
+print("PSCs processed: %i" % ups_processed)
+print("PSCs with annotated IS transposons: %i" % ups_updated)
+log.debug('summary: PSC annotated=%i', ups_updated)

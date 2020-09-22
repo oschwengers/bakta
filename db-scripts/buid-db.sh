@@ -62,14 +62,15 @@ python3 ${BAKTA_DB_SCRIPTS}/init-db.py --db bakta.db
 
 
 ############################################################################
-# Build unique protein sequences (UPSs) based on UniRef100 entries
+# Build unique protein sequences (IPSs) based on UniRef100 entries
 # - download UniProt UniRef100
-# - read, filter and transform UniRef100 entries and store to ups.db
+# - read, filter and transform UniRef100 entries and store to ips.db
 ############################################################################
 printf "\n5/11: download UniProt UniRef100 ...\n"
 wget -nv ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref100/uniref100.xml.gz
+wget -nv ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/uniparc_active.fasta.gz
 printf "\n5/11: read, filter and store UniRef100 entries ...:\n"
-python3 ${BAKTA_DB_SCRIPTS}/init-ups.py --taxonomy nodes.dmp --xml uniref100.xml.gz --db bakta.db
+python3 ${BAKTA_DB_SCRIPTS}/init-ups-ips.py --taxonomy nodes.dmp --xml uniref100.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db
 rm uniref100.xml.gz
 
 
@@ -81,30 +82,28 @@ rm uniref100.xml.gz
 ############################################################################
 printf "\n6/11: download UniProt UniRef90 ...\n"
 wget -nv ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref90/uniref90.xml.gz
-wget -nv ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/uniparc_active.fasta.gz
-wget -nv ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_trembl.fasta.gz
 printf "\n6/11: read UniRef90 entries and build Protein Sequence Cluster sequence and information databases:\n"
-python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --xml uniref90.xml.gz --uniprotkb uniprot_trembl.fasta.gz --uniparc uniparc_active.fasta.gz --db bakta.db --fasta psc.faa
+python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --xml uniref90.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --fasta psc.faa
 printf "\n5/11: build PSC Diamond db ...\n"
 diamond makedb --in psc.faa --db psc
-rm uniref90.xml.gz uniparc_active.fasta.gz uniprot_trembl.fasta.gz
+rm uniref90.xml.gz uniparc_active.fasta.gz
 
 
 ############################################################################
 # Integrate NCBI nonredundant protein identifiers and PCLA cluster information
 # - download bacterial RefSeq nonredundant proteins and cluster files
-# - annotate UPSs with NCBI nrp IDs (WP_*)
+# - annotate IPSs with NCBI nrp IDs (WP_*)
 # - annotate PSCs with NCBI gene names (WP_* -> hash -> UniRef100 -> UniRef90 -> PSC)
 ############################################################################
 printf "\n7/11: download RefSeq nonredundant proteins and clusters ...\n"
 wget -nv ftp://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_proteins.txt
 wget -nv ftp://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_clusters.txt
-for i in {1..1091}; do
+for i in {1..1169}; do
     wget -nv ftp://ftp.ncbi.nlm.nih.gov/refseq/release/bacteria/bacteria.nonredundant_protein.${i}.protein.faa.gz
     pigz -dc bacteria.nonredundant_protein.${i}.protein.faa.gz | seqtk seq -CU >> refseq-bacteria-nrp.trimmed.faa
     rm bacteria.nonredundant_protein.${i}.protein.faa.gz
 done
-printf "\n7/11: annotate UPSs and PSCs ...\n"
+printf "\n7/11: annotate IPSs and PSCs ...\n"
 python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-nrp.py --db bakta.db --nrp refseq-bacteria-nrp.trimmed.faa --pcla-proteins PCLA_proteins.txt --pcla-clusters PCLA_clusters.txt
 rm refseq-bacteria-nrp.trimmed.faa PCLA_proteins.txt PCLA_clusters.txt
 
@@ -112,12 +111,12 @@ rm refseq-bacteria-nrp.trimmed.faa PCLA_proteins.txt PCLA_clusters.txt
 ############################################################################
 # Integrate UniProt Swissprot information
 # - download SwissProt annotation xml file
-# - annotate PSCs if UPS have PSC UniRef90 identifier (seq -> hash -> UniRef100 -> UniRef90 -> PSC)
-# - annotate UPSs if UPS have no PSC UniRef90 identifier (seq -> hash -> UniRef100)
+# - annotate PSCs if IPS have PSC UniRef90 identifier (seq -> hash -> UniRef100 -> UniRef90 -> PSC)
+# - annotate IPSs if IPS have no PSC UniRef90 identifier (seq -> hash -> UniRef100)
 ############################################################################
 # printf "\n8/11: download UniProt/SwissProt ...\n"
 wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
-printf "\n8/11: annotate UPSs and PSCs ...\n"
+printf "\n8/11: annotate IPSs and PSCs ...\n"
 python3 ${BAKTA_DB_SCRIPTS}/annotate-swissprot.py --taxonomy nodes.dmp --xml uniprot_sprot.xml.gz --db bakta.db
 rm uniprot_sprot.xml.gz
 
@@ -143,11 +142,11 @@ rm cognames2003-2014.tab cog2003-2014.csv prot2003-2014.fa.gz diamond.tsv cog.*
 ############################################################################
 # Integrate NCBI Pathogen AMR db
 # - download AMR gene WP_* annotations from NCBI Pathogen AMR db
-# - annotate UPSs with AMR info
+# - annotate IPSs with AMR info
 ############################################################################
 printf "\n10/11: download AMR gene WP_* annotations from NCBI Pathogen AMR db ...\n"
 wget -nv ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/Data/latest/ReferenceGeneCatalog.txt
-printf "\n10/11: annotate UPSs ...\n"
+printf "\n10/11: annotate IPSs ...\n"
 python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-amr.py --db bakta.db --amr ReferenceGeneCatalog.txt
 rm ReferenceGeneCatalog.txt
 
@@ -155,11 +154,11 @@ rm ReferenceGeneCatalog.txt
 ############################################################################
 # Integrate ISfinder db
 # - download IS protein sequences from GitHub (thanhleviet/ISfinder-sequences)
-# - annotate UPSs with IS info
+# - annotate IPSs with IS info
 ############################################################################
 printf "\n11/11: download ISfinder protein sequences ...\n"
 wget -nv https://raw.githubusercontent.com/thanhleviet/ISfinder-sequences/master/IS.faa
-printf "\n11/11: annotate UPSs ...\n"
+printf "\n11/11: annotate IPSs ...\n"
 diamond makedb --in IS.faa --db is
 diamond blastp --query psc.faa --db is.dmnd --id 98 --query-cover 99 --subject-cover 99 --max-target-seqs 1 --out diamond.tsv --outfmt 6 qseqid sseqid stitle length pident qlen slen evalue
 python3 ${BAKTA_DB_SCRIPTS}/annotate-is.py --db bakta.db --alignments diamond.tsv

@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 parser = argparse.ArgumentParser(
-    description='Annotate UPSs by NCBI nrp IDs and PSCs by nrp cluster gene labels.'
+    description='Annotate IPSs by NCBI nrp IDs and PSCs by nrp cluster gene labels.'
 )
 parser.add_argument('--db', action='store', help='Path to Bakta db file.')
 parser.add_argument('--nrp', action='store', help='Path to NCBI NRP fasta file.')
@@ -29,8 +29,8 @@ logging.basicConfig(
     format='%(name)s - NCBI-NRP - %(levelname)s - %(message)s',
     level=logging.INFO
 )
-logger_ups = logging.getLogger('UPS')
-logger_psc = logging.getLogger('PSC')
+log_ups = logging.getLogger('UPS')
+log_psc = logging.getLogger('PSC')
 
 
 print('import PCLA proteins and cluster information...')
@@ -50,7 +50,7 @@ with pcla_proteins_path.open() as fh:
         if(gene is not None):
             nrp_genes[id] = gene
 del pcla_cluster_genes
-print("\tfound %d NRP / gene annotations" % len(nrp_genes))
+print("\tfound %i NRP / gene annotations" % len(nrp_genes))
 
 
 print('lookup UPS by NRP hash & update WP_* / gene annotations...')
@@ -70,46 +70,41 @@ with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='
     conn.execute('PRAGMA threads = 2;')
     conn.commit()
     conn.row_factory = sqlite3.Row
-    c_ups = conn.cursor()
     for record in SeqIO.parse(fh, 'fasta'):
         nrps_processed += 1
         nrp_id = record.id
         seq = str(record.seq).upper()
-        hash = hashlib.md5(seq.encode()).hexdigest()
-        c_ups.execute('SELECT length, uniref100_id, uniref90_id FROM ups WHERE hash=?', (hash,))
-        r = c_ups.fetchone()
-        if(r is None):
-            print("UPS hash not found! nrp-id=%s, hash=%s" % (nrp_id, hash))
-            nrps_not_found += 1
-            continue
-        elif(r['length'] != len(seq)):
-            print("UPS length mismatch! nrp-id=%s, hash=%s, ups-length=%d, nrp-length=%d" % (nrp_id, hash, r['length'], len(seq)))
-            nrps_lenth_mm += 1
-            continue
-        else:
-            gene = nrp_genes.get(nrp_id, None)
-            logger_ups.debug(
-                'ncbi-nrp-id=%s, hash=%s, uniref100=%s, uniref90=%s, gene=%s', 
-                nrp_id, hash, r['uniref100_id'], r['uniref90_id'], gene
-            )
-            c_ups.execute('UPDATE ups SET ncbi_nrp_id=? WHERE hash=?', (nrp_id[3:], hash))  # annotate UPS with NCBI nrp id (WP_*)
-            logger_ups.info('UPDATE ups SET ncbi_nrp_id=%s WHERE hash=%s', nrp_id[3:], hash)
-            nrps_updated += 1
-            if(gene is not None):  # annotate UniRef90 with NCBI PCLA cluster's gene if present
-                conn.execute('UPDATE psc SET gene=? WHERE uniref90_id=?', (gene, r['uniref90_id']))
-                logger_psc.info('UPDATE psc SET gene=%s WHERE uniref90_id=%s', gene, r['uniref90_id'])
-                nrpcs_updated += 1
+        seq_hash = hashlib.md5(seq.encode())
+        seq_hash_digest = seq_hash.digest()
+        seq_hash_hexdigest = seq_hash.hexdigest()
+        rec_ups = conn.execute('SELECT length, uniref100_id, FROM ups WHERE hash=?', (seq_hash_digest,)).fetchone()
+        if(rec_ups is not None):
+            assert rec_ups['length'] == len(seq), "Detected hash duplicate with different seq length! hash=%s, NCRBI-NRP-id=%s, UniParc-id=%s, NCRBI-NRP-length=%s, db-length=%s" % (seq_hash_hexdigest, nrp_id, rec_ups['uniparc_id'], length, rec_ups['length'])
+            if(rec_ups['uniref100_id']):
+                rec_ips = conn.execute('SELECT * FROM ips WHERE uniref100_id=?', (rec_ups['uniref100_id'],)).fetchone()
+                if(rec_ips is not None):
+                    gene = nrp_genes.get(nrp_id, None)
+                    log_ups.debug(
+                        'ncbi-nrp-id=%s, hash=%s, uniref100=%s, uniref90=%s, gene=%s', 
+                        nrp_id, seq_hash.hexdigest(), rec_ips['uniref100_id'], rec_ips['uniref90_id'], gene
+                    )
+                    conn.execute('UPDATE ups SET ncbi_nrp_id=? WHERE hash=?', (nrp_id[3:], seq_hash_digest))  # annotate IPS with NCBI nrp id (WP_*)
+                    log_ups.info('UPDATE ups SET ncbi_nrp_id=%s WHERE hash=%s', nrp_id[3:], seq_hash_hexdigest)
+                    nrps_updated += 1
+                    if(gene is not None):  # annotate UniRef90 with NCBI PCLA cluster's gene if present
+                        conn.execute('UPDATE psc SET gene=? WHERE uniref90_id=?', (gene, rec_ips['uniref90_id']))
+                        log_psc.info('UPDATE psc SET gene=%s WHERE uniref90_id=%s', gene, rec_ips['uniref90_id'])
+                        nrpcs_updated += 1
         if((nrps_processed % 1000000) == 0):
             conn.commit()
-            print("\t... %d" % nrps_processed)
-    c_ups.close()
+            print("\t... %i" % nrps_processed)
     conn.commit()
 
 print('\n')
-print("NRPs processed: %d" % nrps_processed)
-logger_ups.debug('summary: # UPS with annotated NRP IDs=%d', nrps_updated)
-print("NRPs with annotated WP_* id: %d" % nrps_updated)
-logger_psc.debug('summary: # PSC with annotated genes=%d', nrpcs_updated)
-print("NRPCs with annotated gene names: %d" % nrpcs_updated)
-print("NRPs not found: %d" % nrps_not_found)
-print("NRPs with length mismatches: %d" % nrps_lenth_mm)
+print("NRPs processed: %i" % nrps_processed)
+log_ups.debug('summary: # UPS with annotated NRP IDs=%i', nrps_updated)
+print("NRPs with annotated WP_* id: %i" % nrps_updated)
+log_psc.debug('summary: # PSC with annotated genes=%i', nrpcs_updated)
+print("NRPCs with annotated gene names: %i" % nrpcs_updated)
+print("NRPs not found: %i" % nrps_not_found)
+print("NRPs with length mismatches: %i" % nrps_lenth_mm)

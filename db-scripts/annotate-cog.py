@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 parser = argparse.ArgumentParser(
-    description='Annotate UPSs by NCBI nrp IDs and PSCs by nrp cluster gene labels.'
+    description='Annotate IPSs by NCBI nrp IDs and PSCs by nrp cluster gene labels.'
 )
 parser.add_argument('--db', action='store', help='Path to Bakta db file.')
 parser.add_argument('--alignments', action='store', help='Path to diamond alignment file.')
@@ -39,7 +39,7 @@ with cog_ids_path.open(encoding='windows-1252') as fh:
                 'id': id[3:],
                 'cat': cat
             }
-print("\tstored COG ids: %d" % len(cog_id_fclass))
+print("\tstored COG ids: %i" % len(cog_id_fclass))
 
 print('import NCBI GI / COG mapping information...')
 gb_id_cog = {}
@@ -50,7 +50,7 @@ with gi_cog_mapping_path.open() as fh:
         if(cog is not None):
             gb_id_cog[gb_id] = cog
 del cog_id_fclass
-print("\tmapped COG ids: %d" % len(gb_id_cog))
+print("\tmapped COG ids: %i" % len(gb_id_cog))
 
 print('parse PSC alignments and add NCBI COG annotation...')
 psc_processed = 0
@@ -80,10 +80,10 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
                 psc_updated += 1
         if((psc_processed % 100000) == 0):
             conn.commit()
-            print("\t... %d" % psc_processed)
+            print("\t... %i" % psc_processed)
     conn.commit()
 
 print('\n')
-print("PSCs processed: %d" % psc_processed)
-print("PSCs with annotated COG id/category: %d" % psc_updated)
-log.debug('summary: PSC annotated=%d', psc_updated)
+print("PSCs processed: %i" % psc_processed)
+print("PSCs with annotated COG id/category: %i" % psc_updated)
+log.debug('summary: PSC annotated=%i', psc_updated)
