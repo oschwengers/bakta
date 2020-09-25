@@ -92,8 +92,8 @@ rm uniref90.xml.gz uniparc_active.fasta.gz
 ############################################################################
 # Integrate NCBI nonredundant protein identifiers and PCLA cluster information
 # - download bacterial RefSeq nonredundant proteins and cluster files
-# - annotate IPSs with NCBI nrp IDs (WP_*)
-# - annotate PSCs with NCBI gene names (WP_* -> hash -> UniRef100 -> UniRef90 -> PSC)
+# - annotate UPSs with NCBI nrp IDs (WP_*)
+# - annotate IPSs/PSCs with NCBI gene names (WP_* -> hash -> UniRef100 -> UniRef90 -> PSC)
 ############################################################################
 printf "\n7/11: download RefSeq nonredundant proteins and clusters ...\n"
 wget -nv ftp://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_proteins.txt

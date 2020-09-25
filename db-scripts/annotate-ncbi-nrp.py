@@ -30,6 +30,7 @@ logging.basicConfig(
     level=logging.INFO
 )
 log_ups = logging.getLogger('UPS')
+log_ips = logging.getLogger('IPS')
 log_psc = logging.getLogger('PSC')
 
 
@@ -56,9 +57,10 @@ print("\tfound %i NRP / gene annotations" % len(nrp_genes))
 print('lookup UPS by NRP hash & update WP_* / gene annotations...')
 nrps_processed = 0
 nrps_not_found = 0
-nrps_lenth_mm = 0
-nrps_updated = 0
-nrpcs_updated = 0
+nrps_wo_ips = 0
+ups_updated = 0
+ips_updated = 0
+psc_updated = 0
 ncbi_nrp_path = Path(args.nrp).resolve()
 with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA page_size = 4096;')
@@ -77,7 +79,7 @@ with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='
         seq_hash = hashlib.md5(seq.encode())
         seq_hash_digest = seq_hash.digest()
         seq_hash_hexdigest = seq_hash.hexdigest()
-        rec_ups = conn.execute('SELECT length, uniref100_id, FROM ups WHERE hash=?', (seq_hash_digest,)).fetchone()
+        rec_ups = conn.execute('SELECT length, uniref100_id FROM ups WHERE hash=?', (seq_hash_digest,)).fetchone()
         if(rec_ups is not None):
             assert rec_ups['length'] == len(seq), "Detected hash duplicate with different seq length! hash=%s, NCRBI-NRP-id=%s, UniParc-id=%s, NCRBI-NRP-length=%s, db-length=%s" % (seq_hash_hexdigest, nrp_id, rec_ups['uniparc_id'], length, rec_ups['length'])
             if(rec_ups['uniref100_id']):
@@ -90,11 +92,22 @@ with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='
                     )
                     conn.execute('UPDATE ups SET ncbi_nrp_id=? WHERE hash=?', (nrp_id[3:], seq_hash_digest))  # annotate IPS with NCBI nrp id (WP_*)
                     log_ups.info('UPDATE ups SET ncbi_nrp_id=%s WHERE hash=%s', nrp_id[3:], seq_hash_hexdigest)
-                    nrps_updated += 1
-                    if(gene is not None):  # annotate UniRef90 with NCBI PCLA cluster's gene if present
-                        conn.execute('UPDATE psc SET gene=? WHERE uniref90_id=?', (gene, rec_ips['uniref90_id']))
-                        log_psc.info('UPDATE psc SET gene=%s WHERE uniref90_id=%s', gene, rec_ips['uniref90_id'])
-                        nrpcs_updated += 1
+                    ups_updated += 1
+                    if(gene is not None):  # annotate IPS or PSC with NCBI PCLA cluster's gene if present
+                        if(rec_ips['uniref90_id'] is None):
+                            conn.execute('UPDATE ips SET gene=? WHERE uniref100_id=?', (gene, rec_ups['uniref100_id']))
+                            log_ips.info('UPDATE ips SET gene=%s WHERE uniref100_id=%s', gene, rec_ups['uniref100_id'])
+                            ips_updated += 1
+                        else:
+                            conn.execute('UPDATE psc SET gene=? WHERE uniref90_id=?', (gene, rec_ips['uniref90_id']))
+                            log_psc.info('UPDATE psc SET gene=%s WHERE uniref90_id=%s', gene, rec_ips['uniref90_id'])
+                            psc_updated += 1
+                else:
+                    nrps_wo_ips += 1
+            else:
+                nrps_wo_ips += 1
+        else:
+            nrps_not_found += 1
         if((nrps_processed % 1000000) == 0):
             conn.commit()
             print("\t... %i" % nrps_processed)
@@ -102,9 +115,15 @@ with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='
 
 print('\n')
 print("NRPs processed: %i" % nrps_processed)
-log_ups.debug('summary: # UPS with annotated NRP IDs=%i', nrps_updated)
-print("NRPs with annotated WP_* id: %i" % nrps_updated)
-log_psc.debug('summary: # PSC with annotated genes=%i', nrpcs_updated)
-print("NRPCs with annotated gene names: %i" % nrpcs_updated)
+
+log_ups.debug('summary: # UPS with annotated NRP IDs=%i', ups_updated)
+print("UPSs with annotated WP_* id: %i" % ups_updated)
+
+log_ips.debug('summary: # IPSs with annotated genes=%i', ips_updated)
+print("IPSs with annotated gene names: %i" % ips_updated)
+
+log_psc.debug('summary: # PSC with annotated genes=%i', psc_updated)
+print("PSCs with annotated gene names: %i" % psc_updated)
+
 print("NRPs not found: %i" % nrps_not_found)
-print("NRPs with length mismatches: %i" % nrps_lenth_mm)
+print("NRPs w/o IPS: %i" % nrps_wo_ips)
