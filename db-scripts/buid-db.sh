@@ -111,8 +111,8 @@ rm refseq-bacteria-nrp.trimmed.faa PCLA_proteins.txt PCLA_clusters.txt
 ############################################################################
 # Integrate UniProt Swissprot information
 # - download SwissProt annotation xml file
-# - annotate PSCs if IPS have PSC UniRef90 identifier (seq -> hash -> UniRef100 -> UniRef90 -> PSC)
-# - annotate IPSs if IPS have no PSC UniRef90 identifier (seq -> hash -> UniRef100)
+# - annotate PSCs if IPS have PSC UniRef90 identifier (seq -> hash -> UPS -> IPS -> PSC)
+# - annotate IPSs if IPS have no PSC UniRef90 identifier (seq -> hash -> UPS -> IPS)
 ############################################################################
 # printf "\n8/11: download UniProt/SwissProt ...\n"
 wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz

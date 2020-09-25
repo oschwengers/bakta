@@ -77,8 +77,8 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
             elem_org = elem.find('./{*}organism')
             tax_property = elem_org.find('./{*}dbReference[@type="NCBI Taxonomy"]')
             tax_id = tax_property.get('id') if tax_property is not None else '1'
-            org_name = elem_org.find('./{*}name[@type=scientific]')
-            org_name = org_name.get('value').lower() if org_name is not None else ''
+            org_name = elem_org.find('./{*}name[@type="scientific"]')
+            org_name = org_name.text.lower() if org_name is not None else ''
             if(is_taxon_child(tax_id, '2', taxonomy) or 'phage' in org_name):
                 seq = elem.find('./{*}sequence').text.upper()
                 seq_hash = hashlib.md5(seq.encode())
@@ -111,12 +111,12 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     ec_ids.append(ec_id.text)
                 go_terms = []
                 for go_term in elem.findall('./{*}dbReference[@type="GO"]'):
-                    go_terms.append(go_term.get('id'))[3:]
+                    go_terms.append(go_term.get('id')[3:])
                 uniref90_id = rec_ips['uniref90_id']
                 if(uniref90_id is None):  # no PSC found -> annotate IPS
                     update = False
                     if(gene):
-                        conn.execute('UPDATE ips SET gene=? WHERE uniref100=?', (gene, uniref100_id))
+                        conn.execute('UPDATE ips SET gene=? WHERE uniref100_id=?', (gene, uniref100_id))
                         log_ips.info('UPDATE ips SET gene=%s WHERE uniref100_id=%s', gene, uniref100_id)
                         update = True
                     if(product):
@@ -145,9 +145,10 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                         conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (product, uniref90_id))
                         log_psc.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', product, uniref90_id)
                         update = True
-                    if(ec_id):
-                        conn.execute('UPDATE psc SET ec_ids=? WHERE uniref90_id=?', (ec_id, uniref90_id))
-                        log_psc.info('UPDATE psc SET ec_ids=%s WHERE uniref90_id=%s', ec_id, uniref90_id)
+                    if(len(ec_ids) > 0):
+                        ec_list = ','.join(ec_ids)
+                        conn.execute('UPDATE psc SET ec_ids=? WHERE uniref90_id=?', (ec_list, uniref90_id))
+                        log_psc.info('UPDATE psc SET ec_ids=%s WHERE uniref90_id=%s', ec_list, uniref90_id)
                         update = True
                     if(len(go_terms) > 0):
                         go_list = ','.join(go_terms)
@@ -156,9 +157,9 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                         update = True
                     if(update):
                         psc_annotated += 1
-                if((sp_processed % 10000) == 0):
-                    conn.commit()
-                    print("\t... %i" % sp_processed)
+            if((sp_processed % 10000) == 0):
+                conn.commit()
+                print("\t... %i" % sp_processed)
             elem.clear()  # forstall out of memory errors
 
 print('\n')
