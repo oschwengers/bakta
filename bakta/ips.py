@@ -13,7 +13,7 @@ DB_IPS_COL_UNIREF90 = 'uniref90_id'
 DB_IPS_COL_UNIREF100 = 'uniref100_id'
 DB_IPS_COL_GENE = 'gene'
 DB_IPS_COL_PRODUCT = 'product'
-DB_IPS_COL_EC = 'ec_id'
+DB_IPS_COL_EC = 'ec_ids'
 DB_IPS_COL_GO = 'go_ids'
 
 log = logging.getLogger('ips')

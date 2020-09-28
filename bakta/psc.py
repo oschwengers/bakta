@@ -16,7 +16,7 @@ DB_PSC_COL_PRODUCT = 'product'
 DB_PSC_COL_UNIREF50 = 'uniref50_id'
 DB_PSC_COL_COG_ID = 'cog_id'
 DB_PSC_COL_COG_CAT = 'cog_category'
-DB_PSC_COL_EC = 'ec_id'
+DB_PSC_COL_EC = 'ec_ids'
 DB_PSC_COL_GO = 'go_ids'
 
 log = logging.getLogger('psc')
