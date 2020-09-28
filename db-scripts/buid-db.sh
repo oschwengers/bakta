@@ -171,4 +171,5 @@ rm IS.faa is.dmnd
 
 
 # Cleanup
+python3 ${BAKTA_DB_SCRIPTS}/optimize-db.py --db bakta.db
 rm psc.faa node.dmp
