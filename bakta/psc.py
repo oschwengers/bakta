@@ -167,7 +167,7 @@ def parse_annotation(rec):
     if(rec[DB_PSC_COL_GO]):
         go_ids = []
         for go_id in rec[DB_PSC_COL_GO].split(';'):
-            if(go_id is not ''):
+            if(go_id != ''):
                 go_ids.append(bc.DB_PREFIX_GO + go_id)
         if(len(go_ids) != 0):
             psc[DB_PSC_COL_GO] = go_ids

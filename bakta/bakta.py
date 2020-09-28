@@ -169,7 +169,7 @@ def main(args):
         cdss_ups, cdss_not_found = ups.lookup(data[bc.FEATURE_CDS])
         print("\tfound UPSs: %i " % len(cdss_ups))
         cdss_ips, tmp = ips.lookup(cdss_ups)
-        cdss_not_found.append(tmp)
+        cdss_not_found.extend(tmp)
         print("\tfound IPSs: %i " % len(cdss_ips))
         if(len(cdss_not_found) > 0):
             cdss_psc, cdss_not_found = psc.search(cdss_not_found)
