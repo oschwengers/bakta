@@ -1,5 +1,3 @@
-
-import json
 import logging
 import sys
 import shutil
@@ -8,6 +6,7 @@ import bakta
 import bakta.constants as bc
 import bakta.config as cfg
 import bakta.io.fasta as fasta
+import bakta.io.json as json
 import bakta.io.tsv as tsv
 import bakta.io.gff as gff
 import bakta.io.embl as embl
@@ -264,8 +263,7 @@ def main(args):
     prefix = cfg.genome_path.stem if cfg.prefix is None else cfg.prefix
     log.info('file prefix: %s', prefix)
     json_path = cfg.output_path.joinpath("%s.json" % prefix)
-    with json_path.open('w') as fh:
-        json.dump(features, fh, sort_keys=True, indent=4)
+    json.write_json(features, json_path)
 
     if(cfg.tsv):
         print('write TSV output...')
