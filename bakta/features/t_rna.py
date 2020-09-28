@@ -67,9 +67,6 @@ def predict_t_rnas(data, contigs_path):
         for line in fh.readlines()[3:]:  # skip first 3 lines
             (contig, trna_id, start, stop, trna_type, anti_codon, intron_begin, bounds_end, score, note) = line.split('\t')
 
-            if(trna_type == 'Undet'):
-                trna_type = ''
-
             start, stop, strand = int(start), int(stop), '+'
             if(start > stop):  # reverse
                 start, stop = stop, start
