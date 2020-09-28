@@ -146,9 +146,14 @@ rm cognames2003-2014.tab cog2003-2014.csv prot2003-2014.fa.gz diamond.tsv cog.*
 ############################################################################
 printf "\n10/11: download AMR gene WP_* annotations from NCBI Pathogen AMR db ...\n"
 wget -nv ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/Data/latest/ReferenceGeneCatalog.txt
-printf "\n10/11: annotate IPSs ...\n"
-python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-amr.py --db bakta.db --amr ReferenceGeneCatalog.txt
-rm ReferenceGeneCatalog.txt
+wget -nv -nH ftp://ftp.ncbi.nlm.nih.gov/hmm/NCBIfam-AMRFinder/latest/NCBIfam-AMRFinder.LIB
+wget -nv -nH ftp://ftp.ncbi.nlm.nih.gov/hmm/NCBIfam-AMRFinder/latest/NCBIfam-AMRFinder.tsv
+printf "\n10/11: annotate IPSs and PSCs...\n"
+mv NCBIfam-AMRFinder.LIB ncbifam-amr
+hmmpress ncbifam-amr
+nextflow run ${BAKTA_DB_SCRIPTS}/annotate-ncbi-amr.nf --psc psc.faa --db ncbifam-amr
+python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-amr.py --db bakta.db --genes ReferenceGeneCatalog.txt --hmms NCBIfam-AMRFinder.tsv --hmm-results hmm-amr.out
+rm ncbifam-amr* NCBIfam-AMRFinder.tsv ReferenceGeneCatalog.txt hmm-amr.out
 
 
 ############################################################################
