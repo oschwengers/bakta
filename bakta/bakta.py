@@ -178,7 +178,6 @@ def main(args):
         cds.mark_hypotheticals(data[bc.FEATURE_CDS])  # mark hypotheticals
         for feat in data[bc.FEATURE_CDS]:
             anno.combine_ups_psc_annotation(feat) # combine IPS and PSC annotations
-    
     ############################################################################
     # sORF prediction
     # - in-mem sORF extraction

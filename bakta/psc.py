@@ -116,24 +116,6 @@ def lookup(features):
                     psc = parse_annotation(rec)
                     feature['psc'] = psc
                     no_psc_lookups += 1
-                    
-                    if('db_xrefs' not in feature):
-                        feature['db_xrefs'] = []
-                    db_xrefs = feature['db_xrefs']
-                    db_xrefs.append('SO:0001217')
-                    if(bu.has_annotation(psc, DB_PSC_COL_UNIREF90)):
-                        db_xrefs.append('%s:%s' % (bc.DB_XREF_UNIREF_90, psc[DB_PSC_COL_UNIREF90]))
-                    if(bu.has_annotation(psc, DB_PSC_COL_UNIREF50)):
-                        db_xrefs.append('%s:%s' % (bc.DB_XREF_UNIREF_50, psc[DB_PSC_COL_UNIREF50]))
-                    if(bu.has_annotation(psc, DB_PSC_COL_COG_ID)):
-                        db_xrefs.append('%s:%s' % (bc.DB_XREF_COG, psc[DB_PSC_COL_COG_ID]))
-                    if(bu.has_annotation(psc, DB_PSC_COL_COG_CAT)):
-                        db_xrefs.append('%s:%s' % (bc.DB_XREF_COG, psc[DB_PSC_COL_COG_CAT]))
-                    if(bu.has_annotation(psc, DB_PSC_COL_GO)):
-                        db_xrefs.append('%s:%s' % (bc.DB_XREF_GO, psc[DB_PSC_COL_GO]))
-                    if(bu.has_annotation(psc, DB_PSC_COL_EC)):
-                        db_xrefs.append('%s:%s' % (bc.DB_XREF_EC, psc[DB_PSC_COL_EC]))
-
                     log.debug(
                         'lookup: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, gene=%s, product=%s',
                         feature['contig'], feature['start'], feature['stop'], feature['strand'], psc.get(DB_PSC_COL_UNIREF90, ''), psc.get(DB_PSC_COL_EC, ''), psc.get(DB_PSC_COL_GENE, ''), psc.get(DB_PSC_COL_PRODUCT, '')
@@ -148,28 +130,44 @@ def lookup(features):
 
 def parse_annotation(rec):
     psc = {
-        DB_PSC_COL_UNIREF90: bc.DB_PREFIX_UNIREF_90 + rec[DB_PSC_COL_UNIREF90],  # must not be NULL/None
+        DB_PSC_COL_UNIREF90: bc.DB_PREFIX_UNIREF_90 + rec[DB_PSC_COL_UNIREF90]  # must not be NULL/None
     }
-
+    db_xrefs = [
+        'SO:0001217',
+        '%s:%s' % (bc.DB_XREF_UNIREF_90, psc[DB_PSC_COL_UNIREF90])
+    ]
+    
     # add non-empty PSC annotations and attach database prefixes to identifiers
     if(rec[DB_PSC_COL_GENE]):
         psc[DB_PSC_COL_GENE] = rec[DB_PSC_COL_GENE]
     if(rec[DB_PSC_COL_PRODUCT]):
         psc[DB_PSC_COL_PRODUCT] = rec[DB_PSC_COL_PRODUCT]
     if(rec[DB_PSC_COL_EC]):
-        psc[DB_PSC_COL_EC] = rec[DB_PSC_COL_EC]
+        ecs = []
+        for ec in rec[DB_PSC_COL_EC].split(','):
+            if(ec != ''):
+                ecs.append(ec)
+                db_xrefs.append('%s:%s' % (bc.DB_XREF_EC, ec))
+        if(len(ecs) != 0):
+            psc[DB_PSC_COL_EC] = ecs
     if(rec[DB_PSC_COL_UNIREF50]):
         psc[DB_PSC_COL_UNIREF50] = bc.DB_PREFIX_UNIREF_50 + rec[DB_PSC_COL_UNIREF50]
+        db_xrefs.append('%s:%s' % (bc.DB_XREF_UNIREF_50, psc[DB_PSC_COL_UNIREF50]))
     if(rec[DB_PSC_COL_COG_ID]):
         psc[DB_PSC_COL_COG_ID] = bc.DB_PREFIX_COG + rec[DB_PSC_COL_COG_ID]
+        db_xrefs.append('%s:%s' % (bc.DB_XREF_COG, psc[DB_PSC_COL_COG_ID]))
     if(rec[DB_PSC_COL_COG_CAT]):
         psc[DB_PSC_COL_COG_CAT] = rec[DB_PSC_COL_COG_CAT]
+        db_xrefs.append('%s:%s' % (bc.DB_XREF_COG, psc[DB_PSC_COL_COG_CAT]))
     if(rec[DB_PSC_COL_GO]):
         go_ids = []
-        for go_id in rec[DB_PSC_COL_GO].split(';'):
+        for go_id in rec[DB_PSC_COL_GO].split(','):
             if(go_id != ''):
-                go_ids.append(bc.DB_PREFIX_GO + go_id)
+                go_id = bc.DB_PREFIX_GO + go_id
+                go_ids.append(go_id)
+                db_xrefs.append(go_id)
         if(len(go_ids) != 0):
             psc[DB_PSC_COL_GO] = go_ids
     
+    psc['db_xrefs'] = db_xrefs
     return psc
