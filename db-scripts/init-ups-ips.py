@@ -97,6 +97,8 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     uniparc_id = rep_member_dbref.find('./{*}property[@type="UniParc ID"]')
                     if(uniparc_id is not None):
                         uniparc_id = uniparc_id.attrib['value'][3:]
+                    else:
+                        uniparc_id = rep_member_dbref.get('id', None) if rep_member_dbref.get('type', '') == 'UniParc ID' else None
                     conn.execute('INSERT INTO ups (hash, length, uniparc_id, uniref100_id) VALUES (?,?,?,?)', (seq_hash.digest(), length, uniparc_id, uniref100_id))
                     log_ups.info('INSERT INTO ups (hash, length, uniparc_id, uniref100_id) VALUES (%s,%s,%s,%s)', seq_hash_hexdigest, length, uniparc_id, uniref100_id)
                     product = rep_member_dbref.find('./{*}property[@type="protein name"]')
