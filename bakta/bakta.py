@@ -175,7 +175,7 @@ def main(args):
             cdss_psc, cdss_not_found = psc.search(cdss_not_found)
             print("\tfound PSCs: %i " % len(cdss_psc))
         print("lookup PSC annotations for PSCs and IPSs and mark hypotheticals...")
-        psc.lookup_pscs(data[bc.FEATURE_CDS])  # lookup PSC info
+        psc.lookup(data[bc.FEATURE_CDS])  # lookup PSC info
         cds.mark_hypotheticals(data[bc.FEATURE_CDS])  # mark hypotheticals
         for feat in data[bc.FEATURE_CDS]:
             anno.combine_ups_psc_annotation(feat) # combine IPS and PSC annotations
