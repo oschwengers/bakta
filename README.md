@@ -103,44 +103,49 @@ correctly setup, e.g. `$ sudo apt install build-essential`.
 3.  rRNA: Infernal vs. Rfam rRNA covariance models
 4.  ncRNA: Infernal vs. Rfam ncRNA covariance models
 5.  CDS: Prodigal
-        a) UPS vs. UniRef100
+        a) IPS vs. UniRef100
         b) PSC vs. UniRef90
-6.  sORFs: UPS vs. UniRef100
+6.  sORFs: IPS vs. UniRef100
 
 ### Coding sequences
 The structural annotation is conducted via Prodigal and is complemented by a
 custom detection of short open reading freames (**sORF**) smaller than 30 aa.
 
-CDS detected via Prodigal:
-1. Lookup of unique protein sequence (**UPS**) via **MD5** hashes.
-2. Alignment via Diamond vs. UniProt's UniRef90 based protein sequence clusters (**PSC**).
+CDS:
+1. Prediction via Prodigal
+2. Detection of unique protein sequences (**UPS**)s via **MD5** hashes and lookup of related (**IPS**)s.
+3. Alignment of remainder via Diamond vs. UniProt's UniRef90 based protein sequence clusters (**PSC**)s.
 
 sORFs:
 1. Strict filtering by overlaps with other detected features.
-2. Lookup of unique protein sequence (**UPS**) via **MD5** hashes.
+2. Detection of **UPS**s via **MD5** hashes and lookup of related **IPS**s.
+
 Only **sORF** which are detected by their identity (100% coverage & 100% sequence identity)
 will be included in the annotation.
 
 
 ## Database
-Bakta provides and depends on a custom database based on:
-- UniProt UniRef100
-- UniProt UniRef90
-which is implemented in a compact SQLite database for the sake of performance.
-
-This db has been comprehensively annotated on a compute cluster integrating
+The Bakta database is built on **IPS**s and **PSC**s from:
+- **IPS**: UniProt UniRef100
+- **PSC**: UniProt UniRef90
+- 
+which have been comprehensively pre-annotated integrating
 annotations & database cross references (db xrefs) from:
-- NCBI non-redundant proteins (exact matches)
+- NCBI nonredundant proteins ('WP_*', exact matches)
 - NCBI COG db (80% coverage & 90% identity)
-- GO
-- E.C.
-- NCBI AMRFinderPlus (exact matches)
+- GO terms (via SwissProt)
+- EC (via SwissProt)
+- NCBI AMRFinderPlus (**IPS** exact matches, **PSC** HMM hits achieving the trusted cutoff)
 - ISFinder db (90% coverage & 99% identity)
 
-This obligatory database can be downloaded here:
-(zipped x.y Gb, unzipped x.y Gb)
+For the sake of performance and data size, all pre-annotation information is stored in a compact 
+SQLite database which can be downloaded here:
 [![DOI](https://zenodo.org/badge/DOI/<DOI>.svg)](https://doi.org/<DOI>)
 -   [<DB_URL>](<DB_URL>)
+
+DB size:
+- zipped: x.y Gb
+- unzipped x.y Gb
 
 
 ## Usage
