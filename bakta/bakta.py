@@ -201,14 +201,14 @@ def main(args):
 
         print('lookup UPSs...')
         sorf_upss, sorfs_not_found = ups.lookup(sorfs)
-        print("\tfound UPSs: %i" % (len(sorf_upss), len(sorfs_not_found)))
+        print("\tfound UPSs: %i" % len(sorf_upss))
 
         print('lookup IPSs...')
         sorf_ipss, orfs_not_found = ips.lookup(sorf_upss)
-        print("\tfound IPSs: %i" % (len(sorf_ipss), len(orfs_not_found)))
+        print("\tfound IPSs: %i" % len(sorf_ipss))
 
         print("lookup PSC annotations for sORFs...")
-        psc.lookup_pscs(sorf_ipss)  # lookup PSC info
+        psc.lookup(sorf_ipss)  # lookup PSC info
         data[bc.FEATURE_SORF] = s_orf.annotation_filter(sorfs)
         s_orf.mark_hypotheticals(data[bc.FEATURE_SORF])  # mark hypotheticals
         for feat in data[bc.FEATURE_SORF]:
