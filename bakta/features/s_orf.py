@@ -239,13 +239,16 @@ def annotation_filter(sorfs):
 
 def mark_hypotheticals(sorfs):
     for sorf in sorfs:
-        ips = sorf['ips']  # must exist, otherwise filtered before
-        product = ips.get('product', '')
-        if(product == ''):
-            psc = sorf.get('psc', None)
-            if(psc):
-                product = psc.get('product', '')
-                if(product == '' or 'uncharacterized' in product.lower()):
+        ips = sorf.get('ips', None)  # must exist, otherwise filtered before
+        if(ips is None):
+            sorf['hypothetical'] = True
+        else:
+            product = ips.get('product', '')
+            if(product == ''):
+                psc = sorf.get('psc', None)
+                if(psc is None):
                     sorf['hypothetical'] = True
-            else:
-                sorf['hypothetical'] = True
+                else:
+                    product = psc.get('product', '')
+                    if(product == '' or 'uncharacterized' in product.lower()):
+                        sorf['hypothetical'] = True
