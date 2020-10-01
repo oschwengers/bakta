@@ -177,7 +177,7 @@ def main(args):
         psc.lookup(data[bc.FEATURE_CDS])  # lookup PSC info
         cds.mark_hypotheticals(data[bc.FEATURE_CDS])  # mark hypotheticals
         for feat in data[bc.FEATURE_CDS]:
-            anno.combine_ups_psc_annotation(feat) # combine IPS and PSC annotations
+            anno.combine_ips_psc_annotation(feat) # combine IPS and PSC annotations
     ############################################################################
     # sORF prediction
     # - in-mem sORF extraction
@@ -217,7 +217,7 @@ def main(args):
         psc.lookup(sorf_pscs)  # lookup PSC info
         data[bc.FEATURE_SORF] = s_orf.annotation_filter(sorfs)
         for feat in data[bc.FEATURE_SORF]:
-            anno.combine_ups_psc_annotation(feat) # combine IPS and PSC annotations
+            anno.combine_ips_psc_annotation(feat) # combine IPS and PSC annotations
 
     ############################################################################
     # Create annotations

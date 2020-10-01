@@ -1,7 +1,7 @@
 
 import bakta.constants as bc
 
-def combine_ups_psc_annotation(feature):
+def combine_ips_psc_annotation(feature):
     ups = feature.get('ups', None)
     ips = feature.get('ips', None)
     psc = feature.get('psc', None)
