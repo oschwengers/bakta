@@ -215,7 +215,9 @@ def main(args):
         print("lookup PSC annotations for sORFs...")
         sorf_pscs.extend(sorf_ipss)
         psc.lookup(sorf_pscs)  # lookup PSC info
-        data[bc.FEATURE_SORF] = s_orf.annotation_filter(sorfs)
+        sorfs_filtered = s_orf.annotation_filter(sorfs)
+        data[bc.FEATURE_SORF] = sorfs_filtered
+        print("\tfiltered sORFs: %i" % len(sorfs_filtered))
         for feat in data[bc.FEATURE_SORF]:
             anno.combine_ips_psc_annotation(feat) # combine IPS and PSC annotations
 

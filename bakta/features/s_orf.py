@@ -240,20 +240,32 @@ def annotation_filter(sorfs):
     """Filter sORFs according to available annotations."""
     valid_sorfs = []
     for sorf in sorfs:
+        gene = None
+        product = None
+        added = False
+        
         ips = sorf.get('ips', None)
-        psc = sorf.get('psc', None)
-
         if(ips is not None):
-            if(ips['gene'] is None and ips['product'] is None):
-                sorf['hypothetical'] = True
-            valid_sorfs.add(sorf)
-        elif(psc is not None):
-            if(psc['gene'] is None and psc['product'] is None):
-                sorf['hypothetical'] = True
-            valid_sorfs.add(sorf)
-        else:
+            if('gene' in ips):
+                gene = ips['gene']
+            if('product' in ips):
+                product = ips['product']
+            valid_sorfs.append(sorf)
+            added = True
+        
+        psc = sorf.get('psc', None)
+        if(psc is not None):
+            if('gene' in psc):
+                gene = psc['gene']
+            if('product' in psc):
+                product = psc['product']
+            if(added is False):
+                valid_sorfs.append(sorf)
+
+        if(gene is None and product is None):
             sorf['hypothetical'] = True
-    return valid_sorfs
+    
+    return list(valid_sorfs)
     
 
 def search_pscs(sorfs):
