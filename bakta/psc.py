@@ -29,7 +29,7 @@ def search(cdss):
         for cds in cdss:
             fh.write(">%s\n%s\n" % (cds['tmp_id'], cds['sequence']))
     diamond_output_path = cfg.tmp_path.joinpath('diamond.tsv')
-    diamond_db_path = cfg.db_path.joinpath('psc')
+    diamond_db_path = cfg.db_path.joinpath('psc.dmnd')
     cmd = [
         'diamond',
         'blastp',
