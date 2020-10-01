@@ -22,7 +22,7 @@ setup(
     author_email='oliver.schwengers@computational.bio.uni-giessen.de',
     url='https://github.com/oschwengers/bakta',
     packages=['bakta'],
-    python_requires='>=3.5',
+    python_requires='>=3.6',
     include_package_data=True,
     zip_safe=False,
     install_requires=[
