@@ -188,16 +188,22 @@ def create_locus_tag_prefix(contigs):
     """Create either genus/species or sequence MD5 hex based locus tag prefix."""
     if(cfg.locus):  # user provided a valid locus (not None/non-empty)
         return cfg.locus
-    elif(cfg.genus and cfg.species):  # user provided valid genus & species (not None/non-empty)
-        locus_prefix = cfg.genus[:1] + cfg.species[:2]
-        if(cfg.strain != ''):
-            locus_prefix += cfg.strain[:2]
+    elif(cfg.plasmid):
+        return cfg.plasmid[:max(5, cfg.plasmid)]
+    elif(cfg.genus or cfg.species or cfg.strain):  # user provided valid genus & species (not None/non-empty)
+        locus_prefix = cfg.strain[:max(5, len(cfg.strain))] if cfg.strain else ''
+        if(cfg.species):
+            length = 5 - len(locus_prefix)
+            locus_prefix = "%s%s" % (cfg.species[:min(length + 1, len(cfg.species))], locus_prefix[:min(4, len(locus_prefix))])
+        if(cfg.genus):
+            length = 5 - len(locus_prefix)
+            locus_prefix = "%s%s" % (cfg.genus[:min(length + 1, len(cfg.genus))], locus_prefix[:min(4, len(locus_prefix))])
         return locus_prefix.upper()
     else:  # create a sequence based locus prefix
         hash = hashlib.md5()
         for contig in contigs:
             hash.update(str.encode(contig['sequence']))
-        return hash.hexdigest()[0:5]
+        return hash.hexdigest()[0:5].upper()
 
 
 def calc_aa_hash(seq):
