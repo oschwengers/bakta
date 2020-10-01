@@ -80,7 +80,9 @@ def predict(contigs, filtered_contigs_path):
             cds = cdss[record.id]
             seq = str(record.seq)[:-1]  # discard trailing asterisk
             cds['sequence'] = seq
-            cds['aa_hash'] = bu.calc_aa_hash(seq)
+            (aa_digest, aa_hexdigest) = bu.calc_aa_hash(seq)
+            cds['aa_digest'] = aa_digest
+            cds['aa_hexdigest'] = aa_hexdigest
 
     gff_path.unlink()
     proteins_path.unlink()

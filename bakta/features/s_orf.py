@@ -47,6 +47,7 @@ def extract(contigs):
                         test_seq = test_dna_seq.translate(table=11, stop_symbol='*', to_stop=False, cds=True)
                         assert sequence == test_seq, "seqs not equal! a=%s, b=%s" % (sequence, test_seq)
 
+                        (aa_digest, aa_hexdigest) = bu.calc_aa_hash(sequence)
                         orf = {
                             'type': bc.FEATURE_SORF,
                             'contig': contig['id'],
@@ -55,7 +56,8 @@ def extract(contigs):
                             'strand': strand,
                             'frame': frame + 1,
                             'sequence': sequence,
-                            'aa_hash': bu.calc_aa_hash(sequence)
+                            'aa_digest': aa_digest,
+                            'aa_hexdigest': aa_hexdigest
                         }
                         orfs.append(orf)
                         log.debug(
@@ -259,7 +261,7 @@ def search_pscs(sorfs):
     sorf_fasta_path = cfg.tmp_path.joinpath('sorf.faa')
     with sorf_fasta_path.open(mode='w') as fh:
         for sorf in sorfs:
-            fh.write(">%s\n%s\n" % (sorf['aa_hash'], sorf['sequence']))
+            fh.write(">%s\n%s\n" % (sorf['aa_hexdigest'], sorf['sequence']))
     diamond_output_path = cfg.tmp_path.joinpath('diamond.sorf.tsv')
     diamond_db_path = cfg.db_path.joinpath('sorf.dmnd')
     cmd = [
@@ -291,13 +293,13 @@ def search_pscs(sorfs):
         log.warning('sORF failed! diamond-error-code=%d', proc.returncode)
         raise Exception("diamond error! error code: %i" % proc.returncode)
 
-    sorf_by_aa_hash = {sorf['aa_hash']: sorf for sorf in sorfs}
+    sorf_by_aa_digest = {sorf['aa_hexdigest']: sorf for sorf in sorfs}
     with diamond_output_path.open() as fh:
         for line in fh:
             (sorf_hash, cluster_id, identity, alignment_length, align_mismatches,
                 align_gaps, query_start, query_end, subject_start, subject_end,
                 evalue, bitscore) = line.split('\t')
-            sorf = sorf_by_aa_hash[sorf_hash]
+            sorf = sorf_by_aa_digest[sorf_hash]
             query_cov = int(alignment_length) / len(sorf['sequence'])
             identity = float(identity) / 100
             if(query_cov >= bc.MIN_PROTEIN_COVERAGE and identity >= bc.MIN_PROTEIN_IDENTITY):

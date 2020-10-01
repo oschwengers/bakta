@@ -207,7 +207,8 @@ def create_locus_tag_prefix(contigs):
 
 
 def calc_aa_hash(seq):
-    return hashlib.md5(seq.encode('utf-8')).digest()
+    aa_hash = hashlib.md5(seq.encode('utf-8'))
+    return (aa_hash.digest(), aa_hash.hexdigest())
 
 
 def has_annotation(feature, attribute):
