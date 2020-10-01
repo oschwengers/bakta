@@ -288,6 +288,12 @@ def main(args):
         embl_path = cfg.output_path.joinpath("%s.embl" % prefix)
         embl.write_embl(features, embl_path)
 
+    if(cfg.faa):
+        print('write translated CDS sequences...')
+        log.debug('write translated CDS output')
+        faa_path = cfg.output_path.joinpath("%s.faa" % prefix)
+        fasta.write_faa(features, faa_path)
+
     # remove tmp dir
     shutil.rmtree(str(cfg.tmp_path))
     log.debug('removed tmp dir: %s', cfg.tmp_path)

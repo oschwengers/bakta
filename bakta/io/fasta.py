@@ -3,6 +3,8 @@ import logging
 
 from Bio import SeqIO
 
+import bakta.constants as bc
+
 
 log = logging.getLogger('io:fasta')
 
@@ -52,3 +54,11 @@ def format_fasta(contig, line_wrapping=False):
     else:
         lines += contig['sequence'] + '\n'
     return lines
+
+
+def write_faa(features, faa_path):
+    """Write translated CDS sequences to Fasta file."""
+    with faa_path.open('w') as fh:
+        for feat in features:
+            if(feat['type'] == bc.FEATURE_CDS or feat['type'] == bc.FEATURE_SORF):
+                fh.write(">%s\n%s\n" % (feat['locus'], feat['sequence']))

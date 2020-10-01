@@ -30,6 +30,7 @@ def parse_arguments():
     arg_group_io.add_argument('--gff3', action='store_true', help='Write GFF3 annotation file')
     arg_group_io.add_argument('--genbank', action='store_true', help='Write GenBank annotation file')
     arg_group_io.add_argument('--embl', action='store_true', help='Write EMBL annotation file')
+    arg_group_io.add_argument('--faa', action='store_true', help='Write translated CDS sequences as fasta file')
 
     arg_group_organism = parser.add_argument_group('Organism')
     arg_group_organism.add_argument('--genus', action='store', default='', help='Genus name')
