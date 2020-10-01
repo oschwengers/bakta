@@ -235,21 +235,23 @@ def overlap_filter(data, orfs_raw):
 
 
 def annotation_filter(sorfs):
+    """Filter sORFs according to available annotations."""
+    valid_sorfs = []
     for sorf in sorfs:
-        ips = sorf.get('ips', None)  # must exist, otherwise filtered before
-        if(ips is None):
-            sorf['hypothetical'] = True
+        ips = sorf.get('ips', None)
+        psc = sorf.get('psc', None)
+
+        if(ips is not None):
+            if(ips['gene'] is None and ips['product'] is None):
+                sorf['hypothetical'] = True
+            valid_sorfs.add(sorf)
+        elif(psc is not None):
+            if(psc['gene'] is None and psc['product'] is None):
+                sorf['hypothetical'] = True
+            valid_sorfs.add(sorf)
         else:
-            product = ips.get('product', '')
-            if(product == ''):
-                psc = sorf.get('psc', None)
-                if(psc is None):
-                    sorf['hypothetical'] = True
-                else:
-                    product = psc.get('product', '')
-                    if(product == '' or 'uncharacterized' in product.lower()):
-                        sorf['hypothetical'] = True
-    return sorfs
+            sorf['hypothetical'] = True
+    return valid_sorfs
     
 
 def search_pscs(sorfs):
