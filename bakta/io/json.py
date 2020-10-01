@@ -6,7 +6,7 @@ import bakta.constants as bc
 def write_json(features, json_path):
 
     for feat in features:
-        if(feat['type'] == bc.FEATURE_CDS):
+        if(feat['type'] == bc.FEATURE_CDS or feat['type'] == bc.FEATURE_SORF):
             feat['aa_hash'] = binascii.b2a_hex(feat['aa_hash']).decode()  # encode hashes as hex
             
             # remove redundant IPS Dbxrefs
