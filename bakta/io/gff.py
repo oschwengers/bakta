@@ -44,7 +44,7 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                     if(feat.get('pseudo', False)):
                         annotations['pseudo'] = True
                     annotations = encode_annotations(annotations)
-                    fh.write('\t'.join([feat['contig'], 'tRNAscan-SE', 'tRNA', str(feat['start']), str(feat['stop']), 'NA', feat['strand'], '', annotations]))
+                    fh.write('\t'.join([feat['contig'], 'tRNAscan-SE', 'tRNA', str(feat['start']), str(feat['stop']), '.', feat['strand'], '.', annotations]))
                     fh.write('\n')
                 elif(feat['type'] is bc.FEATURE_TM_RNA):
                     annotations = {
@@ -56,7 +56,7 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                         'Dbxref': feat['db_xrefs']
                     }
                     annotations = encode_annotations(annotations)
-                    fh.write('\t'.join([feat['contig'], 'Aragorn', 'tmRNA', str(feat['start']), str(feat['stop']), 'NA', feat['strand'], '', annotations]))
+                    fh.write('\t'.join([feat['contig'], 'Aragorn', 'tmRNA', str(feat['start']), str(feat['stop']), '.', feat['strand'], '.', annotations]))
                     fh.write('\n')
                 elif(feat['type'] is bc.FEATURE_R_RNA):
                     annotations = {
@@ -68,7 +68,7 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                         'Dbxref': feat['db_xrefs']
                     }
                     annotations = encode_annotations(annotations)
-                    fh.write('\t'.join([feat['contig'], 'Infernal', 'rRNA', str(feat['start']), str(feat['stop']), 'NA', feat['strand'], '', annotations]))
+                    fh.write('\t'.join([feat['contig'], 'Infernal', 'rRNA', str(feat['start']), str(feat['stop']), str(feat['evalue']), feat['strand'], '.', annotations]))
                     fh.write('\n')
                 elif(feat['type'] is bc.FEATURE_NC_RNA):
                     annotations = {
@@ -80,7 +80,7 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                         'Dbxref': feat['db_xrefs']
                     }
                     annotations = encode_annotations(annotations)
-                    fh.write('\t'.join([feat['contig'], 'Infernal', 'ncRNA', str(feat['start']), str(feat['stop']), 'NA', feat['strand'], '', annotations]))
+                    fh.write('\t'.join([feat['contig'], 'Infernal', 'ncRNA', str(feat['start']), str(feat['stop']), str(feat['evalue']), feat['strand'], '.', annotations]))
                     fh.write('\n')
                 elif(feat['type'] is bc.FEATURE_NC_RNA_REGION):
                     annotations = {
@@ -91,7 +91,7 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                         'Dbxref': feat['db_xrefs']
                     }
                     annotations = encode_annotations(annotations)
-                    fh.write('\t'.join([feat['contig'], 'Infernal', 'MISC_RNA', str(feat['start']), str(feat['stop']), 'NA', feat['strand'], '', annotations]))
+                    fh.write('\t'.join([feat['contig'], 'Infernal', 'MISC_RNA', str(feat['start']), str(feat['stop']), str(feat['evalue']), feat['strand'], '.', annotations]))
                     fh.write('\n')
                 elif(feat['type'] is bc.FEATURE_CDS):
                     annotations = {
@@ -107,7 +107,7 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                         annotations['gene'] = feat['gene']
                     # add DbXrefs
                     annotations = encode_annotations(annotations)
-                    fh.write('\t'.join([feat['contig'], 'Prodigal', 'CDS', str(feat['start']), str(feat['stop']), 'NA', feat['strand'], str(feat['frame']), annotations]))
+                    fh.write('\t'.join([feat['contig'], 'Prodigal', 'CDS', str(feat['start']), str(feat['stop']), '.', feat['strand'], '0', annotations]))
                     fh.write('\n')
                 elif(feat['type'] is bc.FEATURE_SORF):
                     annotations = {
@@ -123,7 +123,7 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                         annotations['gene'] = feat['gene']
                     # add DbXrefs
                     annotations = encode_annotations(annotations)
-                    fh.write('\t'.join([feat['contig'], 'Bakta', 'CDS', str(feat['start']), str(feat['stop']), 'NA', feat['strand'], str(feat['frame']), annotations]))
+                    fh.write('\t'.join([feat['contig'], 'Bakta', 'CDS', str(feat['start']), str(feat['stop']), '.', feat['strand'], '0', annotations]))
                     fh.write('\n')
         
         for contig in contigs:  # write sequences
