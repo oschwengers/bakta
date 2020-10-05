@@ -17,10 +17,11 @@ def import_contigs(contigs_path, min_length):
     contig_counter = 1
     contigs = []
     discarded = []
+    contig_prefix = cfg.locus if cfg.locus else 'contig'
     with contigs_path.open() as fh:
         for record in SeqIO.parse(fh, 'fasta'):
             seq = str(record.seq)
-            contig_name = "contig_%d" % contig_counter
+            contig_name = "%s_%i" % (contig_prefix, contig_counter)
             contig_counter += 1
             contig = {
                 'id': contig_name,
