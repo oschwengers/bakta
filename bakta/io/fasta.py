@@ -3,6 +3,7 @@ import logging
 
 from Bio import SeqIO
 
+import bakta.config as cfg
 import bakta.constants as bc
 
 

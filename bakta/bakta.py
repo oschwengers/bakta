@@ -250,10 +250,11 @@ def main(args):
         features.extend(contig_features)
 
     locus_tag_nr = 5
-    locus_prefix = bu.create_locus_tag_prefix(contigs)
-    log.info('locus prefix: %s', locus_prefix)
+    # use user provided locus tag if not None/non-empty or generate a sequence based locus prefix
+    locus_tag_prefix = cfg.locus_tag if cfg.locus_tag else bu.create_locus_tag_prefix(contigs)
+    log.info('locus tag prefix: %s', locus_tag_prefix)
     for feature in features:
-        locus_tag = "%s%05d" % (locus_prefix, locus_tag_nr)
+        locus_tag = "%s_%05d" % (locus_tag_prefix, locus_tag_nr)
         feature['locus'] = locus_tag
         locus_tag_nr += 5
 

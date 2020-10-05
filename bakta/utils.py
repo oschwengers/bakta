@@ -187,22 +187,19 @@ def create_locus_prefix(contigs):
 
 def create_locus_tag_prefix(contigs):
     """Create either genus/species or sequence MD5 hex based locus tag prefix."""
-    if(cfg.locus):  # user provided a valid locus (not None/non-empty)
-        return cfg.locus
-    else:  # create a sequence based locus prefix
-        hash = hashlib.md5()
-        for contig in contigs:
-            hash.update(str.encode(contig['sequence']))
-        hexdigest = hash.hexdigest().upper()
-        locus_prefix = []
-        i = 0
-        while i < 5:
-            c = hexdigest[i]
-            if(c >= '0' and c <= '9'):
-                c = chr(ord('F') + int(c) + 1) 
-            locus_prefix.append(c)
-            i += 1
-        return ''.join(locus_prefix)
+    hash = hashlib.md5()
+    for contig in contigs:
+        hash.update(str.encode(contig['sequence']))
+    hexdigest = hash.hexdigest().upper()
+    locus_prefix = []
+    i = 0
+    while i < 6:
+        c = hexdigest[i]
+        if(c >= '0' and c <= '9'):
+            c = chr(ord('F') + int(c) + 1) 
+        locus_prefix.append(c)
+        i += 1
+    return ''.join(locus_prefix)
 
 
 def calc_aa_hash(seq):
