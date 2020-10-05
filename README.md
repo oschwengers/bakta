@@ -250,6 +250,8 @@ Organism:
 Annotation:
   --prodigal-tf PRODIGAL_TF
                         Path to existing Prodigal training file to use for CDS prediction
+  --translation-table TRANSLATION_TABLE
+                        Translation table to use (default = 11)
   --keep-contig-names   Keep original contig names
   --locus LOCUS         Locus prefix
   --locus-tag LOCUS_TAG

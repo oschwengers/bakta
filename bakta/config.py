@@ -139,7 +139,7 @@ def setup(args):
     log.info('plasmid=%s', plasmid)
 
     # annotation configurations
-    global prodigal_tf, keep_contig_names, locus, locus_tag, gram, complete
+    global prodigal_tf, translation_table, keep_contig_names, locus, locus_tag, gram, complete
     prodigal_tf = args.prodigal_tf if args.prodigal_tf != '' else None
     if prodigal_tf is not None:
         try:
@@ -155,6 +155,18 @@ def setup(args):
             log.error('provided prodigal training file not valid! path=%s', args.prodigal_tf)
             sys.exit('ERROR: Prodigal training file (%s) not valid!' % args.prodigal_tf)
     log.info('prodigal_tf=%s', prodigal_tf)
+    translation_table = args.translation_table
+    log.info('translation_table=%s', translation_table)
+    keep_contig_names = args.keep_contig_names
+    log.info('keep_contig_names=%s', keep_contig_names)
+    locus = args.locus if args.locus != '' else None
+    log.info('locus=%s', locus)
+    locus_tag = args.locus_tag if args.locus_tag != '' else None
+    log.info('locus-tag=%s', locus_tag)
+    gram = args.gram
+    log.info('gram=%s', gram)
+    complete = args.complete
+    log.info('complete=%s', complete)
     
     # workflow configurations
     global skip_trna, skip_tmrna, skip_rrna, skip_ncrna, skip_ncrna_region, skip_cds, skip_sorf
@@ -172,14 +184,3 @@ def setup(args):
     log.info('skip-CDS=%s', skip_cds)
     skip_sorf = args.skip_sorf
     log.info('skip-sORF=%s', skip_sorf)
-
-    keep_contig_names = args.keep_contig_names
-    log.info('keep_contig_names=%s', keep_contig_names)
-    locus = args.locus if args.locus != '' else None
-    log.info('locus=%s', locus)
-    locus_tag = args.locus_tag if args.locus_tag != '' else None
-    log.info('locus-tag=%s', locus_tag)
-    gram = args.gram
-    log.info('gram=%s', gram)
-    complete = args.complete
-    log.info('complete=%s', complete)

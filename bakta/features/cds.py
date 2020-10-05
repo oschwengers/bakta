@@ -20,6 +20,7 @@ def predict(contigs, filtered_contigs_path):
         'prodigal',
         '-i', str(filtered_contigs_path),
         '-a', str(proteins_path),
+        '-g', str(cfg.translation_table),  # set translation table
         '-f', 'gff',  # GFF output
         '-o', str(gff_path)  # prodigal output
     ]
