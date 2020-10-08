@@ -63,4 +63,4 @@ def write_faa(features, faa_path):
     with faa_path.open('w') as fh:
         for feat in features:
             if(feat['type'] == bc.FEATURE_CDS or feat['type'] == bc.FEATURE_SORF):
-                fh.write(">%s\n%s\n" % (feat['locus'], feat['sequence']))
+                fh.write(">%s %s\n%s\n" % (feat['locus'], feat['product'], feat['sequence']))
