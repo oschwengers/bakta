@@ -20,6 +20,7 @@ import bakta.features.nc_rna_region as nc_rna_region
 # import bakta.features.crispr
 import bakta.features.cds as cds
 import bakta.features.s_orf as s_orf
+import bakta.features.gaps as gaps
 import bakta.utils as bu
 import bakta.ups as ups
 import bakta.ips as ips
@@ -220,6 +221,19 @@ def main(args):
         print("\tfiltered sORFs: %i" % len(sorfs_filtered))
         for feat in data[bc.FEATURE_SORF]:
             anno.combine_ips_psc_annotation(feat) # combine IPS and PSC annotations
+    ############################################################################
+    # gap annotation
+    # - in-mem gap detection
+    # - gap annotation
+    ############################################################################
+    if(cfg.skip_gap):
+        print('skip gap annotation...')
+    else:
+        print('detect gaps...')
+        log.debug('start gap detection')
+        assembly_gaps = gaps.detect_assembly_gaps(data['contigs'])
+        print("\tfound gaps: %i" % len(assembly_gaps))
+        data[bc.FEATURE_GAP] = assembly_gaps
 
     ############################################################################
     # Create annotations
@@ -237,7 +251,8 @@ def main(args):
             bc.FEATURE_NC_RNA,
             bc.FEATURE_NC_RNA_REGION,
             bc.FEATURE_CDS,
-            bc.FEATURE_SORF
+            bc.FEATURE_SORF,
+            bc.FEATURE_GAP
         ]:
         feature_list = data.get(feature_type, [])
         for feature in feature_list:
@@ -255,8 +270,9 @@ def main(args):
     log.info('locus tag prefix: %s', locus_tag_prefix)
     for feature in features:
         locus_tag = "%s_%05d" % (locus_tag_prefix, locus_tag_nr)
-        feature['locus'] = locus_tag
-        locus_tag_nr += 5
+        if(feature['type'] != bc.FEATURE_GAP):
+            feature['locus'] = locus_tag
+            locus_tag_nr += 5
 
     ############################################################################
     # Write output files

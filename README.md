@@ -267,6 +267,7 @@ Workflow:
   --skip-ncrna-region   Skip ncRNA region detection & annotation
   --skip-cds            Skip CDS detection & annotation
   --skip-sorf           Skip sORF detection & annotation
+  --skip-gap            Skip gap detection & annotation
 
 General:
   --help, -h            Show this help message and exit

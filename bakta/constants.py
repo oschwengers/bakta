@@ -57,6 +57,7 @@ FEATURE_CRISPR = 'crispr'
 FEATURE_ORF = 'orf'
 FEATURE_SORF = 'sorf'
 FEATURE_CDS = 'cds'
+FEATURE_GAP = 'gap'
 
 ############################################################################
 # INSDC feature tags
@@ -73,6 +74,8 @@ INSDC_FEATURE_REPEAT_TYPE = 'rpt_Type' # /rpt_type=<repeat_type>  # 'direct'
 INSDC_FEATURE_REPEAT_UNIT_RANGE = 'rpt_unit_range'  # /rpt_unit_range=<base_range>
 INSDC_FEATURE_REPEAT_UNIT_SEQ = 'rpt_unit_seq'  # /rpt_unit_seq="text"
 INSDC_FEATURE_CDS = 'CDS'
+INSDC_FEATURE_GAP = 'gap'
+INSDC_FEATURE_ASSEMBLY_GAP = 'assembly_gap'
 
 ############################################################################
 # Miscellaneous feature tags

@@ -125,6 +125,15 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                     annotations = encode_annotations(annotations)
                     fh.write('\t'.join([feat['contig'], 'Bakta', 'CDS', str(feat['start']), str(feat['stop']), '.', feat['strand'], '0', annotations]))
                     fh.write('\n')
+                elif(feat['type'] is bc.FEATURE_GAP):
+                    annotations = {
+                        'NAME': 'assembly gap [length=%s]' % feat['length'],
+                        'product': 'assembly gap [length=%s]' % feat['length']
+                    }
+                    annotations = encode_annotations(annotations)
+                    feat_type = bc.INSDC_FEATURE_ASSEMBLY_GAP if feat['length'] >= 100 else bc.INSDC_FEATURE_GAP
+                    fh.write('\t'.join([feat['contig'], 'Bakta', feat_type, str(feat['start']), str(feat['stop']), '.', '+', '0', annotations]))
+                    fh.write('\n')
         
         for contig in contigs:  # write sequences
             fh.write('##FASTA\n')
