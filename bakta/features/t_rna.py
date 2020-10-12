@@ -92,7 +92,7 @@ def predict_t_rnas(data, contigs_path):
                 trna['product'] = "tRNA-%s" % trna_type
                 trna['anti_codon'] = anti_codon
                 trna['notes'] = ["tRNA-%s(%s)" % (trna_type, anti_codon)]
-                so_term = SO_TERMS.get(trna_type.lower(), None)
+                so_term = SO_TERMS.get(trna_type.lower().replace('2', ''), None)
                 if(so_term):
                     trna['db_xrefs'].append(so_term)
             
