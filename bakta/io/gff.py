@@ -93,6 +93,14 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                     annotations = encode_annotations(annotations)
                     fh.write('\t'.join([feat['contig'], 'Infernal', 'MISC_RNA', str(feat['start']), str(feat['stop']), str(feat['evalue']), feat['strand'], '.', annotations]))
                     fh.write('\n')
+                elif(feat['type'] == bc.FEATURE_CRISPR):
+                    annotations = {
+                        'NAME': feat['product'],
+                        'product': feat['product']
+                    }
+                    annotations = encode_annotations(annotations)
+                    fh.write('\t'.join([feat['contig'], 'PILER-CR', 'CRISPR', str(feat['start']), str(feat['stop']), '.', feat['strand'], '0', annotations]))
+                    fh.write('\n')
                 elif(feat['type'] is bc.FEATURE_CDS):
                     annotations = {
                         'ID': feat['locus'],

@@ -125,6 +125,7 @@ Bakta depends on the following 3rd party executables which must be installed and
 - tRNAscan-SE (2.0.6) <https://doi.org/10.1101/614032> <http://lowelab.ucsc.edu/tRNAscan-SE>
 - Aragorn (1.2.38) <http://dx.doi.org/10.1093/nar/gkh152> <http://130.235.244.92/ARAGORN>
 - INFERNAL (1.1.3) <https://dx.doi.org/10.1093%2Fbioinformatics%2Fbtt509> <http://eddylab.org/infernal>
+- PILER-CR (1.06) <https://doi.org/10.1186/1471-2105-8-18> <http://www.drive5.com/pilercr>
 - Prodigal (2.6.3) <https://dx.doi.org/10.1186%2F1471-2105-11-119> <https://github.com/hyattpd/Prodigal>
 - Diamond (2.0.2) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
 
@@ -145,6 +146,7 @@ tRNAscan-se must be installed manually as v2.0 is currently not yet available vi
 3. rRNA genes: Infernal vs. Rfam rRNA covariance models
 4. ncRNA genes: Infernal vs. Rfam ncRNA covariance models
 5. ncRNA regions: Infernal vs. Rfam ncRNA covariance models
+6. CRISPR arrays: PILER-CR
 
 Bakta distinguishes ncRNA genes and regions in order to enable the distinct handling thereof during the annotation process.
 ncRNA gene types:
@@ -219,7 +221,7 @@ bakta --help
 usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH] [--prefix PREFIX] [--output OUTPUT] [--tsv] [--gff3] [--genbank] [--embl]
              [--genus GENUS] [--species SPECIES] [--strain STRAIN] [--plasmid PLASMID]
              [--prodigal-tf PRODIGAL_TF] [--keep-contig-names] [--locus LOCUS] [--locus-tag LOCUS_TAG] [--gram {+,-,?}] [--complete]
-             [--skip-trna] [--skip-tmrna] [--skip-rrna] [--skip-ncrna] [--skip-ncrna-region] [--skip-cds] [--skip-sorf] [--skip-gap]
+             [--skip-trna] [--skip-tmrna] [--skip-rrna] [--skip-ncrna] [--skip-ncrna-region] [--skip-crispr] [--skip-cds] [--skip-sorf] [--skip-gap]
              [--help] [--verbose] [--threads THREADS] [--tmp-dir TMP_DIR] [--version] [--citation]
              <genome>
 
@@ -265,6 +267,7 @@ Workflow:
   --skip-rrna           Skip rRNA detection & annotation
   --skip-ncrna          Skip ncRNA detection & annotation
   --skip-ncrna-region   Skip ncRNA region detection & annotation
+  --skip-crispr         Skip CRISPR array detection & annotation
   --skip-cds            Skip CDS detection & annotation
   --skip-sorf           Skip sORF detection & annotation
   --skip-gap            Skip gap detection & annotation

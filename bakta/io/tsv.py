@@ -34,6 +34,8 @@ def write_tsv(contigs, features_by_contig, tsv_path):
                     feat_type = bc.INSDC_FEATURE_NC_RNA
                 elif(feat['type'] == bc.FEATURE_NC_RNA_REGION):
                     feat_type = 'region'
+                elif(feat['type'] == bc.FEATURE_CRISPR):
+                    feat_type = 'CRISPR'
                 elif(feat['type'] == bc.FEATURE_CDS):
                     feat_type = bc.INSDC_FEATURE_CDS
                 elif(feat['type'] == bc.FEATURE_SORF):

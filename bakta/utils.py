@@ -53,6 +53,7 @@ def parse_arguments():
     arg_group_workflow.add_argument('--skip-rrna', action='store_true', dest='skip_rrna', help="Skip rRNA detection & annotation")
     arg_group_workflow.add_argument('--skip-ncrna', action='store_true', dest='skip_ncrna', help="Skip ncRNA detection & annotation")
     arg_group_workflow.add_argument('--skip-ncrna-region', action='store_true', dest='skip_ncrna_region', help="Skip ncRNA region detection & annotation")
+    arg_group_workflow.add_argument('--skip-crispr', action='store_true', dest='skip_crispr', help="Skip CRISPR array detection & annotation")
     arg_group_workflow.add_argument('--skip-cds', action='store_true', dest='skip_cds', help="Skip CDS detection & annotation")
     arg_group_workflow.add_argument('--skip-sorf', action='store_true', dest='skip_sorf', help="Skip sORF detection & annotation")
     arg_group_workflow.add_argument('--skip-gap', action='store_true', dest='skip_gap', help="Skip gap detection & annotation")
@@ -159,16 +160,16 @@ def test_dependencies():
     except:
         pass
 
-    # test blastn
+    # test pilercr
     try:
         sp.check_call(
-            ['blastn', '-version'],
+            ['pilercr', '-options'],
             stdout=sp.DEVNULL,
             stderr=sp.DEVNULL
         )
     except FileNotFoundError:
-        log.exception('blastn not found!')
-        sys.exit('ERROR: \'blastn\' not executable!')
+        log.exception('pilercr not found!')
+        sys.exit('ERROR: \'pilercr\' not executable!')
     except:
         pass
 

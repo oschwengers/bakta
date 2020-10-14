@@ -17,7 +17,7 @@ import bakta.features.tm_rna as tm_rna
 import bakta.features.r_rna as r_rna
 import bakta.features.nc_rna as nc_rna
 import bakta.features.nc_rna_region as nc_rna_region
-# import bakta.features.crispr
+import bakta.features.crispr as crispr
 import bakta.features.cds as cds
 import bakta.features.s_orf as s_orf
 import bakta.features.gaps as gaps
@@ -147,10 +147,10 @@ def main(args):
     ############################################################################
     # CRISPR prediction
     ############################################################################
-    # print('predict CRISPR cassettes...')
-    # log.debug('start CRISPR prediction')
-    # data[bc.FEATURE_CRISPR] = crispr.predict_crispr(data, contigs_path)
-    # print("\tfound %i CRISPR cassettes" % len(data[bc.FEATURE_CRISPR]))
+    print('predict CRISPR cassettes...')
+    log.debug('start CRISPR prediction')
+    data[bc.FEATURE_CRISPR] = crispr.predict_crispr(data, contigs_path)
+    print("\tfound CRISPR arrays: %i" % len(data[bc.FEATURE_CRISPR]))
 
     ############################################################################
     # CDS prediction
@@ -250,6 +250,7 @@ def main(args):
             bc.FEATURE_R_RNA,
             bc.FEATURE_NC_RNA,
             bc.FEATURE_NC_RNA_REGION,
+            bc.FEATURE_CRISPR,
             bc.FEATURE_CDS,
             bc.FEATURE_SORF,
             bc.FEATURE_GAP
@@ -270,7 +271,7 @@ def main(args):
     log.info('locus tag prefix: %s', locus_tag_prefix)
     for feature in features:
         locus_tag = "%s_%05d" % (locus_tag_prefix, locus_tag_nr)
-        if(feature['type'] != bc.FEATURE_GAP):
+        if(feature['type'] != bc.FEATURE_GAP and feature['type'] != bc.FEATURE_CRISPR):
             feature['locus'] = locus_tag
             locus_tag_nr += 5
 
