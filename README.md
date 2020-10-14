@@ -219,7 +219,7 @@ bakta --help
 usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH] [--prefix PREFIX] [--output OUTPUT] [--tsv] [--gff3] [--genbank] [--embl]
              [--genus GENUS] [--species SPECIES] [--strain STRAIN] [--plasmid PLASMID]
              [--prodigal-tf PRODIGAL_TF] [--keep-contig-names] [--locus LOCUS] [--locus-tag LOCUS_TAG] [--gram {+,-,?}] [--complete]
-             [--skip-trna] [--skip-tmrna] [--skip-rrna] [--skip-ncrna] [--skip-ncrna-region] [--skip-cds] [--skip-sorf]
+             [--skip-trna] [--skip-tmrna] [--skip-rrna] [--skip-ncrna] [--skip-ncrna-region] [--skip-cds] [--skip-sorf] [--skip-gap]
              [--help] [--verbose] [--threads THREADS] [--tmp-dir TMP_DIR] [--version] [--citation]
              <genome>
 
