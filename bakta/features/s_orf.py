@@ -96,13 +96,13 @@ def overlap_filter(data, orfs_raw):
         r_rnas = contig_r_rnas[r_rna['contig']]
         r_rnas.append(r_rna)
 
-    contig_nc_rnas = {k['id']: [] for k in data['contigs']}
-    for nc_rna in data.get(bc.FEATURE_NC_RNA, []):
-        nc_rnas = contig_nc_rnas[nc_rna['contig']]
-        nc_rnas.append(nc_rna)
-    for nc_rna in data.get(bc.FEATURE_NC_RNA_REGION, []):
-        nc_rnas = contig_nc_rnas[nc_rna['contig']]
-        nc_rnas.append(nc_rna)
+    # contig_nc_rnas = {k['id']: [] for k in data['contigs']}
+    # for nc_rna in data.get(bc.FEATURE_NC_RNA, []):
+    #     nc_rnas = contig_nc_rnas[nc_rna['contig']]
+    #     nc_rnas.append(nc_rna)
+    # for nc_rna in data.get(bc.FEATURE_NC_RNA_REGION, []):
+    #     nc_rnas = contig_nc_rnas[nc_rna['contig']]
+    #     nc_rnas.append(nc_rna)
 
     contig_crispr_arrays = {k['id']: [] for k in data['contigs']}
     for crispr_array in data.get(bc.FEATURE_CRISPR, []):
@@ -223,21 +223,21 @@ def overlap_filter(data, orfs_raw):
                     discarded_orfs.append(orf)
 
         # filter ncRNA overlapping ORFs
-        for nc_rna in contig_nc_rnas[contig['id']]:
-            log.debug('filter short ORFs by ncRNA: %s[%i->%i]', nc_rna['strand'], nc_rna['start'], nc_rna['stop'])
-            for orf in orfs[:]:
-                if(orf['start'] < nc_rna['start'] and orf['stop'] > nc_rna['start']):
-                    # ORF partially overlapping ncRNA upstream
-                    # ToDo: add max overlap threshold
-                    pass
-                elif(orf['start'] >= nc_rna['start'] and orf['stop'] <= nc_rna['stop']):
-                    # ORF completely overlapped by ncRNA
-                    # ToDo: allow sORF / leader overlap, test other overlaps
-                    pass
-                elif(orf['start'] < nc_rna['stop'] and orf['stop'] > nc_rna['start']):
-                    # ORF partially overlapping ncRNA downstream
-                    # ToDo: add max overlap threshold
-                    pass
+        # for nc_rna in contig_nc_rnas[contig['id']]:
+        #     log.debug('filter short ORFs by ncRNA: %s[%i->%i]', nc_rna['strand'], nc_rna['start'], nc_rna['stop'])
+        #     for orf in orfs[:]:
+        #         if(orf['start'] < nc_rna['start'] and orf['stop'] > nc_rna['start']):
+        #             # ORF partially overlapping ncRNA upstream
+        #             # ToDo: add max overlap threshold
+        #             pass
+        #         elif(orf['start'] >= nc_rna['start'] and orf['stop'] <= nc_rna['stop']):
+        #             # ORF completely overlapped by ncRNA
+        #             # ToDo: allow sORF / leader overlap, test other overlaps
+        #             pass
+        #         elif(orf['start'] < nc_rna['stop'] and orf['stop'] > nc_rna['start']):
+        #             # ORF partially overlapping ncRNA downstream
+        #             # ToDo: add max overlap threshold
+        #             pass
         
         # filter CRISPR array overlapping ORFs
         for crispr in contig_crispr_arrays[contig['id']]:
