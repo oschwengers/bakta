@@ -93,6 +93,10 @@ def test_database():
         'ncRNA-regions.i1m',
         'ncRNA-regions.i1p',
         'rfam-go.tsv',
+        'antifam.h3f',
+        'antifam.h3i',
+        'antifam.h3m',
+        'antifam.h3p',
         'bakta.db',
         'psc.dmnd'
     ]

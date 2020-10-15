@@ -86,4 +86,10 @@ INSDC_FEATURE_REGULATORY = 'regulatory'
 ############################################################################
 
 
+############################################################################
+# Miscellaneous constants
+############################################################################
+DISCARD_TYPE_SPURIOUS = 'spurious'
+DISCARD_TYPE_OVERLAP = 'overlap'
+
 CITATION = 'Schwengers O., Goesmann A. (2020)\nBakta: comprehensive and rapid annotation of bacterial genomes.\nGitHub https://github.com/oschwengers/bakta'

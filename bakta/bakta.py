@@ -18,6 +18,7 @@ import bakta.features.r_rna as r_rna
 import bakta.features.nc_rna as nc_rna
 import bakta.features.nc_rna_region as nc_rna_region
 import bakta.features.crispr as crispr
+import bakta.features.orf as orf
 import bakta.features.cds as cds
 import bakta.features.s_orf as s_orf
 import bakta.features.gaps as gaps
@@ -168,7 +169,9 @@ def main(args):
         print('predict CDSs...')
         log.debug('start CDS prediction')
         data[bc.FEATURE_CDS] = cds.predict(data['contigs'], contigs_path)
-        print("\tfound CDSs: %i " % len(data[bc.FEATURE_CDS]))
+        print("\tpredicted CDSs: %i " % len(data[bc.FEATURE_CDS]))
+        discarded_cds = orf.detect_spurious(data[bc.FEATURE_CDS])
+        print("\tdiscarded spurious CDSs: %i " % len(discarded_cds))
         cdss_ups, cdss_not_found = ups.lookup(data[bc.FEATURE_CDS])
         print("\tfound UPSs: %i " % len(cdss_ups))
         cdss_ips, tmp = ips.lookup(cdss_ups)
@@ -201,7 +204,10 @@ def main(args):
         print('apply sORF overlap filter...')
         log.debug('apply sORF overlap filter')
         sorfs, discarded_sorfs = s_orf.overlap_filter(data, sorfs)
-        print("\tdiscarded sORFs: %i, %i remaining" % (len(discarded_sorfs), len(sorfs)))
+        print("\tdiscarded overlapping sORFs: %i, %i remaining" % (len(discarded_sorfs), len(sorfs)))
+
+        discarded_sorfs = orf.detect_spurious(sorfs)
+        print("\tdiscarded spurious sORFs: %i " % len(discarded_sorfs))
 
         print('lookup sORFs UPSs/IPSs...')
         sorf_upss, sorfs_not_found = ups.lookup(sorfs)
