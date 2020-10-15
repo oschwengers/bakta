@@ -192,8 +192,16 @@ def overlap_filter(data, orfs_raw):
         for r_rna in contig_r_rnas[contig['id']]:
             log.debug('filter short ORFs by rRNA: %s[%i->%i]', r_rna['strand'], r_rna['start'], r_rna['stop'])
             for orf in orfs[:]:
-                if(orf['start'] >= r_rna['start'] and orf['stop'] <= r_rna['stop']):
+                if(orf['start'] < r_rna['start'] and orf['stop'] > r_rna['start']):
+                    # ORF partially overlapping rRNA upstream
+                    orfs.remove(orf)
+                    discarded_orfs.append(orf)
+                elif(orf['start'] >= r_rna['start'] and orf['stop'] <= r_rna['stop']):
                     # ORF completely overlapped by rRNA
+                    orfs.remove(orf)
+                    discarded_orfs.append(orf)
+                elif(orf['start'] < r_rna['stop'] and orf['stop'] > r_rna['start']):
+                    # ORF partially overlapping rRNA downstream
                     orfs.remove(orf)
                     discarded_orfs.append(orf)
 
