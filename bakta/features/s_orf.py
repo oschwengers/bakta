@@ -104,6 +104,11 @@ def overlap_filter(data, orfs_raw):
         nc_rnas = contig_nc_rnas[nc_rna['contig']]
         nc_rnas.append(nc_rna)
 
+    contig_crispr_arrays = {k['id']: [] for k in data['contigs']}
+    for crispr_array in data.get(bc.FEATURE_CRISPR, []):
+        crispr_arrays = contig_crispr_arrays[crispr_array['contig']]
+        crispr_arrays.append(crispr_array)
+
     contig_cdss = {k['id']: [] for k in data['contigs']}
     for cds in data.get(bc.FEATURE_CDS, []):
         cdss = contig_cdss[cds['contig']]
@@ -191,7 +196,6 @@ def overlap_filter(data, orfs_raw):
                     # ORF completely overlapped by rRNA
                     orfs.remove(orf)
                     discarded_orfs.append(orf)
-                    continue
 
         # filter tRNA overlapping ORFs
         for t_rna in contig_t_rnas[contig['id']]:
@@ -226,6 +230,24 @@ def overlap_filter(data, orfs_raw):
                     # ORF partially overlapping ncRNA downstream
                     # ToDo: add max overlap threshold
                     pass
+        
+        # filter CRISPR array overlapping ORFs
+        for crispr in contig_crispr_arrays[contig['id']]:
+            log.debug('filter short ORFs by CRISPR: [%i->%i]', crispr['start'], crispr['stop'])
+            for orf in orfs[:]:
+                if(orf['start'] < crispr['start'] and orf['stop'] > crispr['start']):
+                    # ORF partially overlapping CRISPR array upstream
+                    orfs.remove(orf)
+                    discarded_orfs.append(orf)
+                elif(orf['start'] >= crispr['start'] and orf['stop'] <= crispr['stop']):
+                    # ORF completely overlapped by CRISPR array
+                    orfs.remove(orf)
+                    discarded_orfs.append(orf)
+                elif(orf['start'] < crispr['stop'] and orf['stop'] > crispr['start']):
+                    # ORF partially overlapping CRISPR array downstream
+                    orfs.remove(orf)
+                    discarded_orfs.append(orf)
+        
 
     valid_orfs = []
     for orfs in contig_orfs.values():
