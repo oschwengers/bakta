@@ -113,69 +113,102 @@ def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
 
     # test tRNAscan-SE
-    try:
-        sp.check_call(
-            ['tRNAscan-SE', '-h'],
-            stdout=sp.DEVNULL,
-            stderr=sp.DEVNULL
-        )
-    except FileNotFoundError:
-        log.exception('tRNAscan-SE not found!')
-        sys.exit('ERROR: \'tRNAscan-SE\' not executable!')
-    except:
-        pass
+    if(cfg.skip_trna is False):
+        try:
+            sp.check_call(
+                ['tRNAscan-SE', '-h'],
+                stdout=sp.DEVNULL,
+                stderr=sp.DEVNULL
+            )
+        except FileNotFoundError:
+            log.exception('tRNAscan-SE not found!')
+            sys.exit('ERROR: \'tRNAscan-SE\' not executable!')
+        except:
+            pass
 
-    # test cmsearch
-    try:
-        sp.check_call(
-            ['cmsearch', '-h'],
-            stdout=sp.DEVNULL,
-            stderr=sp.DEVNULL
-        )
-    except FileNotFoundError:
-        log.exception('cmsearch not found!')
-        sys.exit('ERROR: \'cmsearch\' not executable!')
-    except:
-        pass
+    # test Aragorn
+    if(cfg.skip_tmrna is False):
+        try:
+            sp.check_call(
+                ['aragorn', '-h'],
+                stdout=sp.DEVNULL,
+                stderr=sp.DEVNULL
+            )
+        except FileNotFoundError:
+            log.exception('aragorn not found!')
+            sys.exit('ERROR: \'aragorn\' not executable!')
+        except:
+            pass
+
+    # test cmscan
+    if(cfg.skip_rrna is False or cfg.skip_ncrna is False or cfg.skip_ncrna_region is False):
+        try:
+            sp.check_call(
+                ['cmscan', '-h'],
+                stdout=sp.DEVNULL,
+                stderr=sp.DEVNULL
+            )
+        except FileNotFoundError:
+            log.exception('cmscan not found!')
+            sys.exit('ERROR: \'cmscan\' not executable!')
+        except:
+            pass
 
     # test prodigal
-    try:
-        sp.check_call(
-            ['prodigal', '-v'],
-            stdout=sp.DEVNULL,
-            stderr=sp.DEVNULL
-        )
-    except FileNotFoundError:
-        log.exception('prodigal not found!')
-        sys.exit('ERROR: \'prodigal\' not executable!')
-    except:
-        pass
+    if(cfg.skip_cds is False):
+        try:
+            sp.check_call(
+                ['prodigal', '-v'],
+                stdout=sp.DEVNULL,
+                stderr=sp.DEVNULL
+            )
+        except FileNotFoundError:
+            log.exception('prodigal not found!')
+            sys.exit('ERROR: \'prodigal\' not executable!')
+        except:
+            pass
+
+    # test hmmsearch
+    if(cfg.skip_cds is False or cfg.skip_sorf is False):
+        try:
+            sp.check_call(
+                ['hmmsearch', '-h'],
+                stdout=sp.DEVNULL,
+                stderr=sp.DEVNULL
+            )
+        except FileNotFoundError:
+            log.exception('hmmsearch not found!')
+            sys.exit('ERROR: \'hmmsearch\' not executable!')
+        except:
+            pass
 
     # test diamond
-    try:
-        sp.check_call(
-            ['diamond', '--version'],
-            stdout=sp.DEVNULL,
-            stderr=sp.DEVNULL
-        )
-    except FileNotFoundError:
-        log.exception('diamond not found!')
-        sys.exit('ERROR: \'diamond\' not executable!')
-    except:
-        pass
+    if(cfg.skip_cds is False or cfg.skip_sorf is False):
+        try:
+            sp.check_call(
+                ['diamond', '--version'],
+                stdout=sp.DEVNULL,
+                stderr=sp.DEVNULL
+            )
+        except FileNotFoundError:
+            log.exception('diamond not found!')
+            sys.exit('ERROR: \'diamond\' not executable!')
+        except:
+            pass
 
     # test pilercr
-    try:
-        sp.check_call(
-            ['pilercr', '-options'],
-            stdout=sp.DEVNULL,
-            stderr=sp.DEVNULL
-        )
-    except FileNotFoundError:
-        log.exception('pilercr not found!')
-        sys.exit('ERROR: \'pilercr\' not executable!')
-    except:
-        pass
+    if(cfg.skip_crispr is False):
+        try:
+            sp.check_call(
+                ['pilercr', '-options'],
+                stdout=sp.DEVNULL,
+                stderr=sp.DEVNULL
+            )
+        except FileNotFoundError:
+            log.exception('pilercr not found!')
+            sys.exit('ERROR: \'pilercr\' not executable!')
+        except:
+            pass
 
 
 def create_locus_prefix(contigs):
