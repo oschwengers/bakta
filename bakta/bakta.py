@@ -147,10 +147,13 @@ def main(args):
     ############################################################################
     # CRISPR prediction
     ############################################################################
-    print('predict CRISPR cassettes...')
-    log.debug('start CRISPR prediction')
-    data[bc.FEATURE_CRISPR] = crispr.predict_crispr(data, contigs_path)
-    print("\tfound CRISPR arrays: %i" % len(data[bc.FEATURE_CRISPR]))
+    if(cfg.skip_crispr):
+        print('skip CRISPR array prediction...')
+    else:
+        print('predict CRISPR arrays...')
+        log.debug('start CRISPR prediction')
+        data[bc.FEATURE_CRISPR] = crispr.predict_crispr(data, contigs_path)
+        print("\tfound CRISPR arrays: %i" % len(data[bc.FEATURE_CRISPR]))
 
     ############################################################################
     # CDS prediction
