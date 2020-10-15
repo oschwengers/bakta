@@ -276,24 +276,26 @@ def annotation_filter(sorfs):
         
         ips = sorf.get('ips', None)
         if(ips is not None):
-            if('gene' in ips):
-                gene = ips['gene']
-            if('product' in ips):
-                product = ips['product']
-            valid_sorfs.append(sorf)
-            added = True
+            tmp = ips.get('gene', '')
+            if(tmp != ''):
+                gene = tmp
+            tmp = ips.get('product', '')
+            if(tmp != ''):
+                product = tmp
         
         psc = sorf.get('psc', None)
         if(psc is not None):
-            if('gene' in psc):
-                gene = psc['gene']
-            if('product' in psc):
-                product = psc['product']
-            if(added is False):
-                valid_sorfs.append(sorf)
+            tmp = psc.get('gene', '')
+            if(tmp != ''):
+                gene = tmp
+            tmp = psc.get('product', '')
+            if(tmp != ''):
+                product = tmp
 
         if(gene is None and product is None):
             sorf['hypothetical'] = True
+        else:
+            valid_sorfs.append(sorf)
     
     return valid_sorfs
     
