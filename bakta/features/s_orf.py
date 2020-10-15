@@ -295,7 +295,7 @@ def annotation_filter(sorfs):
         if(gene is None and product is None):
             sorf['hypothetical'] = True
     
-    return list(valid_sorfs)
+    return valid_sorfs
     
 
 def search_pscs(sorfs):
