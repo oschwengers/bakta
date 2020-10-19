@@ -188,6 +188,7 @@ def main(args):
         cds.mark_hypotheticals(data[bc.FEATURE_CDS])  # mark hypotheticals
         for feat in data[bc.FEATURE_CDS]:
             anno.combine_ips_psc_annotation(feat) # combine IPS and PSC annotations
+    
     ############################################################################
     # sORF prediction
     # - in-mem sORF extraction
@@ -233,6 +234,7 @@ def main(args):
         print("\tfiltered sORFs: %i" % len(sorfs_filtered))
         for feat in data[bc.FEATURE_SORF]:
             anno.combine_ips_psc_annotation(feat) # combine IPS and PSC annotations
+    
     ############################################################################
     # gap annotation
     # - in-mem gap detection
@@ -263,6 +265,12 @@ def main(args):
         oriTs = ori.predict_oris(data, contigs_path, bc.FEATURE_ORIT)
         print("\tfound oriTs: %i" % len(oriTs))
         data[bc.FEATURE_ORIT] = oriTs
+
+    ############################################################################
+    # Filter overlapping features
+    ############################################################################
+    print('apply feature overlap filters...')
+    anno.detect_feature_overlaps(data)
 
     ############################################################################
     # Create annotations
