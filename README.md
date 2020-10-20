@@ -184,6 +184,10 @@ custom detection of short open reading freames (**sORF**) smaller than 30 aa.
 Only **sORF** which are detected by their identity (100% coverage & 100% sequence identity)
 will be included in the annotation. A more sensitive but also more false-positive prone approach is currently tested.
 
+### Miscellaneous
+
+1. Gaps:
+
 ## Database
 
 The Bakta database is built on **IPS**s and **PSC**s from:

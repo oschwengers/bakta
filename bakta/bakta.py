@@ -328,6 +328,31 @@ def main(args):
         faa_path = cfg.output_path.joinpath("%s.faa" % prefix)
         fasta.write_faa(features, faa_path)
 
+    ############################################################################
+    # Print statistics
+    # - genome stats
+    # - annotation stats
+    ############################################################################
+    print('\ngenome statistics:')
+    genome_stats = bu.calc_genome_stats(data, features)
+    print('\tGenome size: %i bp' % genome_stats['genome_size'])
+    print('\tContigs/replicons: %i' % genome_stats['no_contigs'])
+    print('\tGC: %2.1f%%' % (100 * genome_stats['gc_ratio']))
+    print('\tN50: %i' % genome_stats['n50'])
+    print('\tN ratio: %2.1f%%' % (100 * genome_stats['n_ratio']))
+    print('\tcoding density: %2.1f%%' % (100 * genome_stats['coding_ratio']))
+
+    print('\nannotation statistics:')
+    print('\ttRNAs: %i' % len(data[bc.FEATURE_T_RNA]))
+    print('\ttmRNAs: %i' % len(data[bc.FEATURE_TM_RNA]))
+    print('\trRNAs: %i' % len(data[bc.FEATURE_R_RNA]))
+    print('\tncRNAs: %i' % len(data[bc.FEATURE_NC_RNA]))
+    print('\tncRNA-regions: %i' % len(data[bc.FEATURE_NC_RNA_REGION]))
+    print('\tCRISPR arrays: %i' % len(data[bc.FEATURE_CRISPR]))
+    print('\tCDSs: %i' % len(data[bc.FEATURE_CDS]))
+    print('\tsORFs: %i' % len(data[bc.FEATURE_SORF]))
+    print('\tgaps: %i' % len(data[bc.FEATURE_GAP]))
+
     # remove tmp dir
     shutil.rmtree(str(cfg.tmp_path))
     log.debug('removed tmp dir: %s', cfg.tmp_path)

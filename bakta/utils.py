@@ -252,3 +252,46 @@ def has_annotation(feature, attribute):
         return True
     else:
         return False
+
+
+def calc_genome_stats(data, features):
+    
+    genome_size = sum([len(k['sequence']) for k in data['contigs']])
+
+    # N50
+    gc_sum = 0
+    n_sum = 0
+    n50 = 0
+    contig_length_sum = 0
+    for contig in data['contigs']:
+        seq = contig['sequence']
+        gc_sum += seq.count('G') + seq.count('C')
+        n_sum += seq.count('N')
+        contig_length = len(seq)
+        contig_length_sum += contig_length
+        if(contig_length_sum >= genome_size / 2):
+            n50 = contig_length
+            break
+    gc_ratio = gc_sum / (genome_size - n_sum)
+    n_ratio = n_sum / genome_size
+
+    # coding density
+    coding_nts = 0
+    for feat in features:
+        coding_nts += feat['stop'] - feat['start'] + 1
+    coding_ratio = coding_nts / (genome_size - n_sum)
+
+    log.info(
+        'stats: genome-size=%i, GC=%0.3f, N50=%i, N=%0.3f, coding-ratio=%0.3f',
+        genome_size, gc_ratio, n50, n_ratio, coding_ratio
+    )
+    return {
+        'genome_size': genome_size,
+        'no_contigs': len(data['contigs']),
+        'gc_ratio': gc_ratio,
+        'n_ratio': n_ratio,
+        'n50': n50,
+        'coding_ratio': coding_ratio
+    }
+
+
