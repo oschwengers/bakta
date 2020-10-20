@@ -142,9 +142,9 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                     feat_type = bc.INSDC_FEATURE_ASSEMBLY_GAP if feat['length'] >= 100 else bc.INSDC_FEATURE_GAP
                     fh.write('\t'.join([feat['contig'], 'Bakta', feat_type, str(feat['start']), str(feat['stop']), '.', '+', '0', annotations]))
                     fh.write('\n')
-        
+
+        fh.write('##FASTA\n')
         for contig in contigs:  # write sequences
-            fh.write('##FASTA\n')
             fh.write(fasta.format_fasta(contig, line_wrapping=True))
     
     return
