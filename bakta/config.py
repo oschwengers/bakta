@@ -51,7 +51,7 @@ def setup(args):
     threads = args.threads
     log.info('threads=%i', threads)
     verbose = args.verbose
-    log.info('verbose=%i', verbose)
+    log.info('verbose=%s', verbose)
 
     # input / output path configurations
     global db_path, tmp_path, genome_path, output_path
