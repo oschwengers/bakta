@@ -1,6 +1,7 @@
 import logging
 import sys
 import shutil
+from pathlib import Path
 
 import bakta
 import bakta.constants as bc
@@ -33,8 +34,9 @@ def main(args):
     ############################################################################
     # Setup logging
     ############################################################################
+    prefix = args.prefix if args.prefix else Path(args.genome).stem
     logging.basicConfig(
-        filename='bakta.log',
+        filename='%s.log' % prefix,
         filemode='w',
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         level=logging.DEBUG if args.verbose else logging.INFO
@@ -293,7 +295,6 @@ def main(args):
     print('write JSON output...')
     log.debug('write JSON output')
 
-    prefix = cfg.genome_path.stem if cfg.prefix is None else cfg.prefix
     log.info('file prefix: %s', prefix)
     json_path = cfg.output_path.joinpath("%s.json" % prefix)
     json.write_json(features, json_path)
