@@ -48,7 +48,6 @@ def predict(contigs, filtered_contigs_path):
     # TODO: replace code by BioPython GFF3 parser
     contigs = {k['id']: k for k in contigs}
     cdss = {}
-    cds_id = 1
     with gff_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
@@ -64,12 +63,10 @@ def predict(contigs, filtered_contigs_path):
                 cds['strand'] = strand
                 cds['gene'] = None
                 cds['product'] = None
-                cds['tmp_id'] = cds_id
                 cds['start_type'] = gff_annotations['start_type']
                 cds['rbs_motif'] = gff_annotations['rbs_motif']
                 cds['db_xrefs'] = []
                 
-                cds_id += 1
                 if(cds['strand'] == '+'):
                     cds['frame'] = (cds['start'] - 1) % 3 + 1
                 else:

@@ -27,7 +27,7 @@ def search(cdss):
     cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
     with cds_fasta_path.open(mode='w') as fh:
         for cds in cdss:
-            fh.write(">%s\n%s\n" % (cds['tmp_id'], cds['sequence']))
+            fh.write(">%s\n%s\n" % (cds['aa_hexdigest'], cds['sequence']))
     diamond_output_path = cfg.tmp_path.joinpath('diamond.cds.tsv')
     diamond_db_path = cfg.db_path.joinpath('psc.dmnd')
     cmd = [
@@ -59,13 +59,13 @@ def search(cdss):
         log.warning('PSC failed! diamond-error-code=%d', proc.returncode)
         raise Exception("diamond error! error code: %i" % proc.returncode)
 
-    cds_by_id = {cds['tmp_id']: cds for cds in cdss}
+    cds_by_hexdigest = {cds['aa_hexdigest']: cds for cds in cdss}
     with diamond_output_path.open() as fh:
         for line in fh:
-            (cds_id, cluster_id, identity, alignment_length, align_mismatches,
+            (aa_hexdigest, cluster_id, identity, alignment_length, align_mismatches,
                 align_gaps, query_start, query_end, subject_start, subject_end,
                 evalue, bitscore) = line.split('\t')
-            cds = cds_by_id[int(cds_id)]
+            cds = cds_by_hexdigest[aa_hexdigest]
             query_cov = int(alignment_length) / len(cds['sequence'])
             identity = float(identity) / 100
             if(query_cov >= bc.MIN_PROTEIN_COVERAGE and identity >= bc.MIN_PROTEIN_IDENTITY):
