@@ -1,6 +1,7 @@
 
 import logging
 import subprocess as sp
+from collections import OrderedDict
 
 from Bio import SeqIO
 
@@ -74,32 +75,31 @@ def predict_t_rnas(data, contigs_path):
 
             contig = contig.strip()  # bugfix for extra single whitespace in tRNAscan-SE output
 
-            trna = {
-                'type': bc.FEATURE_T_RNA,
-                'contig': contig.strip(),
-                'start': start,
-                'stop': stop,
-                'strand': strand,
-                'score': float(score),
-                'db_xrefs': []
-            }
-
-            if(trna_type == 'Undet'):
-                trna['gene'] = ''
-                trna['product'] = 'tRNA-Xxx'
-            else:
+            trna = OrderedDict()
+            trna['type'] = bc.FEATURE_T_RNA
+            trna['contig'] = contig.strip()
+            trna['start'] = start
+            trna['stop'] = stop
+            trna['strand'] = strand
+            trna['gene'] = ''
+            trna['product'] = 'tRNA-Xxx'
+            if(trna_type != 'Undet'):
                 trna['gene'] = "%s_trna" % trna_type
                 trna['product'] = "tRNA-%s" % trna_type
                 trna['anti_codon'] = anti_codon
                 trna['notes'] = ["tRNA-%s(%s)" % (trna_type, anti_codon)]
-                so_term = SO_TERMS.get(trna_type.lower().replace('2', ''), None)
-                if(so_term):
-                    trna['db_xrefs'].append(so_term)
             
             if('pseudo' in note):
                 trna['gene'] = ''
                 trna['product'] = '(pseudo) %s' % trna['product']
                 trna['pseudo'] = True
+            
+            trna['score'] = float(score)
+
+            trna['db_xrefs'] = []
+            so_term = SO_TERMS.get(trna_type.lower().replace('2', ''), None)
+            if(so_term):
+                trna['db_xrefs'].append(so_term)
 
             key = "%s.trna%s" % (contig, trna_id)
             trnas[key] = trna

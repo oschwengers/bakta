@@ -1,6 +1,7 @@
 
 import logging
 import subprocess as sp
+from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -53,18 +54,19 @@ def predict_crispr(data, contigs_path):
                             (array_id, contig, position, length, copies, repeat_length, spacer_length, repeat_consensus) = cols
                         else:
                             (array_id, contig, position, length, copies, repeat_length, spacer_length, distance, repeat_consensus) = cols
-                        crispr = {
-                            'type': bc.FEATURE_CRISPR,
-                            'contig': contig_id,
-                            'start': int(position),
-                            'stop': int(position) + int(length) - 1,
-                            'strand': '+',
-                            'product': "CRISPR array with %s repeats of length %s, consensus sequence %s and spacer length %s" % (copies, repeat_length, repeat_consensus, spacer_length),
-                            'spacer_length': int(spacer_length),
-                            'repeat_length': int(repeat_length),
-                            'repeats': int(copies),
-                            'repeat_consensus': repeat_consensus
-                        }
+                        
+                        crispr = OrderedDict()
+                        crispr['type'] = bc.FEATURE_CRISPR
+                        crispr['contig'] = contig_id
+                        crispr['start'] = int(position)
+                        crispr['stop'] = int(position) + int(length) - 1
+                        crispr['strand'] = '+'
+                        crispr['product'] = "CRISPR array with %s repeats of length %s, consensus sequence %s and spacer length %s" % (copies, repeat_length, repeat_consensus, spacer_length)
+                        crispr['spacer_length'] = int(spacer_length)
+                        crispr['repeat_length'] = int(repeat_length)
+                        crispr['repeats'] = int(copies)
+                        crispr['repeat_consensus'] = repeat_consensus
+                        
                         crispr_arrays.append(crispr)
                         log.debug(
                             'contig=%s, start=%i, stop=%i, spacer-length=%i, repeat-length=%i, # repeats=%i, repeat-consensus=%s',

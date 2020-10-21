@@ -2,6 +2,7 @@
 import logging
 import re
 import subprocess as sp
+from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -77,23 +78,29 @@ def predict_nc_rnas(data, contigs_path):
                     db_xrefs = [rfam_id, 'SO:0001263']
                     if(rfam_id in rfam2go):
                         db_xrefs += rfam2go[rfam_id]
-                    ncrna = {
-                        'type': bc.FEATURE_NC_RNA,
-                        'contig': contig_id,
-                        'start': start,
-                        'stop': stop,
-                        'strand': strand,
-                        'partial': partial,
-                        'gene': subject,
-                        'product': "(partial) %s" % description if partial else description,
-                        'score': float(score),
-                        'evalue': evalue,
-                        'db_xrefs': db_xrefs
-                    }
+                    
+                    ncrna = OrderedDict()
+                    ncrna['type'] = bc.FEATURE_NC_RNA
+                    ncrna['contig'] = contig_id
+                    ncrna['start'] = start
+                    ncrna['stop'] = stop
+                    ncrna['strand'] = strand
+                    ncrna['gene'] = subject
+                    ncrna['product'] = "(partial) %s" % description if partial else description
+                    
+                    if(partial):
+                        ncrna['partial'] = partial
+                    
+                    ncrna['score'] = float(score)
+                    ncrna['evalue'] = evalue
+                    
                     if('5' in trunc):
                         ncrna['trunc_5'] = True
                     if('3' in trunc):
                         ncrna['trunc_3'] = True
+
+                    ncrna['db_xrefs'] = db_xrefs
+
                     ncrnas.append(ncrna)
                     log.debug(
                         'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, partial=%s, length=%i, evalue=%f',

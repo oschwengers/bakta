@@ -1,5 +1,6 @@
 import logging
 import subprocess as sp
+from collections import OrderedDict
 
 from Bio.Seq import Seq
 
@@ -57,12 +58,12 @@ def detect_spurious(orfs):
                         orf['contig'], orf['start'], orf['stop'], orf['strand'], subject_name, evalue, bitscore
                     )
                 else:
-                    discard = {
-                        'type': bc.DISCARD_TYPE_SPURIOUS,
-                        'description': "(partial) homology to spurious sequence HMM (AntiFam:%s)" % subject_id,
-                        'score': bitscore,
-                        'evalue': evalue
-                    }
+                    discard = OrderedDict()
+                    discard['type'] = bc.DISCARD_TYPE_SPURIOUS
+                    discard['description'] = "(partial) homology to spurious sequence HMM (AntiFam:%s)" % subject_id
+                    discard['score'] = bitscore
+                    discard['evalue'] = evalue
+                    
                     orf['discarded'] = discard
                     discarded_orfs.append(orf)
                     log.debug(

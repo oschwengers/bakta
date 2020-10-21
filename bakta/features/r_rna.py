@@ -2,6 +2,7 @@
 import logging
 import re
 import subprocess as sp
+from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -80,24 +81,29 @@ def predict_r_rnas(data, contigs_path):
                         contig_id, rrna_tag, start, stop, strand, length, coverage
                     )
                 else:
-                    rrna = {
-                        'type': bc.FEATURE_R_RNA,
-                        'gene': "%s_rrna" % rrna_tag,
-                        'product': "(partial) %s ribosomal RNA" % rrna_tag if partial else "%s ribosomal RNA" % rrna_tag,
-                        'contig': contig_id,
-                        'start': start,
-                        'stop': stop,
-                        'strand': strand,
-                        'partial': partial,
-                        'coverage': coverage,
-                        'score': float(score),
-                        'evalue': float(evalue),
-                        'db_xrefs': db_xrefs
-                    }
+                    rrna = OrderedDict()
+                    rrna['type'] = bc.FEATURE_R_RNA
+                    rrna['contig'] = contig_id
+                    rrna['start'] = start
+                    rrna['stop'] = stop
+                    rrna['strand'] = strand
+                    rrna['gene'] = "%s_rrna" % rrna_tag
+                    rrna['product'] = "(partial) %s ribosomal RNA" % rrna_tag if partial else "%s ribosomal RNA" % rrna_tag
+                    
+                    if(partial):
+                        rrna['partial'] = partial
+                    
+                    rrna['coverage'] = coverage
+                    rrna['score'] = float(score)
+                    rrna['evalue'] = float(evalue)
+                    
                     if('5' in trunc):
                         rrna['trunc_5'] = True
                     if('3' in trunc):
                         rrna['trunc_3'] = True
+
+                    rrna['db_xrefs'] = db_xrefs
+
                     rrnas.append(rrna)
                     log.info(
                         'contig=%s, gene=%s, start=%i, stop=%i, strand=%s, partial=%s, length=%i, coverage=%0.3f',

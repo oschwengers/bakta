@@ -1,6 +1,7 @@
 
 import logging
 import subprocess as sp
+from collections import OrderedDict
 
 from Bio import SeqIO
 
@@ -54,16 +55,20 @@ def predict(contigs, filtered_contigs_path):
                 (contig, inference, _, start, stop, score, strand, _, annotations_raw) = line.strip().split('\t')
                 gff_annotations = split_gff_annotation(annotations_raw)
                 contig_orf_id = gff_annotations['ID'].split('_')[1]
-                cds = {
-                    'type': bc.FEATURE_CDS,
-                    'contig': contig,
-                    'start': int(start),
-                    'stop': int(stop),
-                    'strand': strand,
-                    'tmp_id': cds_id,
-                    'start_type': gff_annotations['start_type'],
-                    'rbs_motif': gff_annotations['rbs_motif']
-                }
+
+                cds = OrderedDict()
+                cds['type'] = bc.FEATURE_CDS
+                cds['contig'] = contig
+                cds['start'] = int(start)
+                cds['stop'] = int(stop)
+                cds['strand'] = strand
+                cds['gene'] = None
+                cds['product'] = None
+                cds['tmp_id'] = cds_id
+                cds['start_type'] = gff_annotations['start_type']
+                cds['rbs_motif'] = gff_annotations['rbs_motif']
+                cds['db_xrefs'] = []
+                
                 cds_id += 1
                 if(cds['strand'] == '+'):
                     cds['frame'] = (cds['start'] - 1) % 3 + 1

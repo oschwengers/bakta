@@ -1,6 +1,7 @@
 
 import logging
 import subprocess as sp
+from collections import OrderedDict
 
 from Bio.Seq import Seq
 
@@ -46,23 +47,26 @@ def extract(contigs):
                             test_dna_seq = test_dna_seq.reverse_complement()
                         test_seq = test_dna_seq.translate(table=11, stop_symbol='*', to_stop=False, cds=True)
                         assert sequence == test_seq, "seqs not equal! a=%s, b=%s" % (sequence, test_seq)
-
                         (aa_digest, aa_hexdigest) = bu.calc_aa_hash(sequence)
-                        orf = {
-                            'type': bc.FEATURE_SORF,
-                            'contig': contig['id'],
-                            'start': dna_start,
-                            'stop': dna_stop,
-                            'strand': strand,
-                            'frame': frame + 1,
-                            'sequence': sequence,
-                            'aa_digest': aa_digest,
-                            'aa_hexdigest': aa_hexdigest
-                        }
-                        orfs.append(orf)
+
+                        sorf = OrderedDict()
+                        sorf['type'] = bc.FEATURE_SORF
+                        sorf['contig'] = contig['id']
+                        sorf['start'] = dna_start
+                        sorf['stop'] = dna_stop
+                        sorf['strand'] = strand
+                        sorf['product'] = None
+                        sorf['gene'] = None
+                        sorf['frame'] = frame + 1
+                        sorf['db_xrefs'] = []
+                        sorf['sequence'] = sequence
+                        sorf['aa_digest'] = aa_digest
+                        sorf['aa_hexdigest'] = aa_hexdigest
+                        
+                        orfs.append(sorf)
                         log.debug(
                             'contig=%s, start=%i, stop=%i, strand=%s, frame=%i, length=%i, seq=%s',
-                            contig['id'], orf['start'], orf['stop'], strand, frame, len(sequence), sequence
+                            contig['id'], sorf['start'], sorf['stop'], strand, frame, len(sequence), sequence
                         )
                     aa_start = aa_seq.find('M', aa_start + 1)
                     if(aa_start > aa_end):

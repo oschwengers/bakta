@@ -1,6 +1,7 @@
 
 import logging
 import subprocess as sp
+from collections import OrderedDict
 
 from Bio.Seq import Seq
 
@@ -63,17 +64,18 @@ def predict_tm_rnas(data, contigs_path):
                 seq = contigs[contig]['sequence'][start:stop]
                 if(strand == '-'):
                     seq = str(Seq(seq).reverse_complement())
-                tmrna = {
-                    'type': bc.FEATURE_TM_RNA,
-                    'gene': 'ssrA',
-                    'product': 'transfer-messenger RNA, SsrA',
-                    'contig': contig,
-                    'start': start,
-                    'stop': stop,
-                    'strand': strand,
-                    'sequence': seq,
-                    'db_xrefs': ['SO:0000584']
-                }
+                
+                tmrna = OrderedDict()
+                tmrna['type'] = bc.FEATURE_TM_RNA
+                tmrna['contig'] = contig
+                tmrna['start'] = start
+                tmrna['stop'] = stop
+                tmrna['strand'] = strand
+                tmrna['gene'] = 'ssrA'
+                tmrna['product'] = 'transfer-messenger RNA, SsrA'
+                tmrna['db_xrefs'] = ['SO:0000584']
+                tmrna['sequence'] = seq
+                
                 tmrnas.append(tmrna)
                 log.info(
                     'contig=%s, gene=%s, start=%i, stop=%i, strand=%s',

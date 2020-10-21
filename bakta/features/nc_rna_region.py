@@ -2,6 +2,7 @@
 import logging
 import re
 import subprocess as sp
+from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -77,27 +78,33 @@ def predict_nc_rna_regions(data, contigs_path):
                     db_xrefs = [rfam_id, 'SO:0001263']
                     if(rfam_id in rfam2go):
                         db_xrefs += rfam2go[rfam_id]
-                    ncrna = {
-                        'type': bc.FEATURE_NC_RNA_REGION,
-                        'contig': contig_id,
-                        'start': start,
-                        'stop': stop,
-                        'strand': strand,
-                        'partial': partial,
-                        'gene': subject,
-                        'product': "(partial) %s" % description if partial else description,
-                        'score': float(score),
-                        'evalue': evalue,
-                        'db_xrefs': db_xrefs
-                    }
+                    
+                    ncrna_region = OrderedDict()
+                    ncrna_region['type'] = bc.FEATURE_NC_RNA_REGION
+                    ncrna_region['contig'] = contig_id
+                    ncrna_region['start'] = start
+                    ncrna_region['stop'] = stop
+                    ncrna_region['strand'] = strand
+                    ncrna_region['gene'] = subject
+                    ncrna_region['product'] = "(partial) %s" % description if partial else description
+                    
+                    if(partial):
+                        ncrna_region['partial'] = partial
+                    
+                    ncrna_region['score'] = float(score)
+                    ncrna_region['evalue'] = evalue
+                    
                     if('5' in trunc):
-                        ncrna['trunc_5'] = True
+                        ncrna_region['trunc_5'] = True
                     if('3' in trunc):
-                        ncrna['trunc_3'] = True
-                    ncrnas.append(ncrna)
+                        ncrna_region['trunc_3'] = True
+
+                    ncrna_region['db_xrefs'] = db_xrefs
+
+                    ncrnas.append(ncrna_region)
                     log.debug(
                         'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, partial=%s, length=%i, evalue=%f',
-                        ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['gene'], ncrna['partial'], length, ncrna['evalue']
+                        ncrna_region['contig'], ncrna_region['start'], ncrna_region['stop'], ncrna_region['strand'], ncrna_region['gene'], ncrna_region['partial'], length, ncrna_region['evalue']
                     )
     log.info('# %i', len(ncrnas))
     return ncrnas

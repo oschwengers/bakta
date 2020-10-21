@@ -32,4 +32,4 @@ def combine_ips_psc_annotation(feature):
             db_xrefs.add(db_xref)
     feature['gene'] = gene
     feature['product'] = product
-    feature['db_xrefs'] = list(db_xrefs)
+    feature['db_xrefs'] = sorted(list(db_xrefs))
