@@ -169,7 +169,7 @@ def setup(args):
     log.info('complete=%s', complete)
     
     # workflow configurations
-    global skip_trna, skip_tmrna, skip_rrna, skip_ncrna, skip_ncrna_region, skip_crispr, skip_cds, skip_sorf, skip_gap
+    global skip_trna, skip_tmrna, skip_rrna, skip_ncrna, skip_ncrna_region, skip_crispr, skip_cds, skip_sorf, skip_gap, skip_ori
     skip_trna = args.skip_trna
     log.info('skip-tRNA=%s', skip_trna)
     skip_tmrna = args.skip_tmrna
@@ -188,3 +188,5 @@ def setup(args):
     log.info('skip-sORF=%s', skip_sorf)
     skip_gap = args.skip_gap
     log.info('skip-gap=%s', skip_gap)
+    skip_ori = args.skip_ori
+    log.info('skip-ori=%s', skip_ori)

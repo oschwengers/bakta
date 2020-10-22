@@ -58,6 +58,8 @@ FEATURE_ORF = 'orf'
 FEATURE_SORF = 'sorf'
 FEATURE_CDS = 'cds'
 FEATURE_GAP = 'gap'
+FEATURE_ORIC = 'oriC'
+FEATURE_ORIT = 'oriT'
 
 ############################################################################
 # INSDC feature tags

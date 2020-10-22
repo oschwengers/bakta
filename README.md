@@ -186,7 +186,8 @@ will be included in the annotation. A more sensitive but also more false-positiv
 
 ### Miscellaneous
 
-1. Gaps:
+1. Gaps: in-mem detection & annotation of sequence gaps
+2. oriT/C: Blast+ (blastn) vs. MOB-suite oriT & DoriC oriC sequences. Annotation of oriC/oriT regions take into account overlapping Blast+ hits.
 
 ## Database
 
@@ -275,6 +276,7 @@ Workflow:
   --skip-cds            Skip CDS detection & annotation
   --skip-sorf           Skip sORF detection & annotation
   --skip-gap            Skip gap detection & annotation
+  --skip-ori            Skip oriC/T detection & annotation
 
 General:
   --help, -h            Show this help message and exit

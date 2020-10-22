@@ -42,6 +42,10 @@ def write_tsv(contigs, features_by_contig, tsv_path):
                     feat_type = bc.INSDC_FEATURE_CDS
                 elif(feat['type'] == bc.FEATURE_GAP):
                     feat_type = bc.INSDC_FEATURE_ASSEMBLY_GAP if feat['length'] >= 100 else bc.INSDC_FEATURE_GAP
+                elif(feat['type'] == bc.FEATURE_ORIC):
+                    feat_type = 'oriC'
+                elif(feat['type'] == bc.FEATURE_ORIT):
+                    feat_type = 'oriT'
                 else:
                     continue
                 fh.write('\t'.join([feat['contig'], feat_type, str(feat['start']), str(feat['stop']), feat['strand'], feat.get('gene', ''), feat.get('product', '')]))

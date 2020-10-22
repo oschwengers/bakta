@@ -23,6 +23,7 @@ import bakta.features.orf as orf
 import bakta.features.cds as cds
 import bakta.features.s_orf as s_orf
 import bakta.features.gaps as gaps
+import bakta.features.ori as ori
 import bakta.utils as bu
 import bakta.ups as ups
 import bakta.ips as ips
@@ -245,6 +246,23 @@ def main(args):
         assembly_gaps = gaps.detect_assembly_gaps(data['contigs'])
         print("\tfound gaps: %i" % len(assembly_gaps))
         data[bc.FEATURE_GAP] = assembly_gaps
+    
+    ############################################################################
+    # oriC/T prediction
+    ############################################################################
+    if(cfg.skip_ori):
+        print('skip oriC/T annotation...')
+    else:
+        print('detect oris...')
+        log.debug('start oriC detection')
+        oriCs = ori.predict_oris(data, contigs_path, bc.FEATURE_ORIC)
+        print("\tfound oriCs: %i" % len(oriCs))
+        data[bc.FEATURE_ORIC] = oriCs
+
+        log.debug('start oriT detection')
+        oriTs = ori.predict_oris(data, contigs_path, bc.FEATURE_ORIT)
+        print("\tfound oriTs: %i" % len(oriTs))
+        data[bc.FEATURE_ORIT] = oriTs
 
     ############################################################################
     # Create annotations
@@ -264,7 +282,9 @@ def main(args):
             bc.FEATURE_CRISPR,
             bc.FEATURE_CDS,
             bc.FEATURE_SORF,
-            bc.FEATURE_GAP
+            bc.FEATURE_GAP,
+            bc.FEATURE_ORIC,
+            bc.FEATURE_ORIT
         ]:
         feature_list = data.get(feature_type, [])
         for feature in feature_list:
@@ -282,7 +302,7 @@ def main(args):
     log.info('locus tag prefix: %s', locus_tag_prefix)
     for feature in features:
         locus_tag = "%s_%05d" % (locus_tag_prefix, locus_tag_nr)
-        if(feature['type'] != bc.FEATURE_GAP and feature['type'] != bc.FEATURE_CRISPR):
+        if(feature['type'] != bc.FEATURE_GAP and feature['type'] != bc.FEATURE_CRISPR and feature['type'] != bc.FEATURE_ORIC and feature['type'] != bc.FEATURE_ORIT):
             feature['locus'] = locus_tag
             locus_tag_nr += 5
 
@@ -353,6 +373,8 @@ def main(args):
     print('\tCDSs: %i' % len(data.get(bc.FEATURE_CDS, [])))
     print('\tsORFs: %i' % len(data.get(bc.FEATURE_SORF, [])))
     print('\tgaps: %i' % len(data.get(bc.FEATURE_GAP, [])))
+    print('\toriCs: %i' % len(data.get(bc.FEATURE_ORIC, [])))
+    print('\toriTs: %i' % len(data.get(bc.FEATURE_ORIT, [])))
 
     # remove tmp dir
     shutil.rmtree(str(cfg.tmp_path))

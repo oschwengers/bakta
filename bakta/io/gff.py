@@ -140,7 +140,23 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                     }
                     annotations = encode_annotations(annotations)
                     feat_type = bc.INSDC_FEATURE_ASSEMBLY_GAP if feat['length'] >= 100 else bc.INSDC_FEATURE_GAP
-                    fh.write('\t'.join([feat['contig'], 'Bakta', feat_type, str(feat['start']), str(feat['stop']), '.', '+', '0', annotations]))
+                    fh.write('\t'.join([feat['contig'], 'Bakta', feat_type, str(feat['start']), str(feat['stop']), '.', feat['strand'], '0', annotations]))
+                    fh.write('\n')
+                elif(feat['type'] == bc.FEATURE_ORIC):
+                    annotations = {
+                        'NAME': 'oriC',
+                        'product': 'oriC'
+                    }
+                    annotations = encode_annotations(annotations)
+                    fh.write('\t'.join([feat['contig'], 'Blast+', 'oriC', str(feat['start']), str(feat['stop']), '.', feat['strand'], '0', annotations]))
+                    fh.write('\n')
+                elif(feat['type'] == bc.FEATURE_ORIT):
+                    annotations = {
+                        'NAME': 'oriT',
+                        'product': 'oriT'
+                    }
+                    annotations = encode_annotations(annotations)
+                    fh.write('\t'.join([feat['contig'], 'Blast+', 'oriT', str(feat['start']), str(feat['stop']), '.', feat['strand'], '0', annotations]))
                     fh.write('\n')
 
         fh.write('##FASTA\n')
