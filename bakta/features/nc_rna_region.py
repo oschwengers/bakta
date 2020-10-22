@@ -104,7 +104,7 @@ def predict_nc_rna_regions(data, contigs_path):
                     ncrnas.append(ncrna_region)
                     log.debug(
                         'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, partial=%s, length=%i, evalue=%f',
-                        ncrna_region['contig'], ncrna_region['start'], ncrna_region['stop'], ncrna_region['strand'], ncrna_region['gene'], ncrna_region['partial'], length, ncrna_region['evalue']
+                        ncrna_region['contig'], ncrna_region['start'], ncrna_region['stop'], ncrna_region['strand'], ncrna_region['gene'], partial, length, ncrna_region['evalue']
                     )
     log.info('# %i', len(ncrnas))
     return ncrnas

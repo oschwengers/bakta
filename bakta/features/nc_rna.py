@@ -104,7 +104,7 @@ def predict_nc_rnas(data, contigs_path):
                     ncrnas.append(ncrna)
                     log.debug(
                         'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, partial=%s, length=%i, evalue=%f',
-                        ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['gene'], ncrna['partial'], length, ncrna['evalue']
+                        ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['gene'], partial, length, ncrna['evalue']
                     )
     log.info('# %i', len(ncrnas))
     return ncrnas
