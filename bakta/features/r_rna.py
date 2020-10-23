@@ -6,6 +6,7 @@ from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.so as so
 
 log = logging.getLogger('features:r_rna')
 
@@ -60,15 +61,15 @@ def predict_r_rnas(data, contigs_path):
                 db_xrefs = ['GO:0005840', 'GO:0003735']
                 if(accession == 'RF00001'):
                     rrna_tag = '5S'
-                    db_xrefs += ['RFAM:RF00001', 'SO:0000652']
+                    db_xrefs += ['RFAM:RF00001', so.SO_RRNA_5S.id]
                     consensus_length = 119
                 elif(accession == 'RF00177'):
                     rrna_tag = '16S'
-                    db_xrefs += ['RFAM:RF00177', 'SO:0001000']
+                    db_xrefs += ['RFAM:RF00177', so.SO_RRNA_16S.id]
                     consensus_length = 1533
                 elif(accession == 'RF02541'):
                     rrna_tag = '23S'
-                    db_xrefs += ['RFAM:RF02541', 'SO:0001001']
+                    db_xrefs += ['RFAM:RF02541', so.SO_RRNA_23S.id]
                     consensus_length = 2925
                 
                 coverage = length / consensus_length

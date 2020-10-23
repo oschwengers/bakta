@@ -8,6 +8,7 @@ from Bio import SeqIO
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.utils as bu
+import bakta.so as so
 
 log = logging.getLogger('features:cds')
 
@@ -65,7 +66,7 @@ def predict(contigs, filtered_contigs_path):
                 cds['product'] = None
                 cds['start_type'] = gff_annotations['start_type']
                 cds['rbs_motif'] = gff_annotations['rbs_motif']
-                cds['db_xrefs'] = []
+                cds['db_xrefs'] = [so.SO_CDS.id]
                 
                 if(cds['strand'] == bc.STRAND_FORWARD):
                     cds['frame'] = (cds['start'] - 1) % 3 + 1

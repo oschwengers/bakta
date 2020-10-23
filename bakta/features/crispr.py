@@ -5,6 +5,7 @@ from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.so as so
 
 log = logging.getLogger('features:crispr')
 
@@ -66,6 +67,7 @@ def predict_crispr(data, contigs_path):
                         crispr['repeat_length'] = int(repeat_length)
                         crispr['repeats'] = int(copies)
                         crispr['repeat_consensus'] = repeat_consensus
+                        crispr['db_xrefs'] = [so.SO_CRISPR.id]
                         
                         crispr_arrays.append(crispr)
                         log.debug(

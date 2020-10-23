@@ -6,6 +6,7 @@ from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.so as so
 
 log = logging.getLogger('features:nc_rna_regions')
 
@@ -75,7 +76,7 @@ def predict_nc_rna_regions(data, contigs_path):
                     )
                 else:
                     rfam_id = "RFAM:%s" % accession
-                    db_xrefs = [rfam_id, 'SO:0001263']
+                    db_xrefs = [rfam_id]
                     if(rfam_id in rfam2go):
                         db_xrefs += rfam2go[rfam_id]
                     

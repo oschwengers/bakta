@@ -7,6 +7,7 @@ from Bio.Seq import Seq
 
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.so as so
 
 log = logging.getLogger('features:tm_rna')
 
@@ -73,7 +74,7 @@ def predict_tm_rnas(data, contigs_path):
                 tmrna['strand'] = strand
                 tmrna['gene'] = 'ssrA'
                 tmrna['product'] = 'transfer-messenger RNA, SsrA'
-                tmrna['db_xrefs'] = ['SO:0000584']
+                tmrna['db_xrefs'] = [so.SO_TMRNA.id]
                 tmrna['sequence'] = seq
                 
                 tmrnas.append(tmrna)
