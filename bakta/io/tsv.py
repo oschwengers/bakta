@@ -24,30 +24,9 @@ def write_tsv(contigs, features_by_contig, tsv_path):
     with tsv_path.open('w') as fh:
         for contig in contigs:
             for feat in features_by_contig[contig['id']]:
-                if(feat['type'] == bc.FEATURE_T_RNA):
-                    feat_type = bc.INSDC_FEATURE_T_RNA
-                elif(feat['type'] == bc.FEATURE_TM_RNA):
-                    feat_type = bc.INSDC_FEATURE_TM_RNA
-                elif(feat['type'] == bc.FEATURE_R_RNA):
-                    feat_type = bc.INSDC_FEATURE_R_RNA
-                elif(feat['type'] == bc.FEATURE_NC_RNA):
-                    feat_type = bc.INSDC_FEATURE_NC_RNA
-                elif(feat['type'] == bc.FEATURE_NC_RNA_REGION):
-                    feat_type = 'region'
-                elif(feat['type'] == bc.FEATURE_CRISPR):
-                    feat_type = 'CRISPR'
-                elif(feat['type'] == bc.FEATURE_CDS):
-                    feat_type = bc.INSDC_FEATURE_CDS
-                elif(feat['type'] == bc.FEATURE_SORF):
-                    feat_type = bc.INSDC_FEATURE_CDS
-                elif(feat['type'] == bc.FEATURE_GAP):
+                feat_type = feat['type']
+                if(feat['type'] == bc.FEATURE_GAP):
                     feat_type = bc.INSDC_FEATURE_ASSEMBLY_GAP if feat['length'] >= 100 else bc.INSDC_FEATURE_GAP
-                elif(feat['type'] == bc.FEATURE_ORIC):
-                    feat_type = 'oriC'
-                elif(feat['type'] == bc.FEATURE_ORIT):
-                    feat_type = 'oriT'
-                else:
-                    continue
                 fh.write('\t'.join([feat['contig'], feat_type, str(feat['start']), str(feat['stop']), feat['strand'], feat.get('gene', ''), feat.get('product', '')]))
                 fh.write('\n')
     return
