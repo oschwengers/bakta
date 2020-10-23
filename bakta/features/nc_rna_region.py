@@ -84,7 +84,7 @@ def predict_nc_rna_regions(data, contigs_path):
                     ncrna_region['contig'] = contig_id
                     ncrna_region['start'] = start
                     ncrna_region['stop'] = stop
-                    ncrna_region['strand'] = strand
+                    ncrna_region['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
                     ncrna_region['gene'] = subject
                     ncrna_region['product'] = "(partial) %s" % description if partial else description
                     

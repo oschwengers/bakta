@@ -22,7 +22,7 @@ def detect_assembly_gaps(contigs):
             gap['contig'] = contig['id']
             gap['start'] = start
             gap['stop'] = end + 1
-            gap['strand'] = '+'
+            gap['strand'] = bc.STRAND_NA
             gap['length'] = end - start
             
             gaps.append(gap)

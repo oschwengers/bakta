@@ -88,7 +88,7 @@ def predict_oris(data, contigs_path, ori_type):
                         ori['contig'] = contig['id']
                         ori['start'] = start
                         ori['stop'] = stop
-                        ori['strand'] = '?'
+                        ori['strand'] = bc.STRAND_UNKNOWN
                         oris.append(ori)
                         log.debug(
                             'raw %s: contig=%s, start=%i, stop=%i',

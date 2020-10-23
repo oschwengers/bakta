@@ -52,9 +52,9 @@ def predict_tm_rnas(data, contigs_path):
                 contig = cols[0][1:]
             elif( len(cols) == 5 ):
                 (nr, type, location, tag_location, tag_aa) = line.split()
-                strand = '+'
+                strand = bc.STRAND_FORWARD
                 if(location[0] == 'c'):
-                    strand = '-'
+                    strand = bc.STRAND_REVERSE
                     location = location[1:]
                 (start, stop) = location[1:-1].split(',')
                 start = int(start)
@@ -62,7 +62,7 @@ def predict_tm_rnas(data, contigs_path):
 
                 # extract sequence
                 seq = contigs[contig]['sequence'][start:stop]
-                if(strand == '-'):
+                if(strand == bc.STRAND_REVERSE):
                     seq = str(Seq(seq).reverse_complement())
                 
                 tmrna = OrderedDict()

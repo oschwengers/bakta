@@ -84,7 +84,7 @@ def predict_nc_rnas(data, contigs_path):
                     ncrna['contig'] = contig_id
                     ncrna['start'] = start
                     ncrna['stop'] = stop
-                    ncrna['strand'] = strand
+                    ncrna['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
                     ncrna['gene'] = subject
                     ncrna['product'] = "(partial) %s" % description if partial else description
                     

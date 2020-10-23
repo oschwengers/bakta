@@ -60,14 +60,14 @@ def predict(contigs, filtered_contigs_path):
                 cds['contig'] = contig
                 cds['start'] = int(start)
                 cds['stop'] = int(stop)
-                cds['strand'] = strand
+                cds['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
                 cds['gene'] = None
                 cds['product'] = None
                 cds['start_type'] = gff_annotations['start_type']
                 cds['rbs_motif'] = gff_annotations['rbs_motif']
                 cds['db_xrefs'] = []
                 
-                if(cds['strand'] == '+'):
+                if(cds['strand'] == bc.STRAND_FORWARD):
                     cds['frame'] = (cds['start'] - 1) % 3 + 1
                 else:
                     cds['frame'] = (contigs[cds['contig']]['length'] - cds['stop']) % 3 + 1

@@ -19,7 +19,7 @@ def extract(contigs):
     orfs = []
     for contig in contigs:
         dna_seq = Seq(contig['sequence'])
-        for strand, seq in [('+', dna_seq), ('-', dna_seq.reverse_complement())]:  # strands +/-
+        for strand, seq in [(bc.STRAND_FORWARD, dna_seq), (bc.STRAND_REVERSE, dna_seq.reverse_complement())]:  # strands +/-
             for frame in range(3):  # frames 1/2/3 -> 0, 1, 2
                 seq_frame = seq[frame:]
 

@@ -60,7 +60,7 @@ def predict_crispr(data, contigs_path):
                         crispr['contig'] = contig_id
                         crispr['start'] = int(position)
                         crispr['stop'] = int(position) + int(length) - 1
-                        crispr['strand'] = '+'
+                        crispr['strand'] = bc.STRAND_UNKNOWN
                         crispr['product'] = "CRISPR array with %s repeats of length %s, consensus sequence %s and spacer length %s" % (copies, repeat_length, repeat_consensus, spacer_length)
                         crispr['spacer_length'] = int(spacer_length)
                         crispr['repeat_length'] = int(repeat_length)

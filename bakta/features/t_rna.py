@@ -68,10 +68,10 @@ def predict_t_rnas(data, contigs_path):
         for line in fh.readlines()[3:]:  # skip first 3 lines
             (contig, trna_id, start, stop, trna_type, anti_codon, intron_begin, bounds_end, score, note) = line.split('\t')
 
-            start, stop, strand = int(start), int(stop), '+'
+            start, stop, strand = int(start), int(stop), bc.STRAND_FORWARD
             if(start > stop):  # reverse
                 start, stop = stop, start
-                strand = '-'
+                strand = bc.STRAND_REVERSE
 
             contig = contig.strip()  # bugfix for extra single whitespace in tRNAscan-SE output
 

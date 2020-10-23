@@ -86,7 +86,7 @@ def predict_r_rnas(data, contigs_path):
                     rrna['contig'] = contig_id
                     rrna['start'] = start
                     rrna['stop'] = stop
-                    rrna['strand'] = strand
+                    rrna['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
                     rrna['gene'] = "%s_rrna" % rrna_tag
                     rrna['product'] = "(partial) %s ribosomal RNA" % rrna_tag if partial else "%s ribosomal RNA" % rrna_tag
                     
