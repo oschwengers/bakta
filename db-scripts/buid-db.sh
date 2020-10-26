@@ -108,10 +108,11 @@ rm uniref100.xml.gz
 printf "\n9/14: download UniProt UniRef90 ...\n"
 wget -nv ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref90/uniref90.xml.gz
 printf "\n9/14: read UniRef90 entries and build Protein Sequence Cluster sequence and information databases:\n"
-python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --xml uniref90.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --fasta psc.faa
+python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --xml uniref90.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --psc-fasta psc.faa --sorf-fasta sorf.faa
 printf "\n9/14: build PSC Diamond db ...\n"
 diamond makedb --in psc.faa --db psc
-rm uniref90.xml.gz uniparc_active.fasta.gz
+diamond makedb --in sorf.faa --db sorf
+rm uniref90.xml.gz uniparc_active.fasta.gz sorf.faa
 
 
 ############################################################################

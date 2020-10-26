@@ -16,15 +16,18 @@ parser.add_argument('--taxonomy', action='store', help='Path to NCBI taxonomy no
 parser.add_argument('--xml', action='store', help='Path to UniRef90 xml file.')
 parser.add_argument('--uniparc', action='store', help='Path to UniParc fasta file.')
 parser.add_argument('--db', action='store', help='Path to Bakta sqlite3 db file.')
-parser.add_argument('--fasta', action='store', help='Path to PSC fasta file.')
+parser.add_argument('--psc-fasta', action='store', dest='psc_fasta', help='Path to PSC fasta file.')
+parser.add_argument('--sorf-fasta', action='store', dest='sorf_fasta', help='Path to sORF PSC fasta file.')
 args = parser.parse_args()
 
+MAX_SORF_LENGTH = 30
 
 taxonomy_path = Path(args.taxonomy).resolve()
 xml_path = Path(args.xml).resolve()
 uniparc_path = Path(args.uniparc).resolve()
 db_path = Path(args.db)
-fasta_path = Path(args.fasta)
+fasta_psc_path = Path(args.psc_fasta)
+fasta_sorf_path = Path(args.sorf_fasta)
 
 
 logging.basicConfig(
@@ -33,7 +36,8 @@ logging.basicConfig(
     format='%(name)s - UniRef90 - %(levelname)s - %(message)s',
     level=logging.DEBUG
 )
-log = logging.getLogger('PSC')
+log_psc = logging.getLogger('PSC')
+log_sorf = logging.getLogger('SORF')
 
 
 def is_taxon_child(child, LCA, taxonomy):
@@ -67,7 +71,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA threads = 2;')
     conn.commit()
 
-    with gzip.open(str(xml_path), mode='rb') as fh_xml, fasta_path.open(mode='wt') as fh_fasta:
+    with gzip.open(str(xml_path), mode='rb') as fh_xml, fasta_psc_path.open(mode='wt') as fh_fasta_psc, fasta_sorf_path.open(mode='wt') as fh_fasta_sorf:
         i = 0
         for event, elem in et.iterparse(fh_xml, tag='{*}entry'):
             if('Fragment' not in elem.find('./{*}name').text):  # skip protein fragments
@@ -104,16 +108,22 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                         product
                     )
                     conn.execute('INSERT INTO psc (uniref90_id, uniref50_id, product) VALUES (?,?,?)', psc)
-                    log.info('INSERT INTO psc (uniref90_id, uniref50_id, product) VALUES (%s,%s,%s)', *psc)
+                    log_psc.info('INSERT INTO psc (uniref90_id, uniref50_id, product) VALUES (%s,%s,%s)', *psc)
                     
                     # lookup seed sequence
                     is_seed = rep_member_dbref.find('./{*}property[@type="isSeed"]')
                     if(is_seed is not None):  # representative is seed sequence
                         seq = rep_member.find('./{*}sequence').text.upper()
-                        fh_fasta.write(">%s\n%s\n" % (uniref90_id, seq))
-                        seed_db_type = rep_member_dbref.get('type')
-                        seed_db_id = rep_member_dbref.get('id')
-                        log.info('write seed: uniref90-id=%s, type=%s, id=%s, length=%s', uniref90_id, seed_db_type, seed_db_id, len(seq))
+                        if(len(seq) > MAX_SORF_LENGTH):  # normael CDS
+                            fh_fasta_psc.write(">%s\n%s\n" % (uniref90_id, seq))
+                            seed_db_type = rep_member_dbref.get('type')
+                            seed_db_id = rep_member_dbref.get('id')
+                            log_psc.info('write seed: uniref90-id=%s, type=%s, id=%s, length=%s', uniref90_id, seed_db_type, seed_db_id, len(seq))
+                        else:  # short ORF
+                            fh_fasta_sorf.write(">%s\n%s\n" % (uniref90_id, seq))
+                            seed_db_type = rep_member_dbref.get('type')
+                            seed_db_id = rep_member_dbref.get('id')
+                            log_sorf.info('write seed: uniref90-id=%s, type=%s, id=%s, length=%s', uniref90_id, seed_db_type, seed_db_id, len(seq))
                     else:  # search for seed member
                         for member_dbref in elem.findall('./{*}member/{*}dbReference'):
                             if(member_dbref.find('./{*}property[@type="isSeed"]') is not None):
@@ -141,22 +151,27 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
             elem.clear()  # forstall out of memory errors
     conn.commit()
 print("\tparsed PSC: %d" % i)
-log.debug('summary: # PSC=%d', i)
+log_psc.debug('summary: # PSC=%d', i)
 
 
 print("UniParc (%i)..." % len(uniref90_uniparc_ids))
-log.debug('lookup non-representative UniParc seed sequences: %s', len(uniref90_uniparc_ids))
+log_psc.debug('lookup non-representative UniParc seed sequences: %s', len(uniref90_uniparc_ids))
 i = 0
-with gzip.open(str(uniparc_path), mode='rt') as fh_uniparc, fasta_path.open(mode='at') as fh_fasta:
+with gzip.open(str(uniparc_path), mode='rt') as fh_uniparc, fh_fasta_psc.open(mode='at') as fh_fasta_psc, fh_fasta_sorf.open(mode='at') as fh_fasta_sorf:
     for record in SeqIO.parse(fh_uniparc, 'fasta'):
         uniref90_id = uniref90_uniparc_ids.get(record.id, None)
         if(uniref90_id):
-            fh_fasta.write(">%s\n%s\n" % (uniref90_id, str(record.seq).upper()))
-            log.info('write seed: uniref90-id=%s, type=UniParc, id=%s, length=%s', uniref90_id, record.id, len(record.seq))
+            seq = str(record.seq).upper()
+            if(len(seq) > MAX_SORF_LENGTH):  # normael CDS
+                fh_fasta_psc.write(">%s\n%s\n" % (uniref90_id, seq))
+                log_psc.info('write seed: uniref90-id=%s, type=UniParc, id=%s, length=%s', uniref90_id, record.id, len(record.seq))
+            else:  # short ORF
+                fh_fasta_sorf.write(">%s\n%s\n" % (uniref90_id, seq))
+                log_sorf.info('write seed: uniref90-id=%s, type=UniParc, id=%s, length=%s', uniref90_id, record.id, len(record.seq))
             uniref90_uniparc_ids.pop(record.id)
             i += 1
 print("\twritten UniParc seed sequences: %i" % i)
-log.debug('written UniParc seed sequences: %i', i)
+log_psc.debug('written UniParc seed sequences: %i', i)
 
 
 print("\nsuccessfully initialized PSC table!")
