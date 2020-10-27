@@ -188,6 +188,7 @@ def main(args):
         cds.mark_hypotheticals(data[bc.FEATURE_CDS])  # mark hypotheticals
         for feat in data[bc.FEATURE_CDS]:
             anno.combine_ips_psc_annotation(feat) # combine IPS and PSC annotations
+    
     ############################################################################
     # sORF prediction
     # - in-mem sORF extraction
@@ -233,6 +234,7 @@ def main(args):
         print("\tfiltered sORFs: %i" % len(sorfs_filtered))
         for feat in data[bc.FEATURE_SORF]:
             anno.combine_ips_psc_annotation(feat) # combine IPS and PSC annotations
+    
     ############################################################################
     # gap annotation
     # - in-mem gap detection
@@ -265,6 +267,12 @@ def main(args):
         data[bc.FEATURE_ORIT] = oriTs
 
     ############################################################################
+    # Filter overlapping features
+    ############################################################################
+    print('apply feature overlap filters...')
+    anno.detect_feature_overlaps(data)
+
+    ############################################################################
     # Create annotations
     # - filter features based on precedence and overlaps
     # - sort features
@@ -288,8 +296,9 @@ def main(args):
         ]:
         feature_list = data.get(feature_type, [])
         for feature in feature_list:
-            contig_features = features_by_contig.get(feature['contig'])
-            contig_features.append(feature)
+            if('discarded' not in feature):
+                contig_features = features_by_contig.get(feature['contig'])
+                contig_features.append(feature)
     features = []
     for contig in contigs:
         contig_features = features_by_contig[contig['id']]
@@ -364,17 +373,17 @@ def main(args):
     print('\tcoding density: %2.1f%%' % (100 * genome_stats['coding_ratio']))
 
     print('\nannotation statistics:')
-    print('\ttRNAs: %i' % len(data.get(bc.FEATURE_T_RNA, [])))
-    print('\ttmRNAs: %i' % len(data.get(bc.FEATURE_TM_RNA, [])))
-    print('\trRNAs: %i' % len(data.get(bc.FEATURE_R_RNA, [])))
-    print('\tncRNAs: %i' % len(data.get(bc.FEATURE_NC_RNA, [])))
-    print('\tncRNA-regions: %i' % len(data.get(bc.FEATURE_NC_RNA_REGION, [])))
-    print('\tCRISPR arrays: %i' % len(data.get(bc.FEATURE_CRISPR, [])))
-    print('\tCDSs: %i' % len(data.get(bc.FEATURE_CDS, [])))
-    print('\tsORFs: %i' % len(data.get(bc.FEATURE_SORF, [])))
-    print('\tgaps: %i' % len(data.get(bc.FEATURE_GAP, [])))
-    print('\toriCs: %i' % len(data.get(bc.FEATURE_ORIC, [])))
-    print('\toriTs: %i' % len(data.get(bc.FEATURE_ORIT, [])))
+    print('\ttRNAs: %i' % len([f for f in features if f['type'] == bc.FEATURE_T_RNA]))
+    print('\ttmRNAs: %i' % len([f for f in features if f['type'] == bc.FEATURE_TM_RNA]))
+    print('\trRNAs: %i' % len([f for f in features if f['type'] == bc.FEATURE_R_RNA]))
+    print('\tncRNAs: %i' % len([f for f in features if f['type'] == bc.FEATURE_NC_RNA]))
+    print('\tncRNA-regions: %i' % len([f for f in features if f['type'] == bc.FEATURE_NC_RNA_REGION]))
+    print('\tCRISPR arrays: %i' % len([f for f in features if f['type'] == bc.FEATURE_CRISPR]))
+    print('\tCDSs: %i' % len([f for f in features if f['type'] == bc.FEATURE_CDS]))
+    print('\tsORFs: %i' % len([f for f in features if f['type'] == bc.FEATURE_SORF]))
+    print('\tgaps: %i' % len([f for f in features if f['type'] == bc.FEATURE_GAP]))
+    print('\toriCs: %i' % len([f for f in features if f['type'] == bc.FEATURE_ORIC]))
+    print('\toriTs: %i' % len([f for f in features if f['type'] == bc.FEATURE_ORIT]))
 
     # remove tmp dir
     shutil.rmtree(str(cfg.tmp_path))

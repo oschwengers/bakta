@@ -118,156 +118,97 @@ def overlap_filter(data, orfs_raw):
         cdss = contig_cdss[cds['contig']]
         cdss.append(cds)
 
-    contig_orfs = {k['id']: [] for k in data['contigs']}
-    for orf in orfs_raw:
-        orfs = contig_orfs[orf['contig']]
-        orfs.append(orf)
+    contig_sorfs = {k['id']: [] for k in data['contigs']}
+    for sorf in orfs_raw:
+        orfs = contig_sorfs[sorf['contig']]
+        orfs.append(sorf)
 
-    discarded_orfs = []
+    discarded_sorfs = {}
     for contig in data['contigs']:
         log.debug('filter short ORFs on contig: %s', contig['id'])
-        orfs = contig_orfs[contig['id']]
+        sorfs = contig_sorfs[contig['id']]
 
         # filter CDS overlapping ORFs
-        for cds in contig_cdss[contig['id']]:
-            log.debug('filter short ORFs by CDS: %s%i[%i->%i]', cds['strand'], cds['frame'], cds['start'], cds['stop'])
-            for orf in orfs[:]:
-                if(orf['strand'] == cds['strand']):
-                    if(orf['frame'] == cds['frame']):
-                        if(get_feature_stop(orf) == get_feature_stop(cds)):
-                            # ORF and CDS share identical stop codon position
-                            orfs.remove(orf)
-                            discarded_orfs.append(orf)
-                        elif(orf['start'] < cds['start'] and orf['stop'] > cds['start']):
-                            # in-frame ORF partially overlapping CDS upstream
-                            orfs.remove(orf)
-                            discarded_orfs.append(orf)
-                        elif(orf['start'] >= cds['start'] and orf['stop'] <= cds['stop']):
-                            # in-frame ORF completely overlapped by CDS
-                            orfs.remove(orf)
-                            discarded_orfs.append(orf)
-                        elif(orf['start'] < cds['stop'] and orf['stop'] > cds['stop']):
-                            # in-frame ORF partially overlapping CDS downstream
-                            orfs.remove(orf)
-                            discarded_orfs.append(orf)
+        for sorf in sorfs:
+            for cds in contig_cdss[contig['id']]:
+                # log.debug('filter short ORFs by CDS: %s%i[%i->%i]', cds['strand'], cds['frame'], cds['start'], cds['stop'])
+                if(sorf['strand'] == cds['strand']):
+                    if(sorf['frame'] == cds['frame']):
+                        # fast/simple overlap detection for in frame orientation
+                        if(cds['stop'] < sorf['start'] or cds['start'] > sorf['stop']):
+                            continue
+                        else:
+                            discarded_sorfs["%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])] = sorf
                     else:
-                        if(orf['start'] < cds['start'] and orf['stop'] > cds['start']):
-                            # out-of-frame ORF partially overlapping CDS upstream
+                        if(sorf['start'] < cds['start'] and sorf['stop'] > cds['start']):
+                            # out-of-frame sorf partially overlapping CDS upstream
                             # ToDo: add max overlap threshold
-                            pass
-                        elif(orf['start'] >= cds['start'] and orf['stop'] <= cds['stop']):
-                            # out-of-frame ORF completely overlapped by CDS
-                            orfs.remove(orf)
-                            discarded_orfs.append(orf)
-                        elif(orf['start'] < cds['stop'] and orf['stop'] > cds['stop']):
-                            # out-of-frame ORF partially overlapping CDS downstream
+                            continue
+                        elif(sorf['start'] >= cds['start'] and sorf['stop'] <= cds['stop']):
+                            # out-of-frame sorf completely overlapped by CDS
+                            discarded_sorfs["%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])] = sorf
+                        elif(sorf['start'] < cds['stop'] and sorf['stop'] > cds['stop']):
+                            # out-of-frame sorf partially overlapping CDS downstream
                             # ToDo: add max overlap threshold
-                            pass
+                            continue
                 else:
-                    if(orf['frame'] == cds['frame']):
-                        if(orf['start'] < cds['start'] and orf['stop'] > cds['start']):
-                            # in-frame ORF partially overlapping CDS upstream
-                            # ToDo: add max overlap threshold
-                            pass
-                        elif(orf['start'] >= cds['start'] and orf['stop'] <= cds['stop']):
-                            # in-frame ORF completely overlapped by CDS
-                            orfs.remove(orf)
-                            discarded_orfs.append(orf)
-                        elif(orf['start'] < cds['stop'] and orf['stop'] > cds['stop']):
-                            # in-frame ORF partially overlapping CDS downstream
-                            # ToDo: add max overlap threshold
-                            pass
+                    if(sorf['frame'] == cds['frame']):
+                        # fast/simple overlap detection for in frame orientation
+                        if(cds['stop'] < sorf['start'] or cds['start'] > sorf['stop']):
+                            continue
+                        else:
+                            discarded_sorfs["%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])] = sorf
                     else:
                         # ToDo: add out-of-frame filters
-                        if(orf['start'] < cds['start'] and orf['stop'] > cds['start']):
-                            # out-frame ORF partially overlapping CDS upstream
+                        if(sorf['start'] < cds['start'] and sorf['stop'] > cds['start']):
+                            # out-frame sorf partially overlapping CDS upstream
                             # ToDo: add max overlap threshold
-                            pass
-                        elif(orf['start'] >= cds['start'] and orf['stop'] <= cds['stop']):
-                            # out-frame ORF completely overlapped by CDS
-                            orfs.remove(orf)
-                            discarded_orfs.append(orf)
-                        elif(orf['start'] < cds['stop'] and orf['stop'] > cds['stop']):
-                            # out-frame ORF partially overlapping CDS downstream
+                            continue
+                        elif(sorf['start'] >= cds['start'] and sorf['stop'] <= cds['stop']):
+                            # out-frame sorf completely overlapped by CDS
+                            discarded_sorfs["%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])] = sorf
+                        elif(sorf['start'] < cds['stop'] and sorf['stop'] > cds['stop']):
+                            # out-frame sorf partially overlapping CDS downstream
                             # ToDo: add max overlap threshold
-                            pass
+                            continue
 
-        # filter rRNA overlapping ORFs
-        for r_rna in contig_r_rnas[contig['id']]:
-            log.debug('filter short ORFs by rRNA: %s[%i->%i]', r_rna['strand'], r_rna['start'], r_rna['stop'])
-            for orf in orfs[:]:
-                if(orf['start'] < r_rna['start'] and orf['stop'] > r_rna['start']):
-                    # ORF partially overlapping rRNA upstream
-                    orfs.remove(orf)
-                    discarded_orfs.append(orf)
-                elif(orf['start'] >= r_rna['start'] and orf['stop'] <= r_rna['stop']):
-                    # ORF completely overlapped by rRNA
-                    orfs.remove(orf)
-                    discarded_orfs.append(orf)
-                elif(orf['start'] < r_rna['stop'] and orf['stop'] > r_rna['start']):
-                    # ORF partially overlapping rRNA downstream
-                    orfs.remove(orf)
-                    discarded_orfs.append(orf)
+            # filter rRNA overlapping ORFs
+            for r_rna in contig_r_rnas[contig['id']]:
+                # log.debug('filter short ORFs by rRNA: %s[%i->%i]', r_rna['strand'], r_rna['start'], r_rna['stop'])
+                # fast/simple overlap detection for rRNAs
+                if(sorf['stop'] < r_rna['start'] or sorf['start'] > r_rna['stop']):
+                    continue
+                else:
+                    discarded_sorfs["%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])] = sorf
 
-        # filter tRNA overlapping ORFs
-        for t_rna in contig_t_rnas[contig['id']]:
-            log.debug('filter short ORFs by tRNA: %s[%i->%i]', t_rna['strand'], t_rna['start'], t_rna['stop'])
-            for orf in orfs[:]:
-                if(orf['start'] < t_rna['start'] and orf['stop'] > t_rna['start']):
-                    # ORF partially overlapping tRNA upstream
-                    orfs.remove(orf)
-                    discarded_orfs.append(orf)
-                elif(orf['start'] >= t_rna['start'] and orf['stop'] <= t_rna['stop']):
-                    # ORF completely overlapped by tRNA
-                    orfs.remove(orf)
-                    discarded_orfs.append(orf)
-                elif(orf['start'] < t_rna['stop'] and orf['stop'] > t_rna['start']):
-                    # ORF partially overlapping tRNA downstream
-                    orfs.remove(orf)
-                    discarded_orfs.append(orf)
-
-        # filter ncRNA overlapping ORFs
-        # for nc_rna in contig_nc_rnas[contig['id']]:
-        #     log.debug('filter short ORFs by ncRNA: %s[%i->%i]', nc_rna['strand'], nc_rna['start'], nc_rna['stop'])
-        #     for orf in orfs[:]:
-        #         if(orf['start'] < nc_rna['start'] and orf['stop'] > nc_rna['start']):
-        #             # ORF partially overlapping ncRNA upstream
-        #             # ToDo: add max overlap threshold
-        #             pass
-        #         elif(orf['start'] >= nc_rna['start'] and orf['stop'] <= nc_rna['stop']):
-        #             # ORF completely overlapped by ncRNA
-        #             # ToDo: allow sORF / leader overlap, test other overlaps
-        #             pass
-        #         elif(orf['start'] < nc_rna['stop'] and orf['stop'] > nc_rna['start']):
-        #             # ORF partially overlapping ncRNA downstream
-        #             # ToDo: add max overlap threshold
-        #             pass
+            # filter tRNA overlapping ORFs
+            # log.debug('filter short ORFs by tRNA: %s[%i->%i]', t_rna['strand'], t_rna['start'], t_rna['stop'])
+            for t_rna in contig_t_rnas[contig['id']]:
+                # fast/simple overlap detection for tRNAs
+                if(sorf['stop'] < t_rna['start'] or sorf['start'] > t_rna['stop']):
+                    continue
+                else:
+                    discarded_sorfs["%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])] = sorf
         
-        # filter CRISPR array overlapping ORFs
-        for crispr in contig_crispr_arrays[contig['id']]:
-            log.debug('filter short ORFs by CRISPR: [%i->%i]', crispr['start'], crispr['stop'])
-            for orf in orfs[:]:
-                if(orf['start'] < crispr['start'] and orf['stop'] > crispr['start']):
-                    # ORF partially overlapping CRISPR array upstream
-                    orfs.remove(orf)
-                    discarded_orfs.append(orf)
-                elif(orf['start'] >= crispr['start'] and orf['stop'] <= crispr['stop']):
-                    # ORF completely overlapped by CRISPR array
-                    orfs.remove(orf)
-                    discarded_orfs.append(orf)
-                elif(orf['start'] < crispr['stop'] and orf['stop'] > crispr['start']):
-                    # ORF partially overlapping CRISPR array downstream
-                    orfs.remove(orf)
-                    discarded_orfs.append(orf)
+            # filter CRISPR array overlapping ORFs
+            # log.debug('filter short ORFs by CRISPR: [%i->%i]', crispr['start'], crispr['stop'])
+            for crispr in contig_crispr_arrays[contig['id']]:
+                # fast/simple overlap detection for CRISPR
+                if(sorf['stop'] < crispr['start'] or sorf['start'] > crispr['stop']):
+                    continue
+                else:
+                    discarded_sorfs["%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])] = sorf
         
 
-    valid_orfs = []
-    for orfs in contig_orfs.values():
-        for orf in orfs:
-            valid_orfs.append(orf)
+    valid_sorfs = []
+    for sorfs in contig_sorfs.values():
+        for sorf in sorfs:
+            key = "%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])
+            if(key not in discarded_sorfs):
+                valid_sorfs.append(sorf)
 
-    log.info('short ORF filter: # valid=%i, # discarded=%i', len(valid_orfs), len(discarded_orfs))
-    return valid_orfs, discarded_orfs
+    log.info('short ORF filter: # valid=%i, # discarded=%i', len(valid_sorfs), len(discarded_sorfs.values()))
+    return valid_sorfs, discarded_sorfs
 
 
 def annotation_filter(sorfs):
