@@ -83,6 +83,8 @@ def predict_oris(genome, contigs_path, ori_type):
                 if(hit_count == 0):
                     if(start != -1):  # new stop
                         stop = i - 1
+                        if(ori_type == bc.FEATURE_ORIC and contig['type'] == bc.REPLICON_PLASMID):
+                            ori_type = bc.FEATURE_ORIV
                         ori = OrderedDict()
                         ori['type'] = ori_type
                         ori['contig'] = contig['id']

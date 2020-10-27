@@ -150,6 +150,14 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                     annotations = encode_annotations(annotations)
                     fh.write('\t'.join([feat['contig'], 'Blast+', so.SO_ORIC.name, str(feat['start']), str(feat['stop']), '.', feat['strand'], '0', annotations]))
                     fh.write('\n')
+                elif(feat['type'] == bc.FEATURE_ORIV):
+                    annotations = {
+                        'Name': 'oriV',
+                        'product': 'oriV'
+                    }
+                    annotations = encode_annotations(annotations)
+                    fh.write('\t'.join([feat['contig'], 'Blast+', so.SO_ORIV.name, str(feat['start']), str(feat['stop']), '.', feat['strand'], '0', annotations]))
+                    fh.write('\n')
                 elif(feat['type'] == bc.FEATURE_ORIT):
                     annotations = {
                         'Name': 'oriT',

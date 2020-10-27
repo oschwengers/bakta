@@ -297,6 +297,7 @@ def main(args):
             bc.FEATURE_SORF,
             bc.FEATURE_GAP,
             bc.FEATURE_ORIC,
+            bc.FEATURE_ORIV,
             bc.FEATURE_ORIT
         ]:
         feature_list = genome['features'].get(feature_type, [])

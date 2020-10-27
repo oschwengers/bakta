@@ -59,6 +59,7 @@ FEATURE_SORF = 'sorf'
 FEATURE_CDS = 'cds'
 FEATURE_GAP = 'gap'
 FEATURE_ORIC = 'oriC'
+FEATURE_ORIV = 'oriV'
 FEATURE_ORIT = 'oriT'
 
 ############################################################################
