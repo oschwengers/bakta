@@ -37,7 +37,7 @@ SO_TERMS = {
 }
 
 
-def predict_t_rnas(data, contigs_path):
+def predict_t_rnas(genome, contigs_path):
     """Search for tRNA sequences."""
 
     txt_output_path = cfg.tmp_path.joinpath('trna.tsv')

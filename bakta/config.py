@@ -25,7 +25,7 @@ locus_tag = None
 genus = None
 species = None
 strain = None
-keep_contig_names = False
+keep_contig_headers = False
 complete = False
 plasmid = False
 
@@ -139,7 +139,7 @@ def setup(args):
     log.info('plasmid=%s', plasmid)
 
     # annotation configurations
-    global prodigal_tf, translation_table, keep_contig_names, locus, locus_tag, gram, complete
+    global prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, gram, complete, replicons
     prodigal_tf = args.prodigal_tf if args.prodigal_tf != '' else None
     if prodigal_tf is not None:
         try:
@@ -157,8 +157,8 @@ def setup(args):
     log.info('prodigal_tf=%s', prodigal_tf)
     translation_table = args.translation_table
     log.info('translation_table=%s', translation_table)
-    keep_contig_names = args.keep_contig_names
-    log.info('keep_contig_names=%s', keep_contig_names)
+    keep_contig_headers = args.keep_contig_headers
+    log.info('keep_contig_headers=%s', keep_contig_headers)
     locus = args.locus if args.locus != '' else None
     log.info('locus=%s', locus)
     locus_tag = args.locus_tag if args.locus_tag != '' else None
@@ -167,6 +167,21 @@ def setup(args):
     log.info('gram=%s', gram)
     complete = args.complete
     log.info('complete=%s', complete)
+    replicons = args.replicons if args.replicons != '' else None
+    if replicons is not None:
+        try:
+            replicon_table_path = Path(args.replicons).resolve()
+            if(not os.access(str(replicon_table_path), os.R_OK)):
+                log.error('replicon table not readable! path=%s', replicon_table_path)
+                sys.exit('ERROR: replicon table file (%s) not readable!' % replicon_table_path)
+            if(genome_path.stat().st_size == 0):
+                log.error('empty replicon table file! path=%s', replicon_table_path)
+                sys.exit('ERROR: replicon table file (%s) is empty!' % replicon_table_path)
+            replicons = replicon_table_path
+        except:
+            log.error('provided replicon file not valid! path=%s', args.replicons)
+            sys.exit('ERROR: replicon table file (%s) not valid!' % args.replicons)
+    log.info('replicon-table=%s', replicons)
     
     # workflow configurations
     global skip_trna, skip_tmrna, skip_rrna, skip_ncrna, skip_ncrna_region, skip_crispr, skip_cds, skip_sorf, skip_gap, skip_ori

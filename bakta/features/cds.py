@@ -13,7 +13,7 @@ import bakta.so as so
 log = logging.getLogger('features:cds')
 
 
-def predict(contigs, filtered_contigs_path):
+def predict(genome, filtered_contigs_path):
     """Predict open reading frames with Prodigal."""
 
     proteins_path = cfg.tmp_path.joinpath('proteins.faa')
@@ -47,7 +47,7 @@ def predict(contigs, filtered_contigs_path):
 
     # parse orfs
     # TODO: replace code by BioPython GFF3 parser
-    contigs = {k['id']: k for k in contigs}
+    contigs = {k['id']: k for k in genome['contigs']}
     cdss = {}
     with gff_path.open() as fh:
         for line in fh:

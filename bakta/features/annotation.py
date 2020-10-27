@@ -40,38 +40,38 @@ def combine_ips_psc_annotation(feature):
     feature['db_xrefs'] = sorted(list(db_xrefs))
 
 
-def detect_feature_overlaps(data):
+def detect_feature_overlaps(genome):
     """Apply feature type specific hierarchical feature overlap filters.
     tRNA < tmRNA
     CDS < tmRNA, tRNA, rRNA, CRISPR
     sORF < mRNA, tRNA, rRNA, CRISPR, CDS (in-frame & entirely overlapping), sORF (shorter, weaker annotations)
     """
-    contig_t_rnas = {k['id']: [] for k in data['contigs']}
-    for t_rna in data.get(bc.FEATURE_T_RNA, []):
+    contig_t_rnas = {k['id']: [] for k in genome['contigs']}
+    for t_rna in genome['features'].get(bc.FEATURE_T_RNA, []):
         t_rnas = contig_t_rnas[t_rna['contig']]
         t_rnas.append(t_rna)
-    contig_tm_rnas = {k['id']: [] for k in data['contigs']}
-    for tm_rna in data.get(bc.FEATURE_TM_RNA, []):
+    contig_tm_rnas = {k['id']: [] for k in genome['contigs']}
+    for tm_rna in genome['features'].get(bc.FEATURE_TM_RNA, []):
         tm_rnas = contig_tm_rnas[tm_rna['contig']]
         tm_rnas.append(tm_rna)
-    contig_r_rnas = {k['id']: [] for k in data['contigs']}
-    for r_rna in data.get(bc.FEATURE_R_RNA, []):
+    contig_r_rnas = {k['id']: [] for k in genome['contigs']}
+    for r_rna in genome['features'].get(bc.FEATURE_R_RNA, []):
         r_rnas = contig_r_rnas[r_rna['contig']]
         r_rnas.append(r_rna)
-    contig_crispr_arrays = {k['id']: [] for k in data['contigs']}
-    for crispr_array in data.get(bc.FEATURE_CRISPR, []):
+    contig_crispr_arrays = {k['id']: [] for k in genome['contigs']}
+    for crispr_array in genome['features'].get(bc.FEATURE_CRISPR, []):
         crispr_arrays = contig_crispr_arrays[crispr_array['contig']]
         crispr_arrays.append(crispr_array)
-    contig_cdss = {k['id']: [] for k in data['contigs']}
-    for cds in data.get(bc.FEATURE_CDS, []):
+    contig_cdss = {k['id']: [] for k in genome['contigs']}
+    for cds in genome['features'].get(bc.FEATURE_CDS, []):
         cdss = contig_cdss[cds['contig']]
         cdss.append(cds)
-    contig_sorfs = {k['id']: [] for k in data['contigs']}
-    for sorf in data.get(bc.FEATURE_SORF, []):
+    contig_sorfs = {k['id']: [] for k in genome['contigs']}
+    for sorf in genome['features'].get(bc.FEATURE_SORF, []):
         sorfs = contig_sorfs[sorf['contig']]
         sorfs.append(sorf)
     
-    for contig in data['contigs']:  # find feature overlaps contig-wise to increase the performance 
+    for contig in genome['contigs']:  # find feature overlaps contig-wise to increase the performance 
         log.debug('filter features on contig: %s', contig['id'])
 
         # mark tRNAs overlapping with tmRNAs

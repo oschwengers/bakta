@@ -9,11 +9,11 @@ import bakta.constants as bc
 log = logging.getLogger('features:ori')
 
 
-def predict_oris(data, contigs_path, ori_type):
+def predict_oris(genome, contigs_path, ori_type):
     """Search for oriT/C sequences."""
 
     database = 'oric.fna' if ori_type == bc.FEATURE_ORIC else 'orit.fna'
-    contigs = {c['id']: c for c in data['contigs']}
+    contigs = {c['id']: c for c in genome['contigs']}
     output_path = cfg.tmp_path.joinpath('ori.blastn.tsv')
     cmd = [
         'blastn',
@@ -70,7 +70,7 @@ def predict_oris(data, contigs_path, ori_type):
     
     # combine overlapping hits (simple 1D array peak detection)
     oris = []
-    for contig in data['contigs']:
+    for contig in genome['contigs']:
         contig_hits = hits.get(contig['id'], None)
         if(contig_hits):
             region_hits = [0] * (contig['length'] + 1)  # init with extra leading slot (start at 1)

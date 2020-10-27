@@ -11,7 +11,7 @@ import bakta.so as so
 log = logging.getLogger('features:nc_rna')
 
 
-def predict_nc_rnas(data, contigs_path):
+def predict_nc_rnas(genome, contigs_path):
     """Search for non-coding RNA genes."""
 
     output_path = cfg.tmp_path.joinpath('ncrna-genes.tsv')
@@ -25,9 +25,9 @@ def predict_nc_rnas(data, contigs_path):
         '--cpu', str(cfg.threads),
         '--tblout', str(output_path)
     ]
-    if(data['genome_size'] >= 1000000):
+    if(genome['size'] >= 1000000):
         cmd.append('-Z')
-        cmd.append(str(2 * data['genome_size'] // 1000000))
+        cmd.append(str(2 * genome['size'] // 1000000))
     cmd.append(str(cfg.db_path.joinpath('ncRNA-genes')))
     cmd.append(str(contigs_path))
     log.debug('cmd=%s', cmd)

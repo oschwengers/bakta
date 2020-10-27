@@ -10,9 +10,9 @@ log = logging.getLogger('features:assembly_gap')
 
 re_assembly_gap = re.compile(r'N{1,}', flags=0)
 
-def detect_assembly_gaps(contigs):
+def detect_assembly_gaps(genome):
     gaps = []
-    for contig in contigs:
+    for contig in genome['contigs']:
         m = re_assembly_gap.search(contig['sequence'])
         while m:
             start, end = m.span()

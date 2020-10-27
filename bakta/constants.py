@@ -97,6 +97,16 @@ STRAND_UNKNOWN = '?'
 STRAND_NA = '.'
 
 ############################################################################
+# Replicon types & topology
+############################################################################
+REPLICON_CHROMOSOME = 'chromosome'
+REPLICON_PLASMID = 'plasmid'
+REPLICON_CONTIG = 'contig'
+
+TOPOLOGY_CIRCULAR = 'circular'
+TOPOLOGY_LINEAR = 'linear'
+
+############################################################################
 # Miscellaneous constants
 ############################################################################
 DISCARD_TYPE_SPURIOUS = 'spurious'

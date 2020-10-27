@@ -13,11 +13,11 @@ import bakta.psc as psc
 log = logging.getLogger('features:sorf')
 
 
-def extract(contigs):
+def extract(genome):
     """Predict open reading frames in mem via BioPython."""
 
     orfs = []
-    for contig in contigs:
+    for contig in genome['contigs']:
         dna_seq = Seq(contig['sequence'])
         for strand, seq in [(bc.STRAND_FORWARD, dna_seq), (bc.STRAND_REVERSE, dna_seq.reverse_complement())]:  # strands +/-
             for frame in range(3):  # frames 1/2/3 -> 0, 1, 2
@@ -84,47 +84,47 @@ def get_feature_stop(feature):
     return feature['stop'] if feature['strand'] == '+' else feature['start']
 
 
-def overlap_filter(data, orfs_raw):
+def overlap_filter(genome, orfs_raw):
     """Filter in-mem ORFs by overlapping CDSs."""
 
-    contig_t_rnas = {k['id']: [] for k in data['contigs']}
-    for t_rna in data.get(bc.FEATURE_T_RNA, []):
+    contig_t_rnas = {k['id']: [] for k in genome['contigs']}
+    for t_rna in genome['features'].get(bc.FEATURE_T_RNA, []):
         t_rnas = contig_t_rnas[t_rna['contig']]
         t_rnas.append(t_rna)
-    for tm_rna in data.get(bc.FEATURE_TM_RNA, []):
+    for tm_rna in genome['features'].get(bc.FEATURE_TM_RNA, []):
         t_rnas = contig_t_rnas[tm_rna['contig']]
         t_rnas.append(tm_rna)
 
-    contig_r_rnas = {k['id']: [] for k in data['contigs']}
-    for r_rna in data.get(bc.FEATURE_R_RNA, []):
+    contig_r_rnas = {k['id']: [] for k in genome['contigs']}
+    for r_rna in genome['features'].get(bc.FEATURE_R_RNA, []):
         r_rnas = contig_r_rnas[r_rna['contig']]
         r_rnas.append(r_rna)
 
-    # contig_nc_rnas = {k['id']: [] for k in data['contigs']}
-    # for nc_rna in data.get(bc.FEATURE_NC_RNA, []):
+    # contig_nc_rnas = {k['id']: [] for k in genome['contigs']}
+    # for nc_rna in genome['features'].get(bc.FEATURE_NC_RNA, []):
     #     nc_rnas = contig_nc_rnas[nc_rna['contig']]
     #     nc_rnas.append(nc_rna)
-    # for nc_rna in data.get(bc.FEATURE_NC_RNA_REGION, []):
+    # for nc_rna in genome['features'].get(bc.FEATURE_NC_RNA_REGION, []):
     #     nc_rnas = contig_nc_rnas[nc_rna['contig']]
     #     nc_rnas.append(nc_rna)
 
-    contig_crispr_arrays = {k['id']: [] for k in data['contigs']}
-    for crispr_array in data.get(bc.FEATURE_CRISPR, []):
+    contig_crispr_arrays = {k['id']: [] for k in genome['contigs']}
+    for crispr_array in genome['features'].get(bc.FEATURE_CRISPR, []):
         crispr_arrays = contig_crispr_arrays[crispr_array['contig']]
         crispr_arrays.append(crispr_array)
 
-    contig_cdss = {k['id']: [] for k in data['contigs']}
-    for cds in data.get(bc.FEATURE_CDS, []):
+    contig_cdss = {k['id']: [] for k in genome['contigs']}
+    for cds in genome['features'].get(bc.FEATURE_CDS, []):
         cdss = contig_cdss[cds['contig']]
         cdss.append(cds)
 
-    contig_sorfs = {k['id']: [] for k in data['contigs']}
+    contig_sorfs = {k['id']: [] for k in genome['contigs']}
     for sorf in orfs_raw:
         orfs = contig_sorfs[sorf['contig']]
         orfs.append(sorf)
 
     discarded_sorfs = {}
-    for contig in data['contigs']:
+    for contig in genome['contigs']:
         log.debug('filter short ORFs on contig: %s', contig['id'])
         sorfs = contig_sorfs[contig['id']]
 

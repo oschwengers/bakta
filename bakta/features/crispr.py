@@ -10,7 +10,7 @@ import bakta.so as so
 log = logging.getLogger('features:crispr')
 
 
-def predict_crispr(data, contigs_path):
+def predict_crispr(genome, contigs_path):
     """Predict CRISPR arrays with PILER-CR."""
     # SO:0001459 <- Sequence Ontology
 

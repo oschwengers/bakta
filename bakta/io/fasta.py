@@ -11,31 +11,22 @@ log = logging.getLogger('io:fasta')
 
 FASTA_LINE_WRAPPING = 60
 
-def import_contigs(contigs_path, min_length):
-    """Apply min-length filters and rename contig headers."""
-
-    contig_counter = 1
+def import_contigs(contigs_path):
+    """Import raw contigs."""
     contigs = []
-    discarded = []
-    contig_prefix = cfg.locus if cfg.locus else 'contig'
     with contigs_path.open() as fh:
         for record in SeqIO.parse(fh, 'fasta'):
             seq = str(record.seq).upper()
-            contig_name = "%s_%i" % (contig_prefix, contig_counter)
-            contig_counter += 1
             contig = {
-                'id': contig_name,
-                'org_id': record.id,
-                'org_desc': record.description,
+                'id': record.id,
+                'desc': record.description,
                 'sequence': seq,
-                'length': len(seq)
+                'length': len(seq),
+                'complete': False,
+                'type': bc.REPLICON_CONTIG
             }
-            if len(seq) >= min_length:
-                contigs.append(contig)
-            else:
-                discarded.append(contig)
-
-    return contigs, discarded
+            contigs.append(contig)
+    return contigs
 
 
 def export_contigs(contigs, fasta_path):

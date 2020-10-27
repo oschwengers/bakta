@@ -4,10 +4,12 @@ import hashlib
 import logging
 import multiprocessing as mp
 import os
+import re
 import sys
 import subprocess as sp
 
 import bakta
+import bakta.constants as bc
 import bakta.config as cfg
 
 log = logging.getLogger('utils')
@@ -41,11 +43,12 @@ def parse_arguments():
     arg_group_annotation = parser.add_argument_group('Annotation')
     arg_group_annotation.add_argument('--prodigal-tf', action='store', dest='prodigal_tf', help='Path to existing Prodigal training file to use for CDS prediction')
     arg_group_annotation.add_argument('--translation-table', action='store', type=int, default=11, choices=[11, 4], dest='translation_table', help='Translation table to use: 11/4 (default = 11)')
-    arg_group_annotation.add_argument('--keep-contig-names', action='store_true', dest='keep_contig_names', help='Keep original contig names')
+    arg_group_annotation.add_argument('--complete', action='store_true', help="Replicons (chromosome/plasmid[s]) are complete")
+    arg_group_annotation.add_argument('--gram', action='store', default='?', choices=['+', '-', '?'], help="Gram type: +/-/? (default = '?')")
     arg_group_annotation.add_argument('--locus', action='store', default='', help="Locus prefix (instead of 'contig')")
     arg_group_annotation.add_argument('--locus-tag', action='store', default='', dest='locus_tag', help='Locus tag prefix')
-    arg_group_annotation.add_argument('--gram', action='store', default='?', choices=['+', '-', '?'], help="Gram type: +/-/? (default = '?')")
-    arg_group_annotation.add_argument('--complete', action='store_true', help="Replicons (chromosome/plasmid[s]) are complete")
+    arg_group_annotation.add_argument('--keep-contig-headers', action='store_true', dest='keep_contig_headers', help='Keep original contig headers')
+    arg_group_annotation.add_argument('--replicons', '-r', action='store', dest='replicons', help="Replicon information table (TSV)")
 
     arg_group_workflow = parser.add_argument_group('Workflow')
     arg_group_workflow.add_argument('--skip-trna', action='store_true', dest='skip_trna', help="Skip tRNA detection & annotation")
@@ -255,16 +258,16 @@ def has_annotation(feature, attribute):
         return False
 
 
-def calc_genome_stats(data, features):
+def calc_genome_stats(genome, features):
     
-    genome_size = sum([len(k['sequence']) for k in data['contigs']])
+    genome_size = sum([len(k['sequence']) for k in genome['contigs']])
 
     # N50
     gc_sum = 0
     n_sum = 0
     n50 = 0
     contig_length_sum = 0
-    for contig in data['contigs']:
+    for contig in genome['contigs']:
         seq = contig['sequence']
         gc_sum += seq.count('G') + seq.count('C')
         n_sum += seq.count('N')
@@ -288,7 +291,7 @@ def calc_genome_stats(data, features):
     )
     return {
         'genome_size': genome_size,
-        'no_contigs': len(data['contigs']),
+        'no_contigs': len(genome['contigs']),
         'gc_ratio': gc_ratio,
         'n_ratio': n_ratio,
         'n50': n50,
@@ -296,3 +299,104 @@ def calc_genome_stats(data, features):
     }
 
 
+def parse_replicon_table(replicon_table_path):
+    replicons = {}
+    try:
+        with replicon_table_path.open() as fh:
+            for line in fh:
+                (original_locus_id, new_locus_id, replicon_type, topology, name) = line.strip().split('\t')
+                #ToDO add locus id checks
+                if(new_locus_id == '' or new_locus_id == ''):
+                    new_locus_id = None
+                replicon_type = replicon_type.lower()
+                if(replicon_type == 'c' or 'chrom' in replicon_type):
+                    replicon_type = bc.REPLICON_CHROMOSOME
+                elif(replicon_type == 'p' or 'plasmid' in replicon_type):
+                    replicon_type = bc.REPLICON_PLASMID
+                else:
+                    replicon_type = bc.REPLICON_CONTIG
+                topology = topology.lower()
+                if(topology == 'c' or 'circ' in topology):
+                    topology = bc.TOPOLOGY_CIRCULAR
+                else:
+                    topology = bc.TOPOLOGY_LINEAR
+                if(replicon_type == bc.REPLICON_CONTIG):
+                    topology == bc.TOPOLOGY_LINEAR
+                if(name == '' or name == '-'):
+                    name = None
+                replicon = {
+                    'original_locus_id': original_locus_id,
+                    'new_locus_id': new_locus_id,
+                    'replicon_type': replicon_type,
+                    'topology': topology,
+                    'name': name
+                }
+                log.debug(
+                    'parse replicon info: orig-id=%s, new-id=%s, type=%s, topology=%s, name=%s',
+                    replicon['original_locus_id'], replicon['new_locus_id'], replicon['replicon_type'], replicon['topology'], replicon['name']
+                )
+                replicons[original_locus_id] = replicon
+    except:
+        log.error('wrong replicon table format!')
+        sys.exit('ERROR: wrong replicon table file format!')
+    return replicons
+
+
+def qc_contigs(contigs, replicons):
+    valid_contigs = []
+    contig_counter = 1
+    contig_prefix = cfg.locus if cfg.locus else 'contig'
+    organism_definition = []
+    if(cfg.genus):
+        organism_definition.append(cfg.genus)
+    if(cfg.species):
+        organism_definition.append(cfg.species)
+    if(len(organism_definition) > 0):
+        organism_definition = ' '.join(organism_definition)
+        organism_definition = "[organism=%s]" % organism_definition
+    else:
+        organism_definition = None
+    
+    for contig in contigs:
+        if(contig['length'] >= cfg.min_contig_length):
+            contig_name = "%s_%i" % (contig_prefix, contig_counter)
+            contig['simple_id'] = contig_name
+            contig_counter += 1
+            if(not cfg.keep_contig_headers):
+                contig['orig_id'] = contig['id']
+                contig['id'] = contig_name
+                contig['orig_desc'] = contig['desc']
+                contig_desc = []
+                if(organism_definition):
+                    contig_desc.append(organism_definition)
+                if(cfg.strain):
+                    contig_desc.append("[strain=%s]" % cfg.strain)
+                if(cfg.complete):
+                    contig_desc.append('[completeness=complete]')
+                    contig['complete'] = True
+                contig['desc'] = ' '.join(contig_desc)
+            valid_contigs.append(contig)
+    if(replicons):
+        for contig in valid_contigs:
+            contig_id = contig['orig_id'] if 'orig_id' in contig else contig['id']
+            replicon = replicons.get(contig_id, None)
+            if(replicon):
+                contig['type'] = replicon['replicon_type']
+                contig['topology'] = replicon['topology']
+                contig['name'] = replicon['name']
+                if(replicon['replicon_type'] != bc.REPLICON_CONTIG):
+                    contig['complete'] = True
+                if(not cfg.keep_contig_headers):
+                    contig['id'] = replicon['new_locus_id'] if replicon['new_locus_id'] else contig['simple_id']
+                    if(replicon['replicon_type'] != bc.REPLICON_CONTIG and 'completeness' not in contig['desc']):
+                        contig['desc'] += ' [completeness=complete]'
+                    contig['desc'] += " [topology=%s]" % replicon['topology']
+                    if(replicon['replicon_type'] == bc.REPLICON_PLASMID and replicon['name']):
+                        contig['desc'] += " [plasmid-name=%s]" % replicon['name']
+                contig.pop('simple_id')
+    for contig in valid_contigs:
+        log.info(
+            "revised contig: id=%s, orig-id=%s, type=%s, topology=%s, name=%s, desc='%s', orig-desc='%s'",
+            contig['id'], contig.get('orig_id', ''), contig['type'], contig['topology'], contig['name'], contig['desc'], contig.get('orig_desc', '')
+        )
+    return valid_contigs

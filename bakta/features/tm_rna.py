@@ -12,10 +12,10 @@ import bakta.so as so
 log = logging.getLogger('features:tm_rna')
 
 
-def predict_tm_rnas(data, contigs_path):
+def predict_tm_rnas(genome, contigs_path):
     """Search for tmRNA sequences."""
 
-    contigs = {c['id']: c for c in data['contigs']}
+    contigs = {c['id']: c for c in genome['contigs']}
     txt_output_path = cfg.tmp_path.joinpath('tmrna.tsv')
     cmd = [
         'aragorn',
