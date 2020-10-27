@@ -161,7 +161,8 @@ def write_gff3(contigs, features_by_contig, gff3_path):
 
         fh.write('##FASTA\n')
         for contig in contigs:  # write sequences
-            fh.write(fasta.format_fasta(contig, line_wrapping=True))
+            fh.write('>%s\n' % contig['id'])
+            fh.write(fasta.wrap_sequence(contig['sequence']))
     
     return
 

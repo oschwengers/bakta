@@ -29,23 +29,26 @@ def import_contigs(contigs_path):
     return contigs
 
 
-def export_contigs(contigs, fasta_path):
-    """Write valid contigs to Fasta file."""
+def export_contigs(contigs, fasta_path, description=False, wrap=False):
+    """Write contigs to Fasta file."""
     with fasta_path.open('w') as fh:
-        for c in contigs:
-            fh.write(">%s\n%s\n" % (c['id'], c['sequence']))
+        for contig in contigs:
+            if(description):
+                fh.write(">%s %s\n" % (contig['id'], contig['desc']))
+            else:
+                fh.write(">%s\n" % (contig['id'], ))
+            if(wrap):
+                fh.write(wrap_sequence(contig['sequence']))
+            else:
+                fh.write("%s\n" % contig['sequence'])
 
 
-def format_fasta(contig, line_wrapping=False):
-    lines = '>%s\n' % contig['id']
-    if line_wrapping:
-        seq = contig['sequence']
-        while len(seq) > FASTA_LINE_WRAPPING:
-            lines += seq[:FASTA_LINE_WRAPPING] + '\n'
-            seq = seq[FASTA_LINE_WRAPPING:]
-        lines += seq + '\n'
-    else:
-        lines += contig['sequence'] + '\n'
+def wrap_sequence(sequence):
+    lines = ''
+    while len(sequence) > FASTA_LINE_WRAPPING:
+        lines += sequence[:FASTA_LINE_WRAPPING] + '\n'
+        sequence = sequence[FASTA_LINE_WRAPPING:]
+    lines += sequence + '\n'
     return lines
 
 

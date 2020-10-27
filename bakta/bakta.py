@@ -357,6 +357,12 @@ def main(args):
         embl_path = cfg.output_path.joinpath("%s.embl" % prefix)
         embl.write_embl(features, embl_path)
 
+    if(cfg.fna):
+        print('write genome sequences...')
+        log.debug('write genome sequence output')
+        fna_path = cfg.output_path.joinpath("%s.fna" % prefix)
+        fasta.export_contigs(genome['contigs'], fna_path, description=True, wrap=True)
+
     if(cfg.faa):
         print('write translated CDS sequences...')
         log.debug('write translated CDS output')
