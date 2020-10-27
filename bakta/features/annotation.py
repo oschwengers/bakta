@@ -81,7 +81,7 @@ def detect_feature_overlaps(data):
                     continue
                 else:  # overlap -> remove tRNA
                     overlap = "[%i,%i]" % (max(tRNA['start'], tmRNA['start']), min(tRNA['stop'], tmRNA['stop']))
-                    tRNA['discard'] = {
+                    tRNA['discarded'] = {
                         'type': bc.DISCARD_TYPE_OVERLAP,
                         'feature_type': bc.FEATURE_TM_RNA,
                         'description': "%s overlap with (%s) at %s" % (bc.FEATURE_TM_RNA, tmRNA['product'], overlap)
@@ -99,7 +99,7 @@ def detect_feature_overlaps(data):
                     continue
                 else:  # overlap -> remove cds
                     overlap = "[%i,%i]" % (max(cds['start'], tmRNA['start']), min(cds['stop'], tmRNA['stop']))
-                    cds['discard'] = {
+                    cds['discarded'] = {
                         'type': bc.DISCARD_TYPE_OVERLAP,
                         'feature_type': bc.FEATURE_TM_RNA,
                         'description': " %s overlap with (%s) at %s" % (bc.FEATURE_TM_RNA, tmRNA['product'], overlap)
@@ -114,7 +114,7 @@ def detect_feature_overlaps(data):
                     continue
                 else:  # overlap -> remove cds
                     overlap = "[%i,%i]" % (max(cds['start'], tRNA['start']), min(cds['stop'], tRNA['stop']))
-                    cds['discard'] = {
+                    cds['discarded'] = {
                         'type': bc.DISCARD_TYPE_OVERLAP,
                         'feature_type': bc.FEATURE_T_RNA,
                         'description': "%s overlap with (%s) at %s" % (bc.FEATURE_T_RNA, tRNA['product'], overlap)
@@ -129,7 +129,7 @@ def detect_feature_overlaps(data):
                     continue
                 else:  # overlap -> remove cds
                     overlap = "[%i,%i]" % (max(cds['start'], rRNA['start']), min(cds['stop'], rRNA['stop']))
-                    cds['discard'] = {
+                    cds['discarded'] = {
                         'type': bc.DISCARD_TYPE_OVERLAP,
                         'feature_type': bc.FEATURE_R_RNA,
                         'description': "%s overlap with (%s) at %s" % (bc.FEATURE_R_RNA, rRNA['product'], overlap)
@@ -144,7 +144,7 @@ def detect_feature_overlaps(data):
                     continue
                 else:  # overlap -> remove cds
                     overlap = "[%i,%i]" % (max(cds['start'], crispr['start']), min(cds['stop'], crispr['stop']))
-                    cds['discard'] = {
+                    cds['discarded'] = {
                         'type': bc.DISCARD_TYPE_OVERLAP,
                         'feature_type': bc.FEATURE_CRISPR,
                         'description': "overlaps %s at %s" % (bc.FEATURE_CRISPR, overlap)
@@ -162,7 +162,7 @@ def detect_feature_overlaps(data):
                     continue
                 else:  # overlap -> remove sorf
                     overlap = "[%i,%i]" % (max(sorf['start'], tmRNA['start']), min(sorf['stop'], tmRNA['stop']))
-                    sorf['discard'] = {
+                    sorf['discarded'] = {
                         'type': bc.DISCARD_TYPE_OVERLAP,
                         'feature_type': bc.FEATURE_TM_RNA,
                         'description': " %s overlap with (%s) at %s" % (bc.FEATURE_TM_RNA, tmRNA['product'], overlap)
@@ -177,7 +177,7 @@ def detect_feature_overlaps(data):
                     continue
                 else:  # overlap -> remove sorf
                     overlap = "[%i,%i]" % (max(sorf['start'], tRNA['start']), min(sorf['stop'], tRNA['stop']))
-                    sorf['discard'] = {
+                    sorf['discarded'] = {
                         'type': bc.DISCARD_TYPE_OVERLAP,
                         'feature_type': bc.FEATURE_T_RNA,
                         'description': "%s overlap with (%s) at %s" % (bc.FEATURE_T_RNA, tRNA['product'], overlap)
@@ -192,7 +192,7 @@ def detect_feature_overlaps(data):
                     continue
                 else:  # overlap -> remove sorf
                     overlap = "[%i,%i]" % (max(sorf['start'], rRNA['start']), min(sorf['stop'], rRNA['stop']))
-                    sorf['discard'] = {
+                    sorf['discarded'] = {
                         'type': bc.DISCARD_TYPE_OVERLAP,
                         'feature_type': bc.FEATURE_R_RNA,
                         'description': "%s overlap with (%s) at %s" % (bc.FEATURE_R_RNA, rRNA['product'], overlap)
@@ -207,7 +207,7 @@ def detect_feature_overlaps(data):
                     continue
                 else:  # overlap -> remove sorf
                     overlap = "[%i,%i]" % (max(sorf['start'], crispr['start']), min(sorf['stop'], crispr['stop']))
-                    sorf['discard'] = {
+                    sorf['discarded'] = {
                         'type': bc.DISCARD_TYPE_OVERLAP,
                         'feature_type': bc.FEATURE_CRISPR,
                         'description': "overlaps %s at %s" % (bc.FEATURE_CRISPR, overlap)
@@ -230,7 +230,7 @@ def detect_feature_overlaps(data):
 
                     if(score_sorf < score_overlap_sorf):  # lower annotation score
                         overlap = "[%i,%i]" % (max(sorf['start'], overlap_sorf['start']), min(sorf['stop'], overlap_sorf['stop']))
-                        sorf['discard'] = {
+                        sorf['discarded'] = {
                             'type': bc.DISCARD_TYPE_OVERLAP,
                             'feature_type': bc.FEATURE_SORF,
                             'description': "overlaps %s (%s/%s) at %s with lower score (%i/%i)" % (bc.FEATURE_SORF, overlap_sorf.get('gene', '-'), overlap_sorf.get('product', '-'), overlap, score_sorf, score_overlap_sorf)
@@ -241,7 +241,7 @@ def detect_feature_overlaps(data):
                         )
                     elif(score_sorf == score_overlap_sorf and len(sorf['sequence']) < len(overlap_sorf['sequence'])):  # equal annotation score but shorter sequence -> potential fragment or too short ORF prediction
                         overlap = "[%i,%i]" % (max(overlap_sorf['start'], sorf['start']), min(overlap_sorf['stop'], sorf['stop']))
-                        sorf['discard'] = {
+                        sorf['discarded'] = {
                             'type': bc.DISCARD_TYPE_OVERLAP,
                             'feature_type': bc.FEATURE_SORF,
                             'description': "overlaps %s (%s/%s) at %s with equal score (%i) but lower length (%i/%i)" % (bc.FEATURE_SORF, overlap_sorf.get('gene', '-'), overlap_sorf.get('product', '-'), overlap, score_sorf, len(sorf['sequence']), len(overlap_sorf['sequence']))

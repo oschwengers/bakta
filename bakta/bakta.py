@@ -296,7 +296,7 @@ def main(args):
         ]:
         feature_list = data.get(feature_type, [])
         for feature in feature_list:
-            if('discard' not in feature):
+            if('discarded' not in feature):
                 contig_features = features_by_contig.get(feature['contig'])
                 contig_features.append(feature)
     features = []
