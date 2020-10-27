@@ -42,7 +42,7 @@ def parse_arguments():
     arg_group_annotation.add_argument('--prodigal-tf', action='store', dest='prodigal_tf', help='Path to existing Prodigal training file to use for CDS prediction')
     arg_group_annotation.add_argument('--translation-table', action='store', type=int, default=11, choices=[11, 4], dest='translation_table', help='Translation table to use: 11/4 (default = 11)')
     arg_group_annotation.add_argument('--keep-contig-names', action='store_true', dest='keep_contig_names', help='Keep original contig names')
-    arg_group_annotation.add_argument('--locus', action='store', default='', help='Locus prefix')
+    arg_group_annotation.add_argument('--locus', action='store', default='', help="Locus prefix (instead of 'contig')")
     arg_group_annotation.add_argument('--locus-tag', action='store', default='', dest='locus_tag', help='Locus tag prefix')
     arg_group_annotation.add_argument('--gram', action='store', default='?', choices=['+', '-', '?'], help="Gram type: +/-/? (default = '?')")
     arg_group_annotation.add_argument('--complete', action='store_true', help="Replicons (chromosome/plasmid[s]) are complete")
