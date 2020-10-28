@@ -31,7 +31,6 @@ def parse_arguments():
     arg_group_io.add_argument('--tsv', action='store_true', help='Write TSV annotation file')
     arg_group_io.add_argument('--gff3', action='store_true', help='Write GFF3 annotation file')
     arg_group_io.add_argument('--genbank', action='store_true', help='Write GenBank annotation file')
-    arg_group_io.add_argument('--embl', action='store_true', help='Write EMBL annotation file')
     arg_group_io.add_argument('--fna', action='store_true', help='Write genome sequences as fasta file')
     arg_group_io.add_argument('--faa', action='store_true', help='Write translated CDS sequences as fasta file')
 

@@ -10,7 +10,6 @@ import bakta.io.fasta as fasta
 import bakta.io.json as json
 import bakta.io.tsv as tsv
 import bakta.io.gff as gff
-import bakta.io.embl as embl
 import bakta.io.genbank as genbank
 import bakta.features.annotation as anno
 import bakta.features.t_rna as t_rna
@@ -351,12 +350,6 @@ def main(args):
         log.debug('write GenBank output')
         genbank_path = cfg.output_path.joinpath("%s.gbff" % prefix)
         genbank.write_genbank(features, genbank_path)
-
-    if(cfg.embl):
-        print('write EMBL output...')
-        log.debug('write EMBL output')
-        embl_path = cfg.output_path.joinpath("%s.embl" % prefix)
-        embl.write_embl(features, embl_path)
 
     if(cfg.fna):
         print('write genome sequences...')
