@@ -23,7 +23,8 @@ def import_contigs(contigs_path):
                 'sequence': seq,
                 'length': len(seq),
                 'complete': False,
-                'type': bc.REPLICON_CONTIG
+                'type': bc.REPLICON_CONTIG,
+                'topology': bc.TOPOLOGY_LINEAR
             }
             contigs.append(contig)
     return contigs

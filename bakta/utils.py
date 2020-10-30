@@ -374,6 +374,7 @@ def qc_contigs(contigs, replicons):
                 if(cfg.complete):
                     contig_desc.append('[completeness=complete]')
                     contig['complete'] = True
+                    contig['topology'] = bc.TOPOLOGY_CIRCULAR
                 contig['desc'] = ' '.join(contig_desc)
             valid_contigs.append(contig)
     if(replicons):
