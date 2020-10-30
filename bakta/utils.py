@@ -398,6 +398,6 @@ def qc_contigs(contigs, replicons):
     for contig in valid_contigs:
         log.info(
             "revised contig: id=%s, orig-id=%s, type=%s, topology=%s, name=%s, desc='%s', orig-desc='%s'",
-            contig['id'], contig.get('orig_id', ''), contig['type'], contig['topology'], contig['name'], contig['desc'], contig.get('orig_desc', '')
+            contig['id'], contig.get('orig_id', ''), contig['type'], contig['topology'], contig.get('name', ''), contig['desc'], contig.get('orig_desc', '')
         )
     return valid_contigs
