@@ -55,20 +55,42 @@ def setup(args):
 
     # input / output path configurations
     global db_path, tmp_path, genome_path, output_path
+    db_path = None
     if(args.db):
+        db_dir = args.db
+        log.debug('test parameter db: db_tmp=%s', db_dir)
         try:
-            db_path = Path(args.db).resolve()
-            if(not db_path.is_dir()):
-                raise IOError('DB path is not a directory!')
+            db_tmp_path = Path(db_dir).resolve()
+            if(db_tmp_path.is_dir()):
+                db_path = db_tmp_path
+                log.info('database detected: type=parameter, path=%s' % db_path)
+            else:
+                log.error('unvalid database path: type=parameter, path=%s' % db_tmp_path)
+                raise IOError()
         except:
-            log.error('database directory (%s) not readable/accessible!', args.db)
-            sys.exit('ERROR: database directory (%s) not readable/accessible!' % args.db)
+            sys.exit("ERROR: wrong database path! --db=%s" % db_dir)
+    elif('BAKTA_DIR' in env):
+        db_dir = env['BAKTA_DIR']
+        log.debug('test env db: db_tmp=%s', db_dir)
+        try:
+            db_tmp_path = Path(db_dir).resolve()
+            if(db_tmp_path.is_dir()):
+                db_path = db_tmp_path
+                log.info('database detected: type=environment, path=%s' % db_path)
+            else:
+                log.error('unvalid database path: type=environment, path=%s' % db_tmp_path)
+                raise IOError()
+        except:
+            sys.exit("ERROR: wrong database path! BAKTA_DIR=%s" % db_dir)
     else:
-        tmp = base_dir.joinpath('db')
-        if(os.access(str(tmp), os.R_OK & os.X_OK)):
-            log.debug('found bundled db=%s', tmp)
-            db_path = tmp
-    log.info('db-path=%s', db_path)
+        db_tmp_path = base_dir.joinpath('db')
+        log.debug('test base_dir db: db_tmp=%s', db_tmp_path)
+        if(db_tmp_path.is_dir()):
+            db_path = db_tmp_path
+            log.info('database detected: type=base-dir, path=%s' % db_path)
+        else:
+            log.error('unvalid database path: type=base-dir, path=%s' % db_tmp_path)
+            sys.exit('ERROR: database neither auto-detected nor provided!\nPlease, download the mandatory db and provide it either via the --db parameter, via a BAKTA_DIR environment variable or copy it into the Bakta base directory.\nFor further information please read the readme.md')
 
     if(args.tmp_dir):
         tmp_path = Path(args.tmp_dir)
