@@ -1,6 +1,6 @@
 
 from os import path
-from setuptools import setup
+from setuptools import setup, find_packages
 import bakta
 
 
@@ -21,12 +21,12 @@ setup(
     author='Oliver Schwengers',
     author_email='oliver.schwengers@computational.bio.uni-giessen.de',
     url='https://github.com/oschwengers/bakta',
-    packages=['bakta'],
+    packages=find_packages(include=['bakta', 'bakta.*']),
     python_requires='>=3.6',
-    include_package_data=True,
+    include_package_data=False,
     zip_safe=False,
     install_requires=[
-        'biopython >= 1.71'
+        'biopython >= 1.72'
     ],
     entry_points={
         'console_scripts': [

@@ -29,7 +29,14 @@ import bakta.ips as ips
 import bakta.psc as psc
 
 
-def main(args):
+def main():
+
+    # parse arguments
+    args = bu.parse_arguments()
+    
+    if(args.citation):  # print citation
+        print(bc.CITATION)
+        sys.exit()
 
     ############################################################################
     # Setup logging
@@ -396,11 +403,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    # parse arguments
-    args = bu.parse_arguments()
-
-    if(args.citation):  # print citation
-        print(bc.CITATION)
-        sys.exit()
-    else:  # start bakta
-        main(args)
+    main()
