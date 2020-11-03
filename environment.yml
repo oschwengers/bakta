@@ -4,9 +4,10 @@ channels:
   - bioconda
   - defaults
 dependencies:
+  - biopython>=1.72
   - trnascan-se=2.0.6
   - aragorn=1.2.38
-  - infernal=1.1.3
+  - infernal>=1.1.2
   - piler-cr
   - prodigal=2.6.3
   - diamond=2.0.4
