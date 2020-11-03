@@ -27,18 +27,19 @@
 ## Description
 
 **TL;DR**
-Bakta is a local tool dedicated to the rapid & comprehensive annotation of bacteria & plasmids. It provides **dbxref**-rich and **sORF**-including annotations as well as machine-readble (`JSON`) & standard output files for automatic downstream analysis.
+Bakta is a local tool dedicated to the rapid & comprehensive annotation of bacteria & plasmids. It provides **dbxref**-rich and **sORF**-including annotations as machine-readble (`JSON`) & bioinformatics standard output files for automatic downstream analysis.
 
-The annotation of microbial genomes is a diverse task comprising the structural & functional annotation of different feature types with distinct overlapping characteristics. Existing local annotation pipelines cover a broad range of microbial taxa, *e.g.* bacteria, aerchaea, viruses. To expand the range of supported feature types and to improve annotation quality and database cross-references, Bakta is dedicated to the annotation of bacteria and plasmids.
+The annotation of microbial genomes is a diverse task comprising the structural & functional annotation of different feature types with distinct overlapping characteristics. Existing local annotation pipelines cover a broad range of microbial taxa, *e.g.* bacteria, aerchaea, viruses. To streamline and foster the expansion of supported feature types, Bakta is strictly dedicated to the annotation of bacteria and plasmids. To standardize the annotation of bacterial sequences, Bakta uses a comprehensive annotation database based on UniProt's UniRef protein clusters enriched by cross-references.
 
-Knwon exact protein coding sequences (**CDS**) are identified via `MD5` aa digests and annotated with unique database cross-references (**dbxref**) to:
+Exact matches to known protein coding sequences (**CDS**), subsequently referred to as identical protein sequences (**IPS**) are identified via `MD5` digests and annotated with database cross-references (**dbxref**) to:
 
 - RefSeq (`WP_*`)
-- UniRef90/UniRef100 (`UniRef100_*`)
+- UniRef100/UniRef90 (`UniRef100_*`/`UniRef90_*`)
 - UniParc (`UPI*`)
 
-By this, identified exact sequences allow the surveillance of certain gene alleles and streamlining comparative analysis. Also, posterior (external) annotations reagarding `putative` & `hypothetical` protein sequences can easily be mapped back to existing `cds` via these exact identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)).
-Additionally, **CDS** are annotated via UniRef90 protein clusters. These as well as exact sequences are further annotated (`GO`, `COG`, `EC`).
+By doing so, **IPS** allow the surveillance of distinct gene alleles and the streamlining of comparative analysis. Also, posterior (external) annotations of `putative` & `hypothetical` protein sequences can be mapped back to existing `cds` via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)).
+Unidentified remaining **CDS** are annotated via UniRef90 protein sequence clusters (**PSC**).
+**PSC** & **IPS** are enriched by pre-annotated and stored information (`GO`, `COG`, `EC`).
 
 Next to standard feature types (tRNA, tmRNA, rRNA, ncRNA, CRISPR, CDS, gaps) Bakta also detects and annotates:
 
@@ -54,29 +55,74 @@ Bakta can annotate a typical bacterial genome within minutes and hence fits the 
 
 Bakta accepts bacterial and plasmid assemblies (complete / draft) in fasta format.
 
+Further genome information and workflow customizations can be provided and set via a number of input parameters.
+For a full description, please have a look at the [Usage](#usage) section.
+
+Most important parameters:
+
+- use a custom database location, *e.g.* a local instance for runtime improvements: `--db`
+- genome parameters: `--min-contig-length`, `--complete`, `--translation-table`
+- number of threads: `--threads`
+- locus information `--locus`, `--locus-tag`
+
+Replicon meta data table:
+To fine-tune the very details of each sequence in the input fasta file, Bakta accepts a replicon meta data table provided in `tsv` file format: `--replicons <tsv-replicon-file>`.
+Thus, for example, complete replicons within partially completed draft assemblies can be marked as such.
+
+Table format:
+
+original locus id  |  new locus id  |  type  |  topology  |  name
+----|----------------|----------------|----------------|----------------
+`old id` | [`new id` / `<empty>`] | [`chromosome` / `plasmid` / `contig` / `<empty>`] | [`circular` / `linear` / `<empty>`] | `name`
+
+Thus, for each input sequence recognized via the `original locus id` a `new locus id`, the replicon `type` and the `topology` as well a `name` can be explicitly set.
+
+Available short cuts:
+
+- `chromosome`: `c`
+- `plasmid`: `p`
+- `circular`: `c`
+- `linear`: `l`
+
+`<empty>` values (`-` / ``) will be replaced by defaults. If **new locus id** is `empty`, a new contig name will be autogenerated.
+
+Defaults:
+replicon type: `contig`
+topology: `linear`
+
+Example:
+
+original locus id  |  new locus id  |  type  |  topology  |  name
+----|----------------|----------------|----------------|----------------
+NODE_1 | chrom | `chromosome` | `circular` | `-`
+NODE_2 | p1 | `plasmid` | `c` | `pXYZ1`
+NODE_3 | p2 | `p`  |  `c` | `pXYZ2`
+NODE_4 | special-contig-name-xyz |  `-` | -
+NODE_5 | `` |  `-` | -
+
 ### Output
 
-Bakta provides detailed information on each annotated feature in a standardized machine-readable JSON format.
+Bakta provides detailed information on each annotated feature in a standardized machine-readable file in JSON format.
 In addition, Bakta supports the following standard file formats:
 
-- `tsv`: dense human readable information as simple tab separated values
-- `GFF3`: standard GFF3 format
-- `GenBank`: standard GenBank format
-- `fna`: genome sequences as FASTA
-- `faa`: protein sequences as FASTA
+- `tsv`: dense human readable information as simple tab separated values (`--tsv`)
+- `GFF3`: standard GFF3 format (`--gff`)
+- `GenBank`: standard GenBank format (`--genbank`)
+- `fna`: genome sequences as FASTA (`--fna`)
+- `faa`: protein sequences as FASTA (`--faa`)
 
 ## Examples
 
 Simple:
 
 ```bash
-$ bakta -db ~/db genome.fasta
+$ bakta --db ~/db genome.fasta
 ```
 
-Expert: verbose output writing results to *results* directory (`TSV`, `GFF3` and `GenBank`) with *ecoli123* file `prefix` and *eco634* `locus tag` using an existing prodigal training file and 8 threads:
+Expert: verbose output writing results to *results* directory (`TSV`, `GFF3` and `GenBank`) with *ecoli123* file `prefix` and *eco634* `locus tag` using an existing prodigal training file, using additional replicon information and 8 threads:
 
 ```bash
-$ bakta -db ~/db --verbose --output results/ --tsv --gff --genbank --prefix ecoli123 --locus-tag eco634 --prodigal-tf eco.tf --threads 8 genome.fasta
+$ bakta --db ~/db --verbose --output results/ --tsv --gff --genbank --prefix ecoli123 --locus-tag eco634 --prodigal-tf eco.tf --replicons replicon.tsv --threads 8 genome.fasta
 ```
 
 ## Installation
