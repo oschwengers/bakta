@@ -175,10 +175,10 @@ The, the database path can be provided via the `--db` parameter:
 $ bakta --db <db-path>
 ```
 
-It's also possible to set a `BAKTA_DIR` environment variable:
+It's also possible to set a `BAKTA_DB` environment variable:
 
 ```bash
-$ export BAKTA_DIR=<db-path>
+$ export BAKTA_DB=<db-path>
 ```
 
 Additionally, for a system-wide setup, the database can be copied to the Bakta base directory:

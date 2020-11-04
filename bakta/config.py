@@ -60,8 +60,8 @@ def setup(args):
                 raise IOError()
         except:
             sys.exit(f'ERROR: wrong database path! --db={db_dir}')
-    elif('BAKTA_DIR' in env):
-        db_dir = env['BAKTA_DIR']
+    elif('BAKTA_DB' in env):
+        db_dir = env['BAKTA_DB']
         log.debug('test env db: db_tmp=%s', db_dir)
         try:
             db_tmp_path = Path(db_dir).resolve()
@@ -72,7 +72,7 @@ def setup(args):
                 log.error('unvalid database path: type=environment, path=%s', db_tmp_path)
                 raise IOError()
         except:
-            sys.exit(f'ERROR: wrong database path! BAKTA_DIR={db_dir}')
+            sys.exit(f'ERROR: wrong database path! BAKTA_DB={db_dir}')
     else:
         base_dir = Path(__file__).parent.parent
         db_tmp_path = base_dir.joinpath('db')
