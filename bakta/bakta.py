@@ -42,8 +42,15 @@ def main():
     # Setup logging
     ############################################################################
     prefix = args.prefix if args.prefix else Path(args.genome).stem
+    try:
+        output_path = Path(args.output) if args.output else Path.cwd()
+        if(not output_path.exists()):
+            output_path.mkdir(parents=True, exist_ok=True)
+        output_path = output_path.resolve()
+    except:
+        sys.exit(f'ERROR: could not resolve or create output directory ({args.output})!')
     logging.basicConfig(
-        filename=f'{prefix}.log',
+        filename=str(output_path.joinpath(f'{prefix}.log')),
         filemode='w',
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         level=logging.DEBUG if args.verbose else logging.INFO

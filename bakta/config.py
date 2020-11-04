@@ -117,27 +117,14 @@ def setup(args):
         sys.exit(f'ERROR: genome file ({args.genome}) not valid!')
     log.info('genome-path=%s', genome_path)
 
-    try:
-        output_path = Path(args.output) if args.output else Path.cwd()
-        if(not output_path.exists()):
-            output_path.mkdir(parents=True, exist_ok=True)
-            log.info('created output dir: path=%s', output_path)
-        else:
-            log.debug('use existing output directory')
-        output_path = output_path.resolve()
-    except:
-        log.error('could not set/create output directory! path=%s', args.output)
-        sys.exit(f'ERROR: could not set/create output directory ({args.output})!')
     log.info('output-path=%s', output_path)
 
     # input / output configurations
-    global min_contig_length, output, prefix, tsv, gff3, genbank, fna, faa
+    global min_contig_length, prefix, tsv, gff3, genbank, fna, faa
     min_contig_length = args.min_contig_length
     log.info('min_contig_length=%s', min_contig_length)
     prefix = args.prefix if args.prefix != '' else None
     log.info('prefix=%s', prefix)
-    output = args.output
-    log.info('output=%s', output)
     tsv = args.tsv
     log.info('tsv=%s', tsv)
     gff3 = args.gff3
