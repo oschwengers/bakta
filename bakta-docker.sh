@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # adjust these parameters to your needs
-DOCKER_IMAGE=ljelonek/bakta:latest
+DOCKER_IMAGE=ljelonek/bakta:dev
 DEFAULT_DBPATH=$PWD/db
 
 args=( "$@" )
@@ -61,9 +61,10 @@ echo "*  Output location : " $OUTPUT
 echo "******************************"
 CMD=$(cat <<-END
     docker run -it --rm \
-    -v "$DB:/bakta/db:ro" \
-    -v "$OUTPUT:/bakta/output:rw" \
-    -v "$GENOME:/bakta/genome.fas:ro"  $DOCKER_IMAGE ${args[@]}
+    -v $DB:/bakta/db:ro \
+    -v $OUTPUT:/bakta/output:rw \
+    -v $GENOME:/bakta/genome.fas:ro \
+    $DOCKER_IMAGE ${args[@]}
 END
 )
 echo "* Commandline: " $CMD
