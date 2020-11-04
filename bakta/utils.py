@@ -84,10 +84,11 @@ def test_database():
         sys.exit(f'ERROR: database directory ({cfg.db_path}) not readable/accessible!')
 
     file_names = [
-        'rRNA.i1f',
-        'rRNA.i1i',
-        'rRNA.i1m',
-        'rRNA.i1p',
+        'antifam.h3f',
+        'antifam.h3i',
+        'antifam.h3m',
+        'antifam.h3p',
+        'bakta.db',
         'ncRNA-genes.i1f',
         'ncRNA-genes.i1i',
         'ncRNA-genes.i1m',
@@ -96,13 +97,15 @@ def test_database():
         'ncRNA-regions.i1i',
         'ncRNA-regions.i1m',
         'ncRNA-regions.i1p',
+        'oric.fna',
+        'orit.fna',
+        'psc.dmnd',
         'rfam-go.tsv',
-        'antifam.h3f',
-        'antifam.h3i',
-        'antifam.h3m',
-        'antifam.h3p',
-        'bakta.db',
-        'psc.dmnd'
+        'rRNA.i1f',
+        'rRNA.i1i',
+        'rRNA.i1m',
+        'rRNA.i1p',
+        'sorf.dmnd'
     ]
 
     for file_name in file_names:
