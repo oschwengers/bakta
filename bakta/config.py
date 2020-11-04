@@ -39,15 +39,6 @@ def setup(args):
     """Test environment and build a runtime configuration."""
     # runtime configurations
     global env, bundled_binaries, threads, verbose
-    base_dir = Path(__file__).parent.parent
-    share_dir = base_dir.joinpath('share')
-    log.debug('base-dir=%s', base_dir)
-    log.debug('share-dir=%s', share_dir)
-    if(share_dir.is_dir() and os.access(str(share_dir), os.R_OK & os.X_OK)):
-        env['PATH'] = f"{share_dir}:{env['PATH']}"
-        bundled_binaries = True
-        log.debug('found bundled binaries')
-    log.info('bundled-binaries=%s', bundled_binaries)
     threads = args.threads
     log.info('threads=%i', threads)
     verbose = args.verbose
@@ -83,6 +74,7 @@ def setup(args):
         except:
             sys.exit(f'ERROR: wrong database path! BAKTA_DIR={db_dir}')
     else:
+        base_dir = Path(__file__).parent.parent
         db_tmp_path = base_dir.joinpath('db')
         log.debug('test base_dir db: db_tmp=%s', db_tmp_path)
         if(db_tmp_path.is_dir()):
