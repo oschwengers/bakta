@@ -59,7 +59,7 @@ def main():
     # - test binary dependencies
     ############################################################################
     cfg.setup(args)  # check parameters and prepare global configuration
-    # bu.test_database()
+    bu.test_database()
     bu.test_dependencies()
     if(cfg.verbose):
         print(f'Bakta v{bakta.__version__}')
