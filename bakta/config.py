@@ -120,21 +120,10 @@ def setup(args):
     log.info('output-path=%s', output_path)
 
     # input / output configurations
-    global min_contig_length, prefix, tsv, gff3, genbank, fna, faa
+    global min_contig_length, prefix
     min_contig_length = args.min_contig_length
     log.info('min_contig_length=%s', min_contig_length)
-    prefix = args.prefix if args.prefix != '' else None
     log.info('prefix=%s', prefix)
-    tsv = args.tsv
-    log.info('tsv=%s', tsv)
-    gff3 = args.gff3
-    log.info('gff3=%s', gff3)
-    genbank = args.genbank
-    log.info('genbank=%s', genbank)
-    faa = args.faa
-    log.info('faa=%s', faa)
-    fna = args.fna
-    log.info('fna=%s', fna)
 
     # organism configurations
     global genus, species, strain, plasmid

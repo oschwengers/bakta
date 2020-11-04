@@ -42,11 +42,13 @@ def main():
     # Setup logging
     ############################################################################
     prefix = args.prefix if args.prefix else Path(args.genome).stem
+    cfg.prefix = prefix
     try:
         output_path = Path(args.output) if args.output else Path.cwd()
         if(not output_path.exists()):
             output_path.mkdir(parents=True, exist_ok=True)
         output_path = output_path.resolve()
+        cfg.output_path = output_path
     except:
         sys.exit(f'ERROR: could not resolve or create output directory ({args.output})!')
     logging.basicConfig(
@@ -74,6 +76,7 @@ def main():
         print(f'\tinput: {cfg.genome_path}')
         print(f'\tdb: {cfg.db_path}')
         print(f'\toutput: {cfg.output_path}')
+        print(f'\tprefix: {cfg.prefix}')
         print(f'\ttmp directory: {cfg.tmp_path}')
         print(f'\t# threads: {cfg.threads}')
         if(cfg.keep_contig_headers): print(f'\tkeep contig headers: {cfg.keep_contig_headers}')
@@ -419,40 +422,28 @@ def main():
     ############################################################################
     print('\nwrite JSON output...')
     log.debug('write JSON output')
-
-    log.info(f'file prefix: {prefix}')
     json_path = cfg.output_path.joinpath(f'{prefix}.json')
     json.write_json(genome, features, json_path)
-
-    if(cfg.tsv):
-        print('write TSV output...')
-        log.debug('write tsv output')
-        tsv_path = cfg.output_path.joinpath(f'{prefix}.tsv')
-        tsv.write_tsv(genome['contigs'], features_by_contig, tsv_path)
-
-    if(cfg.gff3):
-        print('write GFF3 output...')
-        log.debug('write GFF3 output')
-        gff3_path = cfg.output_path.joinpath(f'{prefix}.gff3')
-        gff.write_gff3(genome['contigs'], features_by_contig, gff3_path)
-
-    if(cfg.genbank):
-        print('write GenBank output...')
-        log.debug('write GenBank output')
-        genbank_path = cfg.output_path.joinpath(f'{prefix}.gbff')
-        genbank.write_genbank(features, genbank_path)
-
-    if(cfg.fna):
-        print('write genome sequences...')
-        log.debug('write genome sequence output')
-        fna_path = cfg.output_path.joinpath(f'{prefix}.fna')
-        fasta.export_contigs(genome['contigs'], fna_path, description=True, wrap=True)
-
-    if(cfg.faa):
-        print('write translated CDS sequences...')
-        log.debug('write translated CDS output')
-        faa_path = cfg.output_path.joinpath(f'{prefix}.faa')
-        fasta.write_faa(features, faa_path)
+    print('write TSV output...')
+    log.debug('write tsv output')
+    tsv_path = cfg.output_path.joinpath(f'{prefix}.tsv')
+    tsv.write_tsv(genome['contigs'], features_by_contig, tsv_path)
+    print('write GFF3 output...')
+    log.debug('write GFF3 output')
+    gff3_path = cfg.output_path.joinpath(f'{prefix}.gff3')
+    gff.write_gff3(genome['contigs'], features_by_contig, gff3_path)
+    print('write GenBank output...')
+    log.debug('write GenBank output')
+    genbank_path = cfg.output_path.joinpath(f'{prefix}.gbff')
+    genbank.write_genbank(features, genbank_path)
+    print('write genome sequences...')
+    log.debug('write genome sequence output')
+    fna_path = cfg.output_path.joinpath(f'{prefix}.fna')
+    fasta.export_contigs(genome['contigs'], fna_path, description=True, wrap=True)
+    print('write translated CDS sequences...')
+    log.debug('write translated CDS output')
+    faa_path = cfg.output_path.joinpath(f'{prefix}.faa')
+    fasta.write_faa(features, faa_path)
 
     # remove tmp dir
     shutil.rmtree(str(cfg.tmp_path))

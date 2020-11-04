@@ -106,11 +106,11 @@ NODE_5 | `` |  `-` | -
 Bakta provides detailed information on each annotated feature in a standardized machine-readable file in JSON format.
 In addition, Bakta supports the following standard file formats:
 
-- `tsv`: dense human readable information as simple tab separated values (`--tsv`)
-- `GFF3`: standard GFF3 format (`--gff`)
-- `GenBank`: standard GenBank format (`--genbank`)
-- `fna`: genome sequences as FASTA (`--fna`)
-- `faa`: protein sequences as FASTA (`--faa`)
+- `tsv`: annotations as tab separated values
+- `GFF3`: annotations in GFF3 format
+- `GenBank`: annotations in GenBank format
+- `fna`: replicons/contigs as FASTA
+- `faa`: CDS as FASTA
 
 ## Examples
 
@@ -120,10 +120,10 @@ Simple:
 $ bakta --db ~/db genome.fasta
 ```
 
-Expert: verbose output writing results to *results* directory (`TSV`, `GFF3` and `GenBank`) with *ecoli123* file `prefix` and *eco634* `locus tag` using an existing prodigal training file, using additional replicon information and 8 threads:
+Expert: verbose output writing results to *results* directory with *ecoli123* file `prefix` and *eco634* `locus tag` using an existing prodigal training file, using additional replicon information and 8 threads:
 
 ```bash
-$ bakta --db ~/db --verbose --output results/ --tsv --gff --genbank --prefix ecoli123 --locus-tag eco634 --prodigal-tf eco.tf --replicons replicon.tsv --threads 8 genome.fasta
+$ bakta --db ~/db --verbose --output results/ --prefix ecoli123 --locus-tag eco634 --prodigal-tf eco.tf --replicons replicon.tsv --threads 8 genome.fasta
 ```
 
 ## Installation
@@ -306,11 +306,11 @@ Usage:
 ```bash
 bakta --help
 usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH]
-             [--prefix PREFIX] [--output OUTPUT] [--tsv] [--gff3] [--genbank]
-             [--embl] [--fna] [--faa] [--genus GENUS] [--species SPECIES]
-             [--strain STRAIN] [--plasmid PLASMID] [--prodigal-tf PRODIGAL_TF]
-             [--translation-table {11,4}] [--complete] [--gram {+,-,?}]
-             [--locus LOCUS] [--locus-tag LOCUS_TAG] [--keep-contig-headers]
+             [--prefix PREFIX] [--output OUTPUT] [--genus GENUS]
+             [--species SPECIES] [--strain STRAIN] [--plasmid PLASMID]
+             [--prodigal-tf PRODIGAL_TF] [--translation-table {11,4}]
+             [--complete] [--gram {+,-,?}] [--locus LOCUS]
+             [--locus-tag LOCUS_TAG] [--keep-contig-headers]
              [--replicons REPLICONS] [--skip-trna] [--skip-tmrna]
              [--skip-rrna] [--skip-ncrna] [--skip-ncrna-region]
              [--skip-crispr] [--skip-cds] [--skip-sorf] [--skip-gap]
@@ -331,11 +331,6 @@ Input / Output:
                         Prefix for output files
   --output OUTPUT, -o OUTPUT
                         Output directory (default = current working directory)
-  --tsv                 Write TSV annotation file
-  --gff3                Write GFF3 annotation file
-  --genbank             Write GenBank annotation file
-  --fna                 Write genome sequences as fasta file
-  --faa                 Write translated CDS sequences as fasta file
 
 Organism:
   --genus GENUS         Genus name
