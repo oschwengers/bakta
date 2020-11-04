@@ -22,6 +22,7 @@
 - [Database](#database)
 - [Usage](#usage)
 - [Citation](#citation)
+- [FAQ](#faq)
 - [Issues & Feature Requests](#issues)
 
 ## Description
@@ -396,6 +397,11 @@ Bakta takes advantage of many publicly available databases. If you find any of t
 - AntiFam: <DOI>
 - Mob-suite: <https://doi.org/10.1099/mgen.0.000206>
 - COG: <DOI>
+
+## FAQ
+
+* __Bakta is running too long without CPU load... why?__
+Bakta takes advantage of an SQLite DB which results in high storage IO loads. If this DB is stored on a remote / network volume, the lookup of IPS/PSC annotations might take a long time. In these cases, please, consider moving the DB to a local volume/hard drive.
 
 ## Issues and Feature Requests
 
