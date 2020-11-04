@@ -13,3 +13,4 @@ dependencies:
   - prodigal=2.6.3
   - diamond=2.0.4
   - blast>=2.7.1
+  - hmmer=3.3.1
