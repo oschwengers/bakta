@@ -280,10 +280,11 @@ def main():
             sorf_pscs.extend(tmp)
             print(f'\tfound PSCs: {len(sorf_pscs)}')
 
-        print("lookup PSC annotations for sORFs...")
+        print("\tlookup annotations...")
         log.debug('lookup sORF PSCs')
         sorf_pscs.extend(sorf_ipss)
         psc.lookup(sorf_pscs)  # lookup PSC info
+        print(f"\tfilter and combine annotations...")
         log.debug('filter sORF by annotations')
         sorfs_filtered = s_orf.annotation_filter(sorfs)
         for feat in sorfs_filtered:
