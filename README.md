@@ -129,12 +129,12 @@ $ bakta --db ~/db --verbose --output results/ --prefix ecoli123 --locus-tag eco6
 ## Installation
 
 Bakta can be installed via BioConda, Pip and GitHub.
-To automatically install all required 3rd party dependencies, we encourage to use BioConda.
+To automatically install all required 3rd party dependencies, we encourage to use [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
 ### BioConda
 
 ```bash
-$ conda install -c bioconda bakta
+$ conda install -c conda-forge -c bioconda -c defaults bakta
 ```
 
 ### Pip
