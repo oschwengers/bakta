@@ -15,7 +15,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
-    conn.execute("PRAGMA mmap_size = %i;" % (20 * 1024 * 1024 * 1024))
+    conn.execute(f'PRAGMA mmap_size = {20 * 1024 * 1024 * 1024};')
     conn.execute('PRAGMA synchronous = OFF;')
     conn.execute('PRAGMA journal_mode = OFF')
     conn.execute('PRAGMA threads = 2;')
@@ -25,5 +25,5 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.commit()
 db_file_size_after = db_path.stat().st_size
 print('successfully optimized DB')
-print("\tsize before: %i" % db_file_size_before)
-print("\tsize after: %i" % db_file_size_after)
+print(f'\tsize before: {db_file_size_before}')
+print(f'\tsize after: {db_file_size_after}')

@@ -29,7 +29,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
-    conn.execute("PRAGMA mmap_size = %i;" % (20 * 1024 * 1024 * 1024))
+    conn.execute(f'PRAGMA mmap_size = {20 * 1024 * 1024 * 1024};')
     conn.execute('PRAGMA synchronous = OFF;')
     conn.execute('PRAGMA journal_mode = OFF')
     conn.execute('PRAGMA threads = 2;')
@@ -86,4 +86,4 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.commit()
     print('\t...done')
 
-print("\nSQLite bakta db successfully created: %s" % db_path)
+print(f'\nSQLite bakta db successfully created: {db_path}')

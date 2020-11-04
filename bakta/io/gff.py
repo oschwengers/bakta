@@ -29,7 +29,7 @@ def write_gff3(contigs, features_by_contig, gff3_path):
     with gff3_path.open('w') as fh:
         fh.write('##gff-version 3\n')
         for contig in contigs:  # write features
-            fh.write('##sequence-region %s %i %i\n' % (contig['id'], 1, contig['length']))
+            fh.write(f"##sequence-region {contig['id']} 1 {contig['length']}\n")
             for feat in features_by_contig[contig['id']]:
                 if(feat['type'] is bc.FEATURE_T_RNA):
                     annotations = {
@@ -136,8 +136,8 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                     fh.write('\n')
                 elif(feat['type'] is bc.FEATURE_GAP):
                     annotations = {
-                        'Name': 'assembly gap [length=%s]' % feat['length'],
-                        'product': 'assembly gap [length=%s]' % feat['length']
+                        'Name': f"assembly gap [length={feat['length']}]",
+                        'product': f"assembly gap [length={feat['length']}]"
                     }
                     annotations = encode_annotations(annotations)
                     fh.write('\t'.join([feat['contig'], 'Bakta', so.SO_GAP.name, str(feat['start']), str(feat['stop']), '.', feat['strand'], '0', annotations]))
@@ -169,7 +169,7 @@ def write_gff3(contigs, features_by_contig, gff3_path):
 
         fh.write('##FASTA\n')
         for contig in contigs:  # write sequences
-            fh.write('>%s\n' % contig['id'])
+            fh.write(f">{contig['id']}\n")
             fh.write(fasta.wrap_sequence(contig['sequence']))
     
     return
@@ -180,8 +180,8 @@ def encode_annotations(annotations):
     for key, val in annotations.items():
         if(type(val) is list):
             if(len(val) >= 1):
-                annotation = "%s=%s" % (key, ','.join(val) if type(val) is list else val)
+                annotation = f"{key}={','.join(val)}" if type(val) is list else val
                 annotation_strings.append(annotation)
         else:
-            annotation_strings.append("%s=%s" % (key, val))
+            annotation_strings.append(f'{key}={val}')
     return ';'.join(annotation_strings)

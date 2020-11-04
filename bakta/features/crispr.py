@@ -34,7 +34,7 @@ def predict_crispr(genome, contigs_path):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('CRISPRs failed! pilercr-error-code=%d', proc.returncode)
-        raise Exception("PILER-CR error! error code: %i" % proc.returncode)
+        raise Exception(f'PILER-CR error! error code: {proc.returncode}')
 
     # parse orfs
     crispr_arrays = []
@@ -62,7 +62,7 @@ def predict_crispr(genome, contigs_path):
                         crispr['start'] = int(position)
                         crispr['stop'] = int(position) + int(length) - 1
                         crispr['strand'] = bc.STRAND_UNKNOWN
-                        crispr['product'] = "CRISPR array with %s repeats of length %s, consensus sequence %s and spacer length %s" % (copies, repeat_length, repeat_consensus, spacer_length)
+                        crispr['product'] = f'CRISPR array with {copies} repeats of length {repeat_length}, consensus sequence {repeat_consensus} and spacer length {spacer_length}'
                         crispr['spacer_length'] = int(spacer_length)
                         crispr['repeat_length'] = int(repeat_length)
                         crispr['repeats'] = int(copies)
@@ -70,11 +70,11 @@ def predict_crispr(genome, contigs_path):
                         crispr['db_xrefs'] = [so.SO_CRISPR.id]
                         
                         crispr_arrays.append(crispr)
-                        log.debug(
+                        log.info(
                             'contig=%s, start=%i, stop=%i, spacer-length=%i, repeat-length=%i, # repeats=%i, repeat-consensus=%s',
                             crispr['contig'], crispr['start'], crispr['stop'], crispr['spacer_length'], crispr['repeat_length'], crispr['repeats'], crispr['repeat_consensus']
                         )
-    log.info('# %i', len(crispr_arrays))
+    log.info('predicted=%i', len(crispr_arrays))
     return crispr_arrays
     
 

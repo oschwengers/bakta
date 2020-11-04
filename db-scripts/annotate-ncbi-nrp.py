@@ -51,7 +51,7 @@ with pcla_proteins_path.open() as fh:
         if(gene is not None):
             nrp_genes[id] = gene
 del pcla_cluster_genes
-print("\tfound %i NRP / gene annotations" % len(nrp_genes))
+print(f'\tfound {len(nrp_genes)} NRP / gene annotations')
 
 
 print('lookup UPS by NRP hash & update WP_* / gene annotations...')
@@ -66,7 +66,7 @@ with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
-    conn.execute("PRAGMA mmap_size = %i;" % (20 * 1024 * 1024 * 1024))
+    conn.execute(f'PRAGMA mmap_size = {20 * 1024 * 1024 * 1024};')
     conn.execute('PRAGMA synchronous = OFF;')
     conn.execute('PRAGMA journal_mode = OFF')
     conn.execute('PRAGMA threads = 2;')
@@ -81,7 +81,7 @@ with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='
         seq_hash_hexdigest = seq_hash.hexdigest()
         rec_ups = conn.execute('SELECT length, uniref100_id FROM ups WHERE hash=?', (seq_hash_digest,)).fetchone()
         if(rec_ups is not None):
-            assert rec_ups['length'] == len(seq), "Detected hash duplicate with different seq length! hash=%s, NCRBI-NRP-id=%s, UniParc-id=%s, NCRBI-NRP-length=%s, db-length=%s" % (seq_hash_hexdigest, nrp_id, rec_ups['uniparc_id'], length, rec_ups['length'])
+            assert rec_ups['length'] == len(seq), f"Detected hash duplicate with different seq length! hash={seq_hash_hexdigest}, NCRBI-NRP-id={nrp_id}, UniParc-id={rec_ups['uniparc_id']}, NCRBI-NRP-length={length}, db-length={rec_ups['length']}"
             if(rec_ups['uniref100_id']):
                 rec_ips = conn.execute('SELECT * FROM ips WHERE uniref100_id=?', (rec_ups['uniref100_id'],)).fetchone()
                 if(rec_ips is not None):
@@ -110,20 +110,20 @@ with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='
             nrps_not_found += 1
         if((nrps_processed % 1000000) == 0):
             conn.commit()
-            print("\t... %i" % nrps_processed)
+            print(f'\t... {nrps_processed}')
     conn.commit()
 
 print('\n')
-print("NRPs processed: %i" % nrps_processed)
+print(f'NRPs processed: {nrps_processed}')
 
 log_ups.debug('summary: # UPS with annotated NRP IDs=%i', ups_updated)
-print("UPSs with annotated WP_* id: %i" % ups_updated)
+print(f'UPSs with annotated WP_* id: {ups_updated}')
 
 log_ips.debug('summary: # IPSs with annotated genes=%i', ips_updated)
-print("IPSs with annotated gene names: %i" % ips_updated)
+print(f'IPSs with annotated gene names: {ips_updated}')
 
 log_psc.debug('summary: # PSC with annotated genes=%i', psc_updated)
-print("PSCs with annotated gene names: %i" % psc_updated)
+print(f'PSCs with annotated gene names: {psc_updated}')
 
-print("NRPs not found: %i" % nrps_not_found)
-print("NRPs w/o IPS: %i" % nrps_wo_ips)
+print(f'NRPs not found: {nrps_not_found}')
+print(f'NRPs w/o IPS: {nrps_wo_ips}')

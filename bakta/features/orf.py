@@ -16,7 +16,7 @@ def detect_spurious(orfs):
     orf_fasta_path = cfg.tmp_path.joinpath('sorf.faa')
     with orf_fasta_path.open(mode='w') as fh:
         for orf in orfs:
-            fh.write(">%s\n%s\n" % (orf['aa_hexdigest'], orf['sequence']))
+            fh.write(f">{orf['aa_hexdigest']}\n{orf['sequence']}\n")
     
     output_path = cfg.tmp_path.joinpath('cds.spurious.hmm.tsv')
     cmd = [
@@ -41,7 +41,7 @@ def detect_spurious(orfs):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('spurious ORF detection failed! hmmsearch-error-code=%d', proc.returncode)
-        raise Exception("hmmsearch error! error code: %i" % proc.returncode)
+        raise Exception(f'hmmsearch error! error code: {proc.returncode}')
 
     discarded_orfs = []
     orf_by_aa_digest = {orf['aa_hexdigest']: orf for orf in orfs}
@@ -60,15 +60,15 @@ def detect_spurious(orfs):
                 else:
                     discard = OrderedDict()
                     discard['type'] = bc.DISCARD_TYPE_SPURIOUS
-                    discard['description'] = "(partial) homology to spurious sequence HMM (AntiFam:%s)" % subject_id
+                    discard['description'] = f'(partial) homology to spurious sequence HMM (AntiFam:{subject_id})'
                     discard['score'] = bitscore
                     discard['evalue'] = evalue
                     
                     orf['discarded'] = discard
                     discarded_orfs.append(orf)
-                    log.debug(
-                        'discard ORF: contig=%s, start=%i, stop=%i, strand=%s, spurious-homology=%s, evalue=%f, bitscore=%f',
+                    log.info(
+                        'discard spurious: contig=%s, start=%i, stop=%i, strand=%s, homology=%s, evalue=%f, bitscore=%f',
                         orf['contig'], orf['start'], orf['stop'], orf['strand'], subject_name, evalue, bitscore
                     )
-    log.info('# %i', len(discarded_orfs))
+    log.info('discarded=%i', len(discarded_orfs))
     return discarded_orfs

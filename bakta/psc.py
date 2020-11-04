@@ -27,7 +27,7 @@ def search(cdss):
     cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
     with cds_fasta_path.open(mode='w') as fh:
         for cds in cdss:
-            fh.write(">%s\n%s\n" % (cds['aa_hexdigest'], cds['sequence']))
+            fh.write(f">{cds['aa_hexdigest']}\n{cds['sequence']}\n")
     diamond_output_path = cfg.tmp_path.joinpath('diamond.cds.tsv')
     diamond_db_path = cfg.db_path.joinpath('psc.dmnd')
     cmd = [
@@ -57,7 +57,7 @@ def search(cdss):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('PSC failed! diamond-error-code=%d', proc.returncode)
-        raise Exception("diamond error! error code: %i" % proc.returncode)
+        raise Exception(f'diamond error! error code: {proc.returncode}')
 
     cds_by_hexdigest = {cds['aa_hexdigest']: cds for cds in cdss}
     with diamond_output_path.open() as fh:
@@ -94,7 +94,7 @@ def lookup(features):
     """Lookup PCS information"""
     no_psc_lookups = 0
     try:
-        with sqlite3.connect("file:%s?mode=ro" % str(cfg.db_path.joinpath('bakta.db')), uri=True) as conn:
+        with sqlite3.connect(f"file:{cfg.db_path.joinpath('bakta.db')}?mode=ro", uri=True) as conn:
             conn.row_factory = sqlite3.Row
             c = conn.cursor()
             for feature in features:
@@ -110,7 +110,7 @@ def lookup(features):
                 if(bc.DB_PREFIX_UNIREF_90 in uniref90_id):
                     uniref90_id = uniref90_id[9:]  # remove 'UniRef90_' prefix
                 
-                c.execute("select * from psc where uniref90_id=?", (uniref90_id,))
+                c.execute('select * from psc where uniref90_id=?', (uniref90_id,))
                 rec = c.fetchone()
                 if(rec is not None):
                     psc = parse_annotation(rec)
@@ -124,8 +124,8 @@ def lookup(features):
                     log.debug('lookup failed! uniref90_id=%s', uniref90_id)
     except Exception as ex:
         log.exception('Could not read PSCs from db!', ex)
-        raise Exception("SQL error!", ex)
-    log.info('lookup: # %i', no_psc_lookups)
+        raise Exception('SQL error!', ex)
+    log.info('looked up: %i', no_psc_lookups)
 
 
 def parse_annotation(rec):
@@ -134,7 +134,7 @@ def parse_annotation(rec):
     }
     db_xrefs = [
         'SO:0001217',
-        '%s:%s' % (bc.DB_XREF_UNIREF_90, psc[DB_PSC_COL_UNIREF90])
+        f'{bc.DB_XREF_UNIREF_90}:{psc[DB_PSC_COL_UNIREF90]}'
     ]
     
     # add non-empty PSC annotations and attach database prefixes to identifiers
@@ -147,18 +147,18 @@ def parse_annotation(rec):
         for ec in rec[DB_PSC_COL_EC].split(','):
             if(ec != ''):
                 ecs.append(ec)
-                db_xrefs.append('%s:%s' % (bc.DB_XREF_EC, ec))
+                db_xrefs.append(f'{bc.DB_XREF_EC}:{ec}')
         if(len(ecs) != 0):
             psc[DB_PSC_COL_EC] = ecs
     if(rec[DB_PSC_COL_UNIREF50]):
         psc[DB_PSC_COL_UNIREF50] = bc.DB_PREFIX_UNIREF_50 + rec[DB_PSC_COL_UNIREF50]
-        db_xrefs.append('%s:%s' % (bc.DB_XREF_UNIREF_50, psc[DB_PSC_COL_UNIREF50]))
+        db_xrefs.append(f'{bc.DB_XREF_UNIREF_50}:{psc[DB_PSC_COL_UNIREF50]}')
     if(rec[DB_PSC_COL_COG_ID]):
         psc[DB_PSC_COL_COG_ID] = bc.DB_PREFIX_COG + rec[DB_PSC_COL_COG_ID]
-        db_xrefs.append('%s:%s' % (bc.DB_XREF_COG, psc[DB_PSC_COL_COG_ID]))
+        db_xrefs.append(f'{bc.DB_XREF_COG}:{psc[DB_PSC_COL_COG_ID]}')
     if(rec[DB_PSC_COL_COG_CAT]):
         psc[DB_PSC_COL_COG_CAT] = rec[DB_PSC_COL_COG_CAT]
-        db_xrefs.append('%s:%s' % (bc.DB_XREF_COG, psc[DB_PSC_COL_COG_CAT]))
+        db_xrefs.append(f'{bc.DB_XREF_COG}:{psc[DB_PSC_COL_COG_CAT]}')
     if(rec[DB_PSC_COL_GO]):
         go_ids = []
         for go_id in rec[DB_PSC_COL_GO].split(','):

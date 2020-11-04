@@ -41,7 +41,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
-    conn.execute("PRAGMA mmap_size = %i;" % (20 * 1024 * 1024 * 1024))
+    conn.execute(f'PRAGMA mmap_size = {20 * 1024 * 1024 * 1024};')
     conn.execute('PRAGMA synchronous = OFF;')
     conn.execute('PRAGMA journal_mode = OFF')
     conn.execute('PRAGMA threads = 2;')
@@ -89,7 +89,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     pass
             if((nrps_processed % 100) == 0):
                 conn.commit()
-                print("\t... %d" % nrps_processed)
+                print(f'\t... {nrps_processed}')
     conn.commit()
 
     print('drop UPS index on NCBI NRP ids...')
@@ -159,10 +159,10 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                                 psc_annotated.add(psc_id)
 
 print('\n')
-print("NRPs processed: %d" % nrps_processed)
-print("IPSs with annotated AMR gene / product: %d" % ips_updated)
+print(f'NRPs processed: {nrps_processed}')
+print(f'IPSs with annotated AMR gene / product: {ips_updated}')
 log_ips.debug('summary: IPS annotated=%d', ips_updated)
 
 psc_updated = len(psc_annotated)
-print("PSCs with annotated AMR gene / product: %d" % psc_updated)
+print(f'PSCs with annotated AMR gene / product: {psc_updated}')
 log_ips.debug('summary: PSCs annotated=%d', psc_updated)

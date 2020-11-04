@@ -1,4 +1,5 @@
 import json
+from collections import OrderedDict
 
 import bakta.constants as bc
 
@@ -19,7 +20,24 @@ def write_json(genome, features, json_path):
                 psc.pop('db_xrefs')
     
     # replace features type dict by sorted feature list
-    genome['features'] = features
+    ordered_genome = OrderedDict()
+    ordered_genome['genus'] = genome['genus']
+    ordered_genome['species'] = genome['species']
+    ordered_genome['strain'] = genome['strain']
+    if('plasmid' in genome):
+        ordered_genome['plasmid'] = genome['plasmid']
+    ordered_genome['gram'] = genome['gram']
+    ordered_genome['translation_table'] = genome['translation_table']
+    
+    ordered_genome['no_sequences'] = len(genome['contigs'])
+    ordered_genome['size'] = genome['size']
+    ordered_genome['gc'] = genome['gc']
+    ordered_genome['n_ratio'] = genome['n_ratio']
+    ordered_genome['n50'] = genome['n50']
+    ordered_genome['coding_ratio'] = genome['coding_ratio']
+
+    ordered_genome['features'] = features
+    ordered_genome['sequences'] = genome['contigs']
 
     with json_path.open('w') as fh:
-        json.dump(genome, fh, indent=4)
+        json.dump(ordered_genome, fh, indent=4)

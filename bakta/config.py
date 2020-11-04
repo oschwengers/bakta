@@ -44,7 +44,7 @@ def setup(args):
     log.debug('base-dir=%s', base_dir)
     log.debug('share-dir=%s', share_dir)
     if(share_dir.is_dir() and os.access(str(share_dir), os.R_OK & os.X_OK)):
-        env["PATH"] = str(share_dir) + ':' + env["PATH"]
+        env['PATH'] = f"{share_dir}:{env['PATH']}"
         bundled_binaries = True
         log.debug('found bundled binaries')
     log.info('bundled-binaries=%s', bundled_binaries)
@@ -63,12 +63,12 @@ def setup(args):
             db_tmp_path = Path(db_dir).resolve()
             if(db_tmp_path.is_dir()):
                 db_path = db_tmp_path
-                log.info('database detected: type=parameter, path=%s' % db_path)
+                log.info('database detected: type=parameter, path=%s', db_path)
             else:
-                log.error('unvalid database path: type=parameter, path=%s' % db_tmp_path)
+                log.error('unvalid database path: type=parameter, path=%s', db_tmp_path)
                 raise IOError()
         except:
-            sys.exit("ERROR: wrong database path! --db=%s" % db_dir)
+            sys.exit(f'ERROR: wrong database path! --db={db_dir}')
     elif('BAKTA_DIR' in env):
         db_dir = env['BAKTA_DIR']
         log.debug('test env db: db_tmp=%s', db_dir)
@@ -76,27 +76,27 @@ def setup(args):
             db_tmp_path = Path(db_dir).resolve()
             if(db_tmp_path.is_dir()):
                 db_path = db_tmp_path
-                log.info('database detected: type=environment, path=%s' % db_path)
+                log.info('database detected: type=environment, path=%s', db_path)
             else:
-                log.error('unvalid database path: type=environment, path=%s' % db_tmp_path)
+                log.error('unvalid database path: type=environment, path=%s', db_tmp_path)
                 raise IOError()
         except:
-            sys.exit("ERROR: wrong database path! BAKTA_DIR=%s" % db_dir)
+            sys.exit(f'ERROR: wrong database path! BAKTA_DIR={db_dir}')
     else:
         db_tmp_path = base_dir.joinpath('db')
         log.debug('test base_dir db: db_tmp=%s', db_tmp_path)
         if(db_tmp_path.is_dir()):
             db_path = db_tmp_path
-            log.info('database detected: type=base-dir, path=%s' % db_path)
+            log.info('database detected: type=base-dir, path=%s', db_path)
         else:
-            log.error('unvalid database path: type=base-dir, path=%s' % db_tmp_path)
+            log.error('unvalid database path: type=base-dir, path=%s', db_tmp_path)
             sys.exit('ERROR: database neither auto-detected nor provided!\nPlease, download the mandatory db and provide it either via the --db parameter, via a BAKTA_DIR environment variable or copy it into the Bakta base directory.\nFor further information please read the readme.md')
 
     if(args.tmp_dir):
         tmp_path = Path(args.tmp_dir)
         if(not tmp_path.exists()):
             log.debug('dedicated temp dir does not exist! tmp-dir=%s', tmp_path)
-            sys.exit('ERROR: dedicated temp dir (%s) does not exist!' % tmp_path)
+            sys.exit(f'ERROR: dedicated temp dir ({tmp_path}) does not exist!')
         else:
             log.info('use dedicated temp dir: path=%s', tmp_path)
             tmp_path = Path(tempfile.mkdtemp(dir=str(tmp_path)))
@@ -108,13 +108,13 @@ def setup(args):
         genome_path = Path(args.genome).resolve()
         if(not os.access(str(genome_path), os.R_OK)):
             log.error('genome file not readable! path=%s', genome_path)
-            sys.exit('ERROR: genome file (%s) not readable!' % genome_path)
+            sys.exit(f'ERROR: genome file ({genome_path}) not readable!')
         if(genome_path.stat().st_size == 0):
             log.error('empty genome file! path=%s', genome_path)
-            sys.exit('ERROR: genome file (%s) is empty!' % genome_path)
+            sys.exit(f'ERROR: genome file ({genome_path}) is empty!')
     except:
         log.error('provided genome file not valid! path=%s', args.genome)
-        sys.exit('ERROR: genome file (%s) not valid!' % args.genome)
+        sys.exit(f'ERROR: genome file ({args.genome}) not valid!')
     log.info('genome-path=%s', genome_path)
 
     try:
@@ -127,7 +127,7 @@ def setup(args):
         output_path = output_path.resolve()
     except:
         log.error('could not set/create output directory! path=%s', args.output)
-        sys.exit('ERROR: could not set/create output directory (%s)!' % args.output)
+        sys.exit(f'ERROR: could not set/create output directory ({args.output})!')
     log.info('output-path=%s', output_path)
 
     # input / output configurations
@@ -168,16 +168,16 @@ def setup(args):
             prodigal_tf_path = Path(args.prodigal_tf).resolve()
             if(not os.access(str(prodigal_tf_path), os.R_OK)):
                 log.error('prodigal training file not readable! path=%s', prodigal_tf_path)
-                sys.exit('ERROR: Prodigal training file (%s) not readable!' % prodigal_tf_path)
+                sys.exit(f'ERROR: Prodigal training file ({prodigal_tf_path}) not readable!')
             if(genome_path.stat().st_size == 0):
                 log.error('empty prodigal training file! path=%s', prodigal_tf_path)
-                sys.exit('ERROR: Prodigal training file (%s) is empty!' % prodigal_tf_path)
+                sys.exit(f'ERROR: Prodigal training file ({prodigal_tf_path}) is empty!')
             prodigal_tf = prodigal_tf_path
         except:
             log.error('provided prodigal training file not valid! path=%s', args.prodigal_tf)
-            sys.exit('ERROR: Prodigal training file (%s) not valid!' % args.prodigal_tf)
+            sys.exit(f'ERROR: Prodigal training file ({args.prodigal_tf}) not valid!')
     log.info('prodigal_tf=%s', prodigal_tf)
-    translation_table = args.translation_table
+    translation_table = args.translation_table if args.translation_table != '' else None
     log.info('translation_table=%s', translation_table)
     keep_contig_headers = args.keep_contig_headers
     log.info('keep_contig_headers=%s', keep_contig_headers)
@@ -195,14 +195,14 @@ def setup(args):
             replicon_table_path = Path(args.replicons).resolve()
             if(not os.access(str(replicon_table_path), os.R_OK)):
                 log.error('replicon table not readable! path=%s', replicon_table_path)
-                sys.exit('ERROR: replicon table file (%s) not readable!' % replicon_table_path)
+                sys.exit(f'ERROR: replicon table file ({replicon_table_path}) not readable!')
             if(genome_path.stat().st_size == 0):
                 log.error('empty replicon table file! path=%s', replicon_table_path)
-                sys.exit('ERROR: replicon table file (%s) is empty!' % replicon_table_path)
+                sys.exit(f'ERROR: replicon table file ({replicon_table_path}) is empty!')
             replicons = replicon_table_path
         except:
             log.error('provided replicon file not valid! path=%s', args.replicons)
-            sys.exit('ERROR: replicon table file (%s) not valid!' % args.replicons)
+            sys.exit(f'ERROR: replicon table file ({args.replicons}) not valid!')
     log.info('replicon-table=%s', replicons)
     
     # workflow configurations

@@ -39,7 +39,7 @@ with cog_ids_path.open(encoding='windows-1252') as fh:
                 'id': id[3:],
                 'cat': cat
             }
-print("\tstored COG ids: %i" % len(cog_id_fclass))
+print(f'\tstored COG ids: {len(cog_id_fclass)}')
 
 print('import NCBI GI / COG mapping information...')
 gb_id_cog = {}
@@ -50,7 +50,7 @@ with gi_cog_mapping_path.open() as fh:
         if(cog is not None):
             gb_id_cog[gb_id] = cog
 del cog_id_fclass
-print("\tmapped COG ids: %i" % len(gb_id_cog))
+print(f'\tmapped COG ids: {len(gb_id_cog)}')
 
 print('parse PSC alignments and add NCBI COG annotation...')
 psc_processed = 0
@@ -59,7 +59,7 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
-    conn.execute("PRAGMA mmap_size = %i;" % (20 * 1024 * 1024 * 1024))
+    conn.execute(f'PRAGMA mmap_size = {20 * 1024 * 1024 * 1024};')
     conn.execute('PRAGMA synchronous = OFF;')
     conn.execute('PRAGMA journal_mode = OFF')
     conn.execute('PRAGMA threads = 2;')
@@ -80,10 +80,10 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
                 psc_updated += 1
         if((psc_processed % 100000) == 0):
             conn.commit()
-            print("\t... %i" % psc_processed)
+            print(f'\t... {psc_processed}')
     conn.commit()
 
 print('\n')
-print("PSCs processed: %i" % psc_processed)
-print("PSCs with annotated COG id/category: %i" % psc_updated)
+print(f'PSCs processed: {psc_processed}')
+print(f'PSCs with annotated COG id/category: {psc_updated}')
 log.debug('summary: PSC annotated=%i', psc_updated)

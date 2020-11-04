@@ -26,6 +26,10 @@ def import_contigs(contigs_path):
                 'type': bc.REPLICON_CONTIG,
                 'topology': bc.TOPOLOGY_LINEAR
             }
+            log.info(
+                'imported: id=%s, length=%i, desc=%s',
+                contig['id'], contig['length'], contig['desc']
+            )
             contigs.append(contig)
     return contigs
 
@@ -35,13 +39,14 @@ def export_contigs(contigs, fasta_path, description=False, wrap=False):
     with fasta_path.open('w') as fh:
         for contig in contigs:
             if(description):
-                fh.write(">%s %s\n" % (contig['id'], contig['desc']))
+                fh.write(f">{contig['id']} {contig['desc']}\n")
             else:
-                fh.write(">%s\n" % (contig['id'], ))
+                fh.write(f">{contig['id']}\n")
             if(wrap):
                 fh.write(wrap_sequence(contig['sequence']))
             else:
-                fh.write("%s\n" % contig['sequence'])
+                fh.write(contig['sequence'])
+                fh.write('\n')
 
 
 def wrap_sequence(sequence):
@@ -58,4 +63,4 @@ def write_faa(features, faa_path):
     with faa_path.open('w') as fh:
         for feat in features:
             if(feat['type'] == bc.FEATURE_CDS or feat['type'] == bc.FEATURE_SORF):
-                fh.write(">%s %s\n%s\n" % (feat['locus'], feat['product'], feat['sequence']))
+                fh.write(f">{feat['locus']} {feat['product']}\n{feat['sequence']}\n")

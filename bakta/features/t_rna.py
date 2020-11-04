@@ -62,7 +62,7 @@ def predict_t_rnas(genome, contigs_path):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('tRNAs failed! tRNAscan-SE-error-code=%d', proc.returncode)
-        raise Exception("tRNAscan-SE error! error code: %i" % proc.returncode)
+        raise Exception(f'tRNAscan-SE error! error code: {proc.returncode}')
 
     trnas = {}
     with txt_output_path.open() as fh:
@@ -85,14 +85,14 @@ def predict_t_rnas(genome, contigs_path):
             trna['gene'] = ''
             trna['product'] = 'tRNA-Xxx'
             if(trna_type != 'Undet'):
-                trna['gene'] = "%s_trna" % trna_type
-                trna['product'] = "tRNA-%s" % trna_type
+                trna['gene'] = f'{trna_type}_trna'
+                trna['product'] = f'tRNA-{trna_type}'
                 trna['anti_codon'] = anti_codon
-                trna['notes'] = ["tRNA-%s(%s)" % (trna_type, anti_codon)]
+                trna['notes'] = [f'tRNA-{trna_type} ({anti_codon})']
             
             if('pseudo' in note):
                 trna['gene'] = ''
-                trna['product'] = '(pseudo) %s' % trna['product']
+                trna['product'] = f"(pseudo) {trna['product']}"
                 trna['pseudo'] = True
             
             trna['score'] = float(score)
@@ -102,11 +102,11 @@ def predict_t_rnas(genome, contigs_path):
             if(so_term):
                 trna['db_xrefs'].append(so_term.id)
 
-            key = "%s.trna%s" % (contig, trna_id)
+            key = f'{contig}.trna{trna_id}'
             trnas[key] = trna
             log.info(
-                'contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
-                trna['contig'], trna.get('gene', ''), trna['start'], trna['stop'], trna['strand']
+                'contig=%s, start=%i, stop=%i, strand=%s, product=%s',
+                trna['contig'], trna['start'], trna['stop'], trna['strand'], trna.get('product', '')
             )
 
     with fasta_output_path.open() as fh:
@@ -114,5 +114,5 @@ def predict_t_rnas(genome, contigs_path):
             trna = trnas[record.id]
             trna['sequence'] = str(record.seq)
     trnas = list(trnas.values())
-    log.info('# %i', len(trnas))
+    log.info('predicted=%i', len(trnas))
     return trnas

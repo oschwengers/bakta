@@ -32,7 +32,7 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
-    conn.execute("PRAGMA mmap_size = %i;" % (20 * 1024 * 1024 * 1024))
+    conn.execute(f'PRAGMA mmap_size = {20 * 1024 * 1024 * 1024};')
     conn.execute('PRAGMA synchronous = OFF;')
     conn.execute('PRAGMA journal_mode = OFF')
     conn.execute('PRAGMA threads = 2;')
@@ -50,17 +50,17 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
                 descriptions = descriptions[0].split('_')
                 is_name = descriptions[0]
                 is_family = descriptions[2]
-                product = "%s-like element %s family transposase" % (is_family, is_name)
-                gene = "tnp-%s" % is_name
+                product = f"{is_family}-like element {is_name} family transposase"
+                gene = f'tnp-{is_name}'
                 conn.execute('UPDATE psc SET gene=?, product=? WHERE uniref90_id=?', (gene, product, uniref90_id))
                 log.info('UPDATE psc SET gene=%s, product=%s WHERE uniref90_id=%s', gene, product, uniref90_id)
                 ups_updated += 1
         if((ups_processed % 1000) == 0):
             conn.commit()
-            print("\t... %i" % ups_processed)
+            print(f'\t... {ups_processed}')
     conn.commit()
 
 print('\n')
-print("PSCs processed: %i" % ups_processed)
-print("PSCs with annotated IS transposons: %i" % ups_updated)
+print(f'PSCs processed: {ups_processed}')
+print(f'PSCs with annotated IS transposons: {ups_updated}')
 log.debug('summary: PSC annotated=%i', ups_updated)

@@ -42,7 +42,7 @@ def predict_nc_rnas(genome, contigs_path):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('ncRNAs failed! cmscan-error-code=%d', proc.returncode)
-        raise Exception("cmscan error! error code: %i" % proc.returncode)
+        raise Exception(f'cmscan error! error code: {proc.returncode}')
 
     rfam2go = {}
     rfam2go_path = cfg.db_path.joinpath('rfam-go.tsv')
@@ -75,7 +75,7 @@ def predict_nc_rnas(genome, contigs_path):
                         contig_id, start, stop, strand, subject, partial, length, evalue
                     )
                 else:
-                    rfam_id = "RFAM:%s" % accession
+                    rfam_id = f'RFAM:{accession}'
                     db_xrefs = [rfam_id, so.SO_NCRNA_GENE.id]
                     if(rfam_id in rfam2go):
                         db_xrefs += rfam2go[rfam_id]
@@ -87,7 +87,7 @@ def predict_nc_rnas(genome, contigs_path):
                     ncrna['stop'] = stop
                     ncrna['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
                     ncrna['gene'] = subject
-                    ncrna['product'] = "(partial) %s" % description if partial else description
+                    ncrna['product'] = f'(partial) {description}' if partial else description
                     
                     if(partial):
                         ncrna['partial'] = partial
@@ -103,9 +103,9 @@ def predict_nc_rnas(genome, contigs_path):
                     ncrna['db_xrefs'] = db_xrefs
 
                     ncrnas.append(ncrna)
-                    log.debug(
-                        'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, partial=%s, length=%i, evalue=%f',
-                        ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['gene'], partial, length, ncrna['evalue']
+                    log.info(
+                        'contig=%s, start=%i, stop=%i, strand=%s, product=%s, length=%i, evalue=%f',
+                        ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['product'], length, ncrna['evalue']
                     )
-    log.info('# %i', len(ncrnas))
+    log.info('predicted=%i', len(ncrnas))
     return ncrnas

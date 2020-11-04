@@ -42,7 +42,7 @@ def predict_tm_rnas(genome, contigs_path):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('tmRNAs failed! aragorn-error-code=%d', proc.returncode)
-        raise Exception("aragorn error! error code: %i" % proc.returncode)
+        raise Exception(f'aragorn error! error code: {proc.returncode}')
 
     tmrnas = []
     with txt_output_path.open() as fh:
@@ -79,8 +79,8 @@ def predict_tm_rnas(genome, contigs_path):
                 
                 tmrnas.append(tmrna)
                 log.info(
-                    'contig=%s, gene=%s, start=%i, stop=%i, strand=%s',
-                    tmrna['contig'], tmrna['gene'], tmrna['start'], tmrna['stop'], tmrna['strand']
+                    'contig=%s, start=%i, stop=%i, strand=%s',
+                    tmrna['contig'], tmrna['start'], tmrna['stop'], tmrna['strand']
                 )
-    log.info('# %i', len(tmrnas))
+    log.info('predicted=%i', len(tmrnas))
     return tmrnas

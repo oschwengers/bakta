@@ -42,7 +42,7 @@ def predict_r_rnas(genome, contigs_path):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('rRNAs failed! cmscan-error-code=%d', proc.returncode)
-        raise Exception("cmscan error! error code: %i" % proc.returncode)
+        raise Exception(f'cmscan error! error code: {proc.returncode}')
 
     rrnas = []
     with output_path.open() as fh:
@@ -88,8 +88,8 @@ def predict_r_rnas(genome, contigs_path):
                     rrna['start'] = start
                     rrna['stop'] = stop
                     rrna['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
-                    rrna['gene'] = "%s_rrna" % rrna_tag
-                    rrna['product'] = "(partial) %s ribosomal RNA" % rrna_tag if partial else "%s ribosomal RNA" % rrna_tag
+                    rrna['gene'] = f'{rrna_tag}_rrna'
+                    rrna['product'] = f'(partial) {rrna_tag} ribosomal RNA' if partial else f'{rrna_tag} ribosomal RNA'
                     
                     if(partial):
                         rrna['partial'] = partial
@@ -107,9 +107,9 @@ def predict_r_rnas(genome, contigs_path):
 
                     rrnas.append(rrna)
                     log.info(
-                        'contig=%s, gene=%s, start=%i, stop=%i, strand=%s, partial=%s, length=%i, coverage=%0.3f',
-                        rrna['contig'], rrna['gene'], rrna['start'], rrna['stop'], rrna['strand'], partial, length, coverage
+                        'contig=%s, start=%i, stop=%i, strand=%s, product=%s, length=%i, coverage=%0.3f',
+                        rrna['contig'], rrna['start'], rrna['stop'], rrna['strand'], rrna['product'], length, coverage
                     )
 
-    log.info('# %i', len(rrnas))
+    log.info('predicted=%i', len(rrnas))
     return rrnas

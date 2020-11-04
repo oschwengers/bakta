@@ -81,7 +81,7 @@ def test_database():
 
     if(not os.access(str(cfg.db_path), os.R_OK & os.X_OK)):
         log.error('database directory (%s) not readable/accessible!', cfg.db_path)
-        sys.exit('ERROR: database directory (%s) not readable/accessible!' % cfg.db_path)
+        sys.exit(f'ERROR: database directory ({cfg.db_path}) not readable/accessible!')
 
     file_names = [
         'rRNA.i1f',
@@ -109,7 +109,7 @@ def test_database():
         path = cfg.db_path.joinpath(file_name)
         if(not os.access(str(path), os.R_OK) or not path.is_file()):
             log.error('database file not readable! file=%s', file_name)
-            sys.exit('ERROR: database file (%s) not readable!' % file_name)
+            sys.exit(f'ERROR: database file ({file_name}) not readable!')
     return
 
 
@@ -260,7 +260,7 @@ def has_annotation(feature, attribute):
 
 def calc_genome_stats(genome, features):
     
-    genome_size = sum([len(k['sequence']) for k in genome['contigs']])
+    genome_size = genome['size']
 
     # N50
     gc_sum = 0
@@ -289,10 +289,14 @@ def calc_genome_stats(genome, features):
         'stats: genome-size=%i, GC=%0.3f, N50=%i, N=%0.3f, coding-ratio=%0.3f',
         genome_size, gc_ratio, n50, n_ratio, coding_ratio
     )
+
+    genome['gc'] = gc_ratio
+    genome['n_ratio'] = n_ratio
+    genome['n50'] = n50
+    genome['coding_ratio'] = coding_ratio
+
     return {
-        'genome_size': genome_size,
-        'no_contigs': len(genome['contigs']),
-        'gc_ratio': gc_ratio,
+        'gc': gc_ratio,
         'n_ratio': n_ratio,
         'n50': n50,
         'coding_ratio': coding_ratio
@@ -353,13 +357,13 @@ def qc_contigs(contigs, replicons):
         organism_definition.append(cfg.species)
     if(len(organism_definition) > 0):
         organism_definition = ' '.join(organism_definition)
-        organism_definition = "[organism=%s]" % organism_definition
+        organism_definition = f"[organism={organism_definition}]"
     else:
         organism_definition = None
     
     for contig in contigs:
         if(contig['length'] >= cfg.min_contig_length):
-            contig_name = "%s_%i" % (contig_prefix, contig_counter)
+            contig_name = f'{contig_prefix}_{contig_counter}'
             contig['simple_id'] = contig_name
             contig_counter += 1
             if(not cfg.keep_contig_headers):
@@ -370,7 +374,7 @@ def qc_contigs(contigs, replicons):
                 if(organism_definition):
                     contig_desc.append(organism_definition)
                 if(cfg.strain):
-                    contig_desc.append("[strain=%s]" % cfg.strain)
+                    contig_desc.append(f'[strain={cfg.strain}]')
                 if(cfg.complete):
                     contig_desc.append('[completeness=complete]')
                     contig['complete'] = True
@@ -391,9 +395,9 @@ def qc_contigs(contigs, replicons):
                     contig['id'] = replicon['new_locus_id'] if replicon['new_locus_id'] else contig['simple_id']
                     if(replicon['replicon_type'] != bc.REPLICON_CONTIG and 'completeness' not in contig['desc']):
                         contig['desc'] += ' [completeness=complete]'
-                    contig['desc'] += " [topology=%s]" % replicon['topology']
+                    contig['desc'] += f" [topology={replicon['topology']}]"
                     if(replicon['replicon_type'] == bc.REPLICON_PLASMID and replicon['name']):
-                        contig['desc'] += " [plasmid-name=%s]" % replicon['name']
+                        contig['desc'] += f" [plasmid-name={replicon['name']}]"
                 contig.pop('simple_id')
     for contig in valid_contigs:
         log.info(

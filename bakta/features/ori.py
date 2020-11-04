@@ -37,7 +37,7 @@ def predict_oris(genome, contigs_path, ori_type):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('%s failed! blastn-error-code=%d', ori_type, proc.returncode)
-        raise Exception("blastn error! error code: %i" % proc.returncode)
+        raise Exception(f'blastn error! error code: {proc.returncode}')
 
     # parse raw hits
     hits = {}
@@ -64,7 +64,7 @@ def predict_oris(genome, contigs_path, ori_type):
                 if(len(contig_hits) == 1):
                     hits[hit['contig']] = contig_hits
                 log.debug(
-                    '%s raw hit: contig=%s, start=%i, stop=%i, strand=%s, coverage=%f, identity=%f',
+                    'raw hit: type=%s, contig=%s, start=%i, stop=%i, strand=%s, coverage=%f, identity=%f',
                     ori_type, hit['contig'], hit['contig_start'], hit['contig_stop'], hit['strand'], hit['coverage'], hit['identity']
                 )
     
@@ -92,15 +92,11 @@ def predict_oris(genome, contigs_path, ori_type):
                         ori['stop'] = stop
                         ori['strand'] = bc.STRAND_UNKNOWN
                         oris.append(ori)
-                        log.debug(
-                            'raw %s: contig=%s, start=%i, stop=%i',
-                            ori_type, ori['contig'], ori['start'], ori['stop']
-                        )
                         (refined_start, refined_stop) = refine_ori_region(region_hits, ori)
                         ori['start'] = refined_start
                         ori['stop'] = refined_stop
                         log.info(
-                            '%s: contig=%s, start=%i, stop=%i',
+                            'type=%s: contig=%s, start=%i, stop=%i',
                             ori_type, ori['contig'], ori['start'], ori['stop']
                         )
                         start = -1
@@ -109,16 +105,16 @@ def predict_oris(genome, contigs_path, ori_type):
                     if(start == -1):  # new start
                         start = i
     
-    log.info('# %i', len(oris))
+    log.info('predicted=%i', len(oris))
     return oris
 
 def refine_ori_region(region_hits, ori):
-    log.debug('refine ori: [%i-%i]' % (ori['start'], ori['stop']))
+    log.debug('refine ori: [%i-%i]', ori['start'], ori['stop'])
     hit_region = region_hits[ori['start']:ori['stop'] + 1]
     hit_min = min(hit_region)
     hit_max = max(hit_region)
     hit_mean = sum(hit_region) / len(hit_region)
-    log.debug('ori hit peak height: min=%i, max=%i, mean=%f' % (hit_min, hit_max, hit_mean))
+    log.debug('ori hit peak height: min=%i, max=%i, mean=%f', hit_min, hit_max, hit_mean)
     start = -1
     stop = -1
     for i in range(ori['start'], ori['stop'] + 2):  # extend range by extra bp to detect stop at 3' flank
@@ -126,10 +122,10 @@ def refine_ori_region(region_hits, ori):
         if(hit_value < hit_max / 2):
             if(start != -1):  # new stop
                 stop = i - 1
-                log.debug('new stop=%i' % stop)
+                log.debug('new stop=%i', stop)
                 return (start, stop)
         else:
             if(start == -1):  # new start
                 start = i
-                log.debug('new start=%i' % start)
+                log.debug('new start=%i', start)
     return (start, ori['stop'])

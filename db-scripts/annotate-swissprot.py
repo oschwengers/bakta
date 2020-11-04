@@ -48,7 +48,7 @@ with taxonomy_path.open() as fh:
     for line in fh:
         cols = line.split('\t|\t', maxsplit=2)
         taxonomy[cols[0]] = cols[1]
-print("\tstored tax ids: %i" % len(taxonomy))
+print(f'\tstored tax ids: {len(taxonomy)}')
 
 sp_processed = 0
 sp_not_found = 0
@@ -61,7 +61,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
-    conn.execute("PRAGMA mmap_size = %i;" % (20 * 1024 * 1024 * 1024))
+    conn.execute(f'PRAGMA mmap_size = {20 * 1024 * 1024 * 1024};')
     conn.execute('PRAGMA synchronous = OFF;')
     conn.execute('PRAGMA journal_mode = OFF')
     conn.execute('PRAGMA threads = 2;')
@@ -88,7 +88,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     sp_not_found += 1
                     log_ups.debug('no hash hit: SwissProt-id=%s, hash=%s', acc, seq_hash_hexdigest)
                     continue
-                assert rec_ups['length'] == len(seq), "Detected SwissProt / UPS length collision! hash=%s, SwissProt-id=%s, UniParc-id=%s, SwissProt-length=%s, db-length=%s" % (seq_hash_hexdigest, acc, rec_ups['uniparc_id'], len(seq), rec_ups['length'])
+                assert rec_ups['length'] == len(seq), f"Detected SwissProt / UPS length collision! hash={seq_hash_hexdigest}, SwissProt-id={acc}, UniParc-id={rec_ups['uniparc_id']}, SwissProt-length={len(seq)}, db-length={rec_ups['length']}"
                 
                 if(rec_ups['uniref100_id'] is None):
                     log_ups.debug('no UniRef100-id: SwissProt-id=%s, hash=%s', acc, seq_hash_hexdigest)
@@ -159,13 +159,13 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                         psc_annotated += 1
             if((sp_processed % 10000) == 0):
                 conn.commit()
-                print("\t... %i" % sp_processed)
+                print(f'\t... {sp_processed}')
             elem.clear()  # forstall out of memory errors
 
 print('\n')
-print("SwissProt proteins not found: %i" % sp_not_found)
+print(f'SwissProt proteins not found: {sp_not_found}')
 
-print("IPSs annotated: %i" % ips_annotated)
+print(f'IPSs annotated: {ips_annotated}')
 log_ips.debug('summary: IPS annotated=%i', ips_annotated)
-print("PSCs annotated: %i" % psc_annotated)
+print(f'PSCs annotated: {psc_annotated}')
 log_psc.debug('summary: PSC annotated=%i', psc_annotated)

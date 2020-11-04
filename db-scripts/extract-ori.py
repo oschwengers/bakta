@@ -20,4 +20,4 @@ with doric_path.open() as fh_doric, fasta_path.open('w') as fh_fasta:
             cols = line.strip().split(',')
             ori_id = cols[0]
             sequence = cols[-1].upper()
-            fh_fasta.write(">%s\n%s\n" % (ori_id, sequence))
+            fh_fasta.write(f'>{ori_id}\n{sequence}\n')

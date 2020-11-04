@@ -52,7 +52,7 @@ with taxonomy_path.open() as fh:
     for line in fh:
         cols = line.split('\t|\t', maxsplit=2)
         taxonomy[cols[0]] = cols[1]
-print("\tstored tax ids: %d" % len(taxonomy))
+print(f'\tstored tax ids: {len(taxonomy)}')
 
 uniparc_to_uniref100 = {}
 
@@ -62,7 +62,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
-    conn.execute("PRAGMA mmap_size = %i;" % (20 * 1024 * 1024 * 1024))
+    conn.execute(f'PRAGMA mmap_size = {20 * 1024 * 1024 * 1024};')
     conn.execute('PRAGMA synchronous = OFF;')
     conn.execute('PRAGMA journal_mode = OFF')
     conn.execute('PRAGMA threads = 2;')
@@ -92,7 +92,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     length = len(seq)
                     seq_hash = hashlib.md5(seq.encode())
                     seq_hash_hexdigest = seq_hash.hexdigest()
-                    assert seq_hash_hexdigest not in seq_hashes, "duplicated hashes! hash=%s, UniRef100-id: %s" % (seq_hash_hexdigest, uniref100_id)
+                    assert seq_hash_hexdigest not in seq_hashes, f'duplicated hashes! hash={seq_hash_hexdigest}, UniRef100-id: {uniref100_id}'
                     seq_hashes.add(seq_hash_hexdigest)
                     uniparc_id = rep_member_dbref.find('./{*}property[@type="UniParc ID"]')
                     if(uniparc_id is not None):
@@ -139,20 +139,20 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                                 uniparc_to_uniref100[seed_db_id] = uniref100_id
                                 log_ups.debug('store member: UniParc-id=%s, UniRef100-id=%s', seed_db_id, uniref100_id)
                         else:
-                            print("detected additional seed type! UniRef100-id=%s, seed-type=%s, seed-id=%s" % (uniref100_id, seed_db_type, seed_db_id))
+                            print(f'detected additional seed type! UniRef100-id={uniref100_id}, seed-type={seed_db_type}, seed-id={seed_db_id}')
                         member_dbref.clear()  # forstall out of memory errors
                     if((i % 100000) == 0):
                         conn.commit()
             elem.clear()  # forstall out of memory errors
             i_all += 1
             if((i_all % 1000000) == 0):
-                print("\t... %i" % i_all)
+                print(f'\t... {i_all}')
     conn.commit()
-    print("\tstored representative IPS: %i" % i)
+    print(f'\tstored representative IPS: {i}')
     log_ips.debug('representative IPS: # IPS=%i', i)
 
 
-    print("UniParc (%i)..." % len(uniparc_to_uniref100))
+    print(f'UniParc ({len(uniparc_to_uniref100)})...')
     log_ups.debug('lookup non-representative UniParc member sequences: %s', len(uniparc_to_uniref100))
     i = 0
     i_all = 0
@@ -172,9 +172,9 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     c.execute('SELECT * FROM ups WHERE hash=?', (seq_hash.digest(),))
                     rec = c.fetchone()
                     c.close()
-                    assert rec is not None, "Detected hash duplicate without DB entry! hash=%s, UniParc-id=%s, UniRef100-id: %s" % (seq_hash_hexdigest, uniparc_id, uniref100_id)
-                    assert rec['uniref100_id'] == uniref100_id, "Detected hash duplicate with different UniRef100 id! hash=%s, UniParc-id=%s, new UniRef100-id=%s, db UniRef100-id=%s" % (seq_hash_hexdigest, uniparc_id, uniref100_id, rec['uniref100_id'])
-                    assert rec['length'] == length, "Detected hash duplicate with different seq length! hash=%s, UniParc-id=%s, UniRef100-id=%s, UniParc-length=%s, db-length=%s" % (seq_hash_hexdigest, uniparc_id, uniref100_id, length, rec['length'])
+                    assert rec is not None, f'Detected hash duplicate without DB entry! hash={seq_hash_hexdigest}, UniParc-id={uniparc_id}, UniRef100-id={uniref100_id}'
+                    assert rec['uniref100_id'] == uniref100_id, f"Detected hash duplicate with different UniRef100 id! hash={seq_hash_hexdigest}, UniParc-id={uniparc_id}, new UniRef100-id={uniref100_id}, db UniRef100-id={rec['uniref100_id']}"
+                    assert rec['length'] == length, f"Detected hash duplicate with different seq length! hash={seq_hash_hexdigest}, UniParc-id={uniparc_id}, UniRef100-id={uniref100_id}, UniParc-length={length}, db-length={rec['length']}"
                     # update existing UPS with UniParc id
                     conn.execute('UPDATE ups SET uniparc_id=? WHERE hash=?', (uniparc_id_short, seq_hash.digest()))
                     log_ups.info('UPDATE ups SET uniparc_id=%s WHERE hash=%s', uniparc_id_short, seq_hash_hexdigest)
@@ -188,9 +188,9 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                         conn.commit()
             i_all += 1
             if((i_all % 1000000) == 0):
-                print("\t... %i" % i_all)
+                print(f'\t... {i_all}')
     conn.commit()
-    print("\twritten UniParc member sequences: %i" % i)
+    print(f'\twritten UniParc member sequences: {i}')
     log_ups.debug('written UniParc member sequences: %i', i)
 
 print("\nsuccessfully initialized UPS & IPS tables!")

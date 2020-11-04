@@ -46,7 +46,7 @@ def extract(genome):
                         if(strand == '-'):
                             test_dna_seq = test_dna_seq.reverse_complement()
                         test_seq = test_dna_seq.translate(table=11, stop_symbol='*', to_stop=False, cds=True)
-                        assert sequence == test_seq, "seqs not equal! a=%s, b=%s" % (sequence, test_seq)
+                        assert sequence == test_seq, f'seqs not equal! a={sequence}, b={test_seq}'
                         (aa_digest, aa_hexdigest) = bu.calc_aa_hash(sequence)
 
                         sorf = OrderedDict()
@@ -72,7 +72,7 @@ def extract(genome):
                     if(aa_start > aa_end):
                         aa_end = aa_seq.find('*', aa_start)
 
-    log.info('# %i', len(orfs))
+    log.info('predicted=%i', len(orfs))
     return orfs
 
 
@@ -138,7 +138,8 @@ def overlap_filter(genome, orfs_raw):
                         if(cds['stop'] < sorf['start'] or cds['start'] > sorf['stop']):
                             continue
                         else:
-                            discarded_sorfs["%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])] = sorf
+                            key = f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}"
+                            discarded_sorfs[key] = sorf
                     else:
                         if(sorf['start'] < cds['start'] and sorf['stop'] > cds['start']):
                             # out-of-frame sorf partially overlapping CDS upstream
@@ -146,7 +147,8 @@ def overlap_filter(genome, orfs_raw):
                             continue
                         elif(sorf['start'] >= cds['start'] and sorf['stop'] <= cds['stop']):
                             # out-of-frame sorf completely overlapped by CDS
-                            discarded_sorfs["%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])] = sorf
+                            key = f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}"
+                            discarded_sorfs[key] = sorf
                         elif(sorf['start'] < cds['stop'] and sorf['stop'] > cds['stop']):
                             # out-of-frame sorf partially overlapping CDS downstream
                             # ToDo: add max overlap threshold
@@ -157,7 +159,8 @@ def overlap_filter(genome, orfs_raw):
                         if(cds['stop'] < sorf['start'] or cds['start'] > sorf['stop']):
                             continue
                         else:
-                            discarded_sorfs["%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])] = sorf
+                            key = f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}"
+                            discarded_sorfs[key] = sorf
                     else:
                         # ToDo: add out-of-frame filters
                         if(sorf['start'] < cds['start'] and sorf['stop'] > cds['start']):
@@ -166,7 +169,8 @@ def overlap_filter(genome, orfs_raw):
                             continue
                         elif(sorf['start'] >= cds['start'] and sorf['stop'] <= cds['stop']):
                             # out-frame sorf completely overlapped by CDS
-                            discarded_sorfs["%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])] = sorf
+                            key = f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}"
+                            discarded_sorfs[key] = sorf
                         elif(sorf['start'] < cds['stop'] and sorf['stop'] > cds['stop']):
                             # out-frame sorf partially overlapping CDS downstream
                             # ToDo: add max overlap threshold
@@ -179,7 +183,8 @@ def overlap_filter(genome, orfs_raw):
                 if(sorf['stop'] < r_rna['start'] or sorf['start'] > r_rna['stop']):
                     continue
                 else:
-                    discarded_sorfs["%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])] = sorf
+                    key = f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}"
+                    discarded_sorfs[key] = sorf
 
             # filter tRNA overlapping ORFs
             # log.debug('filter short ORFs by tRNA: %s[%i->%i]', t_rna['strand'], t_rna['start'], t_rna['stop'])
@@ -188,7 +193,8 @@ def overlap_filter(genome, orfs_raw):
                 if(sorf['stop'] < t_rna['start'] or sorf['start'] > t_rna['stop']):
                     continue
                 else:
-                    discarded_sorfs["%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])] = sorf
+                    key = f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}"
+                    discarded_sorfs[key] = sorf
         
             # filter CRISPR array overlapping ORFs
             # log.debug('filter short ORFs by CRISPR: [%i->%i]', crispr['start'], crispr['stop'])
@@ -197,17 +203,18 @@ def overlap_filter(genome, orfs_raw):
                 if(sorf['stop'] < crispr['start'] or sorf['start'] > crispr['stop']):
                     continue
                 else:
-                    discarded_sorfs["%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])] = sorf
+                    key = f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}"
+                    discarded_sorfs[key] = sorf
         
 
     valid_sorfs = []
     for sorfs in contig_sorfs.values():
         for sorf in sorfs:
-            key = "%s-%i-%i-%s-%s" % (sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], sorf['aa_hexdigest'])
+            key = f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}"
             if(key not in discarded_sorfs):
                 valid_sorfs.append(sorf)
 
-    log.info('short ORF filter: # valid=%i, # discarded=%i', len(valid_sorfs), len(discarded_sorfs.values()))
+    log.info('sORF filter: # valid=%i, # discarded=%i', len(valid_sorfs), len(discarded_sorfs.values()))
     return valid_sorfs, discarded_sorfs
 
 
@@ -250,7 +257,7 @@ def search_pscs(sorfs):
     sorf_fasta_path = cfg.tmp_path.joinpath('sorf.faa')
     with sorf_fasta_path.open(mode='w') as fh:
         for sorf in sorfs:
-            fh.write(">%s\n%s\n" % (sorf['aa_hexdigest'], sorf['sequence']))
+            fh.write(f">{sorf['aa_hexdigest']}\n{sorf['sequence']}\n")
     diamond_output_path = cfg.tmp_path.joinpath('diamond.sorf.tsv')
     diamond_db_path = cfg.db_path.joinpath('sorf.dmnd')
     cmd = [
@@ -280,7 +287,7 @@ def search_pscs(sorfs):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('sORF failed! diamond-error-code=%d', proc.returncode)
-        raise Exception("diamond error! error code: %i" % proc.returncode)
+        raise Exception(f'diamond error! error code: {proc.returncode}')
 
     sorf_by_aa_digest = {sorf['aa_hexdigest']: sorf for sorf in sorfs}
     with diamond_output_path.open() as fh:
@@ -297,7 +304,7 @@ def search_pscs(sorfs):
                     'query-cov': query_cov,
                     'identity': identity
                 }
-                log.debug(
+                log.info(
                     'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, UniRef90=%s',
                     sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], len(sorf['sequence']), query_cov, identity, cluster_id
                 )
@@ -309,6 +316,6 @@ def search_pscs(sorfs):
             pscs_found.append(sorf)
         else:
             pscs_not_found.append(sorf)
-    log.info('homology: # %i', len(pscs_found))
+    log.info('homology: found=%i', len(pscs_found))
     return pscs_found, pscs_not_found
     

@@ -43,7 +43,7 @@ def predict(genome, filtered_contigs_path):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('ORFs failed! prodigal-error-code=%d', proc.returncode)
-        raise Exception("prodigal error! error code: %i" % proc.returncode)
+        raise Exception(f'prodigal error! error code: {proc.returncode}')
 
     # parse orfs
     # TODO: replace code by BioPython GFF3 parser
@@ -72,10 +72,10 @@ def predict(genome, filtered_contigs_path):
                     cds['frame'] = (cds['start'] - 1) % 3 + 1
                 else:
                     cds['frame'] = (contigs[cds['contig']]['length'] - cds['stop']) % 3 + 1
-                cdss["%s_%s" % (cds['contig'], contig_orf_id)] = cds
-                log.debug(
-                    'contig=%s, start=%i, stop=%i, strand=%s',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand']
+                cdss[f"{cds['contig']}_{contig_orf_id}"] = cds
+                log.info(
+                    'contig=%s, start=%i, stop=%i, strand=%s, frame=%s',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame']
                 )
 
     # extract translated orf sequences
@@ -88,9 +88,7 @@ def predict(genome, filtered_contigs_path):
             cds['aa_digest'] = aa_digest
             cds['aa_hexdigest'] = aa_hexdigest
 
-    gff_path.unlink()
-    proteins_path.unlink()
-    log.info('# %i', len(cdss))
+    log.info('predicted=%i', len(cdss))
     return list(cdss.values())
 
 
@@ -102,7 +100,7 @@ def split_gff_annotation(annotation_string):
                 key, value = expr.split('=')
                 annotations[key] = value
             except:
-                log.error('expr=%s' % expr)
+                log.error('expr=%s', expr)
     return annotations
 
 

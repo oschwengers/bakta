@@ -24,13 +24,13 @@ def lookup(features):
     try:
         features_found = []
         features_not_found = []
-        with sqlite3.connect("file:%s?mode=ro" % str(cfg.db_path.joinpath('bakta.db')), uri=True) as conn:
+        with sqlite3.connect(f"file:{cfg.db_path.joinpath('bakta.db')}?mode=ro", uri=True) as conn:
             conn.row_factory = sqlite3.Row
             c = conn.cursor()
             for feature in features:
                 uniref100_id = feature.get('ups', {}).get('uniref100_id', None)
                 if(uniref100_id):
-                    c.execute("select * from ips where uniref100_id=?", (feature['ups']['uniref100_id'][10:],))
+                    c.execute('select * from ips where uniref100_id=?', (feature['ups']['uniref100_id'][10:],))
                     rec = c.fetchone()
                     if(rec is not None):
                         ips = parse_annotation(rec)
@@ -45,11 +45,11 @@ def lookup(features):
                 else:
                     features_not_found.append(feature)
 
-        log.info('# %i', len(features_found))
+        log.info('looked up: %i', len(features_found))
         return features_found, features_not_found
     except Exception as ex:
         log.exception('Could not read IPSs from db!', ex)
-        raise Exception("SQL error!", ex)
+        raise Exception('SQL error!', ex)
 
 
 def parse_annotation(rec):
@@ -58,7 +58,7 @@ def parse_annotation(rec):
     }
     db_xrefs = [
         'SO:0001217',
-        '%s:%s' % (bc.DB_XREF_UNIREF_100, ips[DB_IPS_COL_UNIREF100])
+        f'{bc.DB_XREF_UNIREF_100}:{ips[DB_IPS_COL_UNIREF100]}'
     ]
 
     # add non-empty PSC annotations and attach database prefixes to identifiers
@@ -68,14 +68,14 @@ def parse_annotation(rec):
         ips[DB_IPS_COL_PRODUCT] = rec[DB_IPS_COL_PRODUCT]
     if(rec[DB_IPS_COL_UNIREF90]):
         ips[DB_IPS_COL_UNIREF90] = bc.DB_PREFIX_UNIREF_90 + rec[DB_IPS_COL_UNIREF90]
-        db_xrefs.append('%s:%s' % (bc.DB_XREF_UNIREF_90, ips[DB_IPS_COL_UNIREF90]))
+        db_xrefs.append(f'{bc.DB_XREF_UNIREF_90}:{ips[DB_IPS_COL_UNIREF90]}')
     if(rec[DB_IPS_COL_EC]):
         ips[DB_IPS_COL_EC] = rec[DB_IPS_COL_EC]
         ecs = []
         for ec in rec[DB_IPS_COL_EC].split(','):
             if(ec != ''):
                 ecs.append(ec)
-                db_xrefs.append('%s:%s' % (bc.DB_XREF_EC, ec))
+                db_xrefs.append(f'{bc.DB_XREF_EC}:{ec}')
         if(len(ecs) != 0):
             ips[DB_IPS_COL_EC] = ecs
     if(rec[DB_IPS_COL_GO]):
