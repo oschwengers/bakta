@@ -15,9 +15,9 @@
 - [Examples](#examples)
 - [Installation](#installation)
   - [Bioconda](#bioconda)
-  - [GitHub](#github)
   - [Pip](#pip)
   - [Dependencies](#dependencies)
+  - [Database](#mandatory_database)
 - [Annotation workflow](#annoation_workflow)
 - [Database](#database)
 - [Usage](#usage)
@@ -28,9 +28,9 @@
 ## Description
 
 **TL;DR**
-Bakta is a local tool dedicated to the rapid & comprehensive annotation of bacteria & plasmids. It provides **dbxref**-rich and **sORF**-including annotations as machine-readble (`JSON`) & bioinformatics standard output files for automatic downstream analysis.
+Bakta is an offline tool dedicated to the rapid & comprehensive annotation of bacteria & plasmids. It provides **dbxref**-rich and **sORF**-including annotations in machine-readble (`JSON`) & bioinformatics standard file formats for automatic downstream analysis.
 
-The annotation of microbial genomes is a diverse task comprising the structural & functional annotation of different feature types with distinct overlapping characteristics. Existing local annotation pipelines cover a broad range of microbial taxa, *e.g.* bacteria, aerchaea, viruses. To streamline and foster the expansion of supported feature types, Bakta is strictly dedicated to the annotation of bacteria and plasmids. To standardize the annotation of bacterial sequences, Bakta uses a comprehensive annotation database based on UniProt's UniRef protein clusters enriched by cross-references.
+The annotation of microbial genomes is a diverse task comprising the structural & functional annotation of different feature types with distinct overlapping characteristics. Existing local annotation pipelines cover a broad range of microbial taxa, *e.g.* bacteria, aerchaea, viruses. To streamline and foster the expansion of supported feature types, Bakta is strictly dedicated to the annotation of bacteria and plasmids. To standardize the annotation of bacterial sequences, Bakta uses a comprehensive annotation database based on UniProt's UniRef protein clusters enriched by cross-references and specialized niche databases.
 
 Exact matches to known protein coding sequences (**CDS**), subsequently referred to as identical protein sequences (**IPS**) are identified via `MD5` digests and annotated with database cross-references (**dbxref**) to:
 
@@ -38,7 +38,7 @@ Exact matches to known protein coding sequences (**CDS**), subsequently referred
 - UniRef100/UniRef90 (`UniRef100_*`/`UniRef90_*`)
 - UniParc (`UPI*`)
 
-By doing so, **IPS** allow the surveillance of distinct gene alleles and the streamlining of comparative analysis. Also, posterior (external) annotations of `putative` & `hypothetical` protein sequences can be mapped back to existing `cds` via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)).
+By doing so, **IPS** allow the surveillance of distinct gene alleles and streamline comparative analysis. Also, posterior (external) annotations of `putative` & `hypothetical` protein sequences can be mapped back to existing `cds` via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)).
 Unidentified remaining **CDS** are annotated via UniRef90 protein sequence clusters (**PSC**).
 **PSC** & **IPS** are enriched by pre-annotated and stored information (`GO`, `COG`, `EC`).
 
@@ -48,7 +48,7 @@ Next to standard feature types (tRNA, tmRNA, rRNA, ncRNA, CRISPR, CDS, gaps) Bak
 - ncRNA regulatory regions distinct from ncRNA genes
 - origins of replication/transfer (oriC, oriV, oriT)
 
-Bakta can annotate a typical bacterial genome within minutes and hence fits the niche between large & computationally-demanding (online) pipelines and rapid, highly-customizable offline tools like Prokka. If Bakta doesn't fit your needs, please consider using [Prokka](https://github.com/tseemann/prokka). The development of Bakta was highly inspired by Prokka and many command line options are mutually compatible for the sake of interoperability and user convenience.
+Bakta can annotate a typical bacterial genome within minutes and hence fits the niche between large & computationally-demanding (online) pipelines and rapid, highly-customizable offline tools like Prokka. If Bakta does not fit your needs, please consider using [Prokka](https://github.com/tseemann/prokka). The development of Bakta was highly inspired by Prokka and many command line options are mutually compatible for the sake of interoperability and user convenience.
 
 ## Input/Output
 
@@ -103,10 +103,10 @@ NODE_5 | `` |  `-` | -
 
 ### Output
 
-Bakta provides detailed information on each annotated feature in a standardized machine-readable file in JSON format.
-In addition, Bakta supports the following standard file formats:
+Bakta provides detailed information on each annotated feature in a standardized machine-readable JSON file.
+In addition, the following standard file formats are supported:
 
-- `tsv`: annotations as tab separated values
+- `tsv`: annotations as simple human readble tab separated values
 - `GFF3`: annotations in GFF3 format
 - `GenBank`: annotations in GenBank format
 - `fna`: replicons/contigs as FASTA
@@ -128,8 +128,8 @@ $ bakta --db ~/db --verbose --output results/ --prefix ecoli123 --locus-tag eco6
 
 ## Installation
 
-Bakta can be installed via BioConda, Pip and GitHub.
-To automatically install all required 3rd party dependencies, we encourage to use [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
+Bakta can be installed via BioConda or Pip.
+To automatically install all required 3rd party dependencies, we highly encourage to use [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
 ### BioConda
 
@@ -143,19 +143,28 @@ $ conda install -c conda-forge -c bioconda -c defaults bakta
 2. install 3rd party binaries (-> Dependencies)
 
 ```bash
-$ python3 -m pip install bakta
+$ python3 -m pip install --user bakta
 ```
 
-### GitHub
+### Dependencies
 
-1. clone the the repository
-2. install Python dependencies
-3. install 3rd party binaries (-> Dependencies)
+Bacta requires Biopython (>=1.72) and the following 3rd party executables which must be installed & executable:
+
+- tRNAscan-SE (2.0.6) <https://doi.org/10.1101/614032> <http://lowelab.ucsc.edu/tRNAscan-SE>
+- Aragorn (1.2.38) <http://dx.doi.org/10.1093/nar/gkh152> <http://130.235.244.92/ARAGORN>
+- INFERNAL (1.1.2) <https://dx.doi.org/10.1093%2Fbioinformatics%2Fbtt509> <http://eddylab.org/infernal>
+- PILER-CR (1.06) <https://doi.org/10.1186/1471-2105-8-18> <http://www.drive5.com/pilercr>
+- Prodigal (2.6.3) <https://dx.doi.org/10.1186%2F1471-2105-11-119> <https://github.com/hyattpd/Prodigal>
+- Diamond (2.0.2) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
+- Blast+ (2.7.1) <https://www.ncbi.nlm.nih.gov/pubmed/2231712> <https://blast.ncbi.nlm.nih.gov>
+
+On Ubuntu/Debian/Mint you can install these via:
 
 ```bash
-$ git clone git@github.com:oschwengers/bakta.git
-$ python3 setup.py install --user
+$ sudo apt install aragorn infernal prodigal diamond-aligner ncbi-blast+
 ```
+
+tRNAscan-se must be installed manually as v2.0 is currently not yet available via standard Ubuntu packages.
 
 ### Mandatory database
 
@@ -186,26 +195,6 @@ Additionally, for a system-wide setup, the database can be copied to the Bakta b
 ```bash
 $ cp -r db/ <bakta-installation-dir>
 ```
-
-### Dependencies
-
-Bacta requires Biopython (>=1.72) uses the following 3rd party executables which must be installed & executable:
-
-- tRNAscan-SE (2.0.6) <https://doi.org/10.1101/614032> <http://lowelab.ucsc.edu/tRNAscan-SE>
-- Aragorn (1.2.38) <http://dx.doi.org/10.1093/nar/gkh152> <http://130.235.244.92/ARAGORN>
-- INFERNAL (1.1.2) <https://dx.doi.org/10.1093%2Fbioinformatics%2Fbtt509> <http://eddylab.org/infernal>
-- PILER-CR (1.06) <https://doi.org/10.1186/1471-2105-8-18> <http://www.drive5.com/pilercr>
-- Prodigal (2.6.3) <https://dx.doi.org/10.1186%2F1471-2105-11-119> <https://github.com/hyattpd/Prodigal>
-- Diamond (2.0.2) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
-- Blast+ (2.7.1) <https://www.ncbi.nlm.nih.gov/pubmed/2231712> <https://blast.ncbi.nlm.nih.gov>
-
-On Ubuntu you can install these via:
-
-```bash
-$ sudo apt install aragorn infernal prodigal diamond-aligner ncbi-blast+
-```
-
-tRNAscan-se must be installed manually as v2.0 is currently not yet available via standard Ubuntu packages.
 
 ## Annotation workflow
 
