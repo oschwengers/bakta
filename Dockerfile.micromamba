@@ -1,0 +1,24 @@
+FROM ubuntu:20.04
+RUN apt update && apt install -y wget tar \
+    && wget -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
+    && mv /root/.bashrc /root/.bashrc.interactive \
+    && touch /root/.bashrc \
+    && ./bin/micromamba shell init -s bash -p /opt/conda \
+    && cp /root/.bashrc /opt/conda/bashrc
+
+COPY environment.yml /tmp/
+SHELL ["bash", "-l" ,"-c"]
+RUN micromamba activate \
+    && micromamba install -y -n base -f /tmp/environment.yml \
+    && rm -rf /opt/conda/pkgs
+
+COPY . /tmp/source/
+RUN micromamba activate \
+    && python3 -m pip install --no-cache /tmp/source/ \
+    && echo '#!/bin/bash' > /entrypoint.sh \
+    && echo 'source /opt/conda/bashrc' >> /entrypoint.sh \
+    && echo 'micromamba activate' >> /entrypoint.sh \
+    && echo 'bakta "$@"' >> /entrypoint.sh \
+    && chmod +x /entrypoint.sh 
+
+ENTRYPOINT ["/entrypoint.sh"]
