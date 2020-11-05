@@ -34,10 +34,12 @@ cog_id_fclass = {}
 with cog_ids_path.open(encoding='windows-1252') as fh:
     for line in fh:
         if(line[0] != '#'):
-            (id, cat, annotation) = line.strip().split('\t')
+            (id, cat, product, gene, pathways, pubmed, pdb) = line.strip().split('\t')
             cog_id_fclass[id] = {
                 'id': id[3:],
-                'cat': cat
+                'cat': cat,
+                'product': product,
+                'gene': gene
             }
 print(f'\tstored COG ids: {len(cog_id_fclass)}')
 
@@ -45,7 +47,7 @@ print('import NCBI GI / COG mapping information...')
 gb_id_cog = {}
 with gi_cog_mapping_path.open() as fh:
     for line in fh:
-        (gb_id, tmp_1, tmp_2, protein_length, domain_start, domain_end, cog_id, membership_class, empty) = line.strip().split(',')
+        (gene_id, assembly_id, gb_id, protein_length, footprint_coordinates_protein, cog_footprint_length, cog_id, reserved_, cog_membership_class, bitscore, evalue, profile_length, footprint_coordinates_profile) = line.strip().split(',')
         cog = cog_id_fclass.get(cog_id, None)
         if(cog is not None):
             gb_id_cog[gb_id] = cog
@@ -72,8 +74,7 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
         qcov = length / int(qlen)
         scov = length / int(slen)
         if(qcov >= 0.8 and scov >= 0.8 and float(pident) >= 90. and float(evalue) < 1e-6):
-            gb_id = sseqid.split('|')[1]
-            cog = gb_id_cog.get(gb_id, None)
+            cog = gb_id_cog.get(sseqid, None)
             if(cog is not None):
                 conn.execute('UPDATE psc SET cog_id=?, cog_category=? WHERE uniref90_id=?', (cog['id'], cog['cat'], uniref90_id))
                 log.info('UPDATE psc SET cog_id=%s, cog_category=%s WHERE uniref90_id=%s', cog['id'], cog['cat'], uniref90_id)

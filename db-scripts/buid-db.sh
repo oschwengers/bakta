@@ -154,14 +154,18 @@ rm uniprot_sprot.xml.gz
 # - annotate PSCs with COG info
 ############################################################################
 printf "\n12/14: download COG db ...\n"
-wget -nv ftp://ftp.ncbi.nih.gov/pub/COG/COG2014/data/cognames2003-2014.tab  # COG IDs and functional class
-wget -nv ftp://ftp.ncbi.nih.gov/pub/COG/COG2014/data/cog2003-2014.csv # Mapping GenBank IDs -> COG IDs
-wget -nv ftp://ftp.ncbi.nih.gov/pub/COG/COG2014/data/prot2003-2014.fa.gz  # annotated protein sequences
-pigz -dc prot2003-2014.fa.gz | seqtk seq -CU > cog.faa
+wget -nv ftp://ftp.ncbi.nih.gov/pub/COG/COG2020/data/cog-20.def.tab  # COG IDs and functional class
+wget -nv ftp://ftp.ncbi.nih.gov/pub/COG/COG2020/data/cog-20.cog.csv # Mapping GenBank IDs -> COG IDs
+for i in $(seq -f "%05g" 1 5950)
+do
+    wget -nv ftp://ftp.ncbi.nih.gov/pub/COG/COG2020/data/fasta/COG${i}.fa.gz
+    pigz -dc COG${i}.fa.gz | seqtk seq -CU >> cog.faa
+    rm COG${i}.fa.gz
+done
 printf "\n12/14: annotate PSCs ...\n"
 diamond makedb --in cog.faa --db cog.dmnd
 diamond blastp --query psc.faa --db cog.dmnd --id 90 --query-cover 80 --subject-cover 80 --max-target-seqs 1 --out diamond.tsv --outfmt 6 qseqid sseqid length pident qlen slen evalue
-python3 ${BAKTA_DB_SCRIPTS}/annotate-cog.py --db bakta.db --alignments diamond.tsv --cog-ids cognames2003-2014.tab --gi-cog-mapping cog2003-2014.csv
+python3 ${BAKTA_DB_SCRIPTS}/annotate-cog.py --db bakta.db --alignments diamond.tsv --cog-ids cog-20.def.tab --gi-cog-mapping cog-20.cog.csv
 rm cognames2003-2014.tab cog2003-2014.csv prot2003-2014.fa.gz diamond.tsv cog.*
 
 
