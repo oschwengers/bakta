@@ -1,7 +1,7 @@
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-brightgreen.svg)](https://github.com/oschwengers/bacanno/blob/master/LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-brightgreen.svg)](https://github.com/oschwengers/bakta/blob/master/LICENSE)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/bakta.svg)
 ![GitHub release](https://img.shields.io/github/release/oschwengers/bakta.svg)
-![PyPI](https://img.shields.io/pypi/v/cb-bakta.svg)
+![PyPI](https://img.shields.io/pypi/v/bakta.svg)
 ![PyPI - Status](https://img.shields.io/pypi/status/bakta.svg)
 ![Conda](https://img.shields.io/conda/v/bioconda/bakta.svg)
 ![Conda](https://img.shields.io/conda/pn/bioconda/bakta.svg)
@@ -28,6 +28,7 @@
 ## Description
 
 **TL;DR**
+
 Bakta is an offline tool dedicated to the rapid & comprehensive annotation of bacteria & plasmids. It provides **dbxref**-rich and **sORF**-including annotations in machine-readble (`JSON`) & bioinformatics standard file formats for automatic downstream analysis.
 
 The annotation of microbial genomes is a diverse task comprising the structural & functional annotation of different feature types with distinct overlapping characteristics. Existing local annotation pipelines cover a broad range of microbial taxa, *e.g.* bacteria, aerchaea, viruses. To streamline and foster the expansion of supported feature types, Bakta is strictly dedicated to the annotation of bacteria and plasmids. To standardize the annotation of bacterial sequences, Bakta uses a comprehensive annotation database based on UniProt's UniRef protein clusters enriched by cross-references and specialized niche databases.
@@ -62,11 +63,12 @@ For a full description, please have a look at the [Usage](#usage) section.
 Most important parameters:
 
 - use a custom database location, *e.g.* a local instance for runtime improvements: `--db`
-- genome parameters: `--min-contig-length`, `--complete`, `--translation-table`
+- genome parameters: `--min-contig-length`, `--complete`
 - number of threads: `--threads`
 - locus information `--locus`, `--locus-tag`
 
 Replicon meta data table:
+
 To fine-tune the very details of each sequence in the input fasta file, Bakta accepts a replicon meta data table provided in `tsv` file format: `--replicons <tsv-replicon-file>`.
 Thus, for example, complete replicons within partially completed draft assemblies can be marked as such.
 
@@ -169,7 +171,7 @@ tRNAscan-se must be installed manually as v2.0 is currently not yet available vi
 ### Mandatory database
 
 In all cases, Bakta requires a mandatory database which is publicly hosted at Zenodo:
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXX.svg)](https://doi.org/10.5281/zenodo.XXX)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247253.svg)](https://doi.org/10.5281/zenodo.4247253)
 Further information is provided [below](#database).
 
 ```bash
@@ -286,7 +288,7 @@ This allows the exact protein sequences identification via **MD5** digests & seq
 - ISFinder db (90% coverage & 99% identity)
 
 Database (23 Gb zipped, 43 Gb unzipped) hosted at Zenodo:
-[![DOI](https://zenodo.org/badge/DOI/<DOI>.svg)](https://doi.org/<DOI>)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247253.svg)](https://doi.org/10.5281/zenodo.4247253)
 
 ## Usage
 
@@ -373,14 +375,15 @@ A manuscript is in preparation. To temporarily cite our work, please transitiona
 > Schwengers O., Goesmann A. (2020) Bakta: comprehensive annotation of bacterial genomes. GitHub https://github.com/oschwengers/bakta
 
 Bakta takes advantage of many publicly available databases. If you find any of the data used within Bakta useful, please also be sure to credit the primary source also:
+
 - UniProt: <https://doi.org/10.1093/nar/gky1049>
-- RefSeq: <DOI>
+- RefSeq: <https://doi.org/10.1093/nar/gkx1068>
 - Rfam: <https://doi.org/10.1002/cpbi.51>
 - AMRFinder: <https://doi.org/10.1128/AAC.00483-19>
 - ISFinder: <https://doi.org/10.1093/nar/gkj014>
-- AntiFam: <DOI>
+- AntiFam: <https://doi.org/10.1093/database/bas003>
 - Mob-suite: <https://doi.org/10.1099/mgen.0.000206>
-- COG: <DOI>
+- COG: <https://doi.org/10.1093/bib/bbx117>
 
 ## FAQ
 
