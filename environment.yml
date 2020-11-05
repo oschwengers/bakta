@@ -5,6 +5,7 @@ channels:
   - defaults
 dependencies:
   - biopython>=1.72
+  - xopen>=0.9.0
   - trnascan-se=2.0.6
   - aragorn=1.2.38
   - infernal>=1.1.2

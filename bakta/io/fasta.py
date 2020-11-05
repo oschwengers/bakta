@@ -2,6 +2,7 @@
 import logging
 
 from Bio import SeqIO
+from xopen import xopen
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -14,7 +15,8 @@ FASTA_LINE_WRAPPING = 60
 def import_contigs(contigs_path):
     """Import raw contigs."""
     contigs = []
-    with contigs_path.open() as fh:
+    # with contigs_path.open() as fh:
+    with xopen(str(contigs_path), threads=0) as fh:
         for record in SeqIO.parse(fh, 'fasta'):
             seq = str(record.seq).upper()
             contig = {

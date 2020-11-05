@@ -54,7 +54,7 @@ Bakta can annotate a typical bacterial genome within minutes and hence fits the 
 
 ### Input
 
-Bakta accepts bacterial and plasmid assemblies (complete / draft) in fasta format.
+Bakta accepts bacterial and plasmid assemblies (complete / draft) in (zipped) fasta format.
 
 Further genome information and workflow customizations can be provided and set via a number of input parameters.
 For a full description, please have a look at the [Usage](#usage) section.
