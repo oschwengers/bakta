@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eo pipefail
 
 # adjust these parameters to your needs
 DOCKER_IMAGE=ljelonek/bakta:dev
@@ -8,8 +9,10 @@ args=( "$@" )
 argcount=${#args[@]}
 
 # handle help parameter separately
-if [[ " ${args[@]} " =~ " --help " || " ${args[@]} " =~ " -h " ]]; then
-    docker run -it --rm $DOCKER_IMAGE
+if [[ $argcount -eq 0 || " ${args[@]} " =~ " --help " || " ${args[@]} " =~ " -h " ]]; then
+    docker run -it --rm \
+               --user $(id -u):$(id -g) \
+               $DOCKER_IMAGE
     exit $?
 fi
 
@@ -50,6 +53,9 @@ fi
 if [[ -z "$OUTPUT" ]]; then
     OUTPUT=$PWD
 fi
+if [[ ! -d "$OUTPUT" ]]; then
+    mkdir -p "$OUTPUT"
+fi
 
 echo "******************************"
 echo "* bakta docker wrapper       *"
@@ -61,6 +67,7 @@ echo "*  Output location : " $OUTPUT
 echo "******************************"
 CMD=$(cat <<-END
     docker run -it --rm \
+    --user $(id -u):$(id -g)
     -v $DB:/bakta/db:ro \
     -v $OUTPUT:/bakta/output:rw \
     -v $GENOME:/bakta/genome.fas:ro \

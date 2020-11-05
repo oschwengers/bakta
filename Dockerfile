@@ -17,7 +17,8 @@ RUN mv /root/.bashrc /root/.bashrc.interative && touch /root/.bashrc && \
     && /opt/conda/bin/conda config --add channels bioconda \
     && /opt/conda/bin/conda config --add channels conda-forge \
     && /opt/conda/bin/conda install -y mamba \
-    && /opt/conda/bin/conda init bash
+    && /opt/conda/bin/conda init bash \
+    && cp /root/.bashrc /opt/conda/bashrc
 
 # copy the conda env first, so that it can be setup and the same layer can used even when the other source files change
 SHELL ["/bin/bash", "-l", "-c"]
