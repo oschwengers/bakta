@@ -18,15 +18,16 @@ RUN mv /root/.bashrc /root/.bashrc.interative && touch /root/.bashrc && \
     && /opt/conda/bin/conda config --add channels conda-forge \
     && /opt/conda/bin/conda install -y mamba \
     && /opt/conda/bin/conda init bash \
+    && /opt/conda/bin/conda clean --all \
     && cp /root/.bashrc /opt/conda/bashrc
 
 # copy the conda env first, so that it can be setup and the same layer can used even when the other source files change
 SHELL ["/bin/bash", "-l", "-c"]
 COPY environment.yml /tmp/source/
-RUN mamba env create --file  /tmp/source/environment.yml
+RUN mamba env update --name base --file  /tmp/source/environment.yml && mamba clean --all
 
 COPY . /tmp/source/
-RUN source /root/.bashrc && conda activate bakta && python3 -m pip install /tmp/source/
+RUN source /root/.bashrc && python3 -m pip install --no-cache /tmp/source/
 
 COPY entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
