@@ -82,7 +82,7 @@ def setup(args):
             log.info('database detected: type=base-dir, path=%s', db_path)
         else:
             log.error('unvalid database path: type=base-dir, path=%s', db_tmp_path)
-            sys.exit('ERROR: database neither auto-detected nor provided!\nPlease, download the mandatory db and provide it either via the --db parameter, via a BAKTA_DIR environment variable or copy it into the Bakta base directory.\nFor further information please read the readme.md')
+            sys.exit('ERROR: database neither auto-detected nor provided!\nPlease, download the mandatory db and provide it either via the --db parameter, via a BAKTA_DB environment variable or copy it into the Bakta base directory.\nFor further information please read the readme.md')
 
     if(args.tmp_dir):
         tmp_path = Path(args.tmp_dir)
