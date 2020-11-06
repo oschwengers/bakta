@@ -15,6 +15,7 @@
 - [Examples](#examples)
 - [Installation](#installation)
   - [Bioconda](#bioconda)
+  - [Docker](#docker)
   - [Pip](#pip)
   - [Dependencies](#dependencies)
   - [Database](#mandatory_database)
@@ -130,13 +131,22 @@ $ bakta --db ~/db --verbose --output results/ --prefix ecoli123 --locus-tag eco6
 
 ## Installation
 
-Bakta can be installed via BioConda or Pip.
+Bakta can be installed via BioConda, Docker or Pip.
 To automatically install all required 3rd party dependencies, we highly encourage to use [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
+In all cases a mandatory db must be downloaded (-> Mandatory database)
 
 ### BioConda
 
 ```bash
 $ conda install -c conda-forge -c bioconda -c defaults bakta
+```
+
+### Docker
+```bash
+$ sudo docker pull oschwengers/bakta
+
+$ sudo docker run oschwengers/bakta --help
+$ bakta-docker.sh --help
 ```
 
 ### Pip

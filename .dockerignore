@@ -1,0 +1,7 @@
+.git
+.gitignore
+LICENSE
+CONTRIBUTION.md
+bakta-docker.sh
+db/
+db-scripts/
