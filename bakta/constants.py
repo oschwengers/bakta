@@ -81,7 +81,8 @@ INSDC_FEATURE_GAP = 'gap'
 INSDC_FEATURE_ASSEMBLY_GAP = 'assembly_gap'
 INSDC_FEATURE_MISC_FEATURE = 'misc_feature'
 INSDC_FEATURE_MISC_RNA = 'misc_RNA'
-INSDC_FEATURE_ORIT = 'oriT'
+INSDC_FEATURE_ORIGIN_TRANSFER = 'oriT'
+INSDC_FEATURE_ORIGIN_REPLICTION = 'rep_origin'
 INSDC_FEATURE_REGULATORY = 'regulatory'
 
 ############################################################################
