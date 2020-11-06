@@ -1,9 +1,9 @@
 #!/bin/bash
 set -eo pipefail
 
-# adjust these parameters to your needs
-DOCKER_IMAGE=ljelonek/bakta:dev
-DEFAULT_DBPATH=$PWD/db
+# ToDo: set final namespace
+DOCKER_IMAGE=$NAMESPACE/bakta:latest
+DEFAULT_DBPATH=$BAKTA_DB
 
 args=( "$@" )
 argcount=${#args[@]}
