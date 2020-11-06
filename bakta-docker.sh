@@ -8,10 +8,13 @@ DEFAULT_DBPATH=$BAKTA_DB
 args=( "$@" )
 argcount=${#args[@]}
 
+USER=$(id -u)
+GROUP=$(id -g)
+
 # handle help parameter separately
 if [[ $argcount -eq 0 || " ${args[@]} " =~ " --help " || " ${args[@]} " =~ " -h " ]]; then
-    docker run -it --rm \
-               --user $(id -u):$(id -g) \
+    sudo docker run -it --rm \
+               --user $USER:$GROUP \
                $DOCKER_IMAGE
     exit $?
 fi
@@ -66,8 +69,8 @@ echo "*   Genome location: " $GENOME
 echo "*  Output location : " $OUTPUT
 echo "******************************"
 CMD=$(cat <<-END
-    docker run -it --rm \
-    --user $(id -u):$(id -g)
+    sudo docker run -it --rm \
+    --user $USER:$GROUP
     -v $DB:/bakta/db:ro \
     -v $OUTPUT:/bakta/output:rw \
     -v $GENOME:/bakta/$GENOME_FILENAME:ro \
