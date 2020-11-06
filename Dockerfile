@@ -1,33 +1,27 @@
-FROM ubuntu:20.04
-
-LABEL maintainer=TODO
-LABEL description=TODO
-LABEL version=TODO
-
-# Move bashrc aside as the default bashrc won't be loaded in non-interactive mode
-# but conda requires the file to be loaded. We create a emtpy one for this purpose.
-# At the end we will replace the temporary bashrc with the original one and reregister
-# conda to it
-RUN mv /root/.bashrc /root/.bashrc.interative && touch /root/.bashrc && \
-    apt update && apt install -y wget \
-    && wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
-    && bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/conda -u \
-    && rm Miniconda3-latest-Linux-x86_64.sh \
-    && /opt/conda/bin/conda config --add channels defaults \
-    && /opt/conda/bin/conda config --add channels bioconda \
-    && /opt/conda/bin/conda config --add channels conda-forge \
-    && /opt/conda/bin/conda install -y mamba \
-    && /opt/conda/bin/conda init bash \
-    && /opt/conda/bin/conda clean --all \
+FROM alpine:3.12
+RUN apk update && apk add wget tar bash \
+    && wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
+    && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.32-r0/glibc-2.32-r0.apk \
+    && apk add glibc-2.32-r0.apk \
+    && rm glibc-2.32-r0.apk \
+    && wget -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
+    && touch /root/.bashrc \
+    && ./bin/micromamba shell init -s bash -p /opt/conda  \
     && cp /root/.bashrc /opt/conda/bashrc
 
-# copy the conda env first, so that it can be setup and the same layer can used even when the other source files change
-SHELL ["/bin/bash", "-l", "-c"]
-COPY environment.yml /tmp/source/
-RUN mamba env update --name base --file  /tmp/source/environment.yml && mamba clean --all
+COPY environment.yml /tmp/
+SHELL ["bash", "-l" ,"-c"]
+RUN source /opt/conda/bashrc && micromamba activate \
+    && micromamba install -y -n base -f /tmp/environment.yml \
+    && rm -rf /opt/conda/pkgs
 
 COPY . /tmp/source/
-RUN source /root/.bashrc && python3 -m pip install --no-cache /tmp/source/
+RUN source /opt/conda/bashrc && micromamba activate \
+    && python3 -m pip install --no-cache /tmp/source/ \
+    && echo '#!/bin/bash' > /entrypoint.sh \
+    && echo 'source /opt/conda/bashrc' >> /entrypoint.sh \
+    && echo 'micromamba activate' >> /entrypoint.sh \
+    && echo 'bakta "$@"' >> /entrypoint.sh \
+    && chmod +x /entrypoint.sh 
 
-COPY entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
