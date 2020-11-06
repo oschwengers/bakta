@@ -14,4 +14,3 @@ dependencies:
   - hmmer>=3.3.1
   - diamond=2.0.4
   - blast>=2.7.1
-  - hmmer=3.3.1
