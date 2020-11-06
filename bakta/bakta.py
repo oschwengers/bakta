@@ -87,7 +87,6 @@ def main():
         if(cfg.replicons): print(f'\treplicon table: {cfg.replicons}')
         print(f'\ttranslation table: {cfg.translation_table}')
         taxon = f"{cfg.genus if cfg.genus else ''} {cfg.species if cfg.species else ''} {cfg.strain if cfg.strain else ''}"
-        if(cfg.plasmid): taxon = f'{taxon} plasmid {cfg.plasmid}'
         taxon = ' '.join(taxon.split())
         if(taxon): print(f'\ttaxon: {taxon}')
         if(cfg.gram != '?'): print(f'\tgram: {cfg.gram}')
@@ -137,6 +136,7 @@ def main():
         'genus': cfg.genus,
         'species': cfg.species,
         'strain': cfg.strain,
+        'taxon': taxon,
         'gram': cfg.gram,
         'translation_table': cfg.translation_table,
         'size': sum([c['length'] for c in contigs]),
