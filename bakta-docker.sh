@@ -16,21 +16,21 @@ if [[ $argcount -eq 0 || " ${args[@]} " =~ " --help " || " ${args[@]} " =~ " -h 
     exit $?
 fi
 
-
 # run bakta docker
 # decisions:
 # all parameters are passed through, except genome, db and output
 # they are replaced with their absolute paths and are mounted to fixed
 # positions in the container
 #
-# genome -> /bakta/genome.fas
+# genome -> /bakta/<genome-name>
 # output -> /bakta/output
 # db -> /bakta/db
 
 DB=
 OUTPUT=
 GENOME=$(realpath ${args[$argcount-1]})
-args[$((argount-1))]=/bakta/genome.fas
+GENOME_FILENAME=$(basename $GENOME)
+args[$((argount-1))]=/bakta/$GENOME_FILENAME
 
 for i in `seq 0 $((argcount-1))`; do
     VAL=${args[i]}
@@ -70,7 +70,7 @@ CMD=$(cat <<-END
     --user $(id -u):$(id -g)
     -v $DB:/bakta/db:ro \
     -v $OUTPUT:/bakta/output:rw \
-    -v $GENOME:/bakta/genome.fas:ro \
+    -v $GENOME:/bakta/$GENOME_FILENAME:ro \
     $DOCKER_IMAGE ${args[@]}
 END
 )
