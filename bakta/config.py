@@ -112,7 +112,7 @@ def setup(args):
     log.info('output-path=%s', output_path)
 
     # input / output configurations
-    global min_contig_length, prefix
+    global min_contig_length, prefix, taxon
     min_contig_length = args.min_contig_length
     log.info('min_contig_length=%s', min_contig_length)
     log.info('prefix=%s', prefix)
@@ -127,6 +127,11 @@ def setup(args):
     log.info('strain=%s', strain)
     plasmid = args.plasmid
     log.info('plasmid=%s', plasmid)
+    
+    taxon = f"{genus} {species} {strain}"
+    taxon = ' '.join(taxon.replace('None', '').split())
+    if(taxon == ''):
+        taxon = None
 
     # annotation configurations
     global prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, gram, complete, replicons

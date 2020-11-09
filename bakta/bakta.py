@@ -86,9 +86,7 @@ def main():
         if(cfg.prodigal_tf): print(f'\tprodigal training file: {cfg.prodigal_tf}')
         if(cfg.replicons): print(f'\treplicon table: {cfg.replicons}')
         print(f'\ttranslation table: {cfg.translation_table}')
-        taxon = f"{cfg.genus if cfg.genus else ''} {cfg.species if cfg.species else ''} {cfg.strain if cfg.strain else ''}"
-        taxon = ' '.join(taxon.split())
-        if(taxon): print(f'\ttaxon: {taxon}')
+        if(cfg.taxon): print(f'\ttaxon: {cfg.taxon}')
         if(cfg.gram != '?'): print(f'\tgram: {cfg.gram}')
         if(cfg.skip_trna): print(f'\tskip tRNA: {cfg.skip_trna}')
         if(cfg.skip_tmrna): print(f'\tskip tmRNA: {cfg.skip_tmrna}')
@@ -136,7 +134,7 @@ def main():
         'genus': cfg.genus,
         'species': cfg.species,
         'strain': cfg.strain,
-        'taxon': taxon,
+        'taxon': cfg.taxon,
         'gram': cfg.gram,
         'translation_table': cfg.translation_table,
         'size': sum([c['length'] for c in contigs]),
@@ -431,7 +429,7 @@ def main():
     print('write GFF3 output...')
     log.debug('write GFF3 output')
     gff3_path = cfg.output_path.joinpath(f'{prefix}.gff3')
-    gff.write_gff3(genome['contigs'], features_by_contig, gff3_path)
+    gff.write_gff3(genome, features_by_contig, gff3_path)
     print('write GenBank output...')
     log.debug('write GenBank output')
     genbank_path = cfg.output_path.joinpath(f'{prefix}.gbff')

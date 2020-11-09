@@ -3,6 +3,7 @@ import logging
 
 from Bio import SeqIO
 
+import bakta
 import bakta.constants as bc
 import bakta.io.fasta as fasta
 import bakta.so as so
@@ -23,13 +24,31 @@ log = logging.getLogger('io:gff')
 # CDS sORF: 'similar to AA sequence:UniProtKB:%s' % psc[DB_PSC_COL_UNIREF100]
 ############################################################################
 
-def write_gff3(contigs, features_by_contig, gff3_path):
+def write_gff3(genome, features_by_contig, gff3_path):
     """Export features in GFF3 format."""
 
     with gff3_path.open('w') as fh:
-        fh.write('##gff-version 3\n')
-        for contig in contigs:  # write features
-            fh.write(f"##sequence-region {contig['id']} 1 {contig['length']}\n")
+        fh.write('##gff-version 3\n')  # GFF version
+        fh.write('##feature-ontology https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/v3.1/so.obo\n')  # SO feature version
+
+        if(genome['taxon']):  # write organism info
+            fh.write(f"# organism {genome['taxon']}\n")
+        
+        fh.write(f"# annotated with Bakta v{bakta.__version__}\n")
+        
+        for contig in genome['contigs']:  # write features
+            fh.write(f"##sequence-region {contig['id']} 1 {contig['length']}\n")  # sequence region
+
+            # write landmark region
+            annotations = {
+                'ID': contig['id'],
+                'Name': contig['id']
+            }
+            if(contig['topology'] == bc.TOPOLOGY_CIRCULAR):
+                annotations['Is_circular'] = 'true'
+            annotations = encode_annotations(annotations)
+            fh.write('\t'.join(contig['id'], 'Bakta', 'region', '1', str(contig['length']), '.', '+', '.', annotations))
+
             for feat in features_by_contig[contig['id']]:
                 if(feat['type'] is bc.FEATURE_T_RNA):
                     annotations = {
@@ -168,7 +187,7 @@ def write_gff3(contigs, features_by_contig, gff3_path):
                     fh.write('\n')
 
         fh.write('##FASTA\n')
-        for contig in contigs:  # write sequences
+        for contig in genome['contigs']:  # write sequences
             fh.write(f">{contig['id']}\n")
             fh.write(fasta.wrap_sequence(contig['sequence']))
     
