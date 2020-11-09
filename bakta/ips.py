@@ -28,6 +28,8 @@ def lookup(features):
             conn.row_factory = sqlite3.Row
             c = conn.cursor()
             for feature in features:
+                if('truncated' in feature):  # skip truncated CDS
+                    continue
                 uniref100_id = feature.get('ups', {}).get('uniref100_id', None)
                 if(uniref100_id):
                     c.execute('select * from ips where uniref100_id=?', (feature['ups']['uniref100_id'][10:],))

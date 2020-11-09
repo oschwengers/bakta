@@ -27,6 +27,8 @@ def lookup(features):
             conn.row_factory = sqlite3.Row
             c = conn.cursor()
             for feature in features:
+                if('truncated' in feature):  # skip truncated CDS
+                    continue
                 c.execute('select * from ups where hash=?', (feature['aa_digest'],))
                 rec = c.fetchone()
                 if(rec is not None and rec[DB_UPS_COL_LENGTH] == len(feature['sequence'])):
