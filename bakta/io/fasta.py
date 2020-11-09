@@ -28,9 +28,13 @@ def import_contigs(contigs_path):
                 'type': bc.REPLICON_CONTIG,
                 'topology': bc.TOPOLOGY_LINEAR
             }
+            if('circular=true' in record.description):
+                contig['complete'] = True
+                contig['topology'] = bc.TOPOLOGY_CIRCULAR
+                log.debug('import: detected Unicycler circular contig: id=%s', contig['id'])
             log.info(
-                'imported: id=%s, length=%i, desc=%s',
-                contig['id'], contig['length'], contig['desc']
+                'imported: id=%s, length=%i, desc=%s, complete=%s, topology=%s', 
+                contig['id'], contig['length'], contig['desc'], contig['complete'], contig['topology']
             )
             contigs.append(contig)
     return contigs
