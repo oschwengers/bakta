@@ -114,7 +114,7 @@ def main():
         log.error('wrong genome file format!', exc_info=True)
         sys.exit('ERROR: wrong genome file format!')
     replicons = bu.parse_replicon_table(cfg.replicons) if cfg.replicons else None
-    contigs = bu.qc_contigs(contigs, replicons)
+    contigs, complete_genome = bu.qc_contigs(contigs, replicons)
     print(f'\tfiltered & revised: {len(contigs)}')
     no_chromosomes = len([c for c in contigs if c['type'] == bc.REPLICON_CHROMOSOME])
     if(no_chromosomes > 0):
@@ -138,6 +138,7 @@ def main():
         'gram': cfg.gram,
         'translation_table': cfg.translation_table,
         'size': sum([c['length'] for c in contigs]),
+        'complete': cfg.complete or complete_genome,
         'features': {},
         'contigs': contigs
     }

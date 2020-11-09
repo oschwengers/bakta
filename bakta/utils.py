@@ -359,6 +359,7 @@ def qc_contigs(contigs, replicons):
     else:
         organism_definition = None
     
+    complete_genome = True
     for contig in contigs:
         if(contig['length'] >= cfg.min_contig_length):
             contig_name = f'{contig_prefix}_{contig_counter}'
@@ -380,27 +381,30 @@ def qc_contigs(contigs, replicons):
                 contig['complete'] = True
                 contig['topology'] = bc.TOPOLOGY_CIRCULAR
             valid_contigs.append(contig)
-    if(replicons):
-        for contig in valid_contigs:
-            contig_id = contig['orig_id'] if 'orig_id' in contig else contig['id']
-            replicon = replicons.get(contig_id, None)
-            if(replicon):
-                contig['type'] = replicon['replicon_type']
-                contig['topology'] = replicon['topology']
-                contig['name'] = replicon['name']
-                if(replicon['replicon_type'] != bc.REPLICON_CONTIG):
-                    contig['complete'] = True
-                if(not cfg.keep_contig_headers):
-                    contig['id'] = replicon['new_locus_id'] if replicon['new_locus_id'] else contig['simple_id']
-                    if(replicon['replicon_type'] != bc.REPLICON_CONTIG and 'completeness' not in contig['desc']):
-                        contig['desc'] += ' [completeness=complete]'
-                    contig['desc'] += f" [topology={replicon['topology']}]"
-                    if(replicon['replicon_type'] == bc.REPLICON_PLASMID and replicon['name']):
-                        contig['desc'] += f" [plasmid-name={replicon['name']}]"
-                contig.pop('simple_id')
-    for contig in valid_contigs:
-        log.info(
-            "revised contig: id=%s, orig-id=%s, type=%s, topology=%s, name=%s, desc='%s', orig-desc='%s'",
-            contig['id'], contig.get('orig_id', ''), contig['type'], contig['topology'], contig.get('name', ''), contig['desc'], contig.get('orig_desc', '')
-        )
-    return valid_contigs
+            
+            if(replicons):
+                contig_id = contig['orig_id'] if 'orig_id' in contig else contig['id']
+                replicon = replicons.get(contig_id, None)
+                if(replicon):
+                    contig['type'] = replicon['replicon_type']
+                    contig['topology'] = replicon['topology']
+                    contig['name'] = replicon['name']
+                    if(replicon['replicon_type'] != bc.REPLICON_CONTIG):
+                        contig['complete'] = True
+                    if(not cfg.keep_contig_headers):
+                        contig['id'] = replicon['new_locus_id'] if replicon['new_locus_id'] else contig['simple_id']
+                        if(replicon['replicon_type'] != bc.REPLICON_CONTIG and 'completeness' not in contig['desc']):
+                            contig['desc'] += ' [completeness=complete]'
+                        contig['desc'] += f" [topology={replicon['topology']}]"
+                        if(replicon['replicon_type'] == bc.REPLICON_PLASMID and replicon['name']):
+                            contig['desc'] += f" [plasmid-name={replicon['name']}]"
+                    contig.pop('simple_id')
+
+            if(contig['type'] == bc.REPLICON_CONTIG):
+                complete_genome = False
+
+            log.info(
+                "revised contig: id=%s, orig-id=%s, type=%s, topology=%s, name=%s, desc='%s', orig-desc='%s'",
+                contig['id'], contig.get('orig_id', ''), contig['type'], contig['topology'], contig.get('name', ''), contig['desc'], contig.get('orig_desc', '')
+            )
+    return valid_contigs, complete_genome
