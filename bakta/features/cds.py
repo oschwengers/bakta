@@ -31,6 +31,9 @@ def predict(genome, filtered_contigs_path):
     if(cfg.prodigal_tf):
         cmd.append('-t')  # use supplied prodigal training file
         cmd.append(str(cfg.prodigal_tf))
+    elif(genome['size'] < 20000):  # not enough sequence information and no trainings file provided
+        cmd.append('-p')  # run prodigal in meta mode
+        cmd.append('meta')
     log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
