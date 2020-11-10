@@ -5,7 +5,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-log = logging.getLogger('config')
+log = logging.getLogger('CONFIG')
 
 # runtime configurations
 env = os.environ.copy()

@@ -8,7 +8,7 @@ import bakta.config as cfg
 import bakta.constants as bc
 
 
-log = logging.getLogger('io:fasta')
+log = logging.getLogger('FASTA')
 
 FASTA_LINE_WRAPPING = 60
 

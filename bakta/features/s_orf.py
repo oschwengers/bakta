@@ -10,7 +10,7 @@ import bakta.constants as bc
 import bakta.utils as bu
 import bakta.psc as psc
 
-log = logging.getLogger('features:sorf')
+log = logging.getLogger('S_ORF')
 
 
 def extract(genome):
@@ -316,6 +316,6 @@ def search_pscs(sorfs):
             pscs_found.append(sorf)
         else:
             pscs_not_found.append(sorf)
-    log.info('homology: found=%i', len(pscs_found))
+    log.info('found=%i', len(pscs_found))
     return pscs_found, pscs_not_found
     

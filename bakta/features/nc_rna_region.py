@@ -8,7 +8,7 @@ import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
 
-log = logging.getLogger('features:nc_rna_regions')
+log = logging.getLogger('NC_RNA_REGION')
 
 
 def predict_nc_rna_regions(genome, contigs_path):

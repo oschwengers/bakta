@@ -6,7 +6,7 @@ from collections import OrderedDict
 import bakta.config as cfg
 import bakta.constants as bc
 
-log = logging.getLogger('features:ori')
+log = logging.getLogger('ORI')
 
 
 def predict_oris(genome, contigs_path, ori_type):
@@ -96,7 +96,7 @@ def predict_oris(genome, contigs_path, ori_type):
                         ori['start'] = refined_start
                         ori['stop'] = refined_stop
                         log.info(
-                            'type=%s: contig=%s, start=%i, stop=%i',
+                            'type=%s, contig=%s, start=%i, stop=%i',
                             ori_type, ori['contig'], ori['start'], ori['stop']
                         )
                         start = -1

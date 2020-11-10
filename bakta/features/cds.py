@@ -10,7 +10,7 @@ import bakta.constants as bc
 import bakta.utils as bu
 import bakta.so as so
 
-log = logging.getLogger('features:cds')
+log = logging.getLogger('CDS')
 
 
 def predict(genome, filtered_contigs_path):
@@ -82,24 +82,16 @@ def predict(genome, filtered_contigs_path):
                     cds['truncated'] = '5-prime' if cds['strand'] == bc.STRAND_FORWARD else '3-prime'
                     partial_cdss[f"{cds['contig']}_{contig_orf_id}"] = cds
                     partial_cdss_per_contig[cds['contig']] = [cds]
-                    log.debug(
-                        'trunc CDS: contig=%s, start=%i, stop=%i, strand=%s, trunc_5=True',
-                        cds['contig'], cds['start'], cds['stop'], cds['strand']
-                    )
                 elif(gff_annotations['partial'] == '01'):
                     cds['truncated'] = '3-prime' if cds['strand'] == bc.STRAND_FORWARD else '5-prime'
                     partial_cdss[f"{cds['contig']}_{contig_orf_id}"] = cds
                     partial_cdss_per_contig[cds['contig']].append(cds)
-                    log.debug(
-                        'trunc CDS: contig=%s, start=%i, stop=%i, strand=%s, trunc_3=True',
-                        cds['contig'], cds['start'], cds['stop'], cds['strand']
-                    )
                 else:
                     cdss[f"{cds['contig']}_{contig_orf_id}"] = cds
                 
                 log.info(
-                    'contig=%s, start=%i, stop=%i, strand=%s, frame=%s, truncated=%s',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame'], cds.get('truncated', '-')
+                    'contig=%s, start=%i, stop=%i, strand=%s, frame=%s, truncated=%s start-type=%s, RBS-motif=%s',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame'], cds.get('truncated', '-'), cds['start_type'], cds['rbs_motif']
                 )
 
     # extract translated orf sequences
@@ -152,8 +144,8 @@ def predict(genome, filtered_contigs_path):
                 cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(seq)
                 cdss.append(cds)
                 log.info(
-                    'edge CDS: contig=%s, start=%i, stop=%i, strand=%s, frame=%s, aa-hexdigest=%s, seq=[%s..%s]',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame'], cds['aa_hexdigest'], seq[:10], seq[-10:]
+                    'edge CDS: contig=%s, start=%i, stop=%i, strand=%s, frame=%s, start-type=%s, RBS-motif=%s, aa-hexdigest=%s, seq=[%s..%s]',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame'], cds['start_type'], cds['rbs_motif'], cds['aa_hexdigest'], seq[:10], seq[-10:]
                 )
 
     log.info('predicted=%i', len(cdss))

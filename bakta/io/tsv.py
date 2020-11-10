@@ -3,7 +3,7 @@ import logging
 
 import bakta.constants as bc
 
-log = logging.getLogger('io:tsv')
+log = logging.getLogger('TSV')
 
 ############################################################################
 # Inference terms

@@ -9,7 +9,7 @@ import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
 
-log = logging.getLogger('features:tm_rna')
+log = logging.getLogger('TM_RNA')
 
 
 def predict_tm_rnas(genome, contigs_path):

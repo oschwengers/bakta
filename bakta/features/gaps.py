@@ -6,7 +6,7 @@ from collections import OrderedDict
 import bakta.config as cfg
 import bakta.constants as bc
 
-log = logging.getLogger('features:gap')
+log = logging.getLogger('GAP')
 
 re_assembly_gap = re.compile(r'N{1,}', flags=0)
 

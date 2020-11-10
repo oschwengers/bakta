@@ -8,7 +8,7 @@ import bakta.constants as bc
 import bakta.io.fasta as fasta
 import bakta.so as so
 
-log = logging.getLogger('io:gff')
+log = logging.getLogger('GFF')
 
 ############################################################################
 # Inference terms

@@ -12,7 +12,7 @@ import bakta
 import bakta.constants as bc
 import bakta.config as cfg
 
-log = logging.getLogger('utils')
+log = logging.getLogger('UTILS')
 
 
 def parse_arguments():
@@ -259,6 +259,7 @@ def has_annotation(feature, attribute):
 def calc_genome_stats(genome, features):
     
     genome_size = genome['size']
+    log.info('genome-size=%i', genome_size)
 
     # N50
     gc_sum = 0
@@ -274,25 +275,24 @@ def calc_genome_stats(genome, features):
         if(contig_length_sum >= genome_size / 2):
             n50 = contig_length
             break
-    gc_ratio = gc_sum / (genome_size - n_sum)
-    n_ratio = n_sum / genome_size
+    genome['n50'] = n50
+    log.info('N50=%i', n50)
 
-    # coding density
+    gc_ratio = gc_sum / (genome_size - n_sum)
+    genome['gc'] = gc_ratio
+    log.info('GC=%0.3f', gc_ratio)
+    
+    n_ratio = n_sum / genome_size
+    genome['n_ratio'] = n_ratio
+    log.info('N=%0.3f', n_ratio)
+
     coding_nts = 0
     for feat in features:
-        coding_nts += feat['stop'] - feat['start'] + 1
+        coding_nts += feat['stop'] - feat['start'] + 1  # feature coding nucleotides
     coding_ratio = coding_nts / (genome_size - n_sum)
-
-    log.info(
-        'stats: genome-size=%i, GC=%0.3f, N50=%i, N=%0.3f, coding-ratio=%0.3f',
-        genome_size, gc_ratio, n50, n_ratio, coding_ratio
-    )
-
-    genome['gc'] = gc_ratio
-    genome['n_ratio'] = n_ratio
-    genome['n50'] = n50
     genome['coding_ratio'] = coding_ratio
-
+    log.info('coding-ratio=%0.3f', coding_ratio)
+    
     return {
         'gc': gc_ratio,
         'n_ratio': n_ratio,

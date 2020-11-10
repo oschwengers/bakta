@@ -3,7 +3,7 @@ import logging
 
 import bakta.constants as bc
 
-log = logging.getLogger('annotation')
+log = logging.getLogger('ANNOTATION')
 
 
 def combine_ips_psc_annotation(feature):

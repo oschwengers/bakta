@@ -16,7 +16,7 @@ DB_IPS_COL_PRODUCT = 'product'
 DB_IPS_COL_EC = 'ec_ids'
 DB_IPS_COL_GO = 'go_ids'
 
-log = logging.getLogger('ips')
+log = logging.getLogger('IPS')
 
 
 def lookup(features):
@@ -47,7 +47,7 @@ def lookup(features):
                 else:
                     features_not_found.append(feature)
 
-        log.info('looked up: %i', len(features_found))
+        log.info('looked-up=%i', len(features_found))
         return features_found, features_not_found
     except Exception as ex:
         log.exception('Could not read IPSs from db!', ex)

@@ -15,7 +15,7 @@ DB_UPS_COL_UNIPARC = 'uniparc_id'
 DB_UPS_COL_REFSEQ_NRP = 'ncbi_nrp_id'
 DB_UPS_COL_UNIREF100 = 'uniref100_id'
 
-log = logging.getLogger('ups')
+log = logging.getLogger('UPS')
 
 
 def lookup(features):
@@ -42,7 +42,7 @@ def lookup(features):
                 else:
                     features_not_found.append(feature)
 
-        log.info('# %i', len(features_found))
+        log.info('looked-up=%i', len(features_found))
         return features_found, features_not_found
     except Exception as ex:
         log.exception('Could not read UPSs from db!', ex)

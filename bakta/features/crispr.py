@@ -7,7 +7,7 @@ import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
 
-log = logging.getLogger('features:crispr')
+log = logging.getLogger('CRISPR')
 
 
 def predict_crispr(genome, contigs_path):

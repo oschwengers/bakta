@@ -19,7 +19,7 @@ DB_PSC_COL_COG_CAT = 'cog_category'
 DB_PSC_COL_EC = 'ec_ids'
 DB_PSC_COL_GO = 'go_ids'
 
-log = logging.getLogger('psc')
+log = logging.getLogger('PSC')
 
 
 def search(cdss):
@@ -86,7 +86,7 @@ def search(cdss):
             pscs_found.append(cds)
         else:
             pscs_not_found.append(cds)
-    log.info('homology: # %i', len(pscs_found))
+    log.info('found=%i', len(pscs_found))
     return pscs_found, pscs_not_found
 
 
@@ -125,7 +125,7 @@ def lookup(features):
     except Exception as ex:
         log.exception('Could not read PSCs from db!', ex)
         raise Exception('SQL error!', ex)
-    log.info('looked up: %i', no_psc_lookups)
+    log.info('looked-up=%i', no_psc_lookups)
 
 
 def parse_annotation(rec):

@@ -9,7 +9,7 @@ import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
 
-log = logging.getLogger('features:t_rna')
+log = logging.getLogger('T_RNA')
 
 
 SO_TERMS = {
