@@ -53,7 +53,7 @@ def predict(genome, filtered_contigs_path):
     contigs = {k['id']: k for k in genome['contigs']}
     cdss = {}
     partial_cdss = {}
-    partial_cdss_per_contig = {}
+    partial_cdss_per_contig = {k['id']: [] for k in genome['contigs']}
     with gff_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
@@ -81,7 +81,7 @@ def predict(genome, filtered_contigs_path):
                 if(gff_annotations['partial'] == '10'):
                     cds['truncated'] = '5-prime' if cds['strand'] == bc.STRAND_FORWARD else '3-prime'
                     partial_cdss[f"{cds['contig']}_{contig_orf_id}"] = cds
-                    partial_cdss_per_contig[cds['contig']] = [cds]
+                    partial_cdss_per_contig[cds['contig']].append(cds)
                 elif(gff_annotations['partial'] == '01'):
                     cds['truncated'] = '3-prime' if cds['strand'] == bc.STRAND_FORWARD else '5-prime'
                     partial_cdss[f"{cds['contig']}_{contig_orf_id}"] = cds
@@ -90,7 +90,7 @@ def predict(genome, filtered_contigs_path):
                     cdss[f"{cds['contig']}_{contig_orf_id}"] = cds
                 
                 log.info(
-                    'contig=%s, start=%i, stop=%i, strand=%s, frame=%s, truncated=%s start-type=%s, RBS-motif=%s',
+                    'contig=%s, start=%i, stop=%i, strand=%s, frame=%s, truncated=%s, start-type=%s, RBS-motif=%s',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame'], cds.get('truncated', '-'), cds['start_type'], cds['rbs_motif']
                 )
 
