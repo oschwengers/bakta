@@ -191,15 +191,10 @@ $ tar -xzf db.tar.gz
 $ rm db.tar.gz
 ```
 
-The, the database path can be provided via the `--db` parameter:
+The database path can either be provided via the `--db` parameter or a `BAKTA_DB` environment variable:
 
 ```bash
 $ bakta --db <db-path>
-```
-
-It's also possible to set a `BAKTA_DB` environment variable:
-
-```bash
 $ export BAKTA_DB=<db-path>
 ```
 
@@ -221,6 +216,7 @@ $ cp -r db/ <bakta-installation-dir>
 6. CRISPR arrays: PILER-CR
 
 Bakta distinguishes ncRNA genes and (regulatory) regions in order to enable the distinct handling thereof during the annotation process, *i.e.* feature overlap detection.
+
 ncRNA gene types:
 
 - sRNA
@@ -277,26 +273,31 @@ Due due to uncertain nature of **sORF** prediction, only those identified via **
 ### Miscellaneous
 
 1. Gaps: in-mem detection & annotation of sequence gaps
-2. oriC/oriV/oriT: Blast+ (blastn) vs. MOB-suite oriT & DoriC oriC/oriV sequences. Annotations of ori regions take into account overlapping Blast+ hits and are conducted based on a majority vote heuristic.
+2. oriC/oriV/oriT: Blast+ (blastn) vs. [MOB-suite](https://github.com/phac-nml/mob-suite) oriT & [DoriC](http://tubic.org/doric/public/index.php) oriC/oriV sequences. Annotations of ori regions take into account overlapping Blast+ hits and are conducted based on a majority vote heuristic.
 
 ## Database
 
 The Bakta database comprises a set of DNA & AA sequence databases as well as HMM & covariance models.
-In addition, at its core Bakta uses a compact SQLite db storing protein sequence digests, lengths, pre-annotations and *dbxrefs* of **UPS**, **IPS** and **PSC** from:
+At its core Bakta uses a compact SQLite db storing protein sequence digests, lengths, pre-annotations and *dbxrefs* of **UPS**, **IPS** and **PSC** from:
 
-- **UPS**: UniParc / UniProtKB
-- **IPS**: UniProt UniRef100
-- **PSC**: UniProt UniRef90
+- **UPS**: UniParc / UniProtKB (192,795,177)
+- **IPS**: UniProt UniRef100 (169,958,214)
+- **PSC**: UniProt UniRef90 (77,128,011)
 
 This allows the exact protein sequences identification via **MD5** digests & sequence lengths as well as the rapid subsequent lookup of related information.
 **IPS** & **PSC** have been comprehensively pre-annotated integrating annotations & database *dbxrefs* from:
 
-- NCBI nonredundant proteins ('WP_*', exact matches)
-- NCBI COG db (80% coverage & 90% identity)
+- NCBI nonredundant proteins ('WP_*' -> 139,330,543)
+- NCBI COG db (80% cov / 90% id -> 1,893,080)
 - GO terms (via **IPS**/**PSC** SwissProt entries)
 - EC (via **IPS**/**PSC** SwissProt entries)
 - NCBI AMRFinderPlus (**IPS** exact matches, **PSC** HMM hits reaching trusted cutoffs)
-- ISFinder db (90% coverage & 99% identity)
+- ISFinder db (90% cov / 99% id -> 2,981)
+
+Rfam covariance models:
+
+- ncRNA: 750
+- ncRNA regions: 107
 
 Database (23 Gb zipped, 43 Gb unzipped) hosted at Zenodo:
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247253.svg)](https://doi.org/10.5281/zenodo.4247253)
@@ -394,6 +395,7 @@ Bakta takes advantage of many publicly available databases. If you find any of t
 - ISFinder: <https://doi.org/10.1093/nar/gkj014>
 - AntiFam: <https://doi.org/10.1093/database/bas003>
 - Mob-suite: <https://doi.org/10.1099/mgen.0.000206>
+- DoriC: <https://doi.org/10.1093/nar/gky1014>
 - COG: <https://doi.org/10.1093/bib/bbx117>
 
 ## FAQ
