@@ -227,7 +227,7 @@ def main():
         print(f"\tpredicted: {len(genome['features'][bc.FEATURE_CDS])} ")
        
         log.debug('detect spurious CDS')
-        discarded_cds = orf.detect_spurious(genome['features'][bc.FEATURE_CDS]) if len(genome['features'][bc.FEATURE_CDS]) > 0 else 0
+        discarded_cds = orf.detect_spurious(genome['features'][bc.FEATURE_CDS]) if len(genome['features'][bc.FEATURE_CDS]) > 0 else []
         print(f'\tdiscarded spurious: {len(discarded_cds)}')
         
         log.debug('lookup CDS UPS/IPS')
@@ -273,7 +273,7 @@ def main():
         print(f'\tdiscarded due to overlaps: {len(discarded_sorfs)}')
 
         log.debug('detect spurious sORF')
-        discarded_sorfs = orf.detect_spurious(sorfs) if len(sorfs) > 0 else 0
+        discarded_sorfs = orf.detect_spurious(sorfs) if len(sorfs) > 0 else []
         print(f'\tdiscarded spurious: {len(discarded_sorfs)}')
 
         log.debug('lookup sORF UPS/IPS')
