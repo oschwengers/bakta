@@ -248,8 +248,8 @@ def main():
         print(f"\tmark hypotheticals and combine annotations...")
         log.debug('mark CDS hypotheticals')
         cds.mark_hypotheticals(genome['features'][bc.FEATURE_CDS])  # mark hypotheticals
+        log.debug('combine CDS annotations')
         for feat in genome['features'][bc.FEATURE_CDS]:
-            log.debug('combine CDS annotations')
             anno.combine_ips_psc_annotation(feat) # combine IPS and PSC annotations
     
     ############################################################################
@@ -296,8 +296,8 @@ def main():
         print(f"\tfilter and combine annotations...")
         log.debug('filter sORF by annotations')
         sorfs_filtered = s_orf.annotation_filter(sorfs)
+        log.debug('combine sORF annotations')
         for feat in sorfs_filtered:
-            log.debug('combine sORF annotations')
             anno.combine_ips_psc_annotation(feat) # combine IPS and PSC annotations
         genome['features'][bc.FEATURE_SORF] = sorfs_filtered
         print(f'\tfiltered sORFs: {len(sorfs_filtered)}')
