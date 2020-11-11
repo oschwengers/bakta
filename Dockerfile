@@ -1,4 +1,11 @@
 FROM alpine:3.12
+
+LABEL org.opencontainers.image.authors="oliver.schwengers@computational.bio.uni-giessen.de,lukas.jelonek@computational.bio.uni-giessen.de"
+LABEL org.opencontainers.image.url='https://github.com/oschwengers/bakta'
+LABEL org.opencontainers.image.documentation='https://github.com/oschwengers/bakta/readme.md'
+LABEL org.opencontainers.image.title='Bakta'
+LABEL org.opencontainers.image.description='Rapid & comprehensive annotation of bacterial genomes & plasmids'
+
 RUN apk update && apk add wget tar bash \
     && wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
     && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.32-r0/glibc-2.32-r0.apk \
@@ -10,12 +17,15 @@ RUN apk update && apk add wget tar bash \
     && cp /root/.bashrc /opt/conda/bashrc
 
 COPY environment.yml /tmp/
+
 SHELL ["bash", "-l" ,"-c"]
+
 RUN source /opt/conda/bashrc && micromamba activate \
     && micromamba install -y -n base -f /tmp/environment.yml \
     && rm -rf /opt/conda/pkgs
 
 COPY . /tmp/source/
+
 RUN source /opt/conda/bashrc && micromamba activate \
     && python3 -m pip install --no-cache /tmp/source/ \
     && echo '#!/bin/bash' > /entrypoint.sh \

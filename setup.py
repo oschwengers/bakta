@@ -13,8 +13,8 @@ with open(path.join(setup_dir, 'README.md'), encoding='utf-8') as f:
 setup(
     name='bakta',
     version=bakta.__version__,
-    description='Bakta: Comprehensive and rapid annotation of bacterial genomes.',
-    keywords=['bioinformatics', 'annotation', 'bacteria'],
+    description='Bakta: rapid & comprehensive annotation of bacterial genomes & plasmids',
+    keywords=['bioinformatics', 'annotation', 'bacteria', 'plasmids'],
     long_description=long_description,
     long_description_content_type='text/markdown',
     license='GPLv3',
@@ -37,7 +37,10 @@ setup(
     classifiers=[
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3 :: Only',
-        'Development Status :: 5 - Production/Stable',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Development Status :: 4 - Beta '
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
         'Environment :: Console',

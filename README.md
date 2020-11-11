@@ -6,7 +6,7 @@
 ![Conda](https://img.shields.io/conda/v/bioconda/bakta.svg)
 ![Conda](https://img.shields.io/conda/pn/bioconda/bakta.svg)
 
-# Bakta: comprehensive annotation of bacterial genomes
+# Bakta: rapid & comprehensive annotation of bacterial genomes & plasmids
 
 ## Contents
 
