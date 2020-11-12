@@ -380,6 +380,10 @@ def qc_contigs(contigs, replicons):
             if(cfg.complete):
                 contig['complete'] = True
                 contig['topology'] = bc.TOPOLOGY_CIRCULAR
+                if(contig['length'] >= bc.REPLICON_LENGTH_THRESHOLD_CHROMOSOME):
+                    contig['type'] = bc.REPLICON_CHROMOSOME
+                elif(contig['length'] < bc.REPLICON_LENGTH_THRESHOLD_PLASMID):
+                    contig['type'] = bc.REPLICON_PLASMID
             valid_contigs.append(contig)
             
             if(replicons):
