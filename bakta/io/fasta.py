@@ -21,20 +21,16 @@ def import_contigs(contigs_path):
             seq = str(record.seq).upper()
             contig = {
                 'id': record.id,
-                'desc': record.description,
+                'description': record.description,
                 'sequence': seq,
                 'length': len(seq),
                 'complete': False,
                 'type': bc.REPLICON_CONTIG,
                 'topology': bc.TOPOLOGY_LINEAR
             }
-            if('circular=true' in record.description):
-                contig['complete'] = True
-                contig['topology'] = bc.TOPOLOGY_CIRCULAR
-                log.debug('import: detected Unicycler circular contig: id=%s', contig['id'])
             log.info(
-                'imported: id=%s, length=%i, desc=%s, complete=%s, topology=%s', 
-                contig['id'], contig['length'], contig['desc'], contig['complete'], contig['topology']
+                'imported: id=%s, length=%i, complete=%s, topology=%s, description=%s', 
+                contig['id'], contig['length'], contig['complete'], contig['topology'], contig['description']
             )
             contigs.append(contig)
     return contigs
@@ -45,7 +41,7 @@ def export_contigs(contigs, fasta_path, description=False, wrap=False):
     with fasta_path.open('w') as fh:
         for contig in contigs:
             if(description):
-                fh.write(f">{contig['id']} {contig['desc']}\n")
+                fh.write(f">{contig['id']} {contig['description']}\n")
             else:
                 fh.write(f">{contig['id']}\n")
             if(wrap):

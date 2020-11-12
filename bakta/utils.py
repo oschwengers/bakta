@@ -333,8 +333,8 @@ def parse_replicon_table(replicon_table_path):
                     'topology': topology,
                     'name': name
                 }
-                log.debug(
-                    'parse replicon info: orig-id=%s, new-id=%s, type=%s, topology=%s, name=%s',
+                log.info(
+                    'replicon info: orig-id=%s, new-id=%s, type=%s, topology=%s, name=%s',
                     replicon['original_locus_id'], replicon['new_locus_id'], replicon['replicon_type'], replicon['topology'], replicon['name']
                 )
                 replicons[original_locus_id] = replicon
@@ -348,16 +348,7 @@ def qc_contigs(contigs, replicons):
     valid_contigs = []
     contig_counter = 1
     contig_prefix = cfg.locus if cfg.locus else 'contig'
-    organism_definition = []
-    if(cfg.genus):
-        organism_definition.append(cfg.genus)
-    if(cfg.species):
-        organism_definition.append(cfg.species)
-    if(len(organism_definition) > 0):
-        organism_definition = ' '.join(organism_definition)
-        organism_definition = f"[organism={organism_definition}]"
-    else:
-        organism_definition = None
+    organism_definition = f"[organism={cfg.taxon}]" if cfg.taxon else None
     
     complete_genome = True
     for contig in contigs:
@@ -365,18 +356,36 @@ def qc_contigs(contigs, replicons):
             contig_name = f'{contig_prefix}_{contig_counter}'
             contig['simple_id'] = contig_name
             contig_counter += 1
+
+            if('circular=true' in contig['description'].lower()):  # detection of Unicycler circularized sequences
+                contig['complete'] = True
+                contig['topology'] = bc.TOPOLOGY_CIRCULAR
+                log.debug('qc: detected Unicycler circular topology via description: id=%s, description=%s', contig['id'], contig['description'])
+            if('complete' in contig['description'].lower()):
+                contig['complete'] = True
+                contig['topology'] = bc.TOPOLOGY_CIRCULAR
+                log.debug('qc: detected complete replicon via description: id=%s, description=%s', contig['id'], contig['description'])
+            if('chromosome' in contig['description'].lower()):
+                contig['type'] = bc.REPLICON_CHROMOSOME
+                log.debug('qc: detected chromosome replicon type via description: id=%s, description=%s', contig['id'], contig['description'])
+            elif('plasmid' in contig['description'].lower()):
+                contig['type'] = bc.REPLICON_PLASMID
+                log.debug('qc: detected plasmid replicon type via description: id=%s, description=%s', contig['id'], contig['description'])
+            
             if(not cfg.keep_contig_headers):
                 contig['orig_id'] = contig['id']
                 contig['id'] = contig_name
-                contig['orig_desc'] = contig['desc']
+                contig['orig_description'] = contig['description']
                 contig_desc = []
                 if(organism_definition):
                     contig_desc.append(organism_definition)
                 if(cfg.strain):
                     contig_desc.append(f'[strain={cfg.strain}]')
-                if(cfg.complete):
+                if(cfg.complete or contig['complete']):
                     contig_desc.append('[completeness=complete]')
-                contig['desc'] = ' '.join(contig_desc)
+                    if(contig['topology'] != bc.REPLICON_CONTIG):
+                            contig_desc.append(f"[topology={contig['topology']}]")
+                contig['description'] = ' '.join(contig_desc)
             if(cfg.complete):
                 contig['complete'] = True
                 contig['topology'] = bc.TOPOLOGY_CIRCULAR
@@ -386,7 +395,7 @@ def qc_contigs(contigs, replicons):
                     contig['type'] = bc.REPLICON_PLASMID
             valid_contigs.append(contig)
             
-            if(replicons):
+            if(replicons):  # use user provided replicon table
                 contig_id = contig['orig_id'] if 'orig_id' in contig else contig['id']
                 replicon = replicons.get(contig_id, None)
                 if(replicon):
@@ -397,18 +406,19 @@ def qc_contigs(contigs, replicons):
                         contig['complete'] = True
                     if(not cfg.keep_contig_headers):
                         contig['id'] = replicon['new_locus_id'] if replicon['new_locus_id'] else contig['simple_id']
-                        if(replicon['replicon_type'] != bc.REPLICON_CONTIG and 'completeness' not in contig['desc']):
-                            contig['desc'] += ' [completeness=complete]'
-                        contig['desc'] += f" [topology={replicon['topology']}]"
+                        if(replicon['replicon_type'] != bc.REPLICON_CONTIG and 'completeness' not in contig['description']):
+                            contig['description'] += ' [completeness=complete]'
+                        if('topology' not in contig['description']):
+                            contig['description'] += f" [topology={replicon['topology']}]"
                         if(replicon['replicon_type'] == bc.REPLICON_PLASMID and replicon['name']):
-                            contig['desc'] += f" [plasmid-name={replicon['name']}]"
+                            contig['description'] += f" [plasmid-name={replicon['name']}]"
                     contig.pop('simple_id')
 
             if(contig['type'] == bc.REPLICON_CONTIG):
                 complete_genome = False
 
             log.info(
-                "revised contig: id=%s, orig-id=%s, type=%s, topology=%s, name=%s, desc='%s', orig-desc='%s'",
-                contig['id'], contig.get('orig_id', ''), contig['type'], contig['topology'], contig.get('name', ''), contig['desc'], contig.get('orig_desc', '')
+                "qc: revised sequence: id=%s, orig-id=%s, type=%s, complete=%s, topology=%s, name=%s, description='%s', orig-description='%s'",
+                contig['id'], contig.get('orig_id', ''), contig['type'], contig['complete'], contig['topology'], contig.get('name', ''), contig['description'], contig.get('orig_description', '')
             )
     return valid_contigs, complete_genome
