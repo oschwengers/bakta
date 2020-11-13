@@ -1,5 +1,6 @@
 
 import logging
+from concurrent.futures import ThreadPoolExecutor
 import subprocess as sp
 import sqlite3
 
@@ -94,38 +95,50 @@ def lookup(features):
     """Lookup PCS information"""
     no_psc_lookups = 0
     try:
-        with sqlite3.connect(f"file:{cfg.db_path.joinpath('bakta.db')}?mode=ro", uri=True) as conn:
+        rec_futures = []
+        with sqlite3.connect(f"file:{cfg.db_path.joinpath('bakta.db')}?mode=ro", uri=True, check_same_thread=False) as conn:
             conn.row_factory = sqlite3.Row
-            c = conn.cursor()
-            for feature in features:
-                if('psc' in feature):
-                    uniref90_id = feature['psc'].get(DB_PSC_COL_UNIREF90, None)
-                elif('ips' in feature):
-                    uniref90_id = feature['ips'].get(DB_PSC_COL_UNIREF90, None)
-                else:
-                    continue  # skip PSC lookup for this feature object
+            with ThreadPoolExecutor(max_workers=max(10, cfg.threads)) as tpe:  # use min 10 threads for IO bound non-CPU lookups
+                for feature in features:
+                    if('psc' in feature):
+                        uniref90_id = feature['psc'].get(DB_PSC_COL_UNIREF90, None)
+                    elif('ips' in feature):
+                        uniref90_id = feature['ips'].get(DB_PSC_COL_UNIREF90, None)
+                    else:
+                        continue  # skip PSC lookup for this feature object
 
-                if(not uniref90_id):
-                    continue  # skip PSC lookup for this feature without a valid UniRef90 id
-                if(bc.DB_PREFIX_UNIREF_90 in uniref90_id):
-                    uniref90_id = uniref90_id[9:]  # remove 'UniRef90_' prefix
-                
-                c.execute('select * from psc where uniref90_id=?', (uniref90_id,))
-                rec = c.fetchone()
-                if(rec is not None):
-                    psc = parse_annotation(rec)
-                    feature['psc'] = psc
-                    no_psc_lookups += 1
-                    log.debug(
-                        'lookup: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, gene=%s, product=%s',
-                        feature['contig'], feature['start'], feature['stop'], feature['strand'], psc.get(DB_PSC_COL_UNIREF90, ''), psc.get(DB_PSC_COL_EC, ''), psc.get(DB_PSC_COL_GENE, ''), psc.get(DB_PSC_COL_PRODUCT, '')
-                    )
-                else:
-                    log.debug('lookup failed! uniref90_id=%s', uniref90_id)
+                    if(not uniref90_id):
+                        continue  # skip PSC lookup for this feature without a valid UniRef90 id
+                    if(bc.DB_PREFIX_UNIREF_90 in uniref90_id):
+                        uniref90_id = uniref90_id[9:]  # remove 'UniRef90_' prefix
+
+                    future = tpe.submit(fetch_db_psc_result, conn, uniref90_id)
+                    rec_futures.append((feature, future))
+
+        for (feature, future) in rec_futures:
+            rec = future.result()
+            if(rec is not None):
+                psc = parse_annotation(rec)
+                feature['psc'] = psc
+                no_psc_lookups += 1
+                log.debug(
+                    'lookup: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, gene=%s, product=%s',
+                    feature['contig'], feature['start'], feature['stop'], feature['strand'], psc.get(DB_PSC_COL_UNIREF90, ''), psc.get(DB_PSC_COL_EC, ''), psc.get(DB_PSC_COL_GENE, ''), psc.get(DB_PSC_COL_PRODUCT, '')
+                )
+            else:
+                log.debug('lookup failed! uniref90_id=%s', uniref90_id)
     except Exception as ex:
         log.exception('Could not read PSCs from db!', ex)
         raise Exception('SQL error!', ex)
     log.info('looked-up=%i', no_psc_lookups)
+
+
+def fetch_db_psc_result(conn, uniref90_id):
+    c = conn.cursor()
+    c.execute('select * from psc where uniref90_id=?', (uniref90_id,))
+    rec = c.fetchone()
+    c.close()
+    return rec
 
 
 def parse_annotation(rec):
