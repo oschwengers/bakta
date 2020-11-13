@@ -55,8 +55,14 @@ def predict_r_rnas(genome, contigs_path):
                 if(strand == '-'):
                     (start, stop) = (stop, start)
                 (start, stop) = (int(start), int(stop))
+                evalue = float(evalue)
                 length = stop - start + 1
-                partial = trunc != 'no'
+                if(trunc == "5'"):
+                    truncated = bc.FEATURE_END_5_PRIME
+                elif(trunc == "3'"):
+                    truncated = bc.FEATURE_END_3_PRIME
+                else:
+                    truncated = None
 
                 db_xrefs = ['GO:0005840', 'GO:0003735']
                 if(accession == 'RF00001'):
@@ -74,12 +80,12 @@ def predict_r_rnas(genome, contigs_path):
                 
                 coverage = length / consensus_length
                 if( coverage < 0.8):
-                    partial = True
+                    truncated = bc.FEATURE_END_UNKNOWN
                 
                 if(coverage < 0.3):
                     log.debug(
-                        'discard low coverage: contig=%s, rRNA=%s, start=%i, stop=%i, strand=%s, length=%i, coverage=%0.3f',
-                        contig_id, rrna_tag, start, stop, strand, length, coverage
+                        'discard low coverage: contig=%s, rRNA=%s, start=%i, stop=%i, strand=%s, length=%i, coverage=%0.3f, truncated=%s, evalue=%1.1e',
+                        contig_id, rrna_tag, start, stop, strand, length, coverage, truncated, evalue
                     )
                 else:
                     rrna = OrderedDict()
@@ -89,26 +95,28 @@ def predict_r_rnas(genome, contigs_path):
                     rrna['stop'] = stop
                     rrna['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
                     rrna['gene'] = f'{rrna_tag}_rrna'
-                    rrna['product'] = f'(partial) {rrna_tag} ribosomal RNA' if partial else f'{rrna_tag} ribosomal RNA'
+
+                    if(truncated == None):
+                        rrna['product'] = f'{rrna_tag} ribosomal RNA'
+                    elif(truncated == bc.FEATURE_END_UNKNOWN):
+                        rrna['product'] = f'(partial) {rrna_tag} ribosomal RNA'
+                    elif(truncated == bc.FEATURE_END_5_PRIME):
+                        rrna['product'] = f"(5' truncated) {rrna_tag} ribosomal RNA"
+                    elif(truncated == bc.FEATURE_END_3_PRIME):
+                        rrna['product'] = f"(3' truncated) {rrna_tag} ribosomal RNA"
                     
-                    if(partial):
-                        rrna['partial'] = partial
+                    if(truncated):
+                        rrna['truncated'] = truncated
                     
                     rrna['coverage'] = coverage
                     rrna['score'] = float(score)
-                    rrna['evalue'] = float(evalue)
-                    
-                    if('5' in trunc):
-                        rrna['trunc_5'] = True
-                    if('3' in trunc):
-                        rrna['trunc_3'] = True
-
+                    rrna['evalue'] = evalue
                     rrna['db_xrefs'] = db_xrefs
 
                     rrnas.append(rrna)
                     log.info(
-                        'contig=%s, start=%i, stop=%i, strand=%s, product=%s, length=%i, coverage=%0.3f',
-                        rrna['contig'], rrna['start'], rrna['stop'], rrna['strand'], rrna['product'], length, coverage
+                        'contig=%s, start=%i, stop=%i, strand=%s, product=%s, length=%i, coverage=%0.3f, truncated=%s, evalue=%1.1e',
+                        rrna['contig'], rrna['start'], rrna['stop'], rrna['strand'], rrna['product'], length, coverage, truncated, evalue
                     )
 
     log.info('predicted=%i', len(rrnas))

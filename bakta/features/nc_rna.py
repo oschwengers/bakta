@@ -67,12 +67,17 @@ def predict_nc_rnas(genome, contigs_path):
                 (start, stop) = (int(start), int(stop))
                 evalue = float(evalue)
                 length = stop - start + 1
-                partial = trunc != 'no'
+                if(trunc == "5'"):
+                    truncated = bc.FEATURE_END_5_PRIME
+                elif(trunc == "3'"):
+                    truncated = bc.FEATURE_END_3_PRIME
+                else:
+                    truncated = None
                 
                 if(evalue > 1E-6):
                     log.debug(
-                        'discard low E value: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, partial=%s, length=%i, evalue=%1.1e',
-                        contig_id, start, stop, strand, subject, partial, length, evalue
+                        'discard low E value: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, length=%i, truncated=%s, evalue=%1.1e',
+                        contig_id, start, stop, strand, subject, length, truncated, evalue
                     )
                 else:
                     rfam_id = f'RFAM:{accession}'
@@ -87,25 +92,27 @@ def predict_nc_rnas(genome, contigs_path):
                     ncrna['stop'] = stop
                     ncrna['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
                     ncrna['gene'] = subject
-                    ncrna['product'] = f'(partial) {description}' if partial else description
+
+                    if(truncated == None):
+                        ncrna['product'] = description
+                    elif(truncated == bc.FEATURE_END_UNKNOWN):
+                        ncrna['product'] = f'(partial) {description}'
+                    elif(truncated == bc.FEATURE_END_5_PRIME):
+                        ncrna['product'] = f"(5' truncated) {description}"
+                    elif(truncated == bc.FEATURE_END_3_PRIME):
+                        ncrna['product'] = f"(3' truncated) {description}"
                     
-                    if(partial):
-                        ncrna['partial'] = partial
+                    if(truncated):
+                        ncrna['truncated'] = truncated
                     
                     ncrna['score'] = float(score)
                     ncrna['evalue'] = evalue
-                    
-                    if('5' in trunc):
-                        ncrna['trunc_5'] = True
-                    if('3' in trunc):
-                        ncrna['trunc_3'] = True
-
                     ncrna['db_xrefs'] = db_xrefs
 
                     ncrnas.append(ncrna)
                     log.info(
-                        'contig=%s, start=%i, stop=%i, strand=%s, product=%s, length=%i, evalue=%1.1e',
-                        ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['product'], length, ncrna['evalue']
+                        'contig=%s, start=%i, stop=%i, strand=%s, product=%s, length=%i, truncated=%s, evalue=%1.1e',
+                        ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['product'], length, truncated, ncrna['evalue']
                     )
     log.info('predicted=%i', len(ncrnas))
     return ncrnas

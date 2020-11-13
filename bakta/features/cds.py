@@ -79,11 +79,11 @@ def predict(genome, filtered_contigs_path):
                     cds['frame'] = (contigs[cds['contig']]['length'] - cds['stop']) % 3 + 1
                 
                 if(gff_annotations['partial'] == '10'):
-                    cds['truncated'] = '5-prime' if cds['strand'] == bc.STRAND_FORWARD else '3-prime'
+                    cds['truncated'] = bc.FEATURE_END_5_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_3_PRIME
                     partial_cdss[f"{cds['contig']}_{contig_orf_id}"] = cds
                     partial_cdss_per_contig[cds['contig']].append(cds)
                 elif(gff_annotations['partial'] == '01'):
-                    cds['truncated'] = '3-prime' if cds['strand'] == bc.STRAND_FORWARD else '5-prime'
+                    cds['truncated'] = bc.FEATURE_END_3_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_5_PRIME
                     partial_cdss[f"{cds['contig']}_{contig_orf_id}"] = cds
                     partial_cdss_per_contig[cds['contig']].append(cds)
                 else:
@@ -108,7 +108,7 @@ def predict(genome, filtered_contigs_path):
                     seq = str(record.seq)
                     partial_cds['sequence'] = seq
                     log.debug(
-                        'store trunc CDS: contig=%s, start=%i, stop=%i, strand=%s, trunc=%s, seq=%s',
+                        'store trunc CDS: contig=%s, start=%i, stop=%i, strand=%s, truncated=%s, seq=%s',
                         partial_cds['contig'], partial_cds['start'], partial_cds['stop'], partial_cds['strand'], partial_cds.get('truncated', '-'), seq
                     )
     cdss = list(cdss.values())
@@ -128,7 +128,7 @@ def predict(genome, filtered_contigs_path):
                 and last_partial_cds['stop'] == contigs[last_partial_cds['contig']]['length']):
                 cds = last_partial_cds
                 cds['stop'] = first_partial_cds['stop']
-                if(last_partial_cds['truncated'] == '3-prime'):
+                if(last_partial_cds['truncated'] == bc.FEATURE_END_3_PRIME):
                     seq = last_partial_cds['sequence'] + first_partial_cds['sequence']  # merge sequence
                 else:
                     seq = first_partial_cds['sequence'] + last_partial_cds['sequence']  # merge sequence

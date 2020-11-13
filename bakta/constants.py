@@ -86,9 +86,11 @@ INSDC_FEATURE_ORIGIN_REPLICTION = 'rep_origin'
 INSDC_FEATURE_REGULATORY = 'regulatory'
 
 ############################################################################
-# Miscellaneous feature tags
+# Feature ends
 ############################################################################
-
+FEATURE_END_5_PRIME = '5-prime'
+FEATURE_END_3_PRIME = '3-prime'
+FEATURE_END_UNKNOWN = '?'
 
 ############################################################################
 # Strand types prefixes
