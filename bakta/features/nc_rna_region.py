@@ -71,7 +71,7 @@ def predict_nc_rna_regions(genome, contigs_path):
                 
                 if(evalue > 1E-6):
                     log.debug(
-                        'discard low E value: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, partial=%s, length=%i, evalue=%f',
+                        'discard low E value: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, partial=%s, length=%i, evalue=%1.1e',
                         contig_id, start, stop, strand, subject, partial, length, evalue
                     )
                 else:
@@ -104,7 +104,7 @@ def predict_nc_rna_regions(genome, contigs_path):
 
                     ncrnas.append(ncrna_region)
                     log.info(
-                        'contig=%s, start=%i, stop=%i, strand=%s, product=%s, length=%i, evalue=%f',
+                        'contig=%s, start=%i, stop=%i, strand=%s, product=%s, length=%i, evalue=%1.1e',
                         ncrna_region['contig'], ncrna_region['start'], ncrna_region['stop'], ncrna_region['strand'], ncrna_region['product'], length, ncrna_region['evalue']
                     )
     log.info('predicted=%i', len(ncrnas))

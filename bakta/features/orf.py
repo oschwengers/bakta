@@ -54,7 +54,7 @@ def detect_spurious(orfs):
                 bitscore = float(bitscore)
                 if(evalue > 1E-5):
                     log.debug(
-                        'discard low spurious E value: contig=%s, start=%i, stop=%i, strand=%s, subject=%s, evalue=%f, bitscore=%f',
+                        'discard low spurious E value: contig=%s, start=%i, stop=%i, strand=%s, subject=%s, evalue=%1.1e, bitscore=%f',
                         orf['contig'], orf['start'], orf['stop'], orf['strand'], subject_name, evalue, bitscore
                     )
                 else:
@@ -67,7 +67,7 @@ def detect_spurious(orfs):
                     orf['discarded'] = discard
                     discarded_orfs.append(orf)
                     log.info(
-                        'discard spurious: contig=%s, start=%i, stop=%i, strand=%s, homology=%s, evalue=%f, bitscore=%f',
+                        'discard spurious: contig=%s, start=%i, stop=%i, strand=%s, homology=%s, evalue=%1.1e, bitscore=%f',
                         orf['contig'], orf['start'], orf['stop'], orf['strand'], subject_name, evalue, bitscore
                     )
     log.info('discarded=%i', len(discarded_orfs))
