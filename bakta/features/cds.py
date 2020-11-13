@@ -52,7 +52,7 @@ def predict(genome, filtered_contigs_path):
     # TODO: replace code by BioPython GFF3 parser
     contigs = {k['id']: k for k in genome['contigs']}
     cdss = {}
-    partial_cdss = {}
+    partial_cdss_per_record = {}
     partial_cdss_per_contig = {k['id']: [] for k in genome['contigs']}
     with gff_path.open() as fh:
         for line in fh:
@@ -80,11 +80,11 @@ def predict(genome, filtered_contigs_path):
                 
                 if(gff_annotations['partial'] == '10'):
                     cds['truncated'] = bc.FEATURE_END_5_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_3_PRIME
-                    partial_cdss[f"{cds['contig']}_{contig_orf_id}"] = cds
+                    partial_cdss_per_record[f"{cds['contig']}_{contig_orf_id}"] = cds
                     partial_cdss_per_contig[cds['contig']].append(cds)
                 elif(gff_annotations['partial'] == '01'):
                     cds['truncated'] = bc.FEATURE_END_3_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_5_PRIME
-                    partial_cdss[f"{cds['contig']}_{contig_orf_id}"] = cds
+                    partial_cdss_per_record[f"{cds['contig']}_{contig_orf_id}"] = cds
                     partial_cdss_per_contig[cds['contig']].append(cds)
                 else:
                     cdss[f"{cds['contig']}_{contig_orf_id}"] = cds
@@ -103,21 +103,22 @@ def predict(genome, filtered_contigs_path):
                 cds['sequence'] = seq
                 cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(seq)
             else:
-                partial_cds = partial_cdss.get(record.id, None)
+                partial_cds = partial_cdss_per_record.get(record.id, None)
                 if(partial_cds):
                     seq = str(record.seq)
                     partial_cds['sequence'] = seq
+                    partial_cds['aa_digest'], partial_cds['aa_hexdigest'] = bu.calc_aa_hash(seq)
                     log.debug(
-                        'store trunc CDS: contig=%s, start=%i, stop=%i, strand=%s, truncated=%s, seq=%s',
+                        'store truncated CDS sequence: contig=%s, start=%i, stop=%i, strand=%s, truncated=%s, seq=%s',
                         partial_cds['contig'], partial_cds['start'], partial_cds['stop'], partial_cds['strand'], partial_cds.get('truncated', '-'), seq
                     )
     cdss = list(cdss.values())
 
     # merge matching partial features on sequence edges
-    for partial_cdss_pairs in partial_cdss_per_contig.values():
-        if(len(partial_cdss_pairs) >= 2):  # skip unpaired edge features
-            first_partial_cds = partial_cdss_pairs[0]  # first partial CDS per contig
-            last_partial_cds = partial_cdss_pairs[-1]  # last partial CDS per contig
+    for partial_cdss in partial_cdss_per_contig.values():
+        if(len(partial_cdss) >= 2):  # skip unpaired edge features
+            first_partial_cds = partial_cdss[0]  # first partial CDS per contig
+            last_partial_cds = partial_cdss[-1]  # last partial CDS per contig
             # check if partial CDS are on same strand
             # and have opposite truncated edges
             # and firtst starts at 1
@@ -125,7 +126,8 @@ def predict(genome, filtered_contigs_path):
             if(first_partial_cds['strand'] == last_partial_cds['strand']
                 and first_partial_cds['truncated'] != last_partial_cds['truncated']
                 and first_partial_cds['start'] == 1
-                and last_partial_cds['stop'] == contigs[last_partial_cds['contig']]['length']):
+                and last_partial_cds['stop'] == contigs[last_partial_cds['contig']]['length']
+                and contigs[first_partial_cds['contig']]['topology'] == bc.TOPOLOGY_CIRCULAR):
                 cds = last_partial_cds
                 cds['stop'] = first_partial_cds['stop']
                 if(last_partial_cds['truncated'] == bc.FEATURE_END_3_PRIME):
@@ -147,6 +149,13 @@ def predict(genome, filtered_contigs_path):
                     'edge CDS: contig=%s, start=%i, stop=%i, strand=%s, frame=%s, start-type=%s, RBS-motif=%s, aa-hexdigest=%s, seq=[%s..%s]',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame'], cds['start_type'], cds['rbs_motif'], cds['aa_hexdigest'], seq[:10], seq[-10:]
                 )
+                partial_cdss = partial_cdss[1:-1]
+        for partial_cds in partial_cdss:
+            cdss.append(partial_cds)
+            log.info(
+                'truncated CDS: contig=%s, start=%i, stop=%i, strand=%s, frame=%s, truncated=%s, start-type=%s, RBS-motif=%s, aa-hexdigest=%s, seq=[%s..%s]',
+                partial_cds['contig'], partial_cds['start'], partial_cds['stop'], partial_cds['strand'], partial_cds['frame'], partial_cds.get('truncated', '-'), partial_cds['start_type'], partial_cds['rbs_motif'], partial_cds['aa_hexdigest'], partial_cds['sequence'][:10], partial_cds['sequence'][-10:]
+            )
 
     log.info('predicted=%i', len(cdss))
     return cdss
