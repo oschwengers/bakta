@@ -74,7 +74,7 @@ def predict_nc_rna_regions(genome, contigs_path):
                 else:
                     truncated = None
                 
-                if(evalue > 1E-6):
+                if(evalue > 1E-4):
                     log.debug(
                         'discard low E value: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, length=%i, truncated=%s, evalue=%1.1e',
                         contig_id, start, stop, strand, subject, length, truncated, evalue
