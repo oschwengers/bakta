@@ -36,9 +36,9 @@ def write_genbank(genome, features, genbank_path):
                     description = f'{genome["taxon"]} {contig["type"]}'
             else:
                 if contig['type'] == bc.REPLICON_PLASMID and contig['complete'] == True:
-                    description = f'{genome["taxon"]} Plasmid {contig["name"]}, complete sequence'
+                    description = f'{genome["taxon"]} plasmid {contig["name"]}, complete sequence'
                 elif contig['type'] == bc.REPLICON_PLASMID and contig['complete'] == False:
-                    description = f'{genome["taxon"]} Plasmid {contig["name"]}'
+                    description = f'{genome["taxon"]} plasmid {contig["name"]}'
                 elif contig['type'] != bc.REPLICON_PLASMID and contig['complete'] == True:
                     description = f'{genome["taxon"]} {contig["name"]}, complete sequence'
                 else:
