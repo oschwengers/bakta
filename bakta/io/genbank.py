@@ -47,7 +47,7 @@ def write_genbank(genome, features, genbank_path):
             contig_rec = SeqIO.SeqRecord(id='.', name=contig['id'], description=description, annotations=contig_annotations, seq=Seq(contig['sequence']))
 
             seq_feature_list = []
-            source_qualifiers = {'organism': source_name,
+            source_qualifiers = {'organism': genome['taxon'],
                                  'molecule_type': 'DNA',
                                  'strain': cfg.strain}
             source = SeqFeature(FeatureLocation(0, contig['length'], strand=+1), type='source', qualifiers=source_qualifiers)
