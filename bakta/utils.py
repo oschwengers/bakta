@@ -8,6 +8,8 @@ import re
 import sys
 import subprocess as sp
 
+import yaml
+
 import bakta
 import bakta.constants as bc
 import bakta.config as cfg
@@ -67,8 +69,8 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def test_database():
-    """Test if database directory exists, is accessible and contains necessary files."""
+def check_database():
+    """Check if database directory exists, is accessible and contains necessary files."""
 
     if(cfg.db_path is None):
         log.error('database directory not provided nor detected!')
@@ -77,6 +79,27 @@ def test_database():
     if(not os.access(str(cfg.db_path), os.R_OK & os.X_OK)):
         log.error('database directory (%s) not readable/accessible!', cfg.db_path)
         sys.exit(f'ERROR: database directory ({cfg.db_path}) not readable/accessible!')
+
+    version_path = cfg.db_path.joinpath('db.yaml')
+    if(not os.access(str(version_path), os.R_OK) or not version_path.is_file()):
+        log.error('database version file not readable!')
+        sys.exit('ERROR: database version file (db.yaml) not readable!')
+    
+    with version_path.open() as fh:
+        try:
+            version = yaml.safe_load(fh)
+            db_version_schema, db_version_content = version['version'].split('.')
+            db_version_schema, db_version_content = int(db_version_schema), int(db_version_content)
+            log.info('db version: schema=%i, content=%i', db_version_schema, db_version_content)
+            if(db_version_schema < bakta.__db_schema_version__):
+                log.error('wrong database version detected! required=%i, detected=%i', bakta.__db_schema_version__, db_version_schema)
+                sys.exit(f'ERROR: wrong database version detected! Bakta version {bakta.__version__} requires database version {bakta.__db_schema_version__}.x, but {db_version_schema}.{db_version_content} was detected. Please, update the database from https://doi.org/10.5281/zenodo.4247253')
+            elif(db_version_schema > bakta.__db_schema_version__):
+                log.error('wrong database version detected! required=%i, detected=%i', bakta.__db_schema_version__, db_version_schema)
+                sys.exit(f'ERROR: wrong database version detected! Bakta version {bakta.__version__} requires database version {bakta.__db_schema_version__}.x, but {db_version_schema}.{db_version_content} was detected. Please, update Bakta or download a compatible database version from https://doi.org/10.5281/zenodo.4247253')            
+        except yaml.YAMLError as ex:
+            log.exception('could not parse database version file!')
+            sys.exit('ERROR: could not parse database version file!')
 
     file_names = [
         'antifam.h3f',
@@ -108,6 +131,7 @@ def test_database():
         if(not os.access(str(path), os.R_OK) or not path.is_file()):
             log.error('database file not readable! file=%s', file_name)
             sys.exit(f'ERROR: database file ({file_name}) not readable!')
+
     return
 
 
