@@ -20,8 +20,8 @@ def detect_assembly_gaps(genome):
             gap = OrderedDict()
             gap['type'] = bc.FEATURE_GAP
             gap['contig'] = contig['id']
-            gap['start'] = start
-            gap['stop'] = end + 1
+            gap['start'] = start + 1
+            gap['stop'] = end
             gap['strand'] = bc.STRAND_NA
             gap['length'] = end - start
             
