@@ -51,7 +51,7 @@ def write_genbank(genome, features, genbank_path):
                 source_qualifiers['chromosome'] = contig['id']
 
         if(contig['complete']):
-                description = f"{description}, complete sequece"
+                description = f"{description}, complete sequence"
         if(description[0] == ' '):  # discard potential leading whitespace
             description = description[1:]
 
