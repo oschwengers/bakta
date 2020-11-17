@@ -125,10 +125,10 @@ def setup(args):
     log.info('species=%s', species)
     strain = args.strain if args.strain != '' else None
     log.info('strain=%s', strain)
-    plasmid = args.plasmid
+    plasmid = args.plasmid if args.plasmid != '' else None
     log.info('plasmid=%s', plasmid)
     
-    taxon = f"{genus} {species} {strain}"
+    taxon = f'{genus} {species} {strain}'
     taxon = ' '.join(taxon.replace('None', '').split())
     if(taxon == ''):
         taxon = None
