@@ -15,37 +15,49 @@ log = logging.getLogger('io:genbank')
 
 def write_genbank(genome, features, genbank_path):
     contig_list = []
-    time = date.today()
     for contig in genome['contigs']:
         contig_annotations = {
             'molecule_type': 'DNA',
             'source': genome['taxon'],
-            'organism': genome['taxon'],
-            'date': time.strftime('%d-%b-%Y').upper(),
+            'date': date.today().strftime('%d-%b-%Y').upper(),
             'topology': contig['topology'],
             'data_file_division': 'HGT' if contig['type'] == bc.REPLICON_CONTIG else 'BCT'
             # TODO: taxonomy
         }
-        if(contig.get('name', '')):
-            if(contig['type'] == bc.REPLICON_PLASMID):
-                description = f"{genome['taxon']} plasmid {contig['name']}"
+        source_qualifiers = {
+            'mol_type': 'DNA'
+        }
+
+        description = ''
+        if(genome['taxon']):
+            contig_annotations['organism'] = genome['taxon']
+            source_qualifiers['organism'] = genome['taxon']
+            description = f"{genome['taxon']}"
+        if(genome['strain']):
+            source_qualifiers['strain'] = genome['strain']
+        
+        if(contig['type'] == bc.REPLICON_PLASMID):
+            if(contig.get('name', '')):
+                source_qualifiers['plasmid'] = contig['name']
+                description = f"{description} plasmid {contig['name']}"
             else:
-                description = f"{genome['taxon']} {contig['name']}"
-        else:
-            description = f"{genome['taxon']} {contig['type']}"
+                source_qualifiers['plasmid'] = contig['id']
+        elif(contig['type'] == bc.REPLICON_CHROMOSOME):
+            if(contig.get('name', '')):
+                source_qualifiers['chromosome'] = contig['name']
+                description = f"{description} chromosome {contig['name']}"
+            else:
+                source_qualifiers['chromosome'] = contig['id']
+
         if(contig['complete']):
                 description = f"{description}, complete sequece"
+        if(description[0] == ' '):  # discard potential leading whitespace
+            description = description[1:]
 
         contig_rec = SeqIO.SeqRecord(id='.', name=contig['id'], description=description, annotations=contig_annotations, seq=Seq(contig['sequence']))
-
-        seq_feature_list = []
-        source_qualifiers = {
-            'organism': genome['taxon'],
-            'mol_type': 'DNA',
-            'strain': cfg.strain
-        }
+        
         source = SeqFeature(FeatureLocation(0, contig['length'], strand=+1), type='source', qualifiers=source_qualifiers)
-        seq_feature_list.append(source)
+        seq_feature_list = [source]
 
         for feature in features:
             if(feature['contig'] == contig['id']):
