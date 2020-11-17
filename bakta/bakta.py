@@ -434,7 +434,7 @@ def main():
     print('write GenBank output...')
     log.debug('write GenBank output')
     genbank_path = cfg.output_path.joinpath(f'{prefix}.gbff')
-    genbank.write_genbank(features, genbank_path)
+    genbank.write_genbank(genome, features, genbank_path)
     print('write genome sequences...')
     log.debug('write genome sequence output')
     fna_path = cfg.output_path.joinpath(f'{prefix}.fna')
@@ -443,6 +443,7 @@ def main():
     log.debug('write translated CDS output')
     faa_path = cfg.output_path.joinpath(f'{prefix}.faa')
     fasta.write_faa(features, faa_path)
+
 
     # remove tmp dir
     shutil.rmtree(str(cfg.tmp_path))

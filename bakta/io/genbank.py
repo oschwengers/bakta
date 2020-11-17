@@ -1,91 +1,185 @@
-
 import logging
+import json
 
 from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqFeature import SeqFeature, FeatureLocation, CompoundLocation, AfterPosition, BeforePosition
 
+from datetime import date
+
+import bakta.constants as bc
+import bakta.config as cfg
+import bakta.psc as psc
 
 log = logging.getLogger('io:genbank')
 
+def write_genbank(genome, features, genbank_path):
+    contig_list = []
+    for contig in genome['contigs']:
+        contig_annotations = {
+            'molecule_type': 'DNA',
+            'source': genome['taxon'],
+            'date': date.today().strftime('%d-%b-%Y').upper(),
+            'topology': contig['topology'],
+            'data_file_division': 'HGT' if contig['type'] == bc.REPLICON_CONTIG else 'BCT'
+            # TODO: taxonomy
+        }
+        source_qualifiers = {
+            'mol_type': 'DNA'
+        }
 
-############################################################################
-# General terms
-# 
-# LOCUS       NC_002695            5498578 bp    DNA     circular CON 15-AUG-2018
-# DEFINITION  Escherichia coli O157:H7 str. Sakai DNA, complete genome.
-# SOURCE      Escherichia coli O157:H7 str. Sakai
-# ORGANISM    Escherichia coli O157:H7 str. Sakai
-#             Bacteria; Proteobacteria; Gammaproteobacteria; Enterobacterales;
-#             Enterobacteriaceae; Escherichia.
-############################################################################
+        description = ''
+        if(genome['taxon']):
+            contig_annotations['organism'] = genome['taxon']
+            source_qualifiers['organism'] = genome['taxon']
+            description = f"{genome['taxon']}"
+        if(genome['strain']):
+            source_qualifiers['strain'] = genome['strain']
+        
+        if(contig['type'] == bc.REPLICON_PLASMID):
+            if(contig.get('name', '')):
+                source_qualifiers['plasmid'] = contig['name']
+                description = f"{description} plasmid {contig['name']}"
+            else:
+                source_qualifiers['plasmid'] = contig['id']
+        elif(contig['type'] == bc.REPLICON_CHROMOSOME):
+            if(contig.get('name', '')):
+                source_qualifiers['chromosome'] = contig['name']
+                description = f"{description} chromosome {contig['name']}"
+            else:
+                source_qualifiers['chromosome'] = contig['id']
 
-############################################################################
-# CDS features
-# 
-# source          1..5498578
-#                 /organism="Escherichia coli O157:H7 str. Sakai"
-#                 /mol_type="genomic DNA"
-#                 /strain="Sakai"
-#                 /sub_strain="RIMD 0509952"
-#                 /serovar="O157:H7"
-#                 /db_xref="taxon:386585"
-############################################################################
+        if(contig['complete']):
+                description = f"{description}, complete sequece"
+        if(description[0] == ' '):  # discard potential leading whitespace
+            description = description[1:]
 
-############################################################################
-# CDS features
-# 
-# gene            232497..233300
-#                 /gene="dkgB"
-#                 /locus_tag="ECs_0203"
-# CDS             232497..233300
-#                 /gene="dkgB"
-#                 /locus_tag="ECs_0203"
-#                 /codon_start=1
-#                 /transl_table=11
-#                 /product="2,5-diketo-D-gluconate reductase B"
-#                 /protein_id="NP_308230.1"
-#                 /translation="MAIPAFG.....PEWD"
-############################################################################
+        contig_rec = SeqIO.SeqRecord(id='.', name=contig['id'], description=description, annotations=contig_annotations, seq=Seq(contig['sequence']))
+        
+        source = SeqFeature(FeatureLocation(0, contig['length'], strand=+1), type='source', qualifiers=source_qualifiers)
+        seq_feature_list = [source]
 
-############################################################################
-# tRNA features
-# 
-# tRNA            232258..232334
-#                 /gene="aspU"
-#                 /locus_tag="ECs_R0026"
-#                 /product="tRNA-Asp"
-#                 /note="anticodon: gtc"
-############################################################################
+        for feature in features:
+            if(feature['contig'] == contig['id']):
+                insdc_feature_type = None
+                qualifiers = {}
+                if('db_xrefs' in feature):
+                    qualifiers['db_xref'] = feature['db_xrefs']
+                if('product' in feature):
+                    qualifiers['product'] = feature['product']
+                if('locus' in feature):
+                    qualifiers['locus_tag'] = feature['locus']
+                
+                if(feature['type'] == bc.FEATURE_GAP):
+                    insdc_feature_type = bc.INSDC_FEATURE_GAP
+                    qualifiers['estimated_length'] = feature['length']
+                elif(feature['type'] == bc.FEATURE_ORIC or feature['type'] == bc.FEATURE_ORIV):
+                    #TODO: Add fuzzy positions for oriC/oriV
+                    insdc_feature_type = bc.INSDC_FEATURE_ORIGIN_REPLICTION
+                elif(feature['type'] == feature['type'] == bc.FEATURE_ORIT):
+                    #TODO: Add fuzzy positions for oriT
+                    insdc_feature_type = bc.INSDC_FEATURE_ORIGIN_TRANSFER
+                elif(feature['type'] == bc.FEATURE_CDS) or (feature['type'] == bc.FEATURE_SORF):
+                    qualifiers['translation'] = feature['sequence']
+                    qualifiers['codon_start'] = 1
+                    insdc_feature_type = bc.INSDC_FEATURE_CDS
+                    inference = []
+                    inference.append('ab initio prediction:Prodigal:2.6' if feature['type'] == bc.FEATURE_CDS else 'ab initio prediction:Bakta')
+                    if('hypothetical' not in feature):
+                        if('ups' in feature):
+                            if('ncbi_nrp_id' in feature['ups']):
+                                qualifiers['protein_id'] = feature['ups']['ncbi_nrp_id']
+                        if('ips' in feature):
+                            if('uniref100_id' in feature['ips']):
+                                ips_subject_id = feature['ips']['uniref100_id']
+                                inference.append(f'similar to AA sequence:UniProtKB:{ips_subject_id}')
+                        if('psc' in feature):
+                            if('uniref90_id' in feature['psc']):
+                                psc_subject_id = feature['psc']['uniref90_id']
+                                inference.append(f'similar to AA sequence:UniProtKB:{psc_subject_id}')
+                    qualifiers['inference'] = inference
+                elif(feature['type'] == bc.FEATURE_T_RNA):
+                    # TODO: Position anticodon
+                    if('notes' in feature):
+                        if('anti_codon' in feature):
+                            qualifiers['note'] = feature['notes']
+                            i = feature['product'].find('-')
+                            t_rna_type = feature['product'][i+1:].lower()
+                            qualifiers['anticodon'] = f"(aa:{t_rna_type},seq:{feature['anti_codon'].lower()})"
+                    qualifiers['inference'] = 'profile:tRNAscan:2.0'
+                    insdc_feature_type = bc.INSDC_FEATURE_T_RNA
+                elif(feature['type'] == bc.FEATURE_TM_RNA):
+                    qualifiers['inference'] = 'profile:aragorn:1.2'
+                    insdc_feature_type = bc.INSDC_FEATURE_TM_RNA
+                elif(feature['type'] == bc.FEATURE_R_RNA):
+                    for reference in feature['db_xrefs']:
+                        if(reference.split(':')[0] == 'RFAM'):
+                            r_subject_id = reference.split(':')[1]
+                    qualifiers['inference'] = f'profile:Rfam:{r_subject_id}'
+                    insdc_feature_type = bc.INSDC_FEATURE_R_RNA
+                elif(feature['type'] == bc.FEATURE_NC_RNA):
+                    # TODO: ncRNA_class
+                    for reference in feature['db_xrefs']:
+                        if(reference.split(':')[0] == 'RFAM'):
+                            nc_subject_id = reference.split(':')[1]
+                    qualifiers['ncRNA_class'] = 'other'
+                    qualifiers['inference'] = f'profile:Rfam:{nc_subject_id}'
+                    insdc_feature_type = bc.INSDC_FEATURE_NC_RNA
+                elif(feature['type']==bc.FEATURE_NC_RNA_REGION):
+                    for reference in feature['db_xrefs']:
+                        if(reference.split(':')[0] == 'RFAM'):
+                            nc_subject_id = reference.split(':')[1]
+                    qualifiers['ncRNA_class'] = 'other'
+                    qualifiers['inference'] = f'profile:Rfam:{nc_subject_id}'
+                    insdc_feature_type = bc.INSDC_FEATURE_REGULATORY
+                elif(feature['type']==bc.FEATURE_CRISPR):
+                    qualifiers['repeats'] = feature['repeats']
+                    qualifiers['repeat_consensus'] = feature['repeat_consensus']
+                    qualifiers['repeat_length'] = feature['repeat_length']
+                    qualifiers['spacer_length'] = feature['spacer_length']
+                    feature['type'] = 'misc_feature'
+                    insdc_feature_type = bc.INSDC_FEATURE_MISC_FEATURE
+                
+                if(feature['strand'] == bc.STRAND_FORWARD):
+                    strand = 1
+                elif(feature['strand'] == bc.STRAND_REVERSE):
+                    strand = -1
+                elif(feature['strand'] == bc.STRAND_UNKNOWN):
+                    strand = 0
+                elif(feature['strand'] == bc.STRAND_NA):
+                    strand = None
+                
+                if('edge' in feature):
+                    fl_1 = FeatureLocation(feature['start'] - 1, contig['length'], strand=strand)
+                    fl_2 = FeatureLocation(0, feature['stop'], strand=strand)
+                    feature_location = CompoundLocation([fl_1, fl_2])
+                else:
+                    start = feature['start'] - 1
+                    stop = feature['stop']
+                    if('truncated' in feature):
+                        if(feature['truncated'] == bc.FEATURE_END_5_PRIME):
+                            start = BeforePosition(feature['start'])
+                        elif(feature['truncated'] == bc.FEATURE_END_3_PRIME):
+                            stop = AfterPosition(feature['stop'])
+                        else:
+                            start = BeforePosition(feature['start'])
+                            stop = AfterPosition(feature['stop'])
+                    feature_location = FeatureLocation(start, stop, strand=strand)
 
-############################################################################
-# rRNA features
-# 
-# gene            232090..232200
-#                 /gene="rrfH"
-#                 /locus_tag="ECs_R0003"
-# rRNA            232090..232200
-#                 /gene="rrfH"
-#                 /locus_tag="ECs_R0003"
-#                 /product="5S ribosomal RNA"
-############################################################################
+                if(feature.get('gene', '') and feature['type'] != bc.FEATURE_NC_RNA_REGION):
+                    qualifiers['gene'] = feature['gene']
+                    gene_qualifier = {
+                        'gene': feature['gene'],
+                        'locus_tag': feature['locus']
+                    }
+                    gen_seqfeat = SeqFeature(feature_location, type='gene', qualifiers=gene_qualifier)
+                    seq_feature_list.append(gen_seqfeat)
+                feat_seqfeat = SeqFeature(feature_location, type=insdc_feature_type, qualifiers=qualifiers)
+                seq_feature_list.append(feat_seqfeat)
+        contig_rec.features = seq_feature_list
+        contig_list.append(contig_rec)
 
-############################################################################
-# Feature inference terms
-#
-# for further information: https://www.ncbi.nlm.nih.gov/genbank/evidence/
-# 
-# tRNA: 'profile:tRNAscan:2.0'
-# tmRNA: 'profile:aragorn:1.2'
-# rRNA: 'profile:Rfam:%s' % subject_id
-# ncRNA genes: 'profile:Rfam:%s' % subject_id
-# ncRNA regions: 'profile:Rfam:%s' % subject_id
-# CDS hyp: 'ab initio prediction:Prodigal:2.6'
-# CDS PSC: 'similar to AA sequence:UniProtKB:%s' % psc[DB_PSC_COL_UNIREF90]
-# CDS IPS: 'similar to AA sequence:UniProtKB:%s' % psc[DB_PSC_COL_UNIREF100]
-# CDS sORF: 'similar to AA sequence:UniProtKB:%s' % psc[DB_PSC_COL_UNIREF100]
-############################################################################
-
-
-def write_genbank(annotations, genbank_path):
-    """Export annotations in GenBank format."""
+    with genbank_path.open('w', encoding='utf-8') as fh:
+        SeqIO.write(contig_list, fh, format='genbank')
 
     return
