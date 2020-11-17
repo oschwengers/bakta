@@ -3,7 +3,7 @@ import json
 
 from Bio import SeqIO
 from Bio.Seq import Seq
-from Bio.SeqFeature import SeqFeature, FeatureLocation
+from Bio.SeqFeature import SeqFeature, FeatureLocation, CompoundLocation, AfterPosition, BeforePosition
 
 from datetime import date
 
@@ -139,8 +139,32 @@ def write_genbank(genome, features, genbank_path):
                     qualifiers['spacer_length'] = feature['spacer_length']
                     feature['type'] = 'misc_feature'
                     insdc_feature_type = bc.INSDC_FEATURE_MISC_FEATURE
-
-                strand_dir = -1 if feature['strand'] == bc.STRAND_REVERSE else +1
+                
+                if(feature['strand'] == bc.STRAND_FORWARD):
+                    strand = 1
+                elif(feature['strand'] == bc.STRAND_REVERSE):
+                    strand = -1
+                elif(feature['strand'] == bc.STRAND_UNKNOWN):
+                    strand = 0
+                elif(feature['strand'] == bc.STRAND_NA):
+                    strand = None
+                
+                if('edge' in feature):
+                    fl_1 = FeatureLocation(feature['start'] - 1, contig['length'], strand=strand)
+                    fl_2 = FeatureLocation(0, feature['stop'], strand=strand)
+                    feature_location = CompoundLocation([fl_1, fl_2])
+                else:
+                    start = feature['start'] - 1
+                    stop = feature['stop']
+                    if('truncated' in feature):
+                        if(feature['truncated'] == bc.FEATURE_END_5_PRIME):
+                            start = BeforePosition(feature['start'])
+                        elif(feature['truncated'] == bc.FEATURE_END_3_PRIME):
+                            stop = AfterPosition(feature['stop'])
+                        else:
+                            start = BeforePosition(feature['start'])
+                            stop = AfterPosition(feature['stop'])
+                    feature_location = FeatureLocation(start, stop, strand=strand)
 
                 if(feature.get('gene', '') and feature['type'] != bc.FEATURE_NC_RNA_REGION):
                     qualifiers['gene'] = feature['gene']
@@ -148,9 +172,9 @@ def write_genbank(genome, features, genbank_path):
                         'gene': feature['gene'],
                         'locus_tag': feature['locus']
                     }
-                    gen_seqfeat = SeqFeature(FeatureLocation(feature['start'] - 1, feature['stop'], strand=strand_dir), type='gene', qualifiers=gene_qualifier)
+                    gen_seqfeat = SeqFeature(feature_location, type='gene', qualifiers=gene_qualifier)
                     seq_feature_list.append(gen_seqfeat)
-                feat_seqfeat = SeqFeature(FeatureLocation(feature['start'] - 1, feature['stop'], strand=strand_dir), type=insdc_feature_type, qualifiers=qualifiers)
+                feat_seqfeat = SeqFeature(feature_location, type=insdc_feature_type, qualifiers=qualifiers)
                 seq_feature_list.append(feat_seqfeat)
         contig_rec.features = seq_feature_list
         contig_list.append(contig_rec)
