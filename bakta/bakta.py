@@ -407,7 +407,8 @@ def main():
     print(f"\tncRNAs: {len([f for f in features if f['type'] == bc.FEATURE_NC_RNA])}")
     print(f"\tncRNA regions: {len([f for f in features if f['type'] == bc.FEATURE_NC_RNA_REGION])}")
     print(f"\tCRISPR arrays: {len([f for f in features if f['type'] == bc.FEATURE_CRISPR])}")
-    print(f"\tCDSs: {len([f for f in features if f['type'] == bc.FEATURE_CDS])}")
+    cdss = [f for f in features if f['type'] == bc.FEATURE_CDS]
+    print(f"\tCDSs: {len(cdss)}, hypotheticals: {len([cds for cds in cdss if 'hypothetical' in cds])}")
     print(f"\tsORFs: {len([f for f in features if f['type'] == bc.FEATURE_SORF])}")
     print(f"\tgaps: {len([f for f in features if f['type'] == bc.FEATURE_GAP])}")
     print(f"\toriCs/oriVs: {len([f for f in features if f['type'] == bc.FEATURE_ORIC])}")
