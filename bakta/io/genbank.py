@@ -41,7 +41,7 @@ def write_genbank(genome, features, genbank_path):
         seq_feature_list = []
         source_qualifiers = {
             'organism': genome['taxon'],
-            'molecule_type': 'DNA',
+            'mol_type': 'DNA',
             'strain': cfg.strain
         }
         source = SeqFeature(FeatureLocation(0, contig['length'], strand=+1), type='source', qualifiers=source_qualifiers)
