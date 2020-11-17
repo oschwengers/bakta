@@ -1,6 +1,7 @@
 
 import logging
 
+import bakta
 import bakta.constants as bc
 
 log = logging.getLogger('TSV')
@@ -22,6 +23,8 @@ log = logging.getLogger('TSV')
 def write_tsv(contigs, features_by_contig, tsv_path):
     """Export features in TSV format."""
     with tsv_path.open('w') as fh:
+        fh.write(f'#Annotated with Bakta v{bakta.__version__}, https://github.com/oschwengers/bakta\n')
+        fh.write(f'#Sequence Id\tType\tStart\tStop\tStrand\tGene\tProduct\n')
         for contig in contigs:
             for feat in features_by_contig[contig['id']]:
                 feat_type = feat['type']

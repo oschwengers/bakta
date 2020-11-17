@@ -1,12 +1,12 @@
 import logging
 import json
+from datetime import date
 
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqFeature import SeqFeature, FeatureLocation, CompoundLocation, AfterPosition, BeforePosition
 
-from datetime import date
-
+import bakta
 import bakta.constants as bc
 import bakta.config as cfg
 import bakta.psc as psc
@@ -21,7 +21,8 @@ def write_genbank(genome, features, genbank_path):
             'source': genome['taxon'],
             'date': date.today().strftime('%d-%b-%Y').upper(),
             'topology': contig['topology'],
-            'data_file_division': 'HGT' if contig['type'] == bc.REPLICON_CONTIG else 'BCT'
+            'data_file_division': 'HGT' if contig['type'] == bc.REPLICON_CONTIG else 'BCT',
+            'comment': f'Annotated with Bakta v{bakta.__version__}, https://github.com/oschwengers/bakta'
             # TODO: taxonomy
         }
         source_qualifiers = {
