@@ -2,7 +2,7 @@
 set -eo pipefail
 
 # ToDo: set final namespace
-DOCKER_IMAGE=$NAMESPACE/bakta:latest
+DOCKER_IMAGE=oschwengers/bakta:latest
 DEFAULT_DBPATH=$BAKTA_DB
 
 args=( "$@" )
