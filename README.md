@@ -6,7 +6,7 @@
 ![Conda](https://img.shields.io/conda/v/bioconda/bakta.svg)
 ![Conda](https://img.shields.io/conda/pn/bioconda/bakta.svg)
 
-# Bakta: rapid & comprehensive annotation of bacterial genomes & plasmids
+# Bakta: Rapid & standardized annotation of bacterial genomes & plasmids
 
 ## Contents
 
@@ -30,9 +30,9 @@
 
 **TL;DR**
 
-Bakta is an offline tool dedicated to the rapid & comprehensive annotation of bacteria & plasmids. It provides **dbxref**-rich and **sORF**-including annotations in machine-readble (`JSON`) & bioinformatics standard file formats for automatic downstream analysis.
+Bakta is an offline tool dedicated to the rapid & standardized annotation of bacteria & plasmids. It provides **dbxref**-rich and **sORF**-including annotations in machine-readble (`JSON`) & bioinformatics standard file formats for automatic downstream analysis.
 
-The annotation of microbial genomes is a diverse task comprising the structural & functional annotation of different feature types with distinct overlapping characteristics. Existing local annotation pipelines cover a broad range of microbial taxa, *e.g.* bacteria, aerchaea, viruses. To streamline and foster the expansion of supported feature types, Bakta is strictly dedicated to the annotation of bacteria and plasmids. To standardize the annotation of bacterial sequences, Bakta uses a comprehensive annotation database based on UniProt's UniRef protein clusters enriched by cross-references and specialized niche databases.
+The annotation of microbial genomes is a diverse task comprising the structural & functional annotation of different feature types with distinct overlapping characteristics. Existing local annotation pipelines cover a broad range of microbial taxa, *e.g.* bacteria, aerchaea, viruses. To streamline and foster the expansion of supported feature types, Bakta is strictly dedicated to the annotation of bacteria and plasmids. To standardize annotations, Bakta uses a comprehensive & versioned annotation database utilizing UniProt's UniRef clusters enriched by cross-references and specialized niche databases.
 
 Exact matches to known protein coding sequences (**CDS**), subsequently referred to as identical protein sequences (**IPS**) are identified via `MD5` digests and annotated with database cross-references (**dbxref**) to:
 
@@ -40,17 +40,17 @@ Exact matches to known protein coding sequences (**CDS**), subsequently referred
 - UniRef100/UniRef90 (`UniRef100_*`/`UniRef90_*`)
 - UniParc (`UPI*`)
 
-By doing so, **IPS** allow the surveillance of distinct gene alleles and streamline comparative analysis. Also, posterior (external) annotations of `putative` & `hypothetical` protein sequences can be mapped back to existing `cds` via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)).
+By doing so, **IPS** allow the surveillance of distinct gene alleles and streamline comparative analysis. Also, posterior (external) annotations of `putative` & `hypothetical` protein sequences can be mapped back to existing **CDS** via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)).
 Unidentified remaining **CDS** are annotated via UniRef90 protein sequence clusters (**PSC**).
 **PSC** & **IPS** are enriched by pre-annotated and stored information (`GO`, `COG`, `EC`).
 
 Next to standard feature types (tRNA, tmRNA, rRNA, ncRNA, CRISPR, CDS, gaps) Bakta also detects and annotates:
 
 - short ORFs (**sORF**) which are not predicted by tools like `Prodigal`
-- ncRNA regulatory regions distinct from ncRNA genes
+- ncRNA cis-regulatory regions distinct from ncRNA genes
 - origins of replication/transfer (oriC, oriV, oriT)
 
-Bakta can annotate a typical bacterial genome within minutes and hence fits the niche between large & computationally-demanding (online) pipelines and rapid, highly-customizable offline tools like Prokka. If Bakta does not fit your needs, please consider using [Prokka](https://github.com/tseemann/prokka). The development of Bakta was highly inspired by Prokka and many command line options are mutually compatible for the sake of interoperability and user convenience.
+Bakta can annotate a typical bacterial genome within minutes and hence fits the niche between large & computationally-demanding (online) pipelines and rapid, highly-customizable offline tools like Prokka. Indeed, Bakta is heavily inspired by Prokka (kudos to [Torsten Seemann](https://github.com/tseemann)) and many command line options are mutually compatible for the sake of interoperability and user convenience. Hence, if it doesn't fit your needs, please try [Prokka](https://github.com/tseemann/prokka).
 
 ## Input/Output
 
@@ -61,17 +61,10 @@ Bakta accepts bacterial and plasmid assemblies (complete / draft) in (zipped) fa
 Further genome information and workflow customizations can be provided and set via a number of input parameters.
 For a full description, please have a look at the [Usage](#usage) section.
 
-Most important parameters:
-
-- use a custom database location, *e.g.* a local instance for runtime improvements: `--db`
-- genome parameters: `--min-contig-length`, `--complete`
-- number of threads: `--threads`
-- locus information `--locus`, `--locus-tag`
-
 Replicon meta data table:
 
 To fine-tune the very details of each sequence in the input fasta file, Bakta accepts a replicon meta data table provided in `tsv` file format: `--replicons <tsv-replicon-file>`.
-Thus, for example, complete replicons within partially completed draft assemblies can be marked as such.
+Thus, for example, complete replicons within partially completed draft assemblies can be marked & handled as such.
 
 Table format:
 
@@ -91,8 +84,9 @@ Available short cuts:
 `<empty>` values (`-` / ``) will be replaced by defaults. If **new locus id** is `empty`, a new contig name will be autogenerated.
 
 Defaults:
-replicon type: `contig`
-topology: `linear`
+
+- type: `contig`
+- topology: `linear`
 
 Example:
 
@@ -131,9 +125,9 @@ $ bakta --db ~/db --verbose --output results/ --prefix ecoli123 --locus-tag eco6
 
 ## Installation
 
-Bakta can be installed via BioConda, Docker or Pip.
+Bakta can be installed via BioConda, Docker and Pip.
 To automatically install all required 3rd party dependencies, we highly encourage to use [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
-In all cases a mandatory db must be downloaded (-> Mandatory database)
+In all cases a [mandatory database](#mandatory_database) must be downloaded.
 
 ### BioConda
 
@@ -142,6 +136,9 @@ $ conda install -c conda-forge -c bioconda -c defaults bakta
 ```
 
 ### Docker
+
+We provide a shell script (bakta-docker.sh) wrapping all Docker related issues, *e.g.* volume mounting.
+
 ```bash
 $ sudo docker pull oschwengers/bakta
 
@@ -181,7 +178,7 @@ tRNAscan-se must be installed manually as v2.0 is currently not yet available vi
 
 ### Mandatory database
 
-In all cases, Bakta requires a mandatory database which is publicly hosted at Zenodo:
+Bakta requires a mandatory database which is publicly hosted at Zenodo:
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247253.svg)](https://doi.org/10.5281/zenodo.4247253)
 Further information is provided [below](#database).
 
@@ -191,11 +188,13 @@ $ tar -xzf db.tar.gz
 $ rm db.tar.gz
 ```
 
-The database path can either be provided via the `--db` parameter or a `BAKTA_DB` environment variable:
+The db path can either be provided via parameter (`--db`) or environment variable (`BAKTA_DB`):
 
 ```bash
-$ bakta --db <db-path>
+$ bakta --db <db-path> genome.fasta
+
 $ export BAKTA_DB=<db-path>
+$ bakta genome.fasta
 ```
 
 Additionally, for a system-wide setup, the database can be copied to the Bakta base directory:
@@ -212,7 +211,7 @@ $ cp -r db/ <bakta-installation-dir>
 2. tmRNA genes: Aragorn
 3. rRNA genes: Infernal vs. Rfam rRNA covariance models
 4. ncRNA genes: Infernal vs. Rfam ncRNA covariance models
-5. ncRNA regulatory regions: Infernal vs. Rfam ncRNA covariance models
+5. ncRNA cis-regulatory regions: Infernal vs. Rfam ncRNA covariance models
 6. CRISPR arrays: PILER-CR
 
 Bakta distinguishes ncRNA genes and (regulatory) regions in order to enable the distinct handling thereof during the annotation process, *i.e.* feature overlap detection.
@@ -297,7 +296,7 @@ This allows the exact protein sequences identification via **MD5** digests & seq
 Rfam covariance models:
 
 - ncRNA: 750
-- ncRNA regions: 107
+- ncRNA cis-regulatory regions: 107
 
 To pinpoint annotations and provide reproducible analysis, the database releases are SemVer versioned (leaving out the patch level), *i.e.* `<major>.<minor>`.
 The db schema is represented by the `<major>` digit and automatically checked at runtime by Bakta in order to ensure compatibility. Content updates are tracked by the `<minor>` digit.
@@ -387,7 +386,7 @@ General:
 ## Citation
 
 A manuscript is in preparation. To temporarily cite our work, please transitionally refer to:
-> Schwengers O., Goesmann A. (2020) Bakta: comprehensive annotation of bacterial genomes. GitHub https://github.com/oschwengers/bakta
+> Schwengers O., Goesmann A. (2020) Bakta: Rapid & standardized annotation of bacterial genomes & plasmids. GitHub https://github.com/oschwengers/bakta
 
 Bakta takes advantage of many publicly available databases. If you find any of the data used within Bakta useful, please also be sure to credit the primary source also:
 
