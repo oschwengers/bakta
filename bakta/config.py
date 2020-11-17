@@ -119,9 +119,9 @@ def setup(args):
 
     # organism configurations
     global genus, species, strain, plasmid
-    genus = args.genus if args.genus != '' else None
+    genus = args.genus.capitalize() if args.genus != '' else None
     log.info('genus=%s', genus)
-    species = args.species if args.species != '' else None
+    species = args.species.lower() if args.species != '' else None
     log.info('species=%s', species)
     strain = args.strain if args.strain != '' else None
     log.info('strain=%s', strain)
