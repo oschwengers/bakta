@@ -24,13 +24,13 @@ def write_tsv(contigs, features_by_contig, tsv_path):
     """Export features in TSV format."""
     with tsv_path.open('w') as fh:
         fh.write(f'#Annotated with Bakta v{bakta.__version__}, https://github.com/oschwengers/bakta\n')
-        fh.write(f'#Sequence Id\tType\tStart\tStop\tStrand\tGene\tProduct\n')
+        fh.write(f'#Sequence Id\tType\tStart\tStop\tStrand\tGene\tProduct\tDbXrefs\n')
         for contig in contigs:
             for feat in features_by_contig[contig['id']]:
                 feat_type = feat['type']
                 if(feat['type'] == bc.FEATURE_GAP):
                     feat_type = bc.INSDC_FEATURE_ASSEMBLY_GAP if feat['length'] >= 100 else bc.INSDC_FEATURE_GAP
-                fh.write('\t'.join([feat['contig'], feat_type, str(feat['start']), str(feat['stop']), feat['strand'], feat.get('gene', ''), feat.get('product', '')]))
+                fh.write('\t'.join([feat['contig'], feat_type, str(feat['start']), str(feat['stop']), feat['strand'], feat.get('gene', ''), feat.get('product', ''), ', '.join(sorted(feat.get('db_xrefs', [])))]))
                 fh.write('\n')
     return
 
