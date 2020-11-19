@@ -115,10 +115,10 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     with hmm_result_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
-                (psc_id, _, query_name, query_id, evalue, bitscore, _) = re.split('\s+', line.strip(), maxsplit=6)
+                (hmm_name, hmm_id, psc_id, _, evalue, bitscore, _) = re.split('\s+', line.strip(), maxsplit=6)
                 hit = {
                     'psc_id': psc_id,
-                    'hmm_id': query_id,
+                    'hmm_id': hmm_id,
                     'evalue': float(evalue),
                     'bitscore': float(bitscore)
                 }

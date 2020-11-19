@@ -1,14 +1,14 @@
 
-params.psc = 'psc.faa'
+params.fasta = 'psc.faa'
 
-Channel.fromPath( params.psc )
+Channel.fromPath( params.fasta )
     .splitFasta( by: 100000, file: true )
     .set( { chAAs } )
 
-process hmmsearch {
+process hmmscan {
     errorStrategy 'finish'
     maxRetries 3
-    cpus 4
+    cpus 2
     memory '1 GB'
     conda 'hmmer=3.3.1'
 
@@ -20,8 +20,8 @@ process hmmsearch {
 
     script:
     """
-    hmmsearch --cut_tc --noali --tblout hmm.out --cpu ${task.cpus} ${params.db} input.faa
+    hmmscan --cut_tc --noali --tblout hmm.out --cpu ${task.cpus} ${params.db} input.faa
     """
 }
 
-chHmmResults.collectFile( sort: false, name: 'hmm-amr.out', storeDir: '.')
+chHmmResults.collectFile( sort: false, name: 'hmmscan.tblout', storeDir: '.')

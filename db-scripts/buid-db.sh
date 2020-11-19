@@ -8,7 +8,6 @@ cd db
 printf "Create Bakta database\n"
 
 # download rRNA covariance models from Rfam
-# download rRNA covariance models from Rfam
 printf "\n1/14: download rRNA covariance models from Rfam ...\n"
 wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
 pigz -d Rfam.cm.gz
@@ -62,7 +61,7 @@ rm -r antifam antifam-dir/
 
 
 # download & extract oriT sequences
-printf "\n5/14: download and extract oriT sequences from Mob-suite ...\n"
+printf "\n5/15: download and extract oriT sequences from Mob-suite ...\n"
 wget -q -nv https://zenodo.org/record/3786915/files/data.tar.gz
 tar -xvzf data.tar.gz
 mv data/orit.fas ./orit.fna
@@ -78,7 +77,7 @@ rm doric10.rar tubic* oric.plasmid.fna
 
 
 # download NCBI Taxonomy DB
-printf "\n6/14: download NCBI Taxonomy DB ...\n"
+printf "\n6/15: download NCBI Taxonomy DB ...\n"
 mkdir taxonomy
 cd taxonomy
 wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz
@@ -91,7 +90,7 @@ rm -rf taxonomy
 ############################################################################
 # Setup SQLite Bakta db
 ############################################################################
-printf "\n7/14: setup SQLite Bakta db ...\n"
+printf "\n7/15: setup SQLite Bakta db ...\n"
 python3 ${BAKTA_DB_SCRIPTS}/init-db.py --db bakta.db
 
 
@@ -131,7 +130,7 @@ rm uniref100.xml.gz
 # - annotate UPSs with NCBI nrp IDs (WP_*)
 # - annotate IPSs/PSCs with NCBI gene names (WP_* -> hash -> UniRef100 -> UniRef90 -> PSC)
 ############################################################################
-printf "\n10/14: download RefSeq nonredundant proteins and clusters ...\n"
+printf "\n10/15: download RefSeq nonredundant proteins and clusters ...\n"
 wget -nv ftp://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_proteins.txt
 wget -nv ftp://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_clusters.txt
 for i in {1..1133}; do
@@ -139,7 +138,7 @@ for i in {1..1133}; do
     pigz -dc bacteria.nonredundant_protein.${i}.protein.faa.gz | seqtk seq -CU >> refseq-bacteria-nrp.trimmed.faa
     rm bacteria.nonredundant_protein.${i}.protein.faa.gz
 done
-printf "\n10/14: annotate IPSs and PSCs ...\n"
+printf "\n10/15: annotate IPSs and PSCs ...\n"
 python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-nrp.py --db bakta.db --nrp refseq-bacteria-nrp.trimmed.faa --pcla-proteins PCLA_proteins.txt --pcla-clusters PCLA_clusters.txt
 rm refseq-bacteria-nrp.trimmed.faa PCLA_proteins.txt PCLA_clusters.txt
 
@@ -150,7 +149,7 @@ rm refseq-bacteria-nrp.trimmed.faa PCLA_proteins.txt PCLA_clusters.txt
 # - align UniRef90 proteins to COG protein sequences
 # - annotate PSCs with COG info
 ############################################################################
-printf "\n12/14: download COG db ...\n"
+printf "\n12/15: download COG db ...\n"
 wget -nv ftp://ftp.ncbi.nih.gov/pub/COG/COG2020/data/cog-20.def.tab  # COG IDs and functional class
 wget -nv ftp://ftp.ncbi.nih.gov/pub/COG/COG2020/data/cog-20.cog.csv # Mapping GenBank IDs -> COG IDs
 for i in $(seq -f "%04g" 1 5950)
@@ -159,11 +158,11 @@ do
     pigz -dc COG${i}.fa.gz | seqtk seq -CU >> cog.faa
     rm COG${i}.fa.gz
 done
-printf "\n12/14: annotate PSCs ...\n"
+printf "\n12/15: annotate PSCs ...\n"
 diamond makedb --in cog.faa --db cog.dmnd
 diamond blastp --query psc.faa --db cog.dmnd --id 90 --query-cover 80 --subject-cover 80 --max-target-seqs 1 --out diamond.tsv --outfmt 6 qseqid sseqid length pident qlen slen evalue
 python3 ${BAKTA_DB_SCRIPTS}/annotate-cog.py --db bakta.db --alignments diamond.tsv --cog-ids cog-20.def.tab --gi-cog-mapping cog-20.cog.csv
-rm cognames2003-2014.tab cog2003-2014.csv prot2003-2014.fa.gz diamond.tsv cog.*
+rm cognames2003-2015.tab cog2003-2015.csv prot2003-2015.fa.gz diamond.tsv cog.*
 
 
 ############################################################################
@@ -172,9 +171,9 @@ rm cognames2003-2014.tab cog2003-2014.csv prot2003-2014.fa.gz diamond.tsv cog.*
 # - annotate PSCs if IPS have PSC UniRef90 identifier (seq -> hash -> UPS -> IPS -> PSC)
 # - annotate IPSs if IPS have no PSC UniRef90 identifier (seq -> hash -> UPS -> IPS)
 ############################################################################
-printf "\n11/14: download UniProt/SwissProt ...\n"
+printf "\n11/15: download UniProt/SwissProt ...\n"
 wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
-printf "\n11/14: annotate IPSs and PSCs ...\n"
+printf "\n11/15: annotate IPSs and PSCs ...\n"
 python3 ${BAKTA_DB_SCRIPTS}/annotate-swissprot.py --taxonomy nodes.dmp --xml uniprot_sprot.xml.gz --db bakta.db
 rm uniprot_sprot.xml.gz
 
@@ -184,16 +183,16 @@ rm uniprot_sprot.xml.gz
 # - download AMR gene WP_* annotations from NCBI Pathogen AMR db
 # - annotate IPSs with AMR info
 ############################################################################
-printf "\n13/14: download AMR gene WP_* annotations from NCBI Pathogen AMR db ...\n"
+printf "\n13/15: download AMR gene WP_* annotations from NCBI Pathogen AMR db ...\n"
 wget -nv ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/latest/ReferenceGeneCatalog.txt
 wget -nv ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/latest/AMR.LIB
 wget -nv ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/latest/fam.tab
-printf "\n13/14: annotate IPSs and PSCs...\n"
+printf "\n13/15: annotate IPSs and PSCs...\n"
 mv AMR.LIB ncbifam-amr
 hmmpress ncbifam-amr
-nextflow run ${BAKTA_DB_SCRIPTS}/annotate-ncbi-amr.nf --psc psc.faa --db ncbifam-amr
-python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-amr.py --db bakta.db --genes ReferenceGeneCatalog.txt --hmms fam.tab --hmm-results hmm-amr.out
-rm ReferenceGeneCatalog.txt ncbifam-amr* fam.tab hmm-amr.out
+nextflow run ${BAKTA_DB_SCRIPTS}/hmmscan.nf --fasta psc.faa --db ncbifam-amr
+python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-amr.py --db bakta.db --genes ReferenceGeneCatalog.txt --hmms fam.tab --hmm-results hmmscan.tblout
+rm ReferenceGeneCatalog.txt ncbifam-amr* fam.tab hmmscan.tblout
 
 
 ############################################################################
@@ -201,13 +200,31 @@ rm ReferenceGeneCatalog.txt ncbifam-amr* fam.tab hmm-amr.out
 # - download IS protein sequences from GitHub (thanhleviet/ISfinder-sequences)
 # - annotate IPSs with IS info
 ############################################################################
-printf "\n14/14: download ISfinder protein sequences ...\n"
+printf "\n14/15: download ISfinder protein sequences ...\n"
 wget -nv https://raw.githubusercontent.com/thanhleviet/ISfinder-sequences/master/IS.faa
-printf "\n14/14: annotate IPSs ...\n"
+printf "\n14/15: annotate IPSs ...\n"
 diamond makedb --in IS.faa --db is
 diamond blastp --query psc.faa --db is.dmnd --id 98 --query-cover 99 --subject-cover 99 --max-target-seqs 1 --out diamond.tsv --outfmt 6 qseqid sseqid stitle length pident qlen slen evalue
 python3 ${BAKTA_DB_SCRIPTS}/annotate-is.py --db bakta.db --alignments diamond.tsv
 rm IS.faa is.dmnd
+
+
+############################################################################
+# Integrate Pfam A
+# - download all Pfam A HMM models
+# - extract families
+# - compress HMM models
+# - annotate hypothetical PSC via Pfam families
+############################################################################
+printf "\n15/15: download HMM models from Pfam ...\n"
+wget -nv ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
+pigz -d Pfam-A.hmm.gz
+mv Pfam-A.hmm pfam
+hmmpress pfam
+python3 ${BAKTA_DB_SCRIPTS}/extract-hypotheticals.py --psc psc.faa --db bakta.db --hypotheticals hypotheticals.faa
+nextflow run ${BAKTA_DB_SCRIPTS}/hmmscan.nf --fasta hypotheticals.faa --db pfam-families
+python3 ${BAKTA_DB_SCRIPTS}/annotate-pfam.py --db bakta.db --hmm-results hmmscan.tblout
+rm pfam-families pfam *.tsv Pfam* hmmscan.tblout
 
 
 # Cleanup
