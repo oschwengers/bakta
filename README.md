@@ -64,7 +64,7 @@ For a full description, please have a look at the [Usage](#usage) section.
 Replicon meta data table:
 
 To fine-tune the very details of each sequence in the input fasta file, Bakta accepts a replicon meta data table provided in `tsv` file format: `--replicons <tsv-replicon-file>`.
-Thus, for example, complete replicons within partially completed draft assemblies can be marked & handled as such.
+Thus, for example, complete replicons within partially completed draft assemblies can be marked & handled as such, *e.g.* detection & annotation of features spanning sequence edges.
 
 Table format:
 
