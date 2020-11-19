@@ -52,7 +52,7 @@ def write_genbank(genome, features, genbank_path):
 
         if(contig['complete']):
                 description = f"{description}, complete sequence"
-        if(description[0] == ' '):  # discard potential leading whitespace
+        if(len(description) > 0 and description[0] == ' '):  # discard potential leading whitespace
             description = description[1:]
 
         contig_rec = SeqIO.SeqRecord(id='.', name=contig['id'], description=description, annotations=contig_annotations, seq=Seq(contig['sequence']))
