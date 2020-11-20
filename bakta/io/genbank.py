@@ -166,7 +166,7 @@ def write_genbank(genome, features, genbank_path):
                             stop = AfterPosition(feature['stop'])
                     feature_location = FeatureLocation(start, stop, strand=strand)
 
-                if(feature['type'] not in [bc.FEATURE_NC_RNA_REGION, bc.FEATURE_CRISPR, bc.FEATURE_GAP, bc.FEATURE_ORIC, bc.FEATURE_ORIV, bc.FEATURE_ORIT]):
+                if(feature.get('locus', None)):
                     gene_qualifier = {
                         'locus_tag': feature['locus']
                     }

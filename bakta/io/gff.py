@@ -106,9 +106,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     fh.write(f"{feat['contig']}\tInfernal\t{so.SO_NCRNA_GENE.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_NC_RNA_REGION):
                     annotations = {
-                        'ID': feat['locus'],
                         'Name': feat['product'],
-                        'locus_tag': feat['locus'],
                         'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
