@@ -77,9 +77,11 @@ def write_genbank(genome, features, genbank_path):
                 elif(feature['type'] == bc.FEATURE_ORIC or feature['type'] == bc.FEATURE_ORIV):
                     #TODO: Add fuzzy positions for oriC/oriV
                     insdc_feature_type = bc.INSDC_FEATURE_ORIGIN_REPLICTION
+                    qualifiers['inference'] = 'similar to DNA sequence'
                 elif(feature['type'] == feature['type'] == bc.FEATURE_ORIT):
                     #TODO: Add fuzzy positions for oriT
                     insdc_feature_type = bc.INSDC_FEATURE_ORIGIN_TRANSFER
+                    qualifiers['inference'] = 'similar to DNA sequence'
                 elif(feature['type'] == bc.FEATURE_CDS) or (feature['type'] == bc.FEATURE_SORF):
                     qualifiers['translation'] = feature['sequence']
                     qualifiers['codon_start'] = 1
