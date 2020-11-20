@@ -179,7 +179,7 @@ tRNAscan-se must be installed manually as v2.0 is currently not yet available vi
 ### Mandatory database
 
 Bakta requires a mandatory database which is publicly hosted at Zenodo:
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247253.svg)](https://doi.org/10.5281/zenodo.4247253)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
 Further information is provided [below](#database).
 
 ```bash
@@ -302,7 +302,7 @@ To pinpoint annotations and provide reproducible analysis, the database releases
 The db schema is represented by the `<major>` digit and automatically checked at runtime by Bakta in order to ensure compatibility. Content updates are tracked by the `<minor>` digit.
 
 All database releases (latest 1.0, 23 Gb zipped, 43 Gb unzipped) are hosted at Zenodo:
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247253.svg)](https://doi.org/10.5281/zenodo.4247253)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
 
 ## Usage
 
