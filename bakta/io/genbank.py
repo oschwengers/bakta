@@ -166,12 +166,13 @@ def write_genbank(genome, features, genbank_path):
                             stop = AfterPosition(feature['stop'])
                     feature_location = FeatureLocation(start, stop, strand=strand)
 
-                if(feature.get('gene', '') and feature['type'] != bc.FEATURE_NC_RNA_REGION):
-                    qualifiers['gene'] = feature['gene']
+                if(feature['type'] not in [bc.FEATURE_NC_RNA_REGION, bc.FEATURE_CRISPR, bc.FEATURE_GAP, bc.FEATURE_ORIC, bc.FEATURE_ORIV, bc.FEATURE_ORIT]):
                     gene_qualifier = {
-                        'gene': feature['gene'],
                         'locus_tag': feature['locus']
                     }
+                    if(feature.get('gene', None)):
+                        qualifiers['gene'] = feature['gene']
+                        gene_qualifier['gene'] = feature['gene']
                     gen_seqfeat = SeqFeature(feature_location, type='gene', qualifiers=gene_qualifier)
                     seq_feature_list.append(gen_seqfeat)
                 feat_seqfeat = SeqFeature(feature_location, type=insdc_feature_type, qualifiers=qualifiers)
