@@ -124,9 +124,9 @@ def write_gff3(genome, features_by_contig, gff3_path):
                 elif(feat['type'] is bc.FEATURE_CDS):
                     annotations = {
                         'ID': feat['locus'],
-                        'Name': bc.HYPOTHETICAL_PROTEIN if feat.get('hypothetical', False) else feat['product'],
+                        'Name': feat['product'],
                         'locus_tag': feat['locus'],
-                        'product': bc.HYPOTHETICAL_PROTEIN if feat.get('hypothetical', False) else feat['product']
+                        'product': feat['product']
                     }
                     if('db_xrefs' in feat):
                         annotations['Dbxref'] = feat['db_xrefs']
@@ -139,9 +139,9 @@ def write_gff3(genome, features_by_contig, gff3_path):
                 elif(feat['type'] is bc.FEATURE_SORF):
                     annotations = {
                         'ID': feat['locus'],
-                        'Name': bc.HYPOTHETICAL_PROTEIN if feat.get('hypothetical', False) else feat['product'],
+                        'Name': feat['product'],
                         'locus_tag': feat['locus'],
-                        'product': bc.HYPOTHETICAL_PROTEIN if feat.get('hypothetical', False) else feat['product']
+                        'product': feat['product']
                     }
                     if('db_xrefs' in feat):
                         annotations['Dbxref'] = feat['db_xrefs']

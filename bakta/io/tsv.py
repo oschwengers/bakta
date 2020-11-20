@@ -30,7 +30,9 @@ def write_tsv(contigs, features_by_contig, tsv_path):
                 feat_type = feat['type']
                 if(feat['type'] == bc.FEATURE_GAP):
                     feat_type = bc.INSDC_FEATURE_ASSEMBLY_GAP if feat['length'] >= 100 else bc.INSDC_FEATURE_GAP
-                fh.write('\t'.join([feat['contig'], feat_type, str(feat['start']), str(feat['stop']), feat['strand'], feat.get('gene', ''), feat.get('product', ''), ', '.join(sorted(feat.get('db_xrefs', [])))]))
+                
+                gene = feat['gene'] if feat.get('gene', None) else ''
+                fh.write('\t'.join([feat['contig'], feat_type, str(feat['start']), str(feat['stop']), feat['strand'], gene, feat.get('product', ''), ', '.join(sorted(feat.get('db_xrefs', [])))]))
                 fh.write('\n')
     return
 

@@ -212,9 +212,3 @@ def split_gff_annotation(annotation_string):
             except:
                 log.error('expr=%s', expr)
     return annotations
-
-
-def mark_hypotheticals(cdss):
-    for cds in cdss:
-        if('ips' not in cds and 'psc' not in cds):
-            cds['hypothetical'] = True

@@ -246,11 +246,9 @@ def main():
         psc.lookup(genome['features'][bc.FEATURE_CDS])  # lookup PSC info
         
         print(f"\tmark hypotheticals and combine annotations...")
-        log.debug('mark CDS hypotheticals')
-        cds.mark_hypotheticals(genome['features'][bc.FEATURE_CDS])  # mark hypotheticals
         log.debug('combine CDS annotations')
         for feat in genome['features'][bc.FEATURE_CDS]:
-            anno.combine_ips_psc_annotation(feat) # combine IPS and PSC annotations
+            anno.combine_ips_psc_annotation(feat) # combine IPS & PSC annotations and mark hypotheticals
     
     ############################################################################
     # sORF prediction

@@ -11,8 +11,8 @@ def combine_ips_psc_annotation(feature):
     ips = feature.get('ips', None)
     psc = feature.get('psc', None)
 
-    gene = ''
-    product = bc.HYPOTHETICAL_PROTEIN
+    gene = None
+    product = None
     db_xrefs = set()
     if(psc):
         psc_gene = psc.get('gene', None)
@@ -35,8 +35,14 @@ def combine_ips_psc_annotation(feature):
             product = ips_product
         for db_xref in ips['db_xrefs']:
             db_xrefs.add(db_xref)
-    feature['gene'] = gene
-    feature['product'] = product
+    
+    if(gene):
+        feature['gene'] = gene
+    if(product):
+        feature['product'] = product
+    else:
+        feature['product'] = bc.HYPOTHETICAL_PROTEIN
+        feature['hypothetical'] = True
     feature['db_xrefs'] = sorted(list(db_xrefs))
 
 
