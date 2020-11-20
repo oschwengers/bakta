@@ -1,7 +1,9 @@
 import json
 from collections import OrderedDict
 
+import bakta
 import bakta.constants as bc
+import bakta.config as cfg
 
 def write_json(genome, features, json_path):
     # clean feature attributes
@@ -20,6 +22,7 @@ def write_json(genome, features, json_path):
                 psc.pop('db_xrefs')
     
     # replace features type dict by sorted feature list
+    output = OrderedDict()
     ordered_genome = OrderedDict()
     ordered_genome['genus'] = genome['genus']
     ordered_genome['species'] = genome['species']
@@ -28,16 +31,24 @@ def write_json(genome, features, json_path):
         ordered_genome['plasmid'] = genome['plasmid']
     ordered_genome['gram'] = genome['gram']
     ordered_genome['translation_table'] = genome['translation_table']
+    output['genome'] = ordered_genome
     
-    ordered_genome['no_sequences'] = len(genome['contigs'])
-    ordered_genome['size'] = genome['size']
-    ordered_genome['gc'] = genome['gc']
-    ordered_genome['n_ratio'] = genome['n_ratio']
-    ordered_genome['n50'] = genome['n50']
-    ordered_genome['coding_ratio'] = genome['coding_ratio']
+    stats = OrderedDict()
+    stats['no_sequences'] = len(genome['contigs'])
+    stats['size'] = genome['size']
+    stats['gc'] = genome['gc']
+    stats['n_ratio'] = genome['n_ratio']
+    stats['n50'] = genome['n50']
+    stats['coding_ratio'] = genome['coding_ratio']
+    output['stats'] = stats
 
-    ordered_genome['features'] = features
-    ordered_genome['sequences'] = genome['contigs']
+    output['features'] = features
+    output['sequences'] = genome['contigs']
+
+    version = OrderedDict()
+    version['bakta'] = bakta.__version__
+    version['db'] = f"{cfg.db_info['major']}.{cfg.db_info['minor']}"
+    output['version'] = version
 
     with json_path.open('w') as fh:
-        json.dump(ordered_genome, fh, indent=4)
+        json.dump(output, fh, indent=4)
