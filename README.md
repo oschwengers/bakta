@@ -298,7 +298,7 @@ Rfam covariance models:
 - ncRNA: 750
 - ncRNA cis-regulatory regions: 107
 
-To pinpoint annotations and provide reproducible analysis, the database releases are SemVer versioned (leaving out the patch level), *i.e.* `<major>.<minor>`.
+To pinpoint annotations and provide reproducible analysis, the database releases are SemVer versioned (w/o patch level), *i.e.* `<major>.<minor>`.
 The db schema is represented by the `<major>` digit and automatically checked at runtime by Bakta in order to ensure compatibility. Content updates are tracked by the `<minor>` digit.
 
 All database releases (latest 1.0, 23 Gb zipped, 43 Gb unzipped) are hosted at Zenodo:

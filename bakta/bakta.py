@@ -23,6 +23,7 @@ import bakta.features.cds as cds
 import bakta.features.s_orf as s_orf
 import bakta.features.gaps as gaps
 import bakta.features.ori as ori
+import bakta.db as db
 import bakta.utils as bu
 import bakta.ups as ups
 import bakta.ips as ips
@@ -68,13 +69,13 @@ def main():
     # - test binary dependencies
     ############################################################################
     cfg.setup(args)  # check parameters and prepare global configuration
-    bu.check_database()
+    db_info = db.check()
     bu.test_dependencies()
     if(cfg.verbose):
         print(f'Bakta v{bakta.__version__}')
         print('Options and arguments:')
         print(f'\tinput: {cfg.genome_path}')
-        print(f'\tdb: {cfg.db_path}')
+        print(f"\tdb: {cfg.db_path}, version {db_info['major']}.{db_info['minor']}")
         print(f'\toutput: {cfg.output_path}')
         print(f'\tprefix: {cfg.prefix}')
         print(f'\ttmp directory: {cfg.tmp_path}')
