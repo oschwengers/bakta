@@ -9,44 +9,59 @@ log = logging.getLogger('CONFIG')
 
 # runtime configurations
 env = os.environ.copy()
-bundled_binaries = False
-threads = 1
+threads = None
+verbose = None
 
-# input / output path configurations
+# input / output configuration
 db_path = None
+db_info = None
 tmp_path = None
 genome_path = None
+min_contig_length = None
+prefix = None
 output_path = None
 
-# genome configurations
-prefix = None
-locus = None
-locus_tag = None
+# organism configuration
 genus = None
 species = None
 strain = None
-keep_contig_headers = False
-complete = False
-plasmid = False
+plasmid = None
+taxon = None
 
-# input / output configurations
-gff3 = False
-genbank = False
-embl = False
+# annotation configuration
+complete = None
+prodigal_tf = None
+translation_table = None
+keep_contig_headers = None
+locus = None
+locus_tag = None
+gram = None
+replicons = None
+
+# workflow configuration
+skip_trna = None
+skip_tmrna = None
+skip_rrna = None
+skip_ncrna = None
+skip_ncrna_region = None
+skip_crispr = None
+skip_cds = None
+skip_sorf = None
+skip_gap = None
+skip_ori = None
 
 
 def setup(args):
     """Test environment and build a runtime configuration."""
     # runtime configurations
-    global env, bundled_binaries, threads, verbose
+    global env, threads, verbose
     threads = args.threads
     log.info('threads=%i', threads)
     verbose = args.verbose
     log.info('verbose=%s', verbose)
 
     # input / output path configurations
-    global db_path, tmp_path, genome_path, output_path
-    db_path = None
+    global db_path, db_info, tmp_path, genome_path, min_contig_length, prefix, output_path
     if(args.db):
         db_dir = args.db
         log.debug('test parameter db: db_tmp=%s', db_dir)
@@ -109,34 +124,37 @@ def setup(args):
         sys.exit(f'ERROR: genome file ({args.genome}) not valid!')
     log.info('genome-path=%s', genome_path)
 
-    log.info('output-path=%s', output_path)
-
     # input / output configurations
-    global min_contig_length, prefix, taxon
     min_contig_length = args.min_contig_length
     log.info('min_contig_length=%s', min_contig_length)
-    log.info('prefix=%s', prefix)
+    log.info('prefix=%s', prefix)  # set in bakta.py before globael logger config
+    log.info('output-path=%s', output_path)
 
     # organism configurations
-    global genus, species, strain, plasmid
-    genus = args.genus.capitalize() if args.genus != '' else None
+    global genus, species, strain, plasmid, taxon
+    genus = args.genus
+    if(genus):
+        genus = genus.capitalize()
     log.info('genus=%s', genus)
-    species = args.species.lower() if args.species != '' else None
+    species = args.species
+    if(species):
+        species = species.lower()
     log.info('species=%s', species)
-    strain = args.strain if args.strain != '' else None
+    strain = args.strain
     log.info('strain=%s', strain)
-    plasmid = args.plasmid if args.plasmid != '' else None
+    plasmid = args.plasmid
     log.info('plasmid=%s', plasmid)
-    
     taxon = f'{genus} {species} {strain}'
     taxon = ' '.join(taxon.replace('None', '').split())
     if(taxon == ''):
         taxon = None
 
     # annotation configurations
-    global prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, gram, complete, replicons
-    prodigal_tf = args.prodigal_tf if args.prodigal_tf != '' else None
-    if prodigal_tf is not None:
+    global complete, prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, gram, replicons
+    complete = args.complete
+    log.info('complete=%s', complete)
+    prodigal_tf = args.prodigal_tf
+    if(prodigal_tf):
         try:
             prodigal_tf_path = Path(args.prodigal_tf).resolve()
             if(not os.access(str(prodigal_tf_path), os.R_OK)):
@@ -150,20 +168,18 @@ def setup(args):
             log.error('provided prodigal training file not valid! path=%s', args.prodigal_tf)
             sys.exit(f'ERROR: Prodigal training file ({args.prodigal_tf}) not valid!')
     log.info('prodigal_tf=%s', prodigal_tf)
-    translation_table = args.translation_table if args.translation_table != '' else None
+    translation_table = args.translation_table
     log.info('translation_table=%s', translation_table)
-    keep_contig_headers = args.keep_contig_headers
-    log.info('keep_contig_headers=%s', keep_contig_headers)
-    locus = args.locus if args.locus != '' else None
-    log.info('locus=%s', locus)
-    locus_tag = args.locus_tag if args.locus_tag != '' else None
-    log.info('locus-tag=%s', locus_tag)
     gram = args.gram
     log.info('gram=%s', gram)
-    complete = args.complete
-    log.info('complete=%s', complete)
-    replicons = args.replicons if args.replicons != '' else None
-    if replicons is not None:
+    locus = args.locus
+    log.info('locus=%s', locus)
+    locus_tag = args.locus_tag
+    log.info('locus-tag=%s', locus_tag)
+    keep_contig_headers = args.keep_contig_headers
+    log.info('keep_contig_headers=%s', keep_contig_headers)
+    replicons = args.replicons
+    if(replicons):
         try:
             replicon_table_path = Path(args.replicons).resolve()
             if(not os.access(str(replicon_table_path), os.R_OK)):

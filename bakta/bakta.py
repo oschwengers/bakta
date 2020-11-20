@@ -42,8 +42,7 @@ def main():
     ############################################################################
     # Setup logging
     ############################################################################
-    prefix = args.prefix if args.prefix else Path(args.genome).stem
-    cfg.prefix = prefix
+    cfg.prefix = args.prefix if args.prefix else Path(args.genome).stem
     try:
         output_path = Path(args.output) if args.output else Path.cwd()
         if(not output_path.exists()):
@@ -53,7 +52,7 @@ def main():
     except:
         sys.exit(f'ERROR: could not resolve or create output directory ({args.output})!')
     logging.basicConfig(
-        filename=str(output_path.joinpath(f'{prefix}.log')),
+        filename=str(output_path.joinpath(f'{cfg.prefix}.log')),
         filemode='w',
         format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
         level=logging.DEBUG if args.verbose else logging.INFO
@@ -69,13 +68,13 @@ def main():
     # - test binary dependencies
     ############################################################################
     cfg.setup(args)  # check parameters and prepare global configuration
-    db_info = db.check()
+    cfg.db_info = db.check()
     bu.test_dependencies()
     if(cfg.verbose):
         print(f'Bakta v{bakta.__version__}')
         print('Options and arguments:')
         print(f'\tinput: {cfg.genome_path}')
-        print(f"\tdb: {cfg.db_path}, version {db_info['major']}.{db_info['minor']}")
+        print(f"\tdb: {cfg.db_path}, version {cfg.db_info['major']}.{cfg.db_info['minor']}")
         print(f'\toutput: {cfg.output_path}')
         print(f'\tprefix: {cfg.prefix}')
         print(f'\ttmp directory: {cfg.tmp_path}')
@@ -423,27 +422,27 @@ def main():
     ############################################################################
     print('\nwrite JSON output...')
     log.debug('write JSON output')
-    json_path = cfg.output_path.joinpath(f'{prefix}.json')
+    json_path = cfg.output_path.joinpath(f'{cfg.prefix}.json')
     json.write_json(genome, features, json_path)
     print('write TSV output...')
     log.debug('write tsv output')
-    tsv_path = cfg.output_path.joinpath(f'{prefix}.tsv')
+    tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.tsv')
     tsv.write_tsv(genome['contigs'], features_by_contig, tsv_path)
     print('write GFF3 output...')
     log.debug('write GFF3 output')
-    gff3_path = cfg.output_path.joinpath(f'{prefix}.gff3')
+    gff3_path = cfg.output_path.joinpath(f'{cfg.prefix}.gff3')
     gff.write_gff3(genome, features_by_contig, gff3_path)
     print('write GenBank output...')
     log.debug('write GenBank output')
-    genbank_path = cfg.output_path.joinpath(f'{prefix}.gbff')
+    genbank_path = cfg.output_path.joinpath(f'{cfg.prefix}.gbff')
     genbank.write_genbank(genome, features, genbank_path)
     print('write genome sequences...')
     log.debug('write genome sequence output')
-    fna_path = cfg.output_path.joinpath(f'{prefix}.fna')
+    fna_path = cfg.output_path.joinpath(f'{cfg.prefix}.fna')
     fasta.export_contigs(genome['contigs'], fna_path, description=True, wrap=True)
     print('write translated CDS sequences...')
     log.debug('write translated CDS output')
-    faa_path = cfg.output_path.joinpath(f'{prefix}.faa')
+    faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.faa')
     fasta.write_faa(features, faa_path)
 
 
