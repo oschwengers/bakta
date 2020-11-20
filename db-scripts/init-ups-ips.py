@@ -107,7 +107,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                         tmp = product.lower()
                         if(tmp == 'hypothetical protein'):
                             product = None
-                        elif(tmp == 'Uncharacterized protein'):
+                        elif(tmp == 'uncharacterized protein'):
                             product = None
                     
                     uniref90_id = rep_member_dbref.find('./{*}property[@type="UniRef90 ID"]')
