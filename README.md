@@ -323,7 +323,7 @@ usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH]
              [--tmp-dir TMP_DIR] [--version] [--citation]
              <genome>
 
-Comprehensive and rapid annotation of bacterial genomes.
+Rapid & standardized annotation of bacterial genomes & plasmids.
 
 positional arguments:
   <genome>              (Draft) genome in fasta format

@@ -17,7 +17,7 @@ log = logging.getLogger('UTILS')
 def parse_arguments():
     parser = argparse.ArgumentParser(
         prog='bakta',
-        description='Comprehensive and rapid annotation of bacterial genomes.',
+        description='Rapid & standardized annotation of bacterial genomes & plasmids.',
         add_help=False
     )
     parser.add_argument('genome', metavar='<genome>', help='(Draft) genome in fasta format')
