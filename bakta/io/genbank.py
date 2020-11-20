@@ -113,25 +113,25 @@ def write_genbank(genome, features, genbank_path):
                     qualifiers['inference'] = 'profile:aragorn:1.2'
                     insdc_feature_type = bc.INSDC_FEATURE_TM_RNA
                 elif(feature['type'] == bc.FEATURE_R_RNA):
-                    for reference in feature['db_xrefs']:
-                        if(reference.split(':')[0] == 'RFAM'):
-                            r_subject_id = reference.split(':')[1]
-                    qualifiers['inference'] = f'profile:Rfam:{r_subject_id}'
+                    for dbxref in feature['db_xrefs']:
+                        if(dbxref.split(':')[0] == 'RFAM'):
+                            rfam_id = dbxref.split(':')[1]
+                            qualifiers['inference'] = f'profile:Rfam:{rfam_id}'
                     insdc_feature_type = bc.INSDC_FEATURE_R_RNA
                 elif(feature['type'] == bc.FEATURE_NC_RNA):
                     # TODO: ncRNA_class
-                    for reference in feature['db_xrefs']:
-                        if(reference.split(':')[0] == 'RFAM'):
-                            nc_subject_id = reference.split(':')[1]
+                    for dbxref in feature['db_xrefs']:
+                        if(dbxref.split(':')[0] == 'RFAM'):
+                            rfam_id = dbxref.split(':')[1]
+                            qualifiers['inference'] = f'profile:Rfam:{rfam_id}'
                     qualifiers['ncRNA_class'] = 'other'
-                    qualifiers['inference'] = f'profile:Rfam:{nc_subject_id}'
                     insdc_feature_type = bc.INSDC_FEATURE_NC_RNA
                 elif(feature['type']==bc.FEATURE_NC_RNA_REGION):
-                    for reference in feature['db_xrefs']:
-                        if(reference.split(':')[0] == 'RFAM'):
-                            nc_subject_id = reference.split(':')[1]
+                    for dbxref in feature['db_xrefs']:
+                        if(dbxref.split(':')[0] == 'RFAM'):
+                            rfam_id = dbxref.split(':')[1]
+                            qualifiers['inference'] = f'profile:Rfam:{rfam_id}'
                     qualifiers['ncRNA_class'] = 'other'
-                    qualifiers['inference'] = f'profile:Rfam:{nc_subject_id}'
                     insdc_feature_type = bc.INSDC_FEATURE_REGULATORY
                 elif(feature['type']==bc.FEATURE_CRISPR):
                     qualifiers['repeats'] = feature['repeats']
@@ -141,14 +141,13 @@ def write_genbank(genome, features, genbank_path):
                     feature['type'] = 'misc_feature'
                     insdc_feature_type = bc.INSDC_FEATURE_MISC_FEATURE
                 
+                strand = None
                 if(feature['strand'] == bc.STRAND_FORWARD):
                     strand = 1
                 elif(feature['strand'] == bc.STRAND_REVERSE):
                     strand = -1
                 elif(feature['strand'] == bc.STRAND_UNKNOWN):
                     strand = 0
-                elif(feature['strand'] == bc.STRAND_NA):
-                    strand = None
                 
                 if('edge' in feature):
                     fl_1 = FeatureLocation(feature['start'] - 1, contig['length'], strand=strand)
