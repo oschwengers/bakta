@@ -32,6 +32,9 @@
 
 Bakta is an offline tool dedicated to the rapid & standardized annotation of bacteria & plasmids. It provides **dbxref**-rich and **sORF**-including annotations in machine-readble (`JSON`) & bioinformatics standard file formats for automatic downstream analysis.
 
+> Bakta is young and still in a beta status! So please, test it, bend, sequeeze & smash it, try to crash it... but don't forget to file bug reports ;-) 
+Of course, feedback of any kind and feature requests are highly welcome & very much appreciated ;-)
+
 The annotation of microbial genomes is a diverse task comprising the structural & functional annotation of different feature types with distinct overlapping characteristics. Existing local annotation pipelines cover a broad range of microbial taxa, *e.g.* bacteria, aerchaea, viruses. To streamline and foster the expansion of supported feature types, Bakta is strictly dedicated to the annotation of bacteria and plasmids. To standardize annotations, Bakta uses a comprehensive & versioned annotation database utilizing UniProt's UniRef clusters enriched by cross-references and specialized niche databases.
 
 Exact matches to known protein coding sequences (**CDS**), subsequently referred to as identical protein sequences (**IPS**) are identified via `MD5` digests and annotated with database cross-references (**dbxref**) to:
@@ -374,7 +377,7 @@ General:
 
 ## Citation
 
-A manuscript is in preparation. To temporarily cite our work, please transitionally refer to:
+A manuscript is not yet in preparation, but might be soon... To temporarily cite our work, please transitionally refer to:
 > Schwengers O., Goesmann A. (2020) Bakta: Rapid & standardized annotation of bacterial genomes & plasmids. GitHub https://github.com/oschwengers/bakta
 
 Bakta takes advantage of many publicly available databases. If you find any of the data used within Bakta useful, please also be sure to credit the primary source also:
