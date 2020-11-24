@@ -4,133 +4,55 @@
 ![PyPI](https://img.shields.io/pypi/v/bakta.svg)
 ![PyPI - Status](https://img.shields.io/pypi/status/bakta.svg)
 ![Conda](https://img.shields.io/conda/v/bioconda/bakta.svg)
-![Conda](https://img.shields.io/conda/pn/bioconda/bakta.svg)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
 
 # Bakta: Rapid & standardized annotation of bacterial genomes & plasmids
+
+Bakta is a tool for the rapid & standardized local annotation of bacterial genomes & plasmids. It provides **dbxref**-rich and **sORF**-including annotations in machine-readble `JSON` & bioinformatics standard file formats for automatic downstream analysis.
+
+> Bakta is young and still in a beta status! So please, test it, bend, sequeeze & smash it, try to crash it... but don't forget to file bug reports ;-)
+Of course, feedback of any kind and feature requests are highly welcome & very much appreciated ;-)
 
 ## Contents
 
 - [Description](#description)
-- [Input/Output](#inputoutput)
-- [Examples](#examples)
 - [Installation](#installation)
-  - [Bioconda](#bioconda)
-  - [Docker](#docker)
-  - [Pip](#pip)
-  - [Dependencies](#dependencies)
-  - [Database](#mandatory_database)
+- [Examples](#examples)
+- [Input/Output](#inputoutput)
+- [Usage](#usage)
 - [Annotation workflow](#annoation_workflow)
 - [Database](#database)
-- [Usage](#usage)
+- [WIP](#wip)
 - [Citation](#citation)
 - [FAQ](#faq)
 - [Issues & Feature Requests](#issues)
 
 ## Description
 
-**TL;DR**
+- **Bacteria & plasmids only**
+Bakta is desined to annotate bacteria and plasmids, only. This decision by design has been made in order to tweak the annotation process regarding tools, preferences & databases and to streamline further development & maintenance of the software.
 
-Bakta is an offline tool dedicated to the rapid & standardized annotation of bacteria & plasmids. It provides **dbxref**-rich and **sORF**-including annotations in machine-readble (`JSON`) & bioinformatics standard file formats for automatic downstream analysis.
+- **FAIR annotations**
+To provide standardized annotations adhearing to [FAIR](https://www.go-fair.org/fair-principles) principles, Bakta utilizes a comprehensive & versioned annotation db basing on UniProt's UniRef100 & UniRef90 protein clusters enriched with dbxrefs (`GO`, `COG`, `EC`) and annotated by specialized niche databases. For each db version we provide a comprehensive log file of imported sequences and conducted annotations.
 
-> Bakta is young and still in a beta status! So please, test it, bend, sequeeze & smash it, try to crash it... but don't forget to file bug reports ;-) 
-Of course, feedback of any kind and feature requests are highly welcome & very much appreciated ;-)
+- **Protein sequence identification**
+Fostering the FAIR aspect, Bakta identifies identical protein sequences (**IPS**) via `MD5` digests which are annotated with database cross-references (**dbxref**) to RefSeq (`WP_*`), UniRef100 (`UniRef100_*`) and UniParc (`UPI*`).
+By doing so, IPS allow the surveillance of distinct gene alleles and streamlining comparative analysis as well as posterior (external) annotations of `putative` & `hypothetical` protein sequences which can be mapped back to existing CDS via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)). Currently, Bakta identifies ~169 mio distinct UniRef100 sequences and for some genomes, up to 99 % of all CDS can be identified this way, sparing expensive homology searches.
 
-The annotation of microbial genomes is a diverse task comprising the structural & functional annotation of different feature types with distinct overlapping characteristics. Existing local annotation pipelines cover a broad range of microbial taxa, *e.g.* bacteria, aerchaea, viruses. To streamline and foster the expansion of supported feature types, Bakta is strictly dedicated to the annotation of bacteria and plasmids. To standardize annotations, Bakta uses a comprehensive & versioned annotation database utilizing UniProt's UniRef clusters enriched by cross-references and specialized niche databases.
+- **Short open reading frames**
+Next to standard feature types (tRNA, tmRNA, rRNA, ncRNA, ncRNA regions, CRISPR, CDS, oriC/V/T and gaps) Bakta also detects and annotates short open reading frames (**sORF**) which are not predicted by tools like `Prodigal`.
 
-Exact matches to known protein coding sequences (**CDS**), subsequently referred to as identical protein sequences (**IPS**) are identified via `MD5` digests and annotated with database cross-references (**dbxref**) to:
+- **Fast**
+Bakta can annotate a typical bacterial genome in 10 &plusmn;5 min on a laptop, plasmids in a couple of seconds/minutes.
 
-- RefSeq (`WP_*`)
-- UniRef100/UniRef90 (`UniRef100_*`/`UniRef90_*`)
-- UniParc (`UPI*`)
-
-By doing so, **IPS** allow the surveillance of distinct gene alleles and streamline comparative analysis. Also, posterior (external) annotations of `putative` & `hypothetical` protein sequences can be mapped back to existing **CDS** via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)).
-Unidentified remaining **CDS** are annotated via UniRef90 protein sequence clusters (**PSC**).
-**PSC** & **IPS** are enriched by pre-annotated and stored information (`GO`, `COG`, `EC`).
-
-Next to standard feature types (tRNA, tmRNA, rRNA, ncRNA, CRISPR, CDS, gaps) Bakta also detects and annotates:
-
-- short ORFs (**sORF**) which are not predicted by tools like `Prodigal`
-- ncRNA cis-regulatory regions distinct from ncRNA genes
-- origins of replication/transfer (oriC, oriV, oriT)
-
-Bakta can annotate a typical bacterial genome within minutes and hence fits the niche between large & computationally-demanding (online) pipelines and rapid, highly-customizable offline tools like Prokka. Indeed, Bakta is heavily inspired by Prokka (kudos to [Torsten Seemann](https://github.com/tseemann)) and many command line options are mutually compatible for the sake of interoperability and user convenience. Hence, if it doesn't fit your needs, please try [Prokka](https://github.com/tseemann/prokka).
-
-## Input/Output
-
-### Input
-
-Bakta accepts bacterial and plasmid assemblies (complete / draft) in (zipped) fasta format.
-
-Further genome information and workflow customizations can be provided and set via a number of input parameters.
-For a full description, please have a look at the [Usage](#usage) section.
-
-Replicon meta data table:
-
-To fine-tune the very details of each sequence in the input fasta file, Bakta accepts a replicon meta data table provided in `tsv` file format: `--replicons <tsv-replicon-file>`.
-Thus, for example, complete replicons within partially completed draft assemblies can be marked & handled as such, *e.g.* detection & annotation of features spanning sequence edges.
-
-Table format:
-
-original locus id  |  new locus id  |  type  |  topology  |  name
-----|----------------|----------------|----------------|----------------
-`old id` | [`new id` / `<empty>`] | [`chromosome` / `plasmid` / `contig` / `<empty>`] | [`circular` / `linear` / `<empty>`] | `name`
-
-Thus, for each input sequence recognized via the `original locus id` a `new locus id`, the replicon `type` and the `topology` as well a `name` can be explicitly set.
-
-Available short cuts:
-
-- `chromosome`: `c`
-- `plasmid`: `p`
-- `circular`: `c`
-- `linear`: `l`
-
-`<empty>` values (`-` / ``) will be replaced by defaults. If **new locus id** is `empty`, a new contig name will be autogenerated.
-
-Defaults:
-
-- type: `contig`
-- topology: `linear`
-
-Example:
-
-original locus id  |  new locus id  |  type  |  topology  |  name
-----|----------------|----------------|----------------|----------------
-NODE_1 | chrom | `chromosome` | `circular` | `-`
-NODE_2 | p1 | `plasmid` | `c` | `pXYZ1`
-NODE_3 | p2 | `p`  |  `c` | `pXYZ2`
-NODE_4 | special-contig-name-xyz |  `-` | -
-NODE_5 | `` |  `-` | -
-
-### Output
-
-Bakta provides detailed information on each annotated feature in a standardized machine-readable JSON file.
-In addition, the following standard file formats are supported:
-
-- `tsv`: annotations as simple human readble tab separated values
-- `GFF3`: annotations in GFF3 format
-- `GenBank`: annotations in GenBank format
-- `fna`: replicons/contigs as FASTA
-- `faa`: CDS as FASTA
-
-## Examples
-
-Simple:
-
-```bash
-$ bakta --db ~/db genome.fasta
-```
-
-Expert: verbose output writing results to *results* directory with *ecoli123* file `prefix` and *eco634* `locus tag` using an existing prodigal training file, using additional replicon information and 8 threads:
-
-```bash
-$ bakta --db ~/db --verbose --output results/ --prefix ecoli123 --locus-tag eco634 --prodigal-tf eco.tf --replicons replicon.tsv --threads 8 genome.fasta
-```
+- **Reasoning**
+Annotating bacterial genomes in a standardized, high-throughput, local manner w/o requirements for taxon-dependent DBs, Bakta targets the niche between standardized computationally-demanding pipelines like [PGAP](https://github.com/ncbi/pgap) and rapid highly-customizable offline tools like [Prokka](https://github.com/tseemann/prokka). Indeed, Bakta is heavily inspired by Prokka (kudos to [Torsten Seemann](https://github.com/tseemann)) and many command line options are compatible for the sake of interoperability and user convenience. Hence, if Bakta does not fit your needs, please try Prokka.
 
 ## Installation
 
-Bakta can be installed via BioConda, Docker and Pip.
-To automatically install all required 3rd party dependencies, we highly encourage to use [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html).
-In all cases a [mandatory database](#mandatory_database) must be downloaded.
+Bakta can be installed via BioConda, Docker, Singularity and Pip.
+However, to automatically install all required 3rd party dependencies, we encourage to use [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) or [Docker](https://www.docker.com/get-started)/[Singularity](https://sylabs.io/singularity).
+In all cases the mandatory [database](#database_download) must be downloaded.
 
 ### BioConda
 
@@ -140,27 +62,34 @@ $ conda install -c conda-forge -c bioconda -c defaults bakta
 
 ### Docker
 
-We provide a shell script (bakta-docker.sh) wrapping all Docker related issues, *e.g.* volume mounting.
-
 ```bash
 $ sudo docker pull oschwengers/bakta
-
 $ sudo docker run oschwengers/bakta --help
+```
+
+Installation instructions, get-started and guides: Docker [docs](https://docs.docker.com)
+For further convenience, we provide a shell script (`bakta-docker.sh`) handling stuff like volume mounting, etc:
+
+```bash
 $ bakta-docker.sh --help
 ```
 
-### Pip
+### Singularity
 
-1. install Bakta per pip
-2. install 3rd party binaries (-> Dependencies)
+```bash
+$ singularity pull docker://oschwengers/bakta:latest
+$ singularity run bakta-latest.simg --help
+```
+
+Installation instructions, get-started and guides: Singularity [docs](https://sylabs.io/docs)
+
+### Pip
 
 ```bash
 $ python3 -m pip install --user bakta
 ```
 
-### Dependencies
-
-Bacta requires Biopython (>=1.72), Xopen (0.9) and the following 3rd party executables which must be installed & executable:
+Bacta requires the following 3rd party executables which must be installed & executable:
 
 - tRNAscan-SE (2.0.6) <https://doi.org/10.1101/614032> <http://lowelab.ucsc.edu/tRNAscan-SE>
 - Aragorn (1.2.38) <http://dx.doi.org/10.1093/nar/gkh152> <http://130.235.244.92/ARAGORN>
@@ -174,12 +103,12 @@ Bacta requires Biopython (>=1.72), Xopen (0.9) and the following 3rd party execu
 On Ubuntu/Debian/Mint you can install these via:
 
 ```bash
-$ sudo apt install aragorn infernal prodigal diamond-aligner ncbi-blast+
+$ sudo apt install trnascan-se aragorn infernal pilercr prodigal hmmer diamond-aligner ncbi-blast+
 ```
 
-tRNAscan-se must be installed manually as v2.0 is currently not yet available via standard Ubuntu packages.
+Tested with Ubuntu 20.04 - some older distributions might provide outdated versions, *e.g.* trnascan-se in Ubuntu 18.04. In these cases dependencies must be installed manually.
 
-### Mandatory database
+### Database download
 
 Bakta requires a mandatory database which is publicly hosted at Zenodo:
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
@@ -206,106 +135,111 @@ Additionally, for a system-wide setup, the database can be copied to the Bakta b
 $ cp -r db/ <bakta-installation-dir>
 ```
 
-## Annotation workflow
+## Examples
 
-### RNAs
+Simple:
 
-1. tRNA genes: tRNAscan-SE 2.0
-2. tmRNA genes: Aragorn
-3. rRNA genes: Infernal vs. Rfam rRNA covariance models
-4. ncRNA genes: Infernal vs. Rfam ncRNA covariance models
-5. ncRNA cis-regulatory regions: Infernal vs. Rfam ncRNA covariance models
-6. CRISPR arrays: PILER-CR
+```bash
+$ bakta --db ~/db genome.fasta
+```
 
-Bakta distinguishes ncRNA genes and (regulatory) regions in order to enable the distinct handling thereof during the annotation process, *i.e.* feature overlap detection.
+Expert: verbose output writing results to *results* directory with *ecoli123* file `prefix` and *eco634* `locus tag` using an existing prodigal training file, using additional replicon information and 8 threads:
 
-ncRNA gene types:
+```bash
+$ bakta --db ~/db --verbose --output results/ --prefix ecoli123 --locus-tag eco634 --prodigal-tf eco.tf --replicons replicon.tsv --threads 8 genome.fasta
+```
 
-- sRNA
-- antisense
-- ribozyme
-- antitoxin
+## Input/Output
 
-ncRNA (regulatory) region types:
+### Input
 
-- riboswitch
-- thermoregulator
-- leader
-- frameshift element
+Bakta accepts bacterial and plasmid assemblies (complete / draft) in (zipped) fasta format.
 
-### Coding sequences
+For a full description of how further genome information can be provided and workflow customizations can be set, please have a look at the [Usage](#usage) section.
 
-The structural prediction is conducted via Prodigal and complemented by a custom detection of short open reading freames (**sORF**) < 30 aa.
+Replicon meta data table:
 
-To rapidly conduct a comprehensive annotation while also identifing known protein sequences with exact sequence matches,
-Bakta uses a comprehensive SQLite database comprising protein sequence digests and pre-annotations for millions of
-known protein sequences and clusters.
+To fine-tune the very details of each sequence in the input fasta file, Bakta accepts a replicon meta data table provided in `tsv` file format: `--replicons <file.tsv>`.
+Thus, complete replicons within partially completed draft assemblies can be marked & handled as such, *e.g.* detection & annotation of features spanning sequence edges.
 
-Conceptual terms:
+Table format:
 
-- **UPS**: unique protein sequences identified via length and **MD5** sequence digests (100% coverage & 100% sequence identity)
-- **IPS**: identical protein sequences comprising representatives of UniProt's UniRef100 protein sequence clusters
-- **PSC**: protein sequences clusters comprising representatives of UniProt's UniRef90 protein sequence clusters
+original sequence id  |  new sequence id  |  type  |  topology  |  name
+----|----------------|----------------|----------------|----------------
+`old id` | [`new id` / `<empty>`] | [`chromosome` / `plasmid` / `contig` / `<empty>`] | [`circular` / `linear` / `<empty>`] | [`name` / `<empty>`]
 
-**CDS**:
+For each input sequence recognized via the `original locus id` a `new locus id`, the replicon `type` and the `topology` as well a `name` can be explicitly set.
 
-1. Prediction via Prodigal
-2. Detection of **UPS**s via **MD5** digests and lookup of related **IPS** and **PCS**
-3. Homology search of remainder via Diamond vs. **PSC**
-4. Combination of available **IPS** & **PSC** information favouring more specific annotations and avoiding redundancy
+Shortcuts:
 
-**CDS** without **IPS** or **PSC** hits will be marked as `hypothetical`.
-Additionally, all **CDS** without gene symbols or with product descriptions equal to `hypothetical` will be marked as `hypothetical`.
+- `chromosome`: `c`
+- `plasmid`: `p`
+- `circular`: `c`
+- `linear`: `l`
 
-However, `hypothetical` **CDS** are included in the final annotation.
+`<empty>` values (`-` / ``) will be replaced by defaults. If **new locus id** is `empty`, a new contig name will be autogenerated.
 
-**sORFs**:
+Defaults:
 
-1. Custom detection & extraction of **sORF** with amino acid lengths < 30 aa
-2. Filter via strict feature type-dependent overlap filters with annotated features
-3. Detection of **UPS** via **MD5** hashes and lookup of related **IPS**
-4. Homology search of remainder via Diamond vs. seed sequences of an sORF subset of UniProt's UniRef90 **PSC**
-5. Exclude **sORF** without sufficient annotation information
+- type: `contig`
+- topology: `linear`
 
-**sORF** not identified via **IPS** or **PSC** will be discarded.
-Additionally, all **sORF** without gene symbols or with product descriptions equal to `hypothetical` will be discarded.
+Example:
 
-Due due to uncertain nature of **sORF** prediction, only those identified via **IPS** / **PSC** hits exhibiting proper gene symbols or product descriptions different from `hypothetical` will be included in the final annotation.
+original locus id  |  new locus id  |  type  |  topology  |  name
+----|----------------|----------------|----------------|----------------
+NODE_1 | chrom | `chromosome` | `circular` | `-`
+NODE_2 | p1 | `plasmid` | `c` | `pXYZ1`
+NODE_3 | p2 | `p`  |  `c` | `pXYZ2`
+NODE_4 | special-contig-name-xyz |  `-` | -
+NODE_5 | `` |  `-` | -
 
-### Miscellaneous
+### Output
 
-1. Gaps: in-mem detection & annotation of sequence gaps
-2. oriC/oriV/oriT: Blast+ (blastn) vs. [MOB-suite](https://github.com/phac-nml/mob-suite) oriT & [DoriC](http://tubic.org/doric/public/index.php) oriC/oriV sequences. Annotations of ori regions take into account overlapping Blast+ hits and are conducted based on a majority vote heuristic.
+Bakta provides detailed information on each annotated feature in a standardized machine-readable JSON file:
 
-## Database
+```json
+{
+    "genome": {
+        "genus": "Escherichia",
+        "species": "coli",
+        ...
+    },
+    "stats": {
+        "size": 5594605,
+        "gc": 0.497,
+        ...
+    },
+    "features": [
+        {
+            "type": "cds",
+            ...
+        },
+        ...
+    ],
+    "sequences": [
+        {
+            "id": "c1",
+            "description": "[organism=Escherichia coli] [completeness=complete] [topology=circular]",
+            "sequence": "AGCTTT...",
+            "length": 5498578,
+            "complete": true,
+            "type": "chromosome",
+            "topology": "circular"
+            ...
+        },
+        ...
+    ]
+}
+```
 
-The Bakta database comprises a set of DNA & AA sequence databases as well as HMM & covariance models.
-At its core Bakta uses a compact SQLite db storing protein sequence digests, lengths, pre-annotations and *dbxrefs* of **UPS**, **IPS** and **PSC** from:
+Additionally, the following output files are written:
 
-- **UPS**: UniParc / UniProtKB (192,795,177)
-- **IPS**: UniProt UniRef100 (169,958,214)
-- **PSC**: UniProt UniRef90 (77,128,011)
-
-This allows the exact protein sequences identification via **MD5** digests & sequence lengths as well as the rapid subsequent lookup of related information.
-**IPS** & **PSC** have been comprehensively pre-annotated integrating annotations & database *dbxrefs* from:
-
-- NCBI nonredundant proteins ('WP_*' -> 139,330,543)
-- NCBI COG db (80% cov / 90% id -> 1,893,080)
-- GO terms (via **IPS**/**PSC** SwissProt entries)
-- EC (via **IPS**/**PSC** SwissProt entries)
-- NCBI AMRFinderPlus (**IPS** exact matches, **PSC** HMM hits reaching trusted cutoffs)
-- ISFinder db (90% cov / 99% id -> 2,981)
-
-Rfam covariance models:
-
-- ncRNA: 750
-- ncRNA cis-regulatory regions: 107
-
-To pinpoint annotations and provide reproducible analysis, the database releases are SemVer versioned (w/o patch level), *i.e.* `<major>.<minor>`.
-The db schema is represented by the `<major>` digit and automatically checked at runtime by Bakta in order to ensure compatibility. Content updates are tracked by the `<minor>` digit.
-
-All database releases (latest 1.0, 23 Gb zipped, 43 Gb unzipped) are hosted at Zenodo:
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
+- `.tsv`: annotations as simple human readble tab separated values
+- `.gff3`: annotations & sequences in GFF3 format
+- `.gbff`: annotations & sequences in (multi) GenBank format
+- `.fna`: replicon/contig DNA sequences as FASTA
+- `.faa`: CDS/sORF amino acid sequences as FASTA
 
 ## Usage
 
@@ -375,6 +309,123 @@ General:
   --citation            Print citation
 ```
 
+## Annotation workflow
+
+### RNAs
+
+1. tRNA genes: tRNAscan-SE 2.0
+2. tmRNA genes: Aragorn
+3. rRNA genes: Infernal vs. Rfam rRNA covariance models
+4. ncRNA genes: Infernal vs. Rfam ncRNA covariance models
+5. ncRNA cis-regulatory regions: Infernal vs. Rfam ncRNA covariance models
+6. CRISPR arrays: PILER-CR
+
+Bakta distinguishes ncRNA genes and (regulatory) regions in order to enable the distinct handling thereof during the annotation process, *i.e.* feature overlap detection.
+
+ncRNA gene types:
+
+- sRNA
+- antisense
+- ribozyme
+- antitoxin
+
+ncRNA (cis-regulatory) region types:
+
+- riboswitch
+- thermoregulator
+- leader
+- frameshift element
+
+### Coding sequences
+
+The structural prediction is conducted via Prodigal and complemented by a custom detection of sORF < 30 aa.
+
+To rapidly identify known protein sequences with exact sequence matches and to conduct a comprehensive annotations, Bakta utilizes a compact SQLite database comprising protein sequence digests and pre-annotations for millions of known protein sequences and clusters.
+
+Conceptual terms:
+
+- **UPS**: unique protein sequences identified via length and MD5 digests (100% coverage & 100% sequence identity)
+- **IPS**: identical protein sequences comprising seeds of UniProt's UniRef100 protein sequence clusters
+- **PSC**: protein sequences clusters comprising seeds of UniProt's UniRef90 protein sequence clusters
+
+**CDS**:
+
+1. Prediction via Prodigal respecting sequences' completeness (distinct prediction for complete replicons and uncompleted contigs)
+2. discard spurious CDS via AntiFam
+3. Detection of UPSs via MD5 digests and lookup of related IPS and PCS
+4. Homology search of remainder via Diamond vs. PSC (coverage=0.8, identity=0.9)
+5. Combination of available IPS & PSC information favouring more specific annotations and avoiding redundancy
+
+CDS without IPS or PSC hits as well as those without gene symbols or product descriptions different from `hypothetical` will be marked as `hypothetical`.
+
+**sORFs**:
+
+1. Custom sORF detection & extraction with amino acid lengths < 30 aa
+2. Apply strict feature type-dependent overlap filters
+3. discard spurious sORF via AntiFam
+4. Detection of UPS via MD5 hashes and lookup of related IPS
+5. Homology search of remainder via Diamond vs. an sORF subset of PSCs (coverage=0.9, identity=0.9)
+6. Exclude sORF without sufficient annotation information
+
+sORF not identified via IPS or PSC will be discarded. Additionally, all sORF without gene symbols or product descriptions different from `hypothetical` will be discarded.
+Due due to uncertain nature of sORF prediction, only those identified via IPS / PSC hits exhibiting proper gene symbols or product descriptions different from `hypothetical` will be included in the final annotation.
+
+### Miscellaneous
+
+1. Gaps: in-mem detection & annotation of sequence gaps
+2. oriC/oriV/oriT: Blast+ (cov=0.8, id=0.8) vs. [MOB-suite](https://github.com/phac-nml/mob-suite) oriT & [DoriC](http://tubic.org/doric/public/index.php) oriC/oriV sequences. Annotations of ori regions take into account overlapping Blast+ hits and are conducted based on a majority vote heuristic. Region edges are fuzzy - use with caution!
+
+## Database
+
+The Bakta database comprises a set of AA & DNA sequence databases as well as HMM & covariance models.
+At its core Bakta utilizes a compact SQLite db storing protein sequence digests, lengths, pre-annotations and dbxrefs of UPS, IPS and PSC from:
+
+- **UPS**: UniParc / UniProtKB (192,795,177)
+- **IPS**: UniProt UniRef100 (169,958,214)
+- **PSC**: UniProt UniRef90 (77,128,011)
+
+This allows the exact protein sequences identification via MD5 digests & sequence lengths as well as the rapid subsequent lookup of related information. Protein sequence digests are checked for hash collisions while the db creation process.
+IPS & PSC have been comprehensively pre-annotated integrating annotations & database *dbxrefs* from:
+
+- NCBI nonredundant proteins ('WP_*' -> 139,330,543)
+- NCBI COG db (coverage=80%, identity=90% -> 1,893,080)
+- GO terms (via SwissProt IPS/PSC exact matches)
+- EC (via SwissProt IPS/PSC exact matches)
+- NCBI AMRFinderPlus (IPS exact matches, PSC HMM hits reaching trusted cutoffs)
+- ISFinder db (coverage=90%, identify=99% -> 2,981)
+
+Rfam covariance models:
+
+- ncRNA: 750
+- ncRNA cis-regulatory regions: 107
+
+To provide FAIR annotations, the database releases are SemVer versioned (w/o patch level), *i.e.* `<major>.<minor>`. For each version we provide a comprehensive log file tracking all imported sequences as well as annotations thereof.
+The db schema is represented by the `<major>` digit and automatically checked at runtime by Bakta in order to ensure compatibility. Content updates are tracked by the `<minor>` digit.
+
+All database releases (latest 1.0, 23 Gb zipped, 43 Gb unzipped) are hosted at Zenodo:
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
+
+## WIP
+
+We're keen to improve and expand Bakta. If you miss any features, please do not hesitate to ask for it!
+There are several features & improvements which we're currently working on or have plans to do so as well as barely ideas:
+
+Workflow:
+
+- analysis of `hypothetical` CDS [#28](https://github.com/oschwengers/bakta/issues/28)
+- detections of pseudo genes [#4](https://github.com/oschwengers/bakta/issues/4)
+
+Annotation:
+
+- (idea) KEGG KofamKOALA annotation [#9](https://github.com/oschwengers/bakta/issues/9)
+- (idea) protein classification of IPS/PSC in terms of (`amr`, `virulence`, `mobilization`, `conjugation`, `replication`, *etc*) for subsequent visualization/analysis
+
+Technical:
+
+- 3rd party dependency version checks at runtime [#21](https://github.com/oschwengers/bakta/issues/21)
+- CWL description file [#27](https://github.com/oschwengers/bakta/issues/27)
+- (idea) download/update the database within Bakta
+
 ## Citation
 
 A manuscript is not yet in preparation, but might be soon... To temporarily cite our work, please transitionally refer to:
@@ -395,13 +446,17 @@ Bakta takes advantage of many publicly available databases. If you find any of t
 ## FAQ
 
 * __Bakta is running too long without CPU load... why?__
-Bakta takes advantage of an SQLite DB which results in high storage IO loads. If this DB is stored on a remote / network volume, the lookup of IPS/PSC annotations might take a long time. In these cases, please, consider moving the DB to a local volume/hard drive.
+Bakta takes advantage of an SQLite DB which results in high storage IO loads. If this DB is stored on a remote / network volume, the lookup of IPS/PSC annotations might take a long time. In these cases, please, consider moving the DB to a local volume/hard drive. Setting POSIX permissions of the db directory to read/access only (`555`) and files to read only (`444`) might also help:
+
+```bash
+chmod 444 <db-path>/*
+chmod 555 <db-path>
+```
 
 ## Issues and Feature Requests
 
-If you run into any issues with Bakta, we'd be happy to hear about it!
-Please, execute bakta in verbose mode (`-v`) and do not hesitate
-to file an issue including as much information as possible:
+Bakta is brand new and like in every software, expect some bugs lurking around. So, if you run into any issues with Bakta, we'd be happy to hear about it.
+Therefore, please, execute bakta in verbose mode (`-v`) and do not hesitate to file an issue including as much information as possible:
 
 - a detailed description of the issue
 - command line output
