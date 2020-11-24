@@ -21,8 +21,14 @@ def predict(genome, sequences_path):
     # create prodigal trainining file if not provided by the user
     prodigal_tf_path = cfg.prodigal_tf
     if(prodigal_tf_path is None):
-        prodigal_tf_path = cfg.tmp_path.joinpath('prodigal.tf')
-        execute_prodigal(genome, sequences_path, prodigal_tf_path, train=True)
+        if(genome['size'] >= 20000):
+            prodigal_tf_path = cfg.tmp_path.joinpath('prodigal.tf')
+            log.info('create prodigal training file: file=%s', prodigal_tf_path)
+            execute_prodigal(genome, sequences_path, prodigal_tf_path, train=True, complete=genome['complete'])
+        else:
+            log.info('skip creation of prodigal training file: genome-size=%i', genome['size'])
+    else:
+        log.info('use provided prodigal training file: file=%s', prodigal_tf_path)
 
     sequences = {k['id']: k for k in genome['contigs']}
     cdss = []
@@ -35,7 +41,8 @@ def predict(genome, sequences_path):
         log.debug('export contigs: # contigs=%i, path=%s', len(contigs), contigs_path)
         proteins_contigs_path = cfg.tmp_path.joinpath('prodigal.proteins.contigs.faa')
         gff_contigs_path = cfg.tmp_path.joinpath('prodigal.contigs.gff')
-        execute_prodigal(genome, contigs_path, prodigal_tf_path, proteins_path=proteins_contigs_path, gff_path=gff_contigs_path)
+        log.info('run prodigal: type=contigs, # sequences=%i', len(contigs))
+        execute_prodigal(genome, contigs_path, prodigal_tf_path, proteins_path=proteins_contigs_path, gff_path=gff_contigs_path, complete=False)
         cds = parse_prodigal_output(genome, sequences, gff_contigs_path, proteins_contigs_path)
         log.info('contig cds: predicted=%i', len(cds))
         cdss.extend(cds)
@@ -48,6 +55,7 @@ def predict(genome, sequences_path):
         log.debug('export replicons: # contigs=%i, path=%s', len(replicons), replicons_path)
         proteins_replicons_path = cfg.tmp_path.joinpath('prodigal.proteins.replicons.faa')
         gff_replicons_path = cfg.tmp_path.joinpath('prodigal.replicons.gff')
+        log.info('run prodigal: type=replicons, # sequences=%i', len(replicons))
         execute_prodigal(genome, replicons_path, prodigal_tf_path, proteins_path=proteins_replicons_path, gff_path=gff_replicons_path, complete=True)
         cds = parse_prodigal_output(genome, sequences, gff_replicons_path, proteins_replicons_path)
         log.info('replicon cds: predicted=%i', len(cds))
@@ -62,22 +70,28 @@ def execute_prodigal(genome, contigs_path, traininng_file_path, proteins_path=No
     cmd = [
         'prodigal',
         '-i', str(contigs_path),
-        '-g', str(cfg.translation_table),  # set translation table
-        '-t', str(traininng_file_path)
+        '-g', str(cfg.translation_table)  # set translation table
     ]
-    if(train == False and complete == False):
+    if(not complete):
         cmd.append('-c')  # closed ends
-    if(train == True and genome['size'] < 20000):  # no trainings file provided and not enough sequence information available
-        cmd.append('-p')  # run prodigal in meta mode
-        cmd.append('meta')
-    if(proteins_path):  # aa fasta output
-        cmd.append('-a')
-        cmd.append(str(proteins_path))
-    if(gff_path):  # GFF output
-        cmd.append('-f')
-        cmd.append('gff')
-        cmd.append('-o')
-        cmd.append(str(gff_path))
+    if(train):
+        cmd.append('-t')
+        cmd.append(str(traininng_file_path))
+    else:
+        if(genome['size'] < 20000):  # no trainings file provided and not enough sequence information available
+            cmd.append('-p')  # run prodigal in meta mode
+            cmd.append('meta')
+        elif(traininng_file_path):
+            cmd.append('-t')
+            cmd.append(str(traininng_file_path))
+        if(proteins_path):  # aa fasta output
+            cmd.append('-a')
+            cmd.append(str(proteins_path))
+        if(gff_path):  # GFF output
+            cmd.append('-f')
+            cmd.append('gff')
+            cmd.append('-o')
+            cmd.append(str(gff_path))
 
     log.debug('cmd=%s', cmd)
     proc = sp.run(
