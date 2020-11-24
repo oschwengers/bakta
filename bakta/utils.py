@@ -221,9 +221,7 @@ def calc_genome_stats(genome, features):
     n_sum = 0
     n50 = 0
     contig_length_sum = 0
-    contigs_by_id = {}
     for contig in genome['contigs']:
-        contigs_by_id[contig['id']] = contig
         seq = contig['sequence']
         gc_sum += seq.count('G') + seq.count('C')
         n_sum += seq.count('N')
@@ -243,6 +241,7 @@ def calc_genome_stats(genome, features):
     genome['n_ratio'] = n_ratio
     log.info('N=%0.3f', n_ratio)
 
+    contigs_by_id = {c['id']: c for c in genome['contigs']}
     coding_nts = 0
     for feat in features:
         if(feat.get('edge', False)):
