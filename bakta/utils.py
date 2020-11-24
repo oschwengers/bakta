@@ -221,7 +221,9 @@ def calc_genome_stats(genome, features):
     n_sum = 0
     n50 = 0
     contig_length_sum = 0
+    contigs_by_id = {}
     for contig in genome['contigs']:
+        contigs_by_id[contig['id']] = contig
         seq = contig['sequence']
         gc_sum += seq.count('G') + seq.count('C')
         n_sum += seq.count('N')
@@ -243,7 +245,11 @@ def calc_genome_stats(genome, features):
 
     coding_nts = 0
     for feat in features:
-        coding_nts += feat['stop'] - feat['start'] + 1  # feature coding nucleotides
+        if(feat.get('edge', False)):
+            sequence_length = contigs_by_id[feat['contig']]['length']
+            coding_nts += feat['stop'] + (sequence_length - feat['start'] + 1)  # feature coding nucleotides
+        else:
+            coding_nts +=  feat['stop'] - feat['start'] + 1  # feature coding nucleotides
     coding_ratio = coding_nts / (genome_size - n_sum)
     genome['coding_ratio'] = coding_ratio
     log.info('coding-ratio=%0.3f', coding_ratio)
