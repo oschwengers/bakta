@@ -29,6 +29,7 @@ def write_json(genome, features, json_path):
     ordered_genome['strain'] = genome['strain']
     if('plasmid' in genome):
         ordered_genome['plasmid'] = genome['plasmid']
+    ordered_genome['complete'] = genome['complete']
     ordered_genome['gram'] = genome['gram']
     ordered_genome['translation_table'] = genome['translation_table']
     output['genome'] = ordered_genome
