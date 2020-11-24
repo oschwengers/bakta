@@ -11,7 +11,7 @@
 Bakta is a tool for the rapid & standardized local annotation of bacterial genomes & plasmids. It provides **dbxref**-rich and **sORF**-including annotations in machine-readble `JSON` & bioinformatics standard file formats for automatic downstream analysis.
 
 > Bakta is young and still in a beta status! So please, test it, bend, sequeeze & smash it, try to crash it... but don't forget to file bug reports ;-)
-Of course, feedback of any kind and feature requests are highly welcome & very much appreciated ;-)
+Of course, feedback of any kind and feature requests are highly welcome & very much appreciated!
 
 ## Contents
 
@@ -115,7 +115,7 @@ Bakta requires a mandatory database which is publicly hosted at Zenodo:
 Further information is provided [below](#database).
 
 ```bash
-$ wget <XYZ>/db.tar.gz
+$ wget https://zenodo.org/record/4247253/files/db.tar.gz
 $ tar -xzf db.tar.gz
 $ rm db.tar.gz
 ```
