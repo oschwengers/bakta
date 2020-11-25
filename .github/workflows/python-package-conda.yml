@@ -21,6 +21,9 @@ jobs:
         auto-update-conda: false
         python-version: ${{ matrix.python-version }}
         miniconda-version: "latest"
+        mamba-version: "*"
+        channels: conda-forge,bioconda
+        channel-priority: true
         auto-activate-base: false
         environment-file: environment.yml
         activate-environment: bakta
