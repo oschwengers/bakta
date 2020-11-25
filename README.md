@@ -37,16 +37,16 @@ To provide standardized annotations adhearing to [FAIR](https://www.go-fair.org/
 
 - **Protein sequence identification**
 Fostering the FAIR aspect, Bakta identifies identical protein sequences (**IPS**) via `MD5` digests which are annotated with database cross-references (**dbxref**) to RefSeq (`WP_*`), UniRef100 (`UniRef100_*`) and UniParc (`UPI*`).
-By doing so, IPS allow the surveillance of distinct gene alleles and streamlining comparative analysis as well as posterior (external) annotations of `putative` & `hypothetical` protein sequences which can be mapped back to existing CDS via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)). Currently, Bakta identifies ~169 mio distinct UniRef100 sequences and for some genomes, up to 99 % of all CDS can be identified this way, sparing expensive homology searches.
+By doing so, IPS allow the surveillance of distinct gene alleles and streamlining comparative analysis as well as posterior (external) annotations of `putative` & `hypothetical` protein sequences which can be mapped back to existing CDS via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)). Currently, Bakta identifies ~169 mio distinct UniRef100 sequences and for certain genomes, up to 99 % of all CDS can be identified this way, sparing expensive homology searches.
 
 - **Short open reading frames**
-Next to standard feature types (tRNA, tmRNA, rRNA, ncRNA, ncRNA regions, CRISPR, CDS, oriC/V/T and gaps) Bakta also detects and annotates short open reading frames (**sORF**) which are not predicted by tools like `Prodigal`.
+Next to standard feature types (tRNA, tmRNA, rRNA, ncRNA, ncRNA cis-regulatory regions, CRISPR, CDS, oriC/V/T and gaps) Bakta also detects and annotates short open reading frames (**sORF**) which are not predicted by tools like `Prodigal`.
 
 - **Fast**
 Bakta can annotate a typical bacterial genome in 10 &plusmn;5 min on a laptop, plasmids in a couple of seconds/minutes.
 
 - **Reasoning**
-Annotating bacterial genomes in a standardized, high-throughput, local manner w/o requirements for taxon-dependent DBs, Bakta targets the niche between standardized computationally-demanding pipelines like [PGAP](https://github.com/ncbi/pgap) and rapid highly-customizable offline tools like [Prokka](https://github.com/tseemann/prokka). Indeed, Bakta is heavily inspired by Prokka (kudos to [Torsten Seemann](https://github.com/tseemann)) and many command line options are compatible for the sake of interoperability and user convenience. Hence, if Bakta does not fit your needs, please try Prokka.
+Annotating bacterial genomes in a standardized, taxon-independent, high-throughput and local manner, Bakta targets the niche between standardized, fully-featured but computationally-demanding pipelines like [PGAP](https://github.com/ncbi/pgap) and rapid highly-customizable offline tools like [Prokka](https://github.com/tseemann/prokka). Indeed, Bakta is heavily inspired by Prokka (kudos to [Torsten Seemann](https://github.com/tseemann)) and many command line options are compatible for the sake of interoperability and user convenience. Hence, if Bakta does not fit your needs, please try Prokka.
 
 ## Installation
 
@@ -112,7 +112,8 @@ Tested with Ubuntu 20.04 - some older distributions might provide outdated versi
 
 Bakta requires a mandatory database which is publicly hosted at Zenodo:
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
-Further information is provided [below](#database).
+
+Further information is provided in the [database](#database) section below.
 
 ```bash
 $ wget https://zenodo.org/record/4247253/files/db.tar.gz
@@ -407,7 +408,7 @@ All database releases (latest 1.0, 23 Gb zipped, 43 Gb unzipped) are hosted at Z
 
 ## WIP
 
-We're keen to improve and expand Bakta. If you miss any features, please do not hesitate to ask for it!
+We're keen to constantly improve and further expand Bakta. If you miss any features, please do not hesitate to ask for it!
 There are several features & improvements which we're currently working on or have plans to do so as well as barely ideas:
 
 Workflow:
