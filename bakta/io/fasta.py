@@ -54,12 +54,11 @@ def export_contigs(contigs, fasta_path, description=False, wrap=False):
 
 
 def wrap_sequence(sequence):
-    lines = ''
-    while len(sequence) > FASTA_LINE_WRAPPING:
-        lines += sequence[:FASTA_LINE_WRAPPING] + '\n'
-        sequence = sequence[FASTA_LINE_WRAPPING:]
-    lines += sequence + '\n'
-    return lines
+    lines = []
+    for i in range(0, len(sequence), FASTA_LINE_WRAPPING):
+        lines.append(sequence[i : i + FASTA_LINE_WRAPPING])
+
+    return '\n'.join(lines) + '\n'
 
 
 def write_faa(features, faa_path):
