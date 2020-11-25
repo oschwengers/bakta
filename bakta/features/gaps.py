@@ -3,12 +3,12 @@ import logging
 import re
 from collections import OrderedDict
 
-import bakta.config as cfg
 import bakta.constants as bc
 
 log = logging.getLogger('GAP')
 
 re_assembly_gap = re.compile(r'N{1,}', flags=0)
+
 
 def detect_assembly_gaps(genome):
     gaps = []

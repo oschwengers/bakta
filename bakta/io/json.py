@@ -8,6 +8,7 @@ import bakta.config as cfg
 
 log = logging.getLogger('JSON')
 
+
 def write_json(genome, features, json_path):
     log.info('write JSON output: path=%s', json_path)
     

@@ -4,13 +4,13 @@ import logging
 from Bio import SeqIO
 from xopen import xopen
 
-import bakta.config as cfg
 import bakta.constants as bc
 
 
 log = logging.getLogger('FASTA')
 
 FASTA_LINE_WRAPPING = 60
+
 
 def import_contigs(contigs_path):
     """Import raw contigs."""
@@ -29,7 +29,7 @@ def import_contigs(contigs_path):
                 'topology': bc.TOPOLOGY_LINEAR
             }
             log.info(
-                'imported: id=%s, length=%i, complete=%s, topology=%s, description=%s', 
+                'imported: id=%s, length=%i, complete=%s, topology=%s, description=%s',
                 contig['id'], contig['length'], contig['complete'], contig['topology'], contig['description']
             )
             contigs.append(contig)
@@ -56,8 +56,7 @@ def export_contigs(contigs, fasta_path, description=False, wrap=False):
 def wrap_sequence(sequence):
     lines = []
     for i in range(0, len(sequence), FASTA_LINE_WRAPPING):
-        lines.append(sequence[i : i + FASTA_LINE_WRAPPING])
-
+        lines.append(sequence[i:i + FASTA_LINE_WRAPPING])
     return '\n'.join(lines) + '\n'
 
 

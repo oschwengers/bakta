@@ -1,5 +1,4 @@
 import argparse
-import hashlib
 from pathlib import Path
 
 

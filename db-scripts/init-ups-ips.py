@@ -151,7 +151,6 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     print(f'\tstored representative IPS: {i}')
     log_ips.debug('representative IPS: # IPS=%i', i)
 
-
     print(f'UniParc ({len(uniparc_to_uniref100)})...')
     log_ups.debug('lookup non-representative UniParc member sequences: %s', len(uniparc_to_uniref100))
     i = 0

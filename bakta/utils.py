@@ -248,7 +248,7 @@ def calc_genome_stats(genome, features):
             sequence_length = contigs_by_id[feat['contig']]['length']
             coding_nts += feat['stop'] + (sequence_length - feat['start'] + 1)  # feature coding nucleotides
         else:
-            coding_nts +=  feat['stop'] - feat['start'] + 1  # feature coding nucleotides
+            coding_nts += feat['stop'] - feat['start'] + 1  # feature coding nucleotides
     coding_ratio = coding_nts / (genome_size - n_sum)
     genome['coding_ratio'] = coding_ratio
     log.info('coding-ratio=%0.3f', coding_ratio)
@@ -267,7 +267,7 @@ def parse_replicon_table(replicon_table_path):
         with replicon_table_path.open() as fh:
             for line in fh:
                 (original_locus_id, new_locus_id, replicon_type, topology, name) = line.strip().split('\t')
-                #ToDO add locus id checks
+                # TODO: add locus id checks
                 if(new_locus_id == '' or new_locus_id == ''):
                     new_locus_id = None
                 replicon_type = replicon_type.lower()
@@ -344,7 +344,7 @@ def qc_contigs(contigs, replicons):
                 if(cfg.complete or contig['complete']):
                     contig_desc.append('[completeness=complete]')
                     if(contig['topology'] != bc.REPLICON_CONTIG):
-                            contig_desc.append(f"[topology={contig['topology']}]")
+                        contig_desc.append(f"[topology={contig['topology']}]")
                 contig['description'] = ' '.join(contig_desc)
             if(cfg.complete):
                 contig['complete'] = True

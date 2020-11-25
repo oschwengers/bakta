@@ -2,14 +2,11 @@ import logging
 import subprocess as sp
 from collections import OrderedDict
 
-from Bio.Seq import Seq
-
 import bakta.config as cfg
 import bakta.constants as bc
-import bakta.utils as bu
-import bakta.psc as psc
 
 log = logging.getLogger('ORF')
+
 
 def detect_spurious(orfs):
     """Detect spurious ORFs with AntiFam"""

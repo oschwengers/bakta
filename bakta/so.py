@@ -66,7 +66,7 @@ SO_ORIV = SO('oriV', 'SO:0000952')
 SO_PROPHAGE = SO('proviral_region', 'SO:0000113')
 SO_IS = SO('insertion_sequence', 'SO:0000973')
 SO_TRANSPOSABLE_ELEMENT = SO('transposable_element', 'SO:0000101')
-SO_MOBILE_ELEMENT= SO('mobile_genetic_element', 'SO:0001037')
+SO_MOBILE_ELEMENT = SO('mobile_genetic_element', 'SO:0001037')
 
 SO_GAP = SO('gap', 'SO:0000730')
 SO_REPEAT = SO('repeat_region', 'SO:0000657')

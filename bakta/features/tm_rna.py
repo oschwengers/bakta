@@ -25,7 +25,7 @@ def predict_tm_rnas(genome, contigs_path):
         '-o', str(txt_output_path),
         str(contigs_path)
     ]
-    if(cfg.complete == True):
+    if(cfg.complete):
         cmd.append('-c')  # complete circular sequence(s)
     else:
         cmd.append('-l')  # linear sequence(s)
@@ -46,12 +46,13 @@ def predict_tm_rnas(genome, contigs_path):
 
     tmrnas = []
     with txt_output_path.open() as fh:
+        contig = None
         for line in fh:
             line = line.strip()
             cols = line.split()
             if(line[0] == '>'):
                 contig = cols[0][1:]
-            elif( len(cols) == 5 ):
+            elif(len(cols) == 5):
                 (nr, type, location, tag_location, tag_aa) = line.split()
                 strand = bc.STRAND_FORWARD
                 if(location[0] == 'c'):

@@ -77,9 +77,15 @@ def predict_r_rnas(genome, contigs_path):
                     rrna_tag = '23S'
                     db_xrefs += ['RFAM:RF02541', so.SO_RRNA_23S.id]
                     consensus_length = 2925
+                else:
+                    log.warning(
+                        'unknown rRNA detected! accession=%s, contig=%s, start=%i, stop=%i, strand=%s, length=%i, truncated=%s, evalue=%1.1e',
+                        accession, contig_id, start, stop, strand, length, truncated, evalue
+                    )
+                    continue
                 
                 coverage = length / consensus_length
-                if( coverage < 0.8):
+                if(coverage < 0.8):
                     truncated = bc.FEATURE_END_UNKNOWN
                 
                 if(coverage < 0.3):

@@ -1,9 +1,7 @@
 import argparse
 import logging
-import hashlib
 import re
 import sqlite3
-from Bio import SeqIO
 from pathlib import Path
 
 
@@ -72,7 +70,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                             log_ups.debug('no NRP hit: NRP-id=%s', refseq_protein_accession)
                             continue
                         log_ips.debug(
-                            'nrp-id=%s, allele=%s, gene-family=%s, product=%s', 
+                            'nrp-id=%s, allele=%s, gene-family=%s, product=%s',
                             refseq_protein_accession, allele, gene_family, product
                         )
                         gene = allele if allele != '' else gene_family

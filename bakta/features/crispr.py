@@ -76,5 +76,3 @@ def predict_crispr(genome, contigs_path):
                         )
     log.info('predicted=%i', len(crispr_arrays))
     return crispr_arrays
-    
-

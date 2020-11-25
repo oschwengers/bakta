@@ -241,14 +241,14 @@ def main():
             cdss_psc, cdss_not_found = psc.search(cdss_not_found)
             print(f'\tfound PSCs: {len(cdss_psc)}')
         
-        print(f"\tlookup annotations...")
+        print('\tlookup annotations...')
         log.debug('lookup CDS PSCs')
         psc.lookup(genome['features'][bc.FEATURE_CDS])  # lookup PSC info
         
-        print(f"\tmark hypotheticals and combine annotations...")
+        print('\tmark hypotheticals and combine annotations...')
         log.debug('combine CDS annotations')
         for feat in genome['features'][bc.FEATURE_CDS]:
-            anno.combine_ips_psc_annotation(feat) # combine IPS & PSC annotations and mark hypotheticals
+            anno.combine_ips_psc_annotation(feat)  # combine IPS & PSC annotations and mark hypotheticals
     
     ############################################################################
     # sORF prediction
@@ -291,12 +291,12 @@ def main():
         log.debug('lookup sORF PSCs')
         sorf_pscs.extend(sorf_ipss)
         psc.lookup(sorf_pscs)  # lookup PSC info
-        print(f"\tfilter and combine annotations...")
+        print('\tfilter and combine annotations...')
         log.debug('filter sORF by annotations')
         sorfs_filtered = s_orf.annotation_filter(sorfs)
         log.debug('combine sORF annotations')
         for feat in sorfs_filtered:
-            anno.combine_ips_psc_annotation(feat) # combine IPS and PSC annotations
+            anno.combine_ips_psc_annotation(feat)  # combine IPS and PSC annotations
         genome['features'][bc.FEATURE_SORF] = sorfs_filtered
         print(f'\tfiltered sORFs: {len(sorfs_filtered)}')
     

@@ -5,7 +5,6 @@ import sqlite3
 
 import bakta.config as cfg
 import bakta.constants as bc
-import bakta.utils as bu
 
 ############################################################################
 # UPS DB columns

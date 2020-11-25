@@ -87,7 +87,7 @@ with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='
                 if(rec_ips is not None):
                     gene = nrp_genes.get(nrp_id, None)
                     log_ups.debug(
-                        'ncbi-nrp-id=%s, hash=%s, uniref100=%s, uniref90=%s, gene=%s', 
+                        'ncbi-nrp-id=%s, hash=%s, uniref100=%s, uniref90=%s, gene=%s',
                         nrp_id, seq_hash.hexdigest(), rec_ips['uniref100_id'], rec_ips['uniref90_id'], gene
                     )
                     conn.execute('UPDATE ups SET ncbi_nrp_id=? WHERE hash=?', (nrp_id[3:], seq_hash_digest))  # annotate IPS with NCBI nrp id (WP_*)

@@ -93,7 +93,7 @@ def predict_nc_rnas(genome, contigs_path):
                     ncrna['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
                     ncrna['gene'] = subject
 
-                    if(truncated == None):
+                    if(truncated is None):
                         ncrna['product'] = description
                     elif(truncated == bc.FEATURE_END_UNKNOWN):
                         ncrna['product'] = f'(partial) {description}'

@@ -77,7 +77,7 @@ def detect_feature_overlaps(genome):
         sorfs = contig_sorfs[sorf['contig']]
         sorfs.append(sorf)
     
-    for contig in genome['contigs']:  # find feature overlaps contig-wise to increase the performance 
+    for contig in genome['contigs']:  # find feature overlaps contig-wise to increase the performance
         log.debug('filter features on contig: %s', contig['id'])
 
         # mark tRNAs overlapping with tmRNAs

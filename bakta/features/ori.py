@@ -13,7 +13,6 @@ def predict_oris(genome, contigs_path, ori_type):
     """Search for oriT/C sequences."""
 
     database = 'oric.fna' if ori_type == bc.FEATURE_ORIC else 'orit.fna'
-    contigs = {c['id']: c for c in genome['contigs']}
     output_path = cfg.tmp_path.joinpath('ori.blastn.tsv')
     cmd = [
         'blastn',
@@ -107,6 +106,7 @@ def predict_oris(genome, contigs_path, ori_type):
     
     log.info('predicted=%i', len(oris))
     return oris
+
 
 def refine_ori_region(region_hits, ori):
     log.debug('refine ori: [%i-%i]', ori['start'], ori['stop'])

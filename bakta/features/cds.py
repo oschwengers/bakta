@@ -2,7 +2,6 @@
 import logging
 import subprocess as sp
 from collections import OrderedDict
-from typing import Sequence
 
 from Bio import SeqIO
 

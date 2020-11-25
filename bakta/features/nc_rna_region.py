@@ -6,7 +6,6 @@ from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
-import bakta.so as so
 
 log = logging.getLogger('NC_RNA_REGION')
 
@@ -93,7 +92,7 @@ def predict_nc_rna_regions(genome, contigs_path):
                     ncrna_region['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
                     ncrna_region['gene'] = subject
 
-                    if(truncated == None):
+                    if(truncated is None):
                         ncrna_region['product'] = description
                     elif(truncated == bc.FEATURE_END_UNKNOWN):
                         ncrna_region['product'] = f'(partial) {description}'

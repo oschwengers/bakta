@@ -1,8 +1,6 @@
 
 import logging
 
-from Bio import SeqIO
-
 import bakta
 import bakta.constants as bc
 import bakta.io.fasta as fasta
@@ -23,6 +21,7 @@ log = logging.getLogger('GFF')
 # CDS IPS: 'UniProtKB:%s' % psc[DB_PSC_COL_UNIREF100]
 # CDS sORF: 'similar to AA sequence:UniProtKB:%s' % psc[DB_PSC_COL_UNIREF100]
 ############################################################################
+
 
 def write_gff3(genome, features_by_contig, gff3_path):
     """Export features in GFF3 format."""
@@ -53,7 +52,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
             for feat in features_by_contig[contig['id']]:
 
                 start = feat['start']
-                stop  = feat['stop']
+                stop = feat['stop']
                 if('edge' in feat):
                     stop += contig['length']
 

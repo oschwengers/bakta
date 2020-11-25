@@ -144,8 +144,8 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     
                     i += 1
                     if((i % 1000000) == 0):
-                       conn.commit()
-                       print(f'\t... {i}')
+                        conn.commit()
+                        print(f'\t... {i}')
                 rep_member.clear()
                 rep_member_dbref.clear()
             elem.clear()  # forstall out of memory errors

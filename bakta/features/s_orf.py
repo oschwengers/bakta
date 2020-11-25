@@ -205,8 +205,7 @@ def overlap_filter(genome, orfs_raw):
                 else:
                     key = f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}"
                     discarded_sorfs[key] = sorf
-        
-
+    
     valid_sorfs = []
     for sorfs in contig_sorfs.values():
         for sorf in sorfs:
@@ -224,7 +223,6 @@ def annotation_filter(sorfs):
     for sorf in sorfs:
         gene = None
         product = None
-        added = False
         
         ips = sorf.get('ips', None)
         if(ips is not None):
@@ -266,9 +264,9 @@ def search_pscs(sorfs):
         '--db', str(diamond_db_path),
         '--query', str(sorf_fasta_path),
         '--out', str(diamond_output_path),
-        '--id', str(int(bc.MIN_PROTEIN_IDENTITY * 100)), # '90',
-        '--query-cover', str(int(bc.MIN_SORF_COVERAGE * 100)), # '90'
-        '--subject-cover', str(int(bc.MIN_SORF_COVERAGE * 100)), # '90'
+        '--id', str(int(bc.MIN_PROTEIN_IDENTITY * 100)),  # '90',
+        '--query-cover', str(int(bc.MIN_SORF_COVERAGE * 100)),  # '90'
+        '--subject-cover', str(int(bc.MIN_SORF_COVERAGE * 100)),  # '90'
         '--max-target-seqs', '1',  # single best output
         '--outfmt', '6',
         '--threads', str(cfg.threads),
@@ -318,4 +316,3 @@ def search_pscs(sorfs):
             pscs_not_found.append(sorf)
     log.info('found=%i', len(pscs_found))
     return pscs_found, pscs_not_found
-    

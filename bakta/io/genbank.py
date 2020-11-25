@@ -1,5 +1,4 @@
 import logging
-import json
 from datetime import date
 
 from Bio import SeqIO
@@ -8,10 +7,9 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation, CompoundLocation, AfterP
 
 import bakta
 import bakta.constants as bc
-import bakta.config as cfg
-import bakta.psc as psc
 
 log = logging.getLogger('GENBANK')
+
 
 def write_genbank(genome, features, genbank_path):
     log.info('write GenBank output: path=%s', genbank_path)
@@ -53,7 +51,7 @@ def write_genbank(genome, features, genbank_path):
                 source_qualifiers['chromosome'] = contig['id']
 
         if(contig['complete']):
-                description = f"{description}, complete sequence"
+            description = f"{description}, complete sequence"
         if(len(description) > 0 and description[0] == ' '):  # discard potential leading whitespace
             description = description[1:]
 
@@ -77,11 +75,11 @@ def write_genbank(genome, features, genbank_path):
                     insdc_feature_type = bc.INSDC_FEATURE_GAP
                     qualifiers['estimated_length'] = feature['length']
                 elif(feature['type'] == bc.FEATURE_ORIC or feature['type'] == bc.FEATURE_ORIV):
-                    #TODO: Add fuzzy positions for oriC/oriV
+                    # TODO: Add fuzzy positions for oriC/oriV
                     insdc_feature_type = bc.INSDC_FEATURE_ORIGIN_REPLICTION
                     qualifiers['inference'] = 'similar to DNA sequence'
                 elif(feature['type'] == feature['type'] == bc.FEATURE_ORIT):
-                    #TODO: Add fuzzy positions for oriT
+                    # TODO: Add fuzzy positions for oriT
                     insdc_feature_type = bc.INSDC_FEATURE_ORIGIN_TRANSFER
                     qualifiers['inference'] = 'similar to DNA sequence'
                 elif(feature['type'] == bc.FEATURE_CDS) or (feature['type'] == bc.FEATURE_SORF):
@@ -130,14 +128,14 @@ def write_genbank(genome, features, genbank_path):
                             qualifiers['inference'] = f'profile:Rfam:{rfam_id}'
                     qualifiers['ncRNA_class'] = 'other'
                     insdc_feature_type = bc.INSDC_FEATURE_NC_RNA
-                elif(feature['type']==bc.FEATURE_NC_RNA_REGION):
+                elif(feature['type'] == bc.FEATURE_NC_RNA_REGION):
                     for dbxref in feature['db_xrefs']:
                         if(dbxref.split(':')[0] == 'RFAM'):
                             rfam_id = dbxref.split(':')[1]
                             qualifiers['inference'] = f'profile:Rfam:{rfam_id}'
                     qualifiers['ncRNA_class'] = 'other'
                     insdc_feature_type = bc.INSDC_FEATURE_REGULATORY
-                elif(feature['type']==bc.FEATURE_CRISPR):
+                elif(feature['type'] == bc.FEATURE_CRISPR):
                     qualifiers['repeats'] = feature['repeats']
                     qualifiers['repeat_consensus'] = feature['repeat_consensus']
                     qualifiers['repeat_length'] = feature['repeat_length']

@@ -6,7 +6,6 @@ import sqlite3
 
 import bakta.config as cfg
 import bakta.constants as bc
-import bakta.utils as bu
 
 ############################################################################
 # PSC DB columns
@@ -37,9 +36,9 @@ def search(cdss):
         '--db', str(diamond_db_path),
         '--query', str(cds_fasta_path),
         '--out', str(diamond_output_path),
-        '--id', str(int(bc.MIN_PROTEIN_IDENTITY * 100)), # '90',
-        '--query-cover', str(int(bc.MIN_PROTEIN_COVERAGE * 100)), # '80'
-        '--subject-cover', str(int(bc.MIN_PROTEIN_COVERAGE * 100)), # '80'
+        '--id', str(int(bc.MIN_PROTEIN_IDENTITY * 100)),  # '90',
+        '--query-cover', str(int(bc.MIN_PROTEIN_COVERAGE * 100)),  # '80'
+        '--subject-cover', str(int(bc.MIN_PROTEIN_COVERAGE * 100)),  # '80'
         '--max-target-seqs', '1',  # single best output
         '--outfmt', '6',
         '--threads', str(cfg.threads),
