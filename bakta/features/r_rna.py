@@ -102,7 +102,7 @@ def predict_r_rnas(genome, contigs_path):
                     rrna['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
                     rrna['gene'] = f'{rrna_tag}_rrna'
 
-                    if(truncated == None):
+                    if(truncated is None):
                         rrna['product'] = f'{rrna_tag} ribosomal RNA'
                     elif(truncated == bc.FEATURE_END_UNKNOWN):
                         rrna['product'] = f'(partial) {rrna_tag} ribosomal RNA'
