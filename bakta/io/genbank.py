@@ -11,9 +11,11 @@ import bakta.constants as bc
 import bakta.config as cfg
 import bakta.psc as psc
 
-log = logging.getLogger('io:genbank')
+log = logging.getLogger('GENBANK')
 
 def write_genbank(genome, features, genbank_path):
+    log.info('write GenBank output: path=%s', genbank_path)
+
     contig_list = []
     for contig in genome['contigs']:
         contig_annotations = {

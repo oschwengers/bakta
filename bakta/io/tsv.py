@@ -22,6 +22,8 @@ log = logging.getLogger('TSV')
 
 def write_tsv(contigs, features_by_contig, tsv_path):
     """Export features in TSV format."""
+    log.info('write tsv output: path=%s', tsv_path)
+    
     with tsv_path.open('w') as fh:
         fh.write(f'#Annotated with Bakta v{bakta.__version__}, https://github.com/oschwengers/bakta\n')
         fh.write(f'#Sequence Id\tType\tStart\tStop\tStrand\tGene\tProduct\tDbXrefs\n')

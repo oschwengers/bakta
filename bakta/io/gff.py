@@ -26,6 +26,7 @@ log = logging.getLogger('GFF')
 
 def write_gff3(genome, features_by_contig, gff3_path):
     """Export features in GFF3 format."""
+    log.info('write GFF3 output: path=%s', gff3_path)
 
     with gff3_path.open('w') as fh:
         fh.write('##gff-version 3\n')  # GFF version

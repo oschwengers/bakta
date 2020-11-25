@@ -419,30 +419,28 @@ def main():
     # - remove temp directory
     ############################################################################
     print('\nwrite JSON output...')
-    log.debug('write JSON output')
     json_path = cfg.output_path.joinpath(f'{cfg.prefix}.json')
     json.write_json(genome, features, json_path)
+    
     print('write TSV output...')
-    log.debug('write tsv output')
     tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.tsv')
     tsv.write_tsv(genome['contigs'], features_by_contig, tsv_path)
+    
     print('write GFF3 output...')
-    log.debug('write GFF3 output')
     gff3_path = cfg.output_path.joinpath(f'{cfg.prefix}.gff3')
     gff.write_gff3(genome, features_by_contig, gff3_path)
+    
     print('write GenBank output...')
-    log.debug('write GenBank output')
     genbank_path = cfg.output_path.joinpath(f'{cfg.prefix}.gbff')
     genbank.write_genbank(genome, features, genbank_path)
+    
     print('write genome sequences...')
-    log.debug('write genome sequence output')
     fna_path = cfg.output_path.joinpath(f'{cfg.prefix}.fna')
     fasta.export_contigs(genome['contigs'], fna_path, description=True, wrap=True)
+    
     print('write translated CDS sequences...')
-    log.debug('write translated CDS output')
     faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.faa')
     fasta.write_faa(features, faa_path)
-
 
     # remove tmp dir
     shutil.rmtree(str(cfg.tmp_path))

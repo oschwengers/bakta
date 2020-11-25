@@ -38,6 +38,8 @@ def import_contigs(contigs_path):
 
 def export_contigs(contigs, fasta_path, description=False, wrap=False):
     """Write contigs to Fasta file."""
+    log.info('write genome sequences: path=%s, description=%s, wrap=%s', fasta_path, description, wrap)
+
     with fasta_path.open('w') as fh:
         for contig in contigs:
             if(description):
@@ -62,6 +64,8 @@ def wrap_sequence(sequence):
 
 def write_faa(features, faa_path):
     """Write translated CDS sequences to Fasta file."""
+    log.info('write translated CDS/sORF: path=%s', faa_path)
+    
     with faa_path.open('w') as fh:
         for feat in features:
             if(feat['type'] == bc.FEATURE_CDS or feat['type'] == bc.FEATURE_SORF):

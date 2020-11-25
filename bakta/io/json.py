@@ -1,3 +1,4 @@
+import logging
 import json
 from collections import OrderedDict
 
@@ -5,7 +6,11 @@ import bakta
 import bakta.constants as bc
 import bakta.config as cfg
 
+log = logging.getLogger('JSON')
+
 def write_json(genome, features, json_path):
+    log.info('write JSON output: path=%s', json_path)
+    
     # clean feature attributes
     for feat in features:
         if(feat['type'] == bc.FEATURE_CDS or feat['type'] == bc.FEATURE_SORF):
