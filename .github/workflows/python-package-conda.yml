@@ -24,9 +24,13 @@ jobs:
         auto-activate-base: false
         environment-file: environment.yml
         activate-environment: bakta
-    - name: Conda info
-      run: conda info
     - name: Install PyTest
       run: conda install pytest
+    - name: Conda info
+      run: |
+        conda info
+        conda list
+        conda config --show
+        printenv | sort
     - name: Run PyTest
       run: pytest
