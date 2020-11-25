@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: PyTest on ${{ matrix.os }}
+    name: test (${{ matrix.os }}, ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -25,7 +25,7 @@ jobs:
         environment-file: environment.yml
         activate-environment: bakta
     - name: Conda info
-      run: conda install pytest
+      run: conda info
     - name: Install PyTest
       run: conda install pytest
     - name: Run PyTest
