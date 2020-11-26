@@ -1,24 +1,46 @@
-name: Python Package using Conda
+name: PyTest using Conda
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+  pull_request:
+    types: opened
+    paths-ignore:
+      - 'README.md'
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
+  build:
+    name: test (${{ matrix.os }}, ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -l {0}
     strategy:
-      max-parallel: 5
-
+      fail-fast: true
+      matrix:
+        os: ["ubuntu-latest", "macos-latest"]
+        python-version: ["3.6"]
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
+    - uses: conda-incubator/setup-miniconda@v2
       with:
-        python-version: 3.8
-    - name: Install dependencies
+        auto-update-conda: false
+        python-version: ${{ matrix.python-version }}
+        miniconda-version: "latest"
+        mamba-version: "*"
+        channels: conda-forge,bioconda
+        channel-priority: true
+        auto-activate-base: false
+        environment-file: environment.yml
+        activate-environment: bakta
+    - name: Install PyTest
+      run: conda install pytest
+    - name: Conda info
       run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        $CONDA/bin/conda env update --file environment.yml --name base
-    - name: Test with pytest
-      run: |
-        $CONDA/bin/conda install pytest
-        $CONDA/bin/pytest
+        conda info
+        conda list
+        conda config --show
+        printenv | sort
+    - name: Run PyTest
+      run: pytest
