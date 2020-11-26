@@ -81,6 +81,7 @@ def write_genbank(genome, features, genbank_path):
                 elif(feature['type'] == bc.FEATURE_CDS) or (feature['type'] == bc.FEATURE_SORF):
                     qualifiers['translation'] = feature['sequence']
                     qualifiers['codon_start'] = 1
+                    qualifiers['transl_table'] = cfg.translation_table
                     insdc_feature_type = bc.INSDC_FEATURE_CDS
                     inference = []
                     inference.append('ab initio prediction:Prodigal:2.6' if feature['type'] == bc.FEATURE_CDS else 'ab initio prediction:Bakta')
@@ -136,7 +137,6 @@ def write_genbank(genome, features, genbank_path):
                     qualifiers['repeat_consensus'] = feature['repeat_consensus']
                     qualifiers['repeat_length'] = feature['repeat_length']
                     qualifiers['spacer_length'] = feature['spacer_length']
-                    feature['type'] = 'misc_feature'
                     insdc_feature_type = bc.INSDC_FEATURE_MISC_FEATURE
                 
                 strand = None
