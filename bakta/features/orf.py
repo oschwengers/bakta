@@ -10,7 +10,7 @@ log = logging.getLogger('ORF')
 
 def detect_spurious(orfs):
     """Detect spurious ORFs with AntiFam"""
-    orf_fasta_path = cfg.tmp_path.joinpath('sorf.faa')
+    orf_fasta_path = cfg.tmp_path.joinpath('spurious.faa')
     with orf_fasta_path.open(mode='w') as fh:
         for orf in orfs:
             fh.write(f">{orf['aa_hexdigest']}\n{orf['sequence']}\n")
