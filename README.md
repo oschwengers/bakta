@@ -33,7 +33,7 @@ Of course, feedback of any kind and feature requests are highly welcome & very m
 Bakta is desined to annotate bacteria and plasmids, only. This decision by design has been made in order to tweak the annotation process regarding tools, preferences & databases and to streamline further development & maintenance of the software.
 
 - **FAIR annotations**
-To provide standardized annotations adhearing to [FAIR](https://www.go-fair.org/fair-principles) principles, Bakta utilizes a comprehensive & versioned annotation db basing on UniProt's UniRef100 & UniRef90 protein clusters enriched with dbxrefs (`GO`, `COG`, `EC`) and annotated by specialized niche databases. For each db version we provide a comprehensive log file of imported sequences and conducted annotations.
+To provide standardized annotations adhearing to [FAIR](https://www.go-fair.org/fair-principles) principles, Bakta utilizes a comprehensive & versioned custom annotation database based on UniProt's [UniRef100 & UniRef90](https://www.uniprot.org/uniref/) protein clusters (`FAIR` -> [DOI](http://dx.doi.org/10.1038/s41597-019-0180-9)/[DOI](https://doi.org/10.1093/nar/gkaa1100)) enriched with dbxrefs (`GO`, `COG`, `EC`) and annotated by specialized niche databases. For each db version we provide a comprehensive log file of imported sequences and conducted annotations.
 
 - **Protein sequence identification**
 Fostering the FAIR aspect, Bakta identifies identical protein sequences (**IPS**) via `MD5` digests which are annotated with database cross-references (**dbxref**) to RefSeq (`WP_*`), UniRef100 (`UniRef100_*`) and UniParc (`UPI*`).
@@ -413,7 +413,7 @@ There are several features & improvements which we're currently working on or ha
 
 Workflow:
 
-- analysis of `hypothetical` CDS [#28](https://github.com/oschwengers/bakta/issues/28)
+- analysis & annotation of `hypothetical` CDS [#28](https://github.com/oschwengers/bakta/issues/28)
 - detections of pseudo genes [#4](https://github.com/oschwengers/bakta/issues/4)
 
 Annotation:
@@ -425,6 +425,7 @@ Technical:
 
 - 3rd party dependency version checks at runtime [#21](https://github.com/oschwengers/bakta/issues/21)
 - CWL description file [#27](https://github.com/oschwengers/bakta/issues/27)
+- Expand tests [#29](https://github.com/oschwengers/bakta/issues/29)
 - (idea) download/update the database within Bakta
 
 ## Citation
