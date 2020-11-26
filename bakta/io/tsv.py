@@ -2,6 +2,7 @@
 import logging
 
 import bakta
+import bakta.config as cfg
 import bakta.constants as bc
 
 log = logging.getLogger('TSV')
@@ -27,6 +28,7 @@ def write_tsv(contigs, features_by_contig, tsv_path):
     
     with tsv_path.open('w') as fh:
         fh.write(f'#Annotated with Bakta v{bakta.__version__}, https://github.com/oschwengers/bakta\n')
+        fh.write(f"#Database v{cfg.db_info['major']}.{cfg.db_info['minor']}, https://doi.org/10.5281/zenodo.4247252\n")
         fh.write('#Sequence Id\tType\tStart\tStop\tStrand\tGene\tProduct\tDbXrefs\n')
         for contig in contigs:
             for feat in features_by_contig[contig['id']]:

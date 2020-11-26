@@ -6,6 +6,7 @@ from Bio.Seq import Seq
 from Bio.SeqFeature import SeqFeature, FeatureLocation, CompoundLocation, AfterPosition, BeforePosition
 
 import bakta
+import bakta.config as cfg
 import bakta.constants as bc
 
 log = logging.getLogger('GENBANK')
@@ -22,7 +23,7 @@ def write_genbank(genome, features, genbank_path):
             'date': date.today().strftime('%d-%b-%Y').upper(),
             'topology': contig['topology'],
             'data_file_division': 'HGT' if contig['type'] == bc.REPLICON_CONTIG else 'BCT',
-            'comment': f'Annotated with Bakta v{bakta.__version__}, https://github.com/oschwengers/bakta'
+            'comment': f"Annotated with Bakta v{bakta.__version__}, https://github.com/oschwengers/bakta\nDatabase v{cfg.db_info['major']}.{cfg.db_info['minor']}, https://doi.org/10.5281/zenodo.4247252"
             # TODO: taxonomy
         }
         source_qualifiers = {
