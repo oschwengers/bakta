@@ -28,7 +28,7 @@ def extract(genome):
                 if(residue != 0):
                     seq_frame = seq_frame[:-residue]
 
-                aa_seq = str(seq_frame.translate(table=11, stop_symbol='*', to_stop=False, cds=False))
+                aa_seq = str(seq_frame.translate(table=cfg.translation_table, stop_symbol='*', to_stop=False, cds=False))
                 aa_start = aa_seq.find('M')
                 aa_end = aa_seq.find('*', aa_start)
                 while aa_start > -1 and aa_end > -1:
@@ -45,7 +45,7 @@ def extract(genome):
                         test_dna_seq = Seq(contig['sequence'][dna_start - 1:dna_stop])
                         if(strand == '-'):
                             test_dna_seq = test_dna_seq.reverse_complement()
-                        test_seq = test_dna_seq.translate(table=11, stop_symbol='*', to_stop=False, cds=True)
+                        test_seq = test_dna_seq.translate(table=cfg.translation_table, stop_symbol='*', to_stop=False, cds=True)
                         assert sequence == test_seq, f'seqs not equal! a={sequence}, b={test_seq}'
                         (aa_digest, aa_hexdigest) = bu.calc_aa_hash(sequence)
 
