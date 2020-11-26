@@ -34,25 +34,20 @@ def write_genbank(genome, features, genbank_path):
         if(genome['taxon']):
             contig_annotations['organism'] = genome['taxon']
             source_qualifiers['organism'] = genome['taxon']
-            description = f"{genome['taxon']}"
+            description = genome['taxon']
         if(genome['strain']):
             source_qualifiers['strain'] = genome['strain']
         
         if(contig['type'] == bc.REPLICON_PLASMID):
-            if(contig.get('name', '')):
-                source_qualifiers['plasmid'] = contig['name']
-                description = f"{description} plasmid {contig['name']}"
-            else:
-                source_qualifiers['plasmid'] = contig['id']
+            source_qualifiers['plasmid'] = contig['name'] if contig.get('name', None) else 'unnamed'
+            description = f"{description} plasmid {contig.get('name', 'unnamed')}"
+            description += ', complete sequence' if contig['complete'] else ', whole genome shotgun sequence'
         elif(contig['type'] == bc.REPLICON_CHROMOSOME):
-            if(contig.get('name', '')):
-                source_qualifiers['chromosome'] = contig['name']
-                description = f"{description} chromosome {contig['name']}"
-            else:
-                source_qualifiers['chromosome'] = contig['id']
-
-        if(contig['complete']):
-            description = f"{description}, complete sequence"
+            source_qualifiers['chromosome'] = contig['name'] if contig.get('name', None) else contig['id']
+            description = f'{description} chromosome, complete genome' if contig['complete'] else f"{description} chromosome {contig['id']}, whole genome shotgun sequence"
+        else:
+            description += f" {contig['id']}, whole genome shotgun sequence"
+        
         if(len(description) > 0 and description[0] == ' '):  # discard potential leading whitespace
             description = description[1:]
 
