@@ -160,9 +160,15 @@ def write_genbank(genome, features, genbank_path):
                 else:
                     if('truncated' in feature):
                         if(feature['truncated'] == bc.FEATURE_END_5_PRIME):
-                            start = BeforePosition(start)
+                            if(feature['strand'] == bc.STRAND_FORWARD):
+                                start = BeforePosition(start)
+                            else:
+                                stop = AfterPosition(stop)
                         elif(feature['truncated'] == bc.FEATURE_END_3_PRIME):
-                            stop = AfterPosition(stop)
+                            if(feature['strand'] == bc.STRAND_FORWARD):
+                                stop = AfterPosition(stop)
+                            else:
+                                start = BeforePosition(start)
                         else:
                             start = BeforePosition(start)
                             stop = AfterPosition(stop)
