@@ -166,8 +166,12 @@ def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
                 partial_cds = partial_cdss_per_record.get(record.id, None)
                 if(partial_cds):
                     seq = str(record.seq)
+                    if(partial_cds['truncated'] == bc.FEATURE_END_5_PRIME):
+                        seq = seq[:-1]  # discard trailing asterisk
                     partial_cds['sequence'] = seq
                     partial_cds['aa_digest'], partial_cds['aa_hexdigest'] = bu.calc_aa_hash(seq)
+                else:
+                    log.warning('unknown sequence detected! id=%s, sequence=%s', record.id, record.seq)
     cdss = list(cdss.values())
 
     # merge matching partial features on sequence edges
@@ -196,8 +200,7 @@ def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
 
                 cds['edge'] = True  # mark CDS as edge feature
                 cds.pop('truncated')
-
-                seq = seq[:-1]  # discard trailing asterisk
+                
                 cds['sequence'] = seq
                 cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(seq)
                 cdss.append(cds)
