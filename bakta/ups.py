@@ -32,6 +32,8 @@ def lookup(features):
                     if('truncated' not in feature):  # skip truncated CDS
                         future = tpe.submit(fetch_db_ups_result, conn, feature)
                         rec_futures.append((feature, future))
+                    else:
+                        features_not_found.append(feature)
         
         for (feature, future) in rec_futures:
             rec = future.result()

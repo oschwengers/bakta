@@ -37,6 +37,8 @@ def lookup(features):
                             rec_futures.append((feature, future))
                         else:
                             features_not_found.append(feature)
+                    else:
+                        features_not_found.append(feature)
         
         for (feature, future) in rec_futures:
             rec = future.result()
