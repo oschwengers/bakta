@@ -26,7 +26,7 @@ def write_genbank(genome, features, genbank_path):
             # TODO: taxonomy
         }
         source_qualifiers = {
-            'mol_type': 'DNA'
+            'mol_type': 'genomic DNA'
         }
 
         description = ''
