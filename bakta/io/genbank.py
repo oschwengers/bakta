@@ -151,21 +151,21 @@ def write_genbank(genome, features, genbank_path):
                 elif(feature['strand'] == bc.STRAND_UNKNOWN):
                     strand = 0
                 
+                start = feature['start'] - 1
+                stop = feature['stop']
                 if('edge' in feature):
-                    fl_1 = FeatureLocation(feature['start'] - 1, contig['length'], strand=strand)
-                    fl_2 = FeatureLocation(0, feature['stop'], strand=strand)
+                    fl_1 = FeatureLocation(start, contig['length'], strand=strand)
+                    fl_2 = FeatureLocation(0, stop, strand=strand)
                     feature_location = CompoundLocation([fl_1, fl_2])
                 else:
-                    start = feature['start'] - 1
-                    stop = feature['stop']
                     if('truncated' in feature):
                         if(feature['truncated'] == bc.FEATURE_END_5_PRIME):
-                            start = BeforePosition(feature['start'])
+                            start = BeforePosition(start)
                         elif(feature['truncated'] == bc.FEATURE_END_3_PRIME):
-                            stop = AfterPosition(feature['stop'])
+                            stop = AfterPosition(stop)
                         else:
-                            start = BeforePosition(feature['start'])
-                            stop = AfterPosition(feature['stop'])
+                            start = BeforePosition(start)
+                            stop = AfterPosition(stop)
                     feature_location = FeatureLocation(start, stop, strand=strand)
 
                 if(feature.get('locus', None)):
