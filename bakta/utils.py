@@ -79,7 +79,7 @@ def test_dependencies():
             )
         except FileNotFoundError:
             log.exception('tRNAscan-SE not found!')
-            sys.exit('ERROR: \'tRNAscan-SE\' not executable!')
+            sys.exit('ERROR: tRNAscan-SE not executable! Please either install tRNAscan-SE (>=v2.0.6) or skip the annotation of tRNAs via \'--skip-trna\'.')
         except:
             pass
 
@@ -93,7 +93,7 @@ def test_dependencies():
             )
         except FileNotFoundError:
             log.exception('aragorn not found!')
-            sys.exit('ERROR: \'aragorn\' not executable!')
+            sys.exit('ERROR: aragorn not executable! Please either install Aragorn (>=1.2.38) or skip the annotation of tmRNAs via \'--skip-tmrna\'.')
         except:
             pass
 
@@ -107,7 +107,7 @@ def test_dependencies():
             )
         except FileNotFoundError:
             log.exception('cmscan not found!')
-            sys.exit('ERROR: \'cmscan\' not executable!')
+            sys.exit('ERROR: \'cmscan\' not executable! Please either install Infernal (>=v1.1.2) or skip the annotation of rRNAs, ncRNAs & ncRNA regions via \'--skip-rrna --skip-ncrna --skip-ncrna-region\'.')
         except:
             pass
 
@@ -121,7 +121,7 @@ def test_dependencies():
             )
         except FileNotFoundError:
             log.exception('prodigal not found!')
-            sys.exit('ERROR: \'prodigal\' not executable!')
+            sys.exit('ERROR: \'prodigal\' not executable! Please either install Prodigal (>=v2.6.3) or skip the annotation of CDSs via \'--skip-cds\'.')
         except:
             pass
 
@@ -135,7 +135,7 @@ def test_dependencies():
             )
         except FileNotFoundError:
             log.exception('hmmsearch not found!')
-            sys.exit('ERROR: \'hmmsearch\' not executable!')
+            sys.exit('ERROR: \'hmmsearch\' not executable! Please either install HMMER (>=3.3.1) or skip the annotation of CDSs & sORFs via \'--skip-cds --skip-sorf\'.')
         except:
             pass
 
@@ -149,7 +149,7 @@ def test_dependencies():
             )
         except FileNotFoundError:
             log.exception('diamond not found!')
-            sys.exit('ERROR: \'diamond\' not executable!')
+            sys.exit('ERROR: \'diamond\' not executable! Please either install Diamond (>=v2.0.4) or skip the annotation of CDSs & sORFs via \'--skip-cds --skip-sorf\'.')
         except:
             pass
 
@@ -163,7 +163,7 @@ def test_dependencies():
             )
         except FileNotFoundError:
             log.exception('pilercr not found!')
-            sys.exit('ERROR: \'pilercr\' not executable!')
+            sys.exit('ERROR: pilercr not executable! Please either install PILER-CR or skip the annotation of CRISPRs via \'--skip-crispr\'.')
         except:
             pass
 
