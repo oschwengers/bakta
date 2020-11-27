@@ -8,7 +8,7 @@
 
 # Bakta: Rapid & standardized annotation of bacterial genomes & plasmids
 
-Bakta is a tool for the rapid & standardized local annotation of bacterial genomes & plasmids. It provides **dbxref**-rich and **sORF**-including annotations in machine-readble `JSON` & bioinformatics standard file formats for automatic downstream analysis.
+Bakta is a tool for the rapid & standardized local annotation of bacterial genomes & plasmids. It provides **dbxref**-rich and **sORF**-including annotations in machine-readable `JSON` & bioinformatics standard file formats for automatic downstream analysis.
 
 > Bakta is young and still in a beta status! So please, test it, bend, sequeeze & smash it, try to crash it... but don't forget to file bug reports ;-)
 Of course, feedback of any kind and feature requests are highly welcome & very much appreciated!
@@ -46,7 +46,7 @@ Next to standard feature types (tRNA, tmRNA, rRNA, ncRNA, ncRNA cis-regulatory r
 Bakta can annotate a typical bacterial genome in 10 &plusmn;5 min on a laptop, plasmids in a couple of seconds/minutes.
 
 - **Reasoning**
-Annotating bacterial genomes in a standardized, taxon-independent, high-throughput and local manner, Bakta targets the niche between standardized, fully-featured but computationally-demanding pipelines like [PGAP](https://github.com/ncbi/pgap) and rapid highly-customizable offline tools like [Prokka](https://github.com/tseemann/prokka). Indeed, Bakta is heavily inspired by Prokka (kudos to [Torsten Seemann](https://github.com/tseemann)) and many command line options are compatible for the sake of interoperability and user convenience. Hence, if Bakta does not fit your needs, please try Prokka.
+By annotating bacterial genomes in a standardized, taxon-independent, high-throughput and local manner, Bakta targets the niche between fully-featured but computationally-demanding pipelines like [PGAP](https://github.com/ncbi/pgap) and rapid highly-customizable offline tools like [Prokka](https://github.com/tseemann/prokka). Indeed, Bakta is heavily inspired by Prokka (kudos to [Torsten Seemann](https://github.com/tseemann)) and many command line options are compatible for the sake of interoperability and user convenience. Hence, if Bakta does not fit your needs, please try Prokka.
 
 ## Installation
 
