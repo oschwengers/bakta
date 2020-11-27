@@ -77,8 +77,8 @@ $ bakta-docker.sh --help
 ### Singularity
 
 ```bash
-$ singularity pull docker://oschwengers/bakta:latest
-$ singularity run bakta-latest.simg --help
+$ singularity build bakta.sif docker://oschwengers/bakta:latest
+$ singularity run bakta.sif --help
 ```
 
 Installation instructions, get-started and guides: Singularity [docs](https://sylabs.io/docs)
