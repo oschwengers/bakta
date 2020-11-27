@@ -1,4 +1,4 @@
-name: CI/CD Docker image
+name: CD Docker image
 on:
   release:
     types: [published]
