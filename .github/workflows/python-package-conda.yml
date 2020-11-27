@@ -1,14 +1,13 @@
-name: PyTest using Conda
-
+name: CI (Conda/PyTest)
 on:
   push:
     paths-ignore:
       - 'README.md'
   pull_request:
-    types: opened
+    types:
+      - opened
     paths-ignore:
       - 'README.md'
-
 jobs:
   build:
     name: test (${{ matrix.os }}, ${{ matrix.python-version }})

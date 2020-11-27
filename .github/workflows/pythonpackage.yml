@@ -1,7 +1,13 @@
-name: Python package
-
-on: [push, pull_request]
-
+name: Lint (Flake8)
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+  pull_request:
+    types:
+      - opened
+    paths-ignore:
+      - 'README.md'
 jobs:
   build:
 

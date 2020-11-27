@@ -1,9 +1,7 @@
-name: Upload Python Package
-
+name: CD PyPI
 on:
   release:
     types: [published]
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
