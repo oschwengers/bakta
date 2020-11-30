@@ -45,11 +45,14 @@ rm rfam-regions.raw.txt rfam-regions.txt Rfam.cm ncRNA-regions
 
 # download and extract spurious ORF HMMs from AntiFam
 printf "\n4/13: download and extract spurious ORF HMMs from AntiFam ...\n"
+mkdir antifam-dir
+cd antifam-dir
 wget -nv ftp://ftp.ebi.ac.uk/pub/databases/Pfam/AntiFam/current/Antifam.tar.gz
 tar -xzf Antifam.tar.gz
-mv AntiFam_Bacteria.hmm antifam
+cd ..
+mv antifam-dir/AntiFam_Bacteria.hmm antifam
 hmmpress antifam
-rm -r AntiFam* Antifam.tar.gz antifam
+rm -r antifam antifam-dir/
 
 
 # download & extract oriT sequences
