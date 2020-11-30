@@ -8,43 +8,49 @@ cd db
 printf "Create Bakta database\n"
 
 # download rRNA covariance models from Rfam
-printf "\n1/13: download rRNA covariance models from Rfam ...\n"
-mkdir Rfam
-cd Rfam
-wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.tar.gz
-tar -I pigz -xf Rfam.tar.gz
-cd ..
-cat Rfam/RF00001.cm >  rRNA
-cat Rfam/RF00177.cm >> rRNA
-cat Rfam/RF02541.cm >> rRNA
+# download rRNA covariance models from Rfam
+printf "\n1/14: download rRNA covariance models from Rfam ...\n"
+wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
+pigz -d Rfam.cm.gz
+cmfetch Rfam.cm RF00001 >  rRNA
+cmfetch Rfam.cm RF00177 >> rRNA
+cmfetch Rfam.cm RF02541 >> rRNA
 cmpress rRNA
-rm -r Rfam rRNA
+rm rRNA
 
 
 # download and extract ncRNA gene covariance models from Rfam
-printf "\n2/13: download ncRNA gene covariance models from Rfam ...\n"
-mysql --user rfamro --host mysql-rfam-public.ebi.ac.uk --port 4497 --database Rfam < ${BAKTA_DB_SCRIPTS}/ncRNA-genes.sql > rfam-genes.raw.txt
-tail -n +2 rfam-genes.raw.txt > rfam-genes.txt
-wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
-pigz -d Rfam.cm.gz
+printf "\n2/14: download ncRNA gene covariance models from Rfam ...\n"
+mysql --user rfamro --host mysql-rfam-public.ebi.ac.uk --port 4497 --database Rfam < ${BAKTA_DB_SCRIPTS}/ncRNA-genes.sql | tail -n +2 > rfam-genes.raw.txt
+grep "antitoxin;" rfam-genes.raw.txt >> rfam-genes.txt
+grep "antisense;" rfam-genes.raw.txt >> rfam-genes.txt
+grep "ribozyme;" rfam-genes.raw.txt >> rfam-genes.txt
+grep "sRNA;" rfam-genes.raw.txt >> rfam-genes.txt
+cut -f1 ${BAKTA_DB_SCRIPTS}/ncRNA-genes.blacklist.txt > ncRNA-genes.blacklist
+grep -e "Gene;[^ ]" rfam-genes.raw.txt | grep -v -f ncRNA-genes.blacklist >> rfam-genes.txt
 cmfetch -o ncRNA-genes -f Rfam.cm rfam-genes.txt
 cmpress ncRNA-genes
 wget http://current.geneontology.org/ontology/external2go/rfam2go
 awk -F ' ' '{print $1 "\t" $NF}' rfam2go > rfam-go.tsv
-rm rfam-genes.raw.txt rfam-genes.txt rfam2go ncRNA-genes
+rm rfam-genes.raw.txt rfam-genes.txt ncRNA-genes.blacklist ncRNA-genes rfam2go
 
 
 # download and extract ncRNA regions (cis reg elements) covariance models from Rfam
-printf "\n3/13: download ncRNA region covariance models from Rfam ...\n"
-mysql --user rfamro --host mysql-rfam-public.ebi.ac.uk --port 4497 --database Rfam < ${BAKTA_DB_SCRIPTS}/ncRNA-regions.sql > rfam-regions.raw.txt
-tail -n +2 rfam-regions.raw.txt > rfam-regions.txt
+printf "\n3/14: download ncRNA region covariance models from Rfam ...\n"
+mysql --user rfamro --host mysql-rfam-public.ebi.ac.uk --port 4497 --database Rfam < ${BAKTA_DB_SCRIPTS}/ncRNA-regions.sql | tail -n +2 > rfam-regions.raw.txt
+grep "riboswitch;" rfam-regions.raw.txt >> rfam-regions.txt
+grep "thermoregulator;" rfam-regions.raw.txt >> rfam-regions.txt
+grep "leader;" rfam-regions.raw.txt >> rfam-regions.txt
+grep "frameshift_element;" rfam-regions.raw.txt >> rfam-regions.txt
+cut -f1 ${BAKTA_DB_SCRIPTS}/ncRNA-regions.blacklist.txt > ncRNA-regions.blacklist
+grep -e "Cis-reg;[^ ]" rfam-regions.raw.txt | grep -v -f ncRNA-regions.blacklist >> rfam-regions.txt
 cmfetch -o ncRNA-regions -f Rfam.cm rfam-regions.txt
 cmpress ncRNA-regions
-rm rfam-regions.raw.txt rfam-regions.txt Rfam.cm ncRNA-regions
+rm rfam-regions.raw.txt rfam-regions.txt ncRNA-regions.blacklist ncRNA-regions Rfam.cm
 
 
 # download and extract spurious ORF HMMs from AntiFam
-printf "\n4/13: download and extract spurious ORF HMMs from AntiFam ...\n"
+printf "\n4/14: download and extract spurious ORF HMMs from AntiFam ...\n"
 mkdir antifam-dir
 cd antifam-dir
 wget -nv ftp://ftp.ebi.ac.uk/pub/databases/Pfam/AntiFam/current/Antifam.tar.gz

@@ -3,8 +3,4 @@ FROM taxonomy tx
 INNER JOIN rfamseq rf ON rf.ncbi_id = tx.ncbi_id
 INNER JOIN full_region fr ON fr.rfamseq_acc = rf.rfamseq_acc
 INNER JOIN family f ON f.rfam_acc = fr.rfam_acc
-WHERE tx.tax_string LIKE 'Bacteria%' AND
-(f.type LIKE '%riboswitch;'
-OR f.type LIKE '%thermoregulator;'
-OR f.type LIKE '%leader;'
-OR f.type LIKE '%frameshift_element;');
+WHERE tx.tax_string LIKE 'Bacteria%' AND f.type LIKE 'Cis-reg%;';

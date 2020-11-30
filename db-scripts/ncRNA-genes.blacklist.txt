@@ -1,0 +1,15 @@
+RF00017	Gene;	Metazoan signal recognition particle RNA
+RF00023	Gene;	transfer-messenger RNA
+RF00199	Gene;	SL2 RNA
+RF01067	Gene;	ATPC RNA motif
+RF01071	Gene;	Ornate Large Extremophilic RNA
+RF01383	Gene;	GRIK4 3 prime UTR element
+RF01849	Gene;	Alphaproteobacteria transfer-messenger RNA
+RF01850	Gene;	Betaproteobacteria transfer-messenger RNA
+RF01851	Gene;	Cyanobacteria transfer-messenger RNA
+RF01855	Gene;	Plant signal recognition particle RNA
+RF01856	Gene;	Protozoan signal recognition particle RNA
+RF01857	Gene;	Archaeal signal recognition particle RNA
+RF02034	Gene;	IMES-1 RNA motif
+RF02035	Gene;	IMES-2 RNA motif
+RF02598	Gene;	Epstein-Barr virus stable intronic sequence RNA 2
