@@ -67,11 +67,11 @@ wget -q -nv https://zenodo.org/record/3786915/files/data.tar.gz
 tar -xvzf data.tar.gz
 mv data/orit.fas ./orit.fna
 rm -r data/ data.tar.gz
-printf "\n5/14: download and extract oriC sequences from DoriC ...\n"
+printf "\n5/15: download and extract oriC sequences from DoriC ...\n"
 wget -q -nv http://tubic.org/doric/public/static/download/doric10.rar
 unrar e doric10.rar
-python3 ${BAKTA_DB_SCRIPTS}/extract-oric.py --doric tubic_bacteria.csv --fasta oric.chromosome.fna
-python3 ${BAKTA_DB_SCRIPTS}/extract-oric.py --doric tubic_plasmid.csv --fasta oric.plasmid.fna
+python3 ${BAKTA_DB_SCRIPTS}/extract-ori.py --doric tubic_bacteria.csv --fasta oric.chromosome.fna
+python3 ${BAKTA_DB_SCRIPTS}/extract-ori.py --doric tubic_plasmid.csv --fasta oric.plasmid.fna
 cat oric.plasmid.fna >> oric.chromosome.fna
 mv oric.chromosome.fna oric.fna
 rm doric10.rar tubic* oric.plasmid.fna
