@@ -217,6 +217,8 @@ def main():
     # - lookup UPS matches
     # - lookup IPS matches
     # - search PSC for unannotated CDSs
+    # - lookup & combine annotations
+    # - analyze hypotheticals
     ############################################################################
     if(cfg.skip_cds):
         print('skip CDS prediction...')
@@ -249,6 +251,11 @@ def main():
         log.debug('combine CDS annotations')
         for feat in genome['features'][bc.FEATURE_CDS]:
             anno.combine_ips_psc_annotation(feat)  # combine IPS & PSC annotations and mark hypotheticals
+        
+        print('\tanalyze hypotheticals...')
+        log.debug('analyze hypotheticals')
+        hypotheticals = [cds for cds in genome['features'][bc.FEATURE_CDS] if 'hypothetical' in cds]
+        cds.predict_pfam(hypotheticals)
     
     ############################################################################
     # sORF prediction
@@ -441,6 +448,15 @@ def main():
     print('write translated CDS sequences...')
     faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.faa')
     fasta.write_faa(features, faa_path)
+    
+    if(cfg.skip_cds is False):
+        print('write hypothetical TSV output...')
+        tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.tsv')
+        tsv.write_hypothetical_tsv(hypotheticals, tsv_path)
+
+        print('write translated hypothetical CDS sequences...')
+        faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.faa')
+        fasta.write_faa(hypotheticals, faa_path)
 
     # remove tmp dir
     shutil.rmtree(str(cfg.tmp_path))

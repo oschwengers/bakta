@@ -214,7 +214,7 @@ rm IS.faa is.transposase.faa is.dmnd diamond.ips.tsv diamond.psc.tsv
 ############################################################################
 # Integrate Pfam A
 # - download all Pfam A HMM models
-# - extract families
+# - extract families & domains
 # - compress HMM models
 # - annotate hypothetical PSC via Pfam families
 ############################################################################

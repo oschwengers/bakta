@@ -1,5 +1,6 @@
 
 import logging
+import re
 import subprocess as sp
 from collections import OrderedDict
 
@@ -228,3 +229,66 @@ def split_gff_annotation(annotation_string):
             except:
                 log.error('expr=%s', expr)
     return annotations
+
+
+def predict_pfam(cdss):
+    """Detect Pfam-A entries"""
+    fasta_path = cfg.tmp_path.joinpath('hypotheticals.faa')
+    with fasta_path.open(mode='w') as fh:
+        for cds in cdss:
+            fh.write(f">{cds['aa_hexdigest']}\n{cds['sequence']}\n")
+    
+    output_path = cfg.tmp_path.joinpath('cds.pfam.hmm.tsv')
+    cmd = [
+        'hmmsearch',
+        '--noali',
+        '--cut_ga',  # use gathering cutoff
+        '--tblout', str(output_path),
+        '--cpu', str(cfg.threads),
+        str(cfg.db_path.joinpath('pfam')),
+        str(fasta_path)
+    ]
+    log.debug('cmd=%s', cmd)
+    proc = sp.run(
+        cmd,
+        cwd=str(cfg.tmp_path),
+        env=cfg.env,
+        stdout=sp.PIPE,
+        stderr=sp.PIPE,
+        universal_newlines=True
+    )
+    if(proc.returncode != 0):
+        log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
+        log.warning('pfam detection failed! hmmsearch-error-code=%d', proc.returncode)
+        raise Exception(f'hmmsearch error! error code: {proc.returncode}')
+
+    pfam_hits = []
+    cds_pfams_hits = {}
+    orf_by_aa_digest = {cds['aa_hexdigest']: cds for cds in cdss}
+    with output_path.open() as fh:
+        for line in fh:
+            if(line[0] != '#'):
+                cols = re.split('\s+', line.strip())
+                aa_hexdigest = cols[0]
+                cds = orf_by_aa_digest[aa_hexdigest]
+                
+                pfam = OrderedDict()
+                pfam['id'] = cols[3]
+                pfam['name'] = cols[2]
+                pfam['evalue'] = float(cols[4])
+                pfam['score'] = float(cols[5])
+                
+                if('pfams' not in cds):
+                    cds['pfams'] = []
+                cds['pfams'].append(pfam)
+                if('dbxrefs' not in cds):
+                    cds['dbxrefs'] = []
+                cds['dbxrefs'].append(f"PFAM:{pfam['id']}")
+                pfam_hits.append(cds)
+                cds_pfams_hits[aa_hexdigest] = cds
+                log.info(
+                    'pfam detected: contig=%s, start=%i, stop=%i, strand=%s, pfam-id=%s, evalue=%1.1e, bitscore=%f, name=%s',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], pfam['id'], pfam['evalue'], pfam['score'], pfam['name']
+                )
+    log.info('predicted-pfams=%i, CDS-w/-pfams=%i', len(pfam_hits), len(cds_pfams_hits))
+    return cds_pfams_hits.values()
