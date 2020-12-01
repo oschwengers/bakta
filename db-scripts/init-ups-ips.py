@@ -2,7 +2,7 @@
 import argparse
 import logging
 import hashlib
-import gzip
+from xopen import xopen
 import sqlite3
 from pathlib import Path
 from lxml import etree as et
@@ -78,7 +78,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
 
     i = 0
     i_all = 0
-    with gzip.open(str(uniref100_path), mode='rb') as fh:
+    with xopen(str(uniref100_path), mode='rb') as fh:
         for event, elem in et.iterparse(fh, tag='{*}entry'):
             if('Fragment' not in elem.find('./{*}name').text):  # skip protein fragments
                 common_tax_id = elem.find('./{*}property[@type="common taxon ID"]')
@@ -161,7 +161,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     log_ups.debug('lookup non-representative UniParc member sequences: %s', len(uniparc_to_uniref100))
     i = 0
     i_all = 0
-    with gzip.open(str(uniparc_path), mode='rt') as fh_uniparc:
+    with xopen(str(uniparc_path), mode='rt') as fh_uniparc:
         for record in SeqIO.parse(fh_uniparc, 'fasta'):
             uniparc_id = record.id
             uniref100_id = uniparc_to_uniref100.get(uniparc_id, None)

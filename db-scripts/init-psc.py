@@ -1,7 +1,7 @@
 
 import argparse
 import logging
-import gzip
+from xopen import xopen
 import sqlite3
 from lxml import etree as et
 from pathlib import Path
@@ -73,7 +73,7 @@ uniref90_uniparc_ids = {}
 
 uniref50_products = {}
 print('parse UniRef50 product information...')
-with gzip.open(str(uniref50_path), mode='rb') as fh_xml:
+with xopen(str(uniref50_path), mode='rb') as fh_xml:
     i = 0
     for event, elem in et.iterparse(fh_xml, tag='{*}entry'):
         uniref50_id = elem.attrib['id'][9:]
@@ -99,7 +99,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA threads = 2;')
     conn.commit()
 
-    with gzip.opne(str(uniref90_path), mode='rb') as fh_xml, fasta_psc_path.open(mode='wt') as fh_fasta_psc, fasta_sorf_path.open(mode='wt') as fh_fasta_sorf:
+    with xopen(str(uniref90_path), mode='rb') as fh_xml, fasta_psc_path.open(mode='wt') as fh_fasta_psc, fasta_sorf_path.open(mode='wt') as fh_fasta_sorf:
         i = 0
         for event, elem in et.iterparse(fh_xml, tag='{*}entry'):
             common_tax_id = elem.find('./{*}property[@type="common taxon ID"]')
@@ -187,7 +187,7 @@ log_psc.debug('summary: # PSC=%d', i)
 print(f'UniParc ({len(uniref90_uniparc_ids)})...')
 log_psc.debug('lookup non-representative UniParc seed sequences: %s', len(uniref90_uniparc_ids))
 i = 0
-with gzip.open(str(uniparc_path), mode='rt') as fh_uniparc, fh_fasta_psc.open(mode='at') as fh_fasta_psc, fh_fasta_sorf.open(mode='at') as fh_fasta_sorf:
+with xopen(str(uniparc_path), mode='rt') as fh_uniparc, fasta_psc_path.open(mode='at') as fh_fasta_psc, fasta_sorf_path.open(mode='at') as fh_fasta_sorf:
     for record in SeqIO.parse(fh_uniparc, 'fasta'):
         uniref90_id = uniref90_uniparc_ids.get(record.id, None)
         if(uniref90_id):
