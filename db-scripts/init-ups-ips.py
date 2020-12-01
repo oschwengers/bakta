@@ -14,14 +14,21 @@ parser = argparse.ArgumentParser(
     description='Filter Uniprot\'s UniRef100 XML files to bacterial/UPSage sequences and create initial UPS & IPS db.'
 )
 parser.add_argument('--taxonomy', action='store', help='Path to NCBI taxonomy node.dmp file.')
-parser.add_argument('--xml', action='store', help='Path to UniRef xml file.')
+parser.add_argument('--uniref100', action='store', help='Path to UniRef xml file.')
 parser.add_argument('--uniparc', action='store', help='Path to UniParc fasta file.')
 parser.add_argument('--db', action='store', help='Path to Bakta sqlite3 db file.')
 args = parser.parse_args()
 
+DISCARDED_PRODUCTS = [
+    'hypothetical protein',
+    'hypothetical conserved protein',
+    'uncharacterized protein',
+    'hypothetical membrane protein',
+    'hypothetical cytosolic Protein'
+]
 
 taxonomy_path = Path(args.taxonomy).resolve()
-xml_path = Path(args.xml).resolve()
+uniref100_path = Path(args.uniref100).resolve()
 uniparc_path = Path(args.uniparc).resolve()
 db_path = Path(args.db)
 
@@ -71,7 +78,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
 
     i = 0
     i_all = 0
-    with gzip.open(str(xml_path), mode='rb') as fh:
+    with gzip.open(str(uniref100_path), mode='rb') as fh:
         for event, elem in et.iterparse(fh, tag='{*}entry'):
             if('Fragment' not in elem.find('./{*}name').text):  # skip protein fragments
                 common_tax_id = elem.find('./{*}property[@type="common taxon ID"]')
@@ -103,24 +110,23 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     log_ups.info('INSERT INTO ups (hash, length, uniparc_id, uniref100_id) VALUES (%s,%s,%s,%s)', seq_hash_hexdigest, length, uniparc_id, uniref100_id)
                     product = rep_member_dbref.find('./{*}property[@type="protein name"]')
                     if(product is not None):
-                        product = product.attrib['value']
-                        tmp = product.lower()
-                        if(tmp == 'hypothetical protein'):
-                            product = None
-                        elif(tmp == 'uncharacterized protein'):
+                        product = product.get('value')
+                        if(product.lower() in DISCARDED_PRODUCTS):
                             product = None
                     
                     uniref90_id = rep_member_dbref.find('./{*}property[@type="UniRef90 ID"]')
                     if(uniref90_id is not None):
                         uniref90_id = uniref90_id.attrib['value'][9:]
-                        product = None  # skip IPS product and use the PSC/UniRef90 product annotation
+                        rec_psc = conn.execute('SELECT * FROM psc WHERE uniref90_id=?', (uniref90_id,)).fetchone()
+                        if(rec_psc is not None):
+                            if(rec_psc['product'] is not None):
+                                product = None  # skip IPS product and use the PSC/UniRef90 product annotation
                     
                     ips = (
                         uniref100_id,
                         uniref90_id,
                         product
                     )
-                    log_ips.debug('uniref100-id=%s, uniref90-id=%s, product=%s', uniref100_id, uniref90_id, product)
                     conn.execute('INSERT INTO ips (uniref100_id, uniref90_id, product) VALUES (?,?,?)', ips)
                     log_ips.info('INSERT INTO ips (uniref100_id, uniref90_id, product) VALUES (%s,%s,%s)', *ips)
                     i += 1

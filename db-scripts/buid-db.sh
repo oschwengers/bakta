@@ -96,32 +96,33 @@ python3 ${BAKTA_DB_SCRIPTS}/init-db.py --db bakta.db
 
 
 ############################################################################
-# Build unique protein sequences (IPSs) based on UniRef100 entries
-# - download UniProt UniRef100
-# - read, filter and transform UniRef100 entries and store to ips.db
-############################################################################
-printf "\n8/14: download UniProt UniRef100 ...\n"
-wget -nv ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref100/uniref100.xml.gz
-wget -nv ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/uniparc_active.fasta.gz
-printf "\n8/14: read, filter and store UniRef100 entries ...:\n"
-python3 ${BAKTA_DB_SCRIPTS}/init-ups-ips.py --taxonomy nodes.dmp --xml uniref100.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db
-rm uniref100.xml.gz
-
-
-############################################################################
 # Build protein sequence clusters (PSCs) based on UniRef90 entries
 # - download UniProt UniRef90
 # - read and transform UniRef90 XML file to DB and Fasta file
 # - build PSC Diamond db
 ############################################################################
-printf "\n9/14: download UniProt UniRef90 ...\n"
+printf "\n8/14: download UniProt UniRef90 ...\n"
 wget -nv ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref90/uniref90.xml.gz
-printf "\n9/14: read UniRef90 entries and build Protein Sequence Cluster sequence and information databases:\n"
-python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --xml uniref90.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --psc-fasta psc.faa --sorf-fasta sorf.faa
-printf "\n9/14: build PSC Diamond db ...\n"
+wget -nv ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref50/uniref50.xml.gz
+printf "\n8/14: read UniRef90 entries and build Protein Sequence Cluster sequence and information databases:\n"
+python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --uniref90 uniref90.xml.gz --uniref50 uniref50.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --psc-fasta psc.faa --sorf-fasta sorf.faa
+printf "\n8/14: build PSC Diamond db ...\n"
 diamond makedb --in psc.faa --db psc
 diamond makedb --in sorf.faa --db sorf
 rm uniref90.xml.gz uniparc_active.fasta.gz sorf.faa
+
+
+############################################################################
+# Build unique protein sequences (IPSs) based on UniRef100 entries
+# - download UniProt UniRef100
+# - read, filter and transform UniRef100 entries and store to ips.db
+############################################################################
+printf "\n9/14: download UniProt UniRef100 ...\n"
+wget -nv ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref100/uniref100.xml.gz
+wget -nv ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/uniparc_active.fasta.gz
+printf "\n9/14: read, filter and store UniRef100 entries ...:\n"
+python3 ${BAKTA_DB_SCRIPTS}/init-ups-ips.py --taxonomy nodes.dmp --uniref100 uniref100.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db
+rm uniref100.xml.gz
 
 
 ############################################################################
@@ -165,7 +166,7 @@ rm uniprot_sprot.xml.gz
 printf "\n12/14: download COG db ...\n"
 wget -nv ftp://ftp.ncbi.nih.gov/pub/COG/COG2020/data/cog-20.def.tab  # COG IDs and functional class
 wget -nv ftp://ftp.ncbi.nih.gov/pub/COG/COG2020/data/cog-20.cog.csv # Mapping GenBank IDs -> COG IDs
-for i in $(seq -f "%05g" 1 5950)
+for i in $(seq -f "%04g" 1 5950)
 do
     wget -nv ftp://ftp.ncbi.nih.gov/pub/COG/COG2020/data/fasta/COG${i}.fa.gz
     pigz -dc COG${i}.fa.gz | seqtk seq -CU >> cog.faa
