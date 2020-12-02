@@ -2,13 +2,13 @@
 params.fasta = 'psc.faa'
 
 Channel.fromPath( params.fasta )
-    .splitFasta( by: 100000, file: true )
+    .splitFasta( by: 40000, file: true )
     .set( { chAAs } )
 
 process hmmscan {
     errorStrategy 'finish'
     maxRetries 3
-    cpus 2
+    cpus 1
     memory '1 GB'
     conda 'hmmer=3.3.1'
 
