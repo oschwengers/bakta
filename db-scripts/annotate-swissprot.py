@@ -67,6 +67,11 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA threads = 2;')
     conn.commit()
 
+    print('create IPS index on UniRef90 ids...')
+    conn.execute('CREATE INDEX ur90 ON ips ( uniref90_id )')
+    conn.commit()
+    log_ups.info('CREATE INDEX ur90 ON ips ( uniref90_id )')
+
     conn.row_factory = sqlite3.Row
     with xopen(str(xml_path), mode="rb") as fh:
         ups_entries = []
@@ -165,6 +170,11 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                 conn.commit()
                 print(f'\t... {sp_processed}')
             elem.clear()  # forstall out of memory errors
+    
+    print('drop IPS index on NCBI UniRef90 ids...')
+    conn.execute('DROP INDEX ur90')
+    conn.commit()
+    log_ups.info('DROP INDEX ur90')
 
 print('\n')
 print(f'SwissProt proteins not found: {sp_not_found}')
