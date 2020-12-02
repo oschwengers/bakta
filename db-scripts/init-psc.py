@@ -17,8 +17,8 @@ parser.add_argument('--uniref90', action='store', help='Path to UniRef90 xml fil
 parser.add_argument('--uniref50', action='store', help='Path to UniRef50 xml file.')
 parser.add_argument('--uniparc', action='store', help='Path to UniParc fasta file.')
 parser.add_argument('--db', action='store', help='Path to Bakta sqlite3 db file.')
-parser.add_argument('--psc-fasta', action='store', dest='psc_fasta', help='Path to PSC fasta file.')
-parser.add_argument('--sorf-fasta', action='store', dest='sorf_fasta', help='Path to sORF PSC fasta file.')
+parser.add_argument('--psc', action='store', help='Path to PSC fasta file.')
+parser.add_argument('--sorf', action='store', help='Path to sORF PSC fasta file.')
 args = parser.parse_args()
 
 MAX_SORF_LENGTH = 30
@@ -36,8 +36,8 @@ uniref90_path = Path(args.uniref90).resolve()
 uniref50_path = Path(args.uniref50).resolve()
 uniparc_path = Path(args.uniparc).resolve()
 db_path = Path(args.db)
-fasta_psc_path = Path(args.psc_fasta)
-fasta_sorf_path = Path(args.sorf_fasta)
+psc_path = Path(args.psc)
+sorf_path = Path(args.sorf)
 
 
 logging.basicConfig(
@@ -99,7 +99,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA threads = 2;')
     conn.commit()
 
-    with xopen(str(uniref90_path), mode='rb') as fh_xml, fasta_psc_path.open(mode='wt') as fh_fasta_psc, fasta_sorf_path.open(mode='wt') as fh_fasta_sorf:
+    with xopen(str(uniref90_path), mode='rb') as fh_xml, psc_path.open(mode='wt') as fh_fasta_psc, sorf_path.open(mode='wt') as fh_fasta_sorf:
         i = 0
         for event, elem in et.iterparse(fh_xml, tag='{*}entry'):
             common_tax_id = elem.find('./{*}property[@type="common taxon ID"]')
@@ -187,7 +187,7 @@ log_psc.debug('summary: # PSC=%d', i)
 print(f'UniParc ({len(uniref90_uniparc_ids)})...')
 log_psc.debug('lookup non-representative UniParc seed sequences: %s', len(uniref90_uniparc_ids))
 i = 0
-with xopen(str(uniparc_path), mode='rt') as fh_uniparc, fasta_psc_path.open(mode='at') as fh_fasta_psc, fasta_sorf_path.open(mode='at') as fh_fasta_sorf:
+with xopen(str(uniparc_path), mode='rt') as fh_uniparc, psc_path.open(mode='at') as fh_fasta_psc, sorf_path.open(mode='at') as fh_fasta_sorf:
     for record in SeqIO.parse(fh_uniparc, 'fasta'):
         uniref90_id = uniref90_uniparc_ids.get(record.id, None)
         if(uniref90_id):

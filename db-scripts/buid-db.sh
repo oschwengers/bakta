@@ -104,7 +104,7 @@ printf "\n8/14: download UniProt UniRef90 ...\n"
 wget -nv ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref90/uniref90.xml.gz
 wget -nv ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref50/uniref50.xml.gz
 printf "\n8/14: read UniRef90 entries and build Protein Sequence Cluster sequence and information databases:\n"
-python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --uniref90 uniref90.xml.gz --uniref50 uniref50.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --psc-fasta psc.faa --sorf-fasta sorf.faa
+python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --uniref90 uniref90.xml.gz --uniref50 uniref50.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --psc psc.faa --sorf sorf.faa
 printf "\n8/14: build PSC Diamond db ...\n"
 diamond makedb --in psc.faa --db psc
 diamond makedb --in sorf.faa --db sorf
@@ -120,7 +120,7 @@ printf "\n9/14: download UniProt UniRef100 ...\n"
 wget -nv ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref100/uniref100.xml.gz
 wget -nv ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/uniparc_active.fasta.gz
 printf "\n9/14: read, filter and store UniRef100 entries ...:\n"
-python3 ${BAKTA_DB_SCRIPTS}/init-ups-ips.py --taxonomy nodes.dmp --uniref100 uniref100.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db
+python3 ${BAKTA_DB_SCRIPTS}/init-ups-ips.py --taxonomy nodes.dmp --uniref100 uniref100.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --ips ips.faa
 rm uniref100.xml.gz
 
 
@@ -197,16 +197,18 @@ rm ReferenceGeneCatalog.txt ncbifam-amr* fam.tab hmmscan.tblout
 
 ############################################################################
 # Integrate ISfinder db
-# - download IS protein sequences from GitHub (thanhleviet/ISfinder-sequences)
+# - download IS protein sequences from GitHub (oschwengers/ISfinder-sequences)
 # - annotate IPSs with IS info
 ############################################################################
 printf "\n14/15: download ISfinder protein sequences ...\n"
-wget -nv https://raw.githubusercontent.com/thanhleviet/ISfinder-sequences/master/IS.faa
+wget -nv https://raw.githubusercontent.com/oschwengers/ISfinder-sequences/2e9162bd5e3448c86ec1549a55315e498bef72fc/IS.faa
 printf "\n14/15: annotate IPSs ...\n"
-diamond makedb --in IS.faa --db is
-diamond blastp --query psc.faa --db is.dmnd --id 98 --query-cover 99 --subject-cover 99 --max-target-seqs 1 --out diamond.tsv --outfmt 6 qseqid sseqid stitle length pident qlen slen evalue
-python3 ${BAKTA_DB_SCRIPTS}/annotate-is.py --db bakta.db --alignments diamond.tsv
-rm IS.faa is.dmnd
+grep -A 1 ~~~Transposase~~~ IS.faa | tr -d - | tr -s "\n" > is.transposase.faa
+diamond makedb --in is.transposase.faa --db is
+diamond blastp --query ips.faa --db is.dmnd --id 98 --query-cover 99 --subject-cover 99 --max-target-seqs 1 --out diamond.ips.tsv --outfmt 6 qseqid sseqid stitle length pident qlen slen evalue
+diamond blastp --query psc.faa --db is.dmnd --id 90 --query-cover 80 --subject-cover 80 --max-target-seqs 1 --out diamond.psc.tsv --outfmt 6 qseqid sseqid stitle length pident qlen slen evalue
+python3 ${BAKTA_DB_SCRIPTS}/annotate-is.py --db bakta.db --ips-alignments diamond.ips.tsv --psc-alignments diamond.psc.tsv
+rm IS.faa is.transposase.faa is.dmnd diamond.ips.tsv diamond.psc.tsv
 
 
 ############################################################################

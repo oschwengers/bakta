@@ -17,6 +17,7 @@ parser.add_argument('--taxonomy', action='store', help='Path to NCBI taxonomy no
 parser.add_argument('--uniref100', action='store', help='Path to UniRef xml file.')
 parser.add_argument('--uniparc', action='store', help='Path to UniParc fasta file.')
 parser.add_argument('--db', action='store', help='Path to Bakta sqlite3 db file.')
+parser.add_argument('--ips', action='store', help='Path to IPS fasta file.')
 args = parser.parse_args()
 
 DISCARDED_PRODUCTS = [
@@ -31,6 +32,7 @@ taxonomy_path = Path(args.taxonomy).resolve()
 uniref100_path = Path(args.uniref100).resolve()
 uniparc_path = Path(args.uniparc).resolve()
 db_path = Path(args.db)
+ips_path = Path(args.ips)
 
 
 logging.basicConfig(
@@ -78,8 +80,8 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
 
     i = 0
     i_all = 0
-    with xopen(str(uniref100_path), mode='rb') as fh:
-        for event, elem in et.iterparse(fh, tag='{*}entry'):
+    with xopen(str(uniref100_path), mode='rb') as fh_xml, ips_path.open(mode='wt') as fh_fasta_ips:
+        for event, elem in et.iterparse(fh_xml, tag='{*}entry'):
             if('Fragment' not in elem.find('./{*}name').text):  # skip protein fragments
                 common_tax_id = elem.find('./{*}property[@type="common taxon ID"]')
                 common_tax_id = common_tax_id.get('value') if common_tax_id is not None else 1
@@ -96,6 +98,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     uniref100_id = elem.attrib['id'][10:]
                     seq_representative = elem.find('./{*}representativeMember/{*}sequence')
                     seq = seq_representative.text.upper()
+                    fh_fasta_ips.write(f'>{uniref100_id}\n{seq}\n')
                     length = len(seq)
                     seq_hash = hashlib.md5(seq.encode())
                     seq_hash_hexdigest = seq_hash.hexdigest()
