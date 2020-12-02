@@ -160,9 +160,9 @@ do
 done
 printf "\n12/15: annotate PSCs ...\n"
 diamond makedb --in cog.faa --db cog.dmnd
-diamond blastp --query psc.faa --db cog.dmnd --id 90 --query-cover 80 --subject-cover 80 --max-target-seqs 1 --out diamond.tsv --outfmt 6 qseqid sseqid length pident qlen slen evalue
-python3 ${BAKTA_DB_SCRIPTS}/annotate-cog.py --db bakta.db --alignments diamond.tsv --cog-ids cog-20.def.tab --gi-cog-mapping cog-20.cog.csv
-rm cognames2003-2015.tab cog2003-2015.csv prot2003-2015.fa.gz diamond.tsv cog.*
+nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db cog.dmnd --block 100000 --id 90 --qcov 80 --scov 80 --out diamond.cog.tsv
+python3 ${BAKTA_DB_SCRIPTS}/annotate-cog.py --db bakta.db --alignments diamond.cog.tsv --cog-ids cog-20.def.tab --gi-cog-mapping cog-20.cog.csv
+rm cognames2003-2015.tab cog2003-2015.csv prot2003-2015.fa.gz diamond.cog.tsv cog.*
 
 
 ############################################################################
@@ -205,8 +205,8 @@ wget -nv https://raw.githubusercontent.com/oschwengers/ISfinder-sequences/2e9162
 printf "\n14/15: annotate IPSs ...\n"
 grep -A 1 ~~~Transposase~~~ IS.faa | tr -d - | tr -s "\n" > is.transposase.faa
 diamond makedb --in is.transposase.faa --db is
-diamond blastp --query ips.faa --db is.dmnd --id 98 --query-cover 99 --subject-cover 99 --max-target-seqs 1 --out diamond.ips.tsv --outfmt 6 qseqid sseqid stitle length pident qlen slen evalue
-diamond blastp --query psc.faa --db is.dmnd --id 90 --query-cover 80 --subject-cover 80 --max-target-seqs 1 --out diamond.psc.tsv --outfmt 6 qseqid sseqid stitle length pident qlen slen evalue
+nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in ips.faa --db is.dmnd --block 100000 --id 98 --qcov 99 --scov 99 --out diamond.ips.tsv
+nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db is.dmnd --block 100000 --id 90 --qcov 80 --scov 80 --out diamond.psc.tsv
 python3 ${BAKTA_DB_SCRIPTS}/annotate-is.py --db bakta.db --ips-alignments diamond.ips.tsv --psc-alignments diamond.psc.tsv
 rm IS.faa is.transposase.faa is.dmnd diamond.ips.tsv diamond.psc.tsv
 
