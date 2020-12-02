@@ -1,7 +1,7 @@
 import argparse
 import logging
 import hashlib
-import gzip
+from xopen import xopen
 import sqlite3
 from pathlib import Path
 from lxml import etree as et
@@ -68,7 +68,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.commit()
 
     conn.row_factory = sqlite3.Row
-    with gzip.open(str(xml_path), mode="rb") as fh:
+    with xopen(str(xml_path), mode="rb") as fh:
         ups_entries = []
         i = 0
         for event, elem in et.iterparse(fh, tag='{*}entry'):
@@ -140,10 +140,14 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     if(gene):
                         conn.execute('UPDATE psc SET gene=? WHERE uniref90_id=?', (gene, uniref90_id))
                         log_psc.info('UPDATE psc SET gene=%s WHERE uniref90_id=%s', gene, uniref90_id)
+                        conn.execute('UPDATE ips SET gene=? WHERE uniref90_id=?', (None, uniref90_id))
+                        log_psc.info('UPDATE ips SET gene=%s WHERE uniref90_id=%s', None, uniref90_id)
                         update = True
                     if(product):
                         conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (product, uniref90_id))
                         log_psc.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', product, uniref90_id)
+                        conn.execute('UPDATE ips SET product=? WHERE uniref90_id=?', (None, uniref90_id))
+                        log_psc.info('UPDATE ips SET product=%s WHERE uniref90_id=%s', None, uniref90_id)
                         update = True
                     if(len(ec_ids) > 0):
                         ec_list = ','.join(ec_ids)

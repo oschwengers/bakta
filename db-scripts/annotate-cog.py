@@ -35,6 +35,10 @@ with cog_ids_path.open(encoding='windows-1252') as fh:
     for line in fh:
         if(line[0] != '#'):
             (id, cat, product, gene, pathways, pubmed, pdb) = line.strip().split('\t')
+            if(product.lower() == 'hypothetical protein' or product.lower() == 'uncharacterized protein'):
+                product = None
+            if(gene == ''):
+                gene = None
             cog_id_fclass[id] = {
                 'id': id[3:],
                 'cat': cat,
@@ -67,6 +71,7 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
     conn.execute('PRAGMA threads = 2;')
     conn.commit()
 
+    conn.row_factory = sqlite3.Row
     for line in fh:
         psc_processed += 1
         (uniref90_id, sseqid, length, pident, qlen, slen, evalue) = line.strip().split('\t')
@@ -79,6 +84,14 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
                 conn.execute('UPDATE psc SET cog_id=?, cog_category=? WHERE uniref90_id=?', (cog['id'], cog['cat'], uniref90_id))
                 log.info('UPDATE psc SET cog_id=%s, cog_category=%s WHERE uniref90_id=%s', cog['id'], cog['cat'], uniref90_id)
                 psc_updated += 1
+                rec_psc = conn.execute('SELECT * FROM psc WHERE uniref90_id=?', (uniref90_id,)).fetchone()
+                if(rec_psc is not None):
+                    if(rec_psc['product'] is None and rec_psc['product'] is not None):
+                        conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (cog['product'], uniref90_id))
+                        log.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', cog['product'], uniref90_id)
+                    if(rec_psc['gene'] is None and rec_psc['gene'] is not None):
+                        conn.execute('UPDATE psc SET gene=? WHERE uniref90_id=?', (cog['gene'], uniref90_id))
+                        log.info('UPDATE psc SET gene=%s WHERE uniref90_id=%s', cog['gene'], uniref90_id)
         if((psc_processed % 100000) == 0):
             conn.commit()
             print(f'\t... {psc_processed}')

@@ -145,19 +145,6 @@ rm refseq-bacteria-nrp.trimmed.faa PCLA_proteins.txt PCLA_clusters.txt
 
 
 ############################################################################
-# Integrate UniProt Swissprot information
-# - download SwissProt annotation xml file
-# - annotate PSCs if IPS have PSC UniRef90 identifier (seq -> hash -> UPS -> IPS -> PSC)
-# - annotate IPSs if IPS have no PSC UniRef90 identifier (seq -> hash -> UPS -> IPS)
-############################################################################
-printf "\n11/14: download UniProt/SwissProt ...\n"
-wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
-printf "\n11/14: annotate IPSs and PSCs ...\n"
-python3 ${BAKTA_DB_SCRIPTS}/annotate-swissprot.py --taxonomy nodes.dmp --xml uniprot_sprot.xml.gz --db bakta.db
-rm uniprot_sprot.xml.gz
-
-
-############################################################################
 # Integrate NCBI COG db
 # - download NCBI COG db
 # - align UniRef90 proteins to COG protein sequences
@@ -177,6 +164,19 @@ diamond makedb --in cog.faa --db cog.dmnd
 diamond blastp --query psc.faa --db cog.dmnd --id 90 --query-cover 80 --subject-cover 80 --max-target-seqs 1 --out diamond.tsv --outfmt 6 qseqid sseqid length pident qlen slen evalue
 python3 ${BAKTA_DB_SCRIPTS}/annotate-cog.py --db bakta.db --alignments diamond.tsv --cog-ids cog-20.def.tab --gi-cog-mapping cog-20.cog.csv
 rm cognames2003-2014.tab cog2003-2014.csv prot2003-2014.fa.gz diamond.tsv cog.*
+
+
+############################################################################
+# Integrate UniProt Swissprot information
+# - download SwissProt annotation xml file
+# - annotate PSCs if IPS have PSC UniRef90 identifier (seq -> hash -> UPS -> IPS -> PSC)
+# - annotate IPSs if IPS have no PSC UniRef90 identifier (seq -> hash -> UPS -> IPS)
+############################################################################
+printf "\n11/14: download UniProt/SwissProt ...\n"
+wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
+printf "\n11/14: annotate IPSs and PSCs ...\n"
+python3 ${BAKTA_DB_SCRIPTS}/annotate-swissprot.py --taxonomy nodes.dmp --xml uniprot_sprot.xml.gz --db bakta.db
+rm uniprot_sprot.xml.gz
 
 
 ############################################################################
