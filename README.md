@@ -241,6 +241,8 @@ Additionally, the following output files are written:
 - `.gbff`: annotations & sequences in (multi) GenBank format
 - `.fna`: replicon/contig DNA sequences as FASTA
 - `.faa`: CDS/sORF amino acid sequences as FASTA
+- `.hypotheticals.tsv`: further information on hypothetical protein CDS as simple human readble tab separated values
+- `.hypotheticals.faa`: hypothetical protein CDS amino acid sequences as FASTA
 
 ## Usage
 
@@ -358,6 +360,11 @@ Conceptual terms:
 5. Combination of available IPS & PSC information favouring more specific annotations and avoiding redundancy
 
 CDS without IPS or PSC hits as well as those without gene symbols or product descriptions different from `hypothetical` will be marked as `hypothetical`.
+
+Such hypothetical CDS are further analyzed:
+
+1. Detection of Pfam domains, repeats & motifs
+2. Calculation of protein sequence statistics, *i.e.* molecular weight, isoelectric point
 
 **sORFs**:
 
