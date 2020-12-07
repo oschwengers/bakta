@@ -1,15 +1,21 @@
 
-params.fasta = 'psc.faa'
+import java.nio.file.Paths
 
-Channel.fromPath( params.fasta )
-    .splitFasta( by: 40000, file: true )
+params.in = 'psc.faa'
+params.out = 'hmmscan.tblout'
+
+params.block = 1000
+
+Channel.fromPath( params.in )
+    .splitFasta( by: params.block, file: true )
     .set( { chAAs } )
 
 process hmmscan {
     errorStrategy 'finish'
     maxRetries 3
-    cpus 1
+    cpus 2
     memory '1 GB'
+    clusterOptions '-l virtual_free=1G'
     conda 'hmmer=3.3.1'
 
     input:
@@ -24,4 +30,4 @@ process hmmscan {
     """
 }
 
-chHmmResults.collectFile( sort: false, name: 'hmmscan.tblout', storeDir: '.')
+chHmmResults.collectFile( sort: false, name: params.out, storeDir: '.')

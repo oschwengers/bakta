@@ -62,6 +62,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     conn.execute('UPDATE ips SET gene=?, product=? WHERE uniref100_id=?', (gene, product, uniref100_id))
                     log_ips.info('UPDATE ips SET gene=%s, product=%s WHERE uniref100_id=%s', gene, product, uniref100_id)
                     ips_updated += 1
+            ips_processed += 1
             if((ips_processed % 1000) == 0):
                 conn.commit()
                 print(f'\t... {ips_processed}')
@@ -86,6 +87,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     conn.execute('UPDATE psc SET gene=?, product=? WHERE uniref90_id=?', (gene, product, uniref90_id))
                     log_psc.info('UPDATE psc SET gene=%s, product=%s WHERE uniref90_id=%s', gene, product, uniref90_id)
                     psc_updated += 1
+            psc_processed +=1
             if((psc_processed % 1000) == 0):
                 conn.commit()
                 print(f'\t... {psc_processed}')

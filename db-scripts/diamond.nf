@@ -23,7 +23,7 @@ process diamond {
     file('input.faa') from chAAs
 
     output:
-    file('diamond.tsv') into chHmmResults
+    file('diamond.tsv') into chDiamondResults
 
     script:
     """
@@ -41,4 +41,4 @@ process diamond {
     """
 }
 
-chHmmResults.collectFile( sort: false, name: params.out, storeDir: '.')
+chDiamondResults.collectFile( sort: false, name: params.out, storeDir: '.')
