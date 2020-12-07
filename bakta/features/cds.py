@@ -245,7 +245,7 @@ def predict_pfam(cdss):
         '--noali',
         '--cut_ga',  # use gathering cutoff
         '--tblout', str(output_path),
-        '--cpu', str(cfg.threads),
+        '--cpu', str(cfg.threads if cfg.threads <= 4 else 4),
         str(cfg.db_path.joinpath('pfam')),
         str(fasta_path)
     ]

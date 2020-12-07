@@ -21,8 +21,7 @@ def detect_spurious(orfs):
         '--noali',
         '--cut_ga',  # use gathering cutoff
         '--tblout', str(output_path),
-        '-Z', str(len(orfs)),
-        '--cpu', str(cfg.threads),
+        '--cpu', str(cfg.threads if cfg.threads <= 4 else 4),
         str(cfg.db_path.joinpath('antifam')),
         str(orf_fasta_path)
     ]
