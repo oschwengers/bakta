@@ -5,6 +5,7 @@ import subprocess as sp
 from collections import OrderedDict
 
 from Bio import SeqIO
+from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -292,3 +293,12 @@ def predict_pfam(cdss):
                 )
     log.info('predicted-pfams=%i, CDS-w/-pfams=%i', len(pfam_hits), len(cds_pfams_hits))
     return cds_pfams_hits.values()
+
+
+def analyze_proteins(cdss):
+    for cds in cdss:
+        seq = ProteinAnalysis(cds['sequence'])
+        seq_stats = OrderedDict()
+        seq_stats['molecular_weight'] = seq.molecular_weight()
+        seq_stats['isoelectric_point'] = seq.isoelectric_point()
+        cds['seq_stats'] = seq_stats

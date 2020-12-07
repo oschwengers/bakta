@@ -253,10 +253,13 @@ def main():
         for feat in genome['features'][bc.FEATURE_CDS]:
             anno.combine_ips_psc_annotation(feat)  # combine IPS & PSC annotations and mark hypotheticals
         
-        print('\tanalyze hypotheticals...')
+        print('analyze hypotheticals...')
         log.debug('analyze hypotheticals')
         hypotheticals = [cds for cds in genome['features'][bc.FEATURE_CDS] if 'hypothetical' in cds]
-        cds.predict_pfam(hypotheticals)
+        pfam_hits = cds.predict_pfam(hypotheticals)
+        print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
+        cds.analyze_proteins(hypotheticals)
+        print('\tcalculated proteins statistics')
     
     ############################################################################
     # sORF prediction

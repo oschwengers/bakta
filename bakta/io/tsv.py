@@ -35,9 +35,9 @@ def write_hypothetical_tsv(hypotheticals, tsv_path):
     with tsv_path.open('w') as fh:
         fh.write(f'#Annotated with Bakta v{bakta.__version__}, https://github.com/oschwengers/bakta\n')
         fh.write(f"#Database v{cfg.db_info['major']}.{cfg.db_info['minor']}, https://doi.org/10.5281/zenodo.4247252\n")
-        fh.write('#Sequence Id\tStart\tStop\tStrand\tLocus Tag\tPfam hits\tDbxrefs\n')
+        fh.write('#Sequence Id\tStart\tStop\tStrand\tLocus Tag\tMol Weight [kDa]\tIso El. Point\tPfam hits\tDbxrefs\n')
         for hypo in hypotheticals:
             pfams = [f"{pfam['id']}|{pfam['name']}" for pfam in hypo.get('pfams', [])]
-            fh.write('\t'.join([hypo['contig'], str(hypo['start']), str(hypo['stop']), hypo['strand'], hypo.get('locus', ''), ', '.join(sorted(pfams)), ', '.join(sorted(hypo.get('db_xrefs', [])))]))
-            fh.write('\n')
+            seq_stats = hypo['seq_stats']
+            fh.write(f"{hypo['contig']}\t{hypo['start']}\t{hypo['stop']}\t{hypo['strand']}\t{hypo.get('locus', '')}\t{(seq_stats['molecular_weight']/100):.1f}\t{seq_stats['isoelectric_point']:.1f}\t{', '.join(sorted(pfams))}\t{', '.join(sorted(hypo.get('db_xrefs', [])))}\n")
     return
