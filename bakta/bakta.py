@@ -6,6 +6,7 @@ from pathlib import Path
 import bakta
 import bakta.constants as bc
 import bakta.config as cfg
+from bakta.constants import FEATURE_CDS
 import bakta.io.fasta as fasta
 import bakta.io.json as json
 import bakta.io.tsv as tsv
@@ -450,6 +451,7 @@ def main():
     fasta.write_faa(features, faa_path)
     
     if(cfg.skip_cds is False):
+        hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
         print('write hypothetical TSV output...')
         tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.tsv')
         tsv.write_hypothetical_tsv(hypotheticals, tsv_path)

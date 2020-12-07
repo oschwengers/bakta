@@ -35,8 +35,9 @@ def write_hypothetical_tsv(hypotheticals, tsv_path):
     with tsv_path.open('w') as fh:
         fh.write(f'#Annotated with Bakta v{bakta.__version__}, https://github.com/oschwengers/bakta\n')
         fh.write(f"#Database v{cfg.db_info['major']}.{cfg.db_info['minor']}, https://doi.org/10.5281/zenodo.4247252\n")
-        fh.write('#Sequence Id\tStart\tStop\tStrand\tLocus Tag\tPfam hits\n')
+        fh.write('#Sequence Id\tStart\tStop\tStrand\tLocus Tag\tPfam hits\tDbxrefs\n')
         for hypo in hypotheticals:
-            fh.write('\t'.join([hypo['contig'], str(hypo['start']), str(hypo['stop']), hypo['strand'], hypo['locus'], ', '.join(sorted(hypo.get('pfams', [])))]))
+            pfams = [f"{pfam['id']}|{pfam['name']}" for pfam in hypo.get('pfams', [])]
+            fh.write('\t'.join([hypo['contig'], str(hypo['start']), str(hypo['stop']), hypo['strand'], hypo.get('locus', ''), ', '.join(sorted(pfams)), ', '.join(sorted(hypo.get('db_xrefs', [])))]))
             fh.write('\n')
     return
