@@ -219,14 +219,18 @@ rm IS.faa is.transposase.faa is.dmnd diamond.ips.tsv diamond.psc.tsv
 # - annotate hypothetical PSC via Pfam families
 ############################################################################
 printf "\n15/15: download HMM models from Pfam ...\n"
+wget -nv ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.dat.gz
+python3 ${BAKTA_DB_SCRIPTS}/extract-pfam.py --pfam Pfam-A.hmm.dat.gz --family pfam.families.tsv --non-family pfam.non-families.tsv
 wget -nv ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
 pigz -d Pfam-A.hmm.gz
-mv Pfam-A.hmm pfam
+hmmfetch -o pfam-families -f Pfam-A.hmm pfam.families.tsv
+hmmpress pfam-families
+hmmfetch -o pfam -f Pfam-A.hmm pfam.non-families.tsv
 hmmpress pfam
 python3 ${BAKTA_DB_SCRIPTS}/extract-hypotheticals.py --psc psc.faa --db bakta.db --hypotheticals hypotheticals.faa
 nextflow run ${BAKTA_DB_SCRIPTS}/hmmscan.nf --fasta hypotheticals.faa --db pfam-families
 python3 ${BAKTA_DB_SCRIPTS}/annotate-pfam.py --db bakta.db --hmm-results hmmscan.tblout
-rm pfam-families pfam *.tsv Pfam* hmmscan.tblout
+rm pfam-families* pfam *.tsv Pfam* hmmscan.tblout
 
 
 # Cleanup
