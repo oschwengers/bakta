@@ -35,8 +35,8 @@ def write_gff3(genome, features_by_contig, gff3_path):
         if(genome['taxon']):  # write organism info
             fh.write(f"# organism {genome['taxon']}\n")
         
-        fh.write(f'# annotated with Bakta v{bakta.__version__}, https://github.com/oschwengers/bakta\n')
-        fh.write(f"# database v{cfg.db_info['major']}.{cfg.db_info['minor']}, https://doi.org/10.5281/zenodo.4247252\n")
+        fh.write(f'# annotated with Bakta (v{bakta.__version__}): https://github.com/oschwengers/bakta\n')
+        fh.write(f"# database (v{cfg.db_info['major']}.{cfg.db_info['minor']}): https://doi.org/10.5281/zenodo.4247252\n")
         
         for contig in genome['contigs']:  # write features
             fh.write(f"##sequence-region {contig['id']} 1 {contig['length']}\n")  # sequence region
