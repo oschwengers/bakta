@@ -19,6 +19,7 @@ non_family_path = Path(args.non_family)
 with xopen(str(pfam_path)) as fh_pfam, family_path.open('w') as fh_family, non_family_path.open('w') as fh_non_family:
     entries = fh_pfam.read().split('//')
     for entry_text in entries:
+        id = None
         acc = None
         desc = None
         type = None
@@ -30,7 +31,9 @@ with xopen(str(pfam_path)) as fh_pfam, family_path.open('w') as fh_family, non_f
             if(line == ''):
                 continue
             cols = line.split()
-            if(cols[1] == 'AC'):
+            if(cols[1] == 'ID'):
+                id = cols[2]
+            elif(cols[1] == 'AC'):
                 acc = cols[2]
             elif(cols[1] == 'DE'):
                 desc = ' '.join(cols[2:])
@@ -43,8 +46,8 @@ with xopen(str(pfam_path)) as fh_pfam, family_path.open('w') as fh_family, non_f
                 break
         if(skip is False):
             if(type == 'family'):
-                print(f'{type}\t{acc}\t{desc}')
-                fh_family.write(f'{acc}\t{desc}\n')
+                print(f'{type}\t{acc}\t{id}\t{desc}')
+                fh_family.write(f'{acc}\t{id}\t{desc}\n')
             else:
                 print(f'{type}\t{acc}\t{desc}')
-                fh_non_family.write(f'{acc}\t{desc}\n')
+                fh_non_family.write(f'{acc}\t{id}\t{desc}\n')
