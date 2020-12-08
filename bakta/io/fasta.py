@@ -40,7 +40,7 @@ def export_contigs(contigs, fasta_path, description=False, wrap=False):
     """Write contigs to Fasta file."""
     log.info('write genome sequences: path=%s, description=%s, wrap=%s', fasta_path, description, wrap)
 
-    with fasta_path.open('w') as fh:
+    with fasta_path.open('wt') as fh:
         for contig in contigs:
             if(description):
                 fh.write(f">{contig['id']} {contig['description']}\n")
@@ -64,7 +64,7 @@ def write_faa(features, faa_path):
     """Write translated CDS sequences to Fasta file."""
     log.info('write translated CDS/sORF: path=%s', faa_path)
     
-    with faa_path.open('w') as fh:
+    with faa_path.open('wt') as fh:
         for feat in features:
             if(feat['type'] == bc.FEATURE_CDS or feat['type'] == bc.FEATURE_SORF):
                 fh.write(f">{feat['locus']} {feat['product']}\n{feat['sequence']}\n")

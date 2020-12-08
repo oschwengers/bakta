@@ -184,7 +184,7 @@ def write_genbank(genome, features, genbank_path):
         contig_rec.features = seq_feature_list
         contig_list.append(contig_rec)
 
-    with genbank_path.open('w', encoding='utf-8') as fh:
+    with genbank_path.open('wt', encoding='utf-8') as fh:
         SeqIO.write(contig_list, fh, format='genbank')
 
     return

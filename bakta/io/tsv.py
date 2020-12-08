@@ -12,7 +12,7 @@ def write_tsv(contigs, features_by_contig, tsv_path):
     """Export features in TSV format."""
     log.info('write tsv output: path=%s', tsv_path)
     
-    with tsv_path.open('w') as fh:
+    with tsv_path.open('wt') as fh:
         fh.write(f'#Annotated with Bakta v{bakta.__version__}, https://github.com/oschwengers/bakta\n')
         fh.write(f"#Database v{cfg.db_info['major']}.{cfg.db_info['minor']}, https://doi.org/10.5281/zenodo.4247252\n")
         fh.write('#Sequence Id\tType\tStart\tStop\tStrand\tLocus Tag\tGene\tProduct\tDbXrefs\n')
@@ -32,7 +32,7 @@ def write_hypothetical_tsv(hypotheticals, tsv_path):
     """Export hypothetical information in TSV format."""
     log.info('write hypothetical tsv output: path=%s', tsv_path)
     
-    with tsv_path.open('w') as fh:
+    with tsv_path.open('wt') as fh:
         fh.write(f'#Annotated with Bakta v{bakta.__version__}, https://github.com/oschwengers/bakta\n')
         fh.write(f"#Database v{cfg.db_info['major']}.{cfg.db_info['minor']}, https://doi.org/10.5281/zenodo.4247252\n")
         fh.write('#Sequence Id\tStart\tStop\tStrand\tLocus Tag\tMol Weight [kDa]\tIso El. Point\tPfam hits\tDbxrefs\n')

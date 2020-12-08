@@ -28,7 +28,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
     """Export features in GFF3 format."""
     log.info('write GFF3 output: path=%s', gff3_path)
 
-    with gff3_path.open('w') as fh:
+    with gff3_path.open('wt') as fh:
         fh.write('##gff-version 3\n')  # GFF version
         fh.write('##feature-ontology https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/v3.1/so.obo\n')  # SO feature version
 

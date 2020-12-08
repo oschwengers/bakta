@@ -57,5 +57,5 @@ def write_json(genome, features, json_path):
     version['db'] = f"{cfg.db_info['major']}.{cfg.db_info['minor']}"
     output['version'] = version
 
-    with json_path.open('w') as fh:
+    with json_path.open('wt') as fh:
         json.dump(output, fh, indent=4)
