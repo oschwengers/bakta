@@ -50,7 +50,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
             length = int(length)
             qcov = length / int(qlen)
             scov = length / int(slen)
-            if(qcov >= 0.99 and scov >= 0.99 and float(pident) >= 98. and float(evalue) < 1e-6):
+            if(qcov >= 0.9 and scov >= 0.95 and float(pident) >= 98. and float(evalue) < 1e-6):
                 descriptions = stitle.split(' ', 1)[1][3:-3].split('~~~')
                 if(descriptions[1].lower() == 'transposase'):
                     descriptions = descriptions[0].split('_')
