@@ -299,6 +299,20 @@ def analyze_proteins(cdss):
     for cds in cdss:
         seq = ProteinAnalysis(cds['sequence'])
         seq_stats = OrderedDict()
-        seq_stats['molecular_weight'] = seq.molecular_weight()
-        seq_stats['isoelectric_point'] = seq.isoelectric_point()
+        try:
+            seq_stats['molecular_weight'] = seq.molecular_weight()
+        except:
+            log.warning(
+                'could not calc molecular weight! contig=%s, start=%i, stop=%i, strand=%s, frame=%s',
+                cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame']
+            )
+            seq_stats['molecular_weight'] = float('nan')
+        try:
+            seq_stats['isoelectric_point'] = seq.isoelectric_point()
+        except:
+            log.warning(
+                'could not calc isoelectric point! contig=%s, start=%i, stop=%i, strand=%s, frame=%s',
+                cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame']
+            )
+            seq_stats['isoelectric_point'] = float('nan')
         cds['seq_stats'] = seq_stats
