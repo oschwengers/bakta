@@ -24,7 +24,7 @@ def check():
     version_path = cfg.db_path.joinpath('version.json')
     if(not os.access(str(version_path), os.R_OK) or not version_path.is_file()):
         log.error('version file not readable!')
-        sys.exit('ERROR: database version file (db.yaml) not readable!')
+        sys.exit('ERROR: database version file (version.json) not readable!')
     
     try:
         with version_path.open() as fh:
