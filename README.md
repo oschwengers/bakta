@@ -197,7 +197,7 @@ NODE_5 | `` |  `-` | -
 
 ### Output
 
-Bakta provides detailed information on each annotated feature in a standardized machine-readable JSON file:
+Bakta provides detailed information on each annotated feature in a standardized machine-readable JSON file `<prefix>.json`:
 
 ```json
 {
@@ -236,13 +236,15 @@ Bakta provides detailed information on each annotated feature in a standardized 
 
 Additionally, the following output files are written:
 
-- `.tsv`: annotations as simple human readble tab separated values
-- `.gff3`: annotations & sequences in GFF3 format
-- `.gbff`: annotations & sequences in (multi) GenBank format
-- `.fna`: replicon/contig DNA sequences as FASTA
-- `.faa`: CDS/sORF amino acid sequences as FASTA
-- `.hypotheticals.tsv`: further information on hypothetical protein CDS as simple human readble tab separated values
-- `.hypotheticals.faa`: hypothetical protein CDS amino acid sequences as FASTA
+- `<prefix>.tsv`: annotations as simple human readble tab separated values
+- `<prefix>.gff3`: annotations & sequences in GFF3 format
+- `<prefix>.gbff`: annotations & sequences in (multi) GenBank format
+- `<prefix>.fna`: replicon/contig DNA sequences as FASTA
+- `<prefix>.faa`: CDS/sORF amino acid sequences as FASTA
+- `<prefix>.hypotheticals.tsv`: further information on hypothetical protein CDS as simple human readble tab separated values
+- `<prefix>.hypotheticals.faa`: hypothetical protein CDS amino acid sequences as FASTA
+
+The `<prefix>` can be set via `--prefix <prefix>`. If no prefix is set, Bakta uses the input file prefix.
 
 ## Usage
 
