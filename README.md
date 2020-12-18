@@ -116,7 +116,7 @@ Bakta requires a mandatory database which is publicly hosted at Zenodo:
 Further information is provided in the [database](#database) section below.
 
 ```bash
-$ wget https://zenodo.org/record/4247253/files/db.tar.gz
+$ wget https://zenodo.org/record/4337350/files/db.tar.gz
 $ tar -xzf db.tar.gz
 $ rm db.tar.gz
 ```
