@@ -3,7 +3,7 @@
 ![GitHub release](https://img.shields.io/github/release/oschwengers/bakta.svg)
 ![PyPI](https://img.shields.io/pypi/v/bakta.svg)
 ![PyPI - Status](https://img.shields.io/pypi/status/bakta.svg)
-![Conda](https://img.shields.io/conda/v/bioconda/bakta.svg)
+[![Conda](https://img.shields.io/conda/v/bioconda/bakta.svg)](https://bioconda.github.io/recipes/bakta/README.html)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
 
 # Bakta: Rapid & standardized annotation of bacterial genomes & plasmids
