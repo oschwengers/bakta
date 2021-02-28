@@ -14,7 +14,7 @@ import bakta.config as cfg
 
 log = logging.getLogger('UTILS')
 
-dependencies = [("2.0.9", None, "\d\.\d\.\d", "tRNAscan-SE", "-h", "--skip-trna"),
+dependencies = [("2.0.6", None, "\d\.\d\.\d", "tRNAscan-SE", "-h", "--skip-trna"),
 ("1.2.38", None, "\d\.\d\.\d{1,2}", "aragorn", "-h", "skip-tmrna"),
 ("1.1.2", None, "\d\.\d\.\d", "cmscan", "-h", "--skip-rrna --skip-ncrna --skip-ncrna-region"),
 ("2.6.3", None, "\d\.\d\.\d", "prodigal", "-v", "--skip-cds"),
