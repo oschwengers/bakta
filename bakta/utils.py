@@ -14,7 +14,7 @@ import bakta.config as cfg
 
 log = logging.getLogger('UTILS')
 
-dependencies = [("2.0.6", None, "\d\.\d\.\d", "tRNAscan-SE", "-h", "--skip-trna"),
+dependencies = [("2.0.9", None, "\d\.\d\.\d", "tRNAscan-SE", "-h", "--skip-trna"),
 ("1.2.38", None, "\d\.\d\.\d{1,2}", "aragorn", "-h", "skip-tmrna"),
 ("1.1.2", None, "\d\.\d\.\d", "cmscan", "-h", "--skip-rrna --skip-ncrna --skip-ncrna-region"),
 ("2.6.3", None, "\d\.\d\.\d", "prodigal", "-v", "--skip-cds"),
@@ -73,9 +73,28 @@ def parse_arguments():
     arg_group_general.add_argument('--citation', action='store_true', help='Print citation')
     return parser.parse_args()
 
+def read_tool_output(regex, command, option):
+        tool_output = str(sp.check_output([f'{command}',f'{option}'], stderr=sp.STDOUT))
+        version_match = re.search(rf'{regex}', tool_output)
+        return(version_match.group())
+
+def compare_version(tool_version, tool_min, tool_max):
+        v_major, v_minor, v_patch = tool_version.split(".", 2)
+        min_major, min_minor, min_patch = tool_min.split(".", 2)
+        #vmajor, vminor, vpatch = int(tool_max.split("."))
+        major = True if int(v_major) >= int(min_major) else False
+        minor = True if int(v_minor) >= int(min_minor) else False
+        patch = True if int(v_patch) >= int(min_patch) else False
+        return(major, minor, patch)
 
 def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
+    for dependency in dependencies:
+        version = read_tool_output(dependency[2], dependency[3], dependency[4])
+        major_true, minor_true, patch_true = compare_version(version, dependency[0], dependency[1])
+        if (major_true == False or minor_true == False or patch_true == False):
+                log.error(f'{dependency[3]} not correct version!')
+                sys.exit(f'ERROR: insufficient {dependency[3]} version installed. Please either install  {dependency[3]} version  {dependency[0]} or skip this step!')
 
     # test tRNAscan-SE
     if(cfg.skip_trna is False):
