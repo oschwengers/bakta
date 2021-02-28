@@ -22,14 +22,6 @@ dependencies = [("2.0.6", None, "\d\.\d\.\d", ("tRNAscan-SE", "-h"), "--skip-trn
 ("3.3.1", None, "\d\.\d\.\d", ("hmmsearch", "-h"), "--skip-cds --skip-sorf"),
 ("2.0.4", None, "\d\.\d\.\d", ("diamond", "help"), "--skip-cds --skip-sorf")]
 
-dependencies = [("2.0.6", None, "\d\.\d\.\d", "tRNAscan-SE", "-h", "--skip-trna"),
-("1.2.38", None, "\d\.\d\.\d{1,2}", "aragorn", "-h", "skip-tmrna"),
-("1.1.2", None, "\d\.\d\.\d", "cmscan", "-h", "--skip-rrna --skip-ncrna --skip-ncrna-region"),
-("2.6.3", None, "\d\.\d\.\d", "prodigal", "-v", "--skip-cds"),
-("3.3.1", None, "\d\.\d\.\d", "hmmsearch", "-h", "--skip-cds --skip-sorf"),
-("2.0.4", None, "\d\.\d\.\d", "diamond", "help", "--skip-cds --skip-sorf")]
- #("1.06", None, "\d\.\d{1,2}", "pilercr", "-options"),
-
 def parse_arguments():
     parser = argparse.ArgumentParser(
         prog='bakta',
@@ -107,6 +99,7 @@ def test_dependencies():
         if (major_true == False or minor_true == False or patch_true == False):
                 log.error(f'{dependency[3][0]} not correct version!')
                 sys.exit(f'ERROR: insufficient {dependency[3][0]} version installed. Please either install  {dependency[3][0]} version  {dependency[0]} or skip {dependency[4]}!')
+
     # test pilercr
     if(cfg.skip_crispr is False):
         try:
