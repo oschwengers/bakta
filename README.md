@@ -239,6 +239,7 @@ Additionally, the following output files are written:
 - `<prefix>.tsv`: annotations as simple human readble tab separated values
 - `<prefix>.gff3`: annotations & sequences in GFF3 format
 - `<prefix>.gbff`: annotations & sequences in (multi) GenBank format
+- `<prefix>.embl`: annotations & sequences in (multi) EMBL format
 - `<prefix>.fna`: replicon/contig DNA sequences as FASTA
 - `<prefix>.faa`: CDS/sORF amino acid sequences as FASTA
 - `<prefix>.hypotheticals.tsv`: further information on hypothetical protein CDS as simple human readble tab separated values

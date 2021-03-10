@@ -60,6 +60,11 @@ outputs:
     type: File
     format: edam:format_1929
     outputBinding: {glob: '*.gbff'}
+  - doc: Annotation as EMBL
+    id: annotation_embl
+    type: File
+    format: edam:format_1929
+    outputBinding: {glob: '*.embl'}
   - doc: Genome Sequences as Fasta
     id: sequences_fna
     type: File
