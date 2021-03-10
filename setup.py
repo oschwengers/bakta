@@ -26,7 +26,7 @@ setup(
     include_package_data=False,
     zip_safe=False,
     install_requires=[
-        'biopython >= 1.74',
+        'biopython >= 1.78',
         'xopen >= 0.9.0'
     ],
     entry_points={
