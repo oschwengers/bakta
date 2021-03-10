@@ -11,6 +11,7 @@ def test_bakta_mock_skipped_features(tmpdir):
     assert Path.exists(Path(tmpdir).joinpath('test.tsv'))
     assert Path.exists(Path(tmpdir).joinpath('test.gff3'))
     assert Path.exists(Path(tmpdir).joinpath('test.gbff'))
+    assert Path.exists(Path(tmpdir).joinpath('test.embl'))
     assert Path.exists(Path(tmpdir).joinpath('test.fna'))
     assert Path.exists(Path(tmpdir).joinpath('test.faa'))
 
@@ -24,6 +25,7 @@ def test_bakta_plasmid(tmpdir):
     assert Path.exists(Path(tmpdir).joinpath('test.tsv'))
     assert Path.exists(Path(tmpdir).joinpath('test.gff3'))
     assert Path.exists(Path(tmpdir).joinpath('test.gbff'))
+    assert Path.exists(Path(tmpdir).joinpath('test.embl'))
     assert Path.exists(Path(tmpdir).joinpath('test.fna'))
     assert Path.exists(Path(tmpdir).joinpath('test.faa'))
 
@@ -37,5 +39,6 @@ def test_bakta_genome(tmpdir):
     assert Path.exists(Path(tmpdir).joinpath('test.tsv'))
     assert Path.exists(Path(tmpdir).joinpath('test.gff3'))
     assert Path.exists(Path(tmpdir).joinpath('test.gbff'))
+    assert Path.exists(Path(tmpdir).joinpath('test.embl'))
     assert Path.exists(Path(tmpdir).joinpath('test.fna'))
     assert Path.exists(Path(tmpdir).joinpath('test.faa'))

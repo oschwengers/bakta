@@ -10,11 +10,11 @@ import bakta.config as cfg
 import bakta.constants as bc
 from bakta.constants import FEATURE_CDS
 
-log = logging.getLogger('GENBANK')
+log = logging.getLogger('INSDC')
 
 
-def write_genbank(genome, features, genbank_path):
-    log.info('write GenBank output: path=%s', genbank_path)
+def write_insdc(genome, features, genbank_output_path, embl_output_path):
+    log.debug('prepare output: genbank=%s, embl=%s', genbank_output_path, embl_output_path)
 
     contig_list = []
     for contig in genome['contigs']:
@@ -50,6 +50,7 @@ def write_genbank(genome, features, genbank_path):
         }
         source_qualifiers = {
             'mol_type': 'genomic DNA'
+            # 'molecule_type': 'DNA' #  might be necessary in BioPython > 1.78 along with removal of Seq(..., generic_dna)
         }
 
         description = ''
@@ -204,7 +205,11 @@ def write_genbank(genome, features, genbank_path):
         contig_rec.features = seq_feature_list
         contig_list.append(contig_rec)
 
-    with genbank_path.open('wt', encoding='utf-8') as fh:
+    with genbank_output_path.open('wt', encoding='utf-8') as fh:
+        log.info('write GenBank output: path=%s', genbank_output_path)
         SeqIO.write(contig_list, fh, format='genbank')
 
-    return
+    with embl_output_path.open('wt', encoding='utf-8') as fh:
+        log.info('write EMBL output: path=%s', embl_output_path)
+        SeqIO.write(contig_list, fh, format='embl')
+

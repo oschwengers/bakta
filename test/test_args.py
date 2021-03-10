@@ -70,5 +70,6 @@ def test_prodigal_tf(tmpdir):
     assert Path.exists(Path(tmpdir).joinpath('test.tsv'))
     assert Path.exists(Path(tmpdir).joinpath('test.gff3'))
     assert Path.exists(Path(tmpdir).joinpath('test.gbff'))
+    assert Path.exists(Path(tmpdir).joinpath('test.embl'))
     assert Path.exists(Path(tmpdir).joinpath('test.fna'))
     assert Path.exists(Path(tmpdir).joinpath('test.faa'))

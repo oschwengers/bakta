@@ -11,7 +11,7 @@ import bakta.io.fasta as fasta
 import bakta.io.json as json
 import bakta.io.tsv as tsv
 import bakta.io.gff as gff
-import bakta.io.genbank as genbank
+import bakta.io.insdc as insdc
 import bakta.features.annotation as anno
 import bakta.features.t_rna as t_rna
 import bakta.features.tm_rna as tm_rna
@@ -441,9 +441,10 @@ def main():
     gff3_path = cfg.output_path.joinpath(f'{cfg.prefix}.gff3')
     gff.write_gff3(genome, features_by_contig, gff3_path)
     
-    print('write GenBank output...')
+    print('write INSDC (GenBank/EMBL) output...')
     genbank_path = cfg.output_path.joinpath(f'{cfg.prefix}.gbff')
-    genbank.write_genbank(genome, features, genbank_path)
+    embl_path = cfg.output_path.joinpath(f'{cfg.prefix}.embl')
+    insdc.write_insdc(genome, features, genbank_path, embl_path)
     
     print('write genome sequences...')
     fna_path = cfg.output_path.joinpath(f'{cfg.prefix}.fna')

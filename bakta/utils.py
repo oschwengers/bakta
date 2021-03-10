@@ -343,6 +343,8 @@ def qc_contigs(contigs, replicons):
                     contig['type'] = bc.REPLICON_PLASMID
             
             valid_contigs.append(contig)
+            if(len(contigs) == 1 and contig['type'] == bc.REPLICON_PLASMID and cfg.plasmid is not None):
+                contig['name'] = cfg.plasmid
             
             if(replicons):  # use user provided replicon table
                 contig_id = contig['orig_id'] if 'orig_id' in contig else contig['id']

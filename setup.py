@@ -22,23 +22,21 @@ setup(
     author_email='oliver.schwengers@computational.bio.uni-giessen.de',
     url='https://github.com/oschwengers/bakta',
     packages=find_packages(include=['bakta', 'bakta.*']),
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     include_package_data=False,
     zip_safe=False,
     install_requires=[
-        'biopython >= 1.72',
+        'biopython >= 1.74',
         'xopen >= 0.9.0'
     ],
     entry_points={
         'console_scripts': [
-            'bakta=bakta.bakta:main'
+            'bakta=bakta.main:main'
         ]
     },
     classifiers=[
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Development Status :: 4 - Beta ',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
