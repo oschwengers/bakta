@@ -4,7 +4,6 @@ from datetime import date, datetime
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqFeature import SeqFeature, FeatureLocation, CompoundLocation, AfterPosition, BeforePosition
-from Bio.Alphabet import generic_dna
 
 import bakta
 import bakta.config as cfg
@@ -75,7 +74,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
         if(len(description) > 0 and description[0] == ' '):  # discard potential leading whitespace
             description = description[1:]
 
-        contig_rec = SeqIO.SeqRecord(id='.', name=contig['id'], description=description, annotations=contig_annotations, seq=Seq(contig['sequence'], generic_dna))
+        contig_rec = SeqIO.SeqRecord(id='.', name=contig['id'], description=description, annotations=contig_annotations, seq=Seq(contig['sequence']))
         
         source = SeqFeature(FeatureLocation(0, contig['length'], strand=+1), type='source', qualifiers=source_qualifiers)
         seq_feature_list = [source]
