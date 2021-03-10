@@ -4,7 +4,7 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - biopython>=1.72
+  - biopython>=1.74
   - xopen>=0.9.0
   - trnascan-se>=2.0.6
   - aragorn>=1.2.38
