@@ -28,6 +28,7 @@ COPY . /tmp/source/
 
 RUN source /opt/conda/bashrc && micromamba activate \
     && python3 -m pip install --no-cache /tmp/source/ \
+    && amrfinder -u \
     && echo '#!/bin/bash' > /entrypoint.sh \
     && echo 'source /opt/conda/bashrc' >> /entrypoint.sh \
     && echo 'micromamba activate' >> /entrypoint.sh \

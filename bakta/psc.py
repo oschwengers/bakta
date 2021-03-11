@@ -25,9 +25,6 @@ log = logging.getLogger('PSC')
 def search(cdss):
     """Conduct homology search of CDSs against PCS db."""
     cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
-    with cds_fasta_path.open(mode='w') as fh:
-        for cds in cdss:
-            fh.write(f">{cds['aa_hexdigest']}\n{cds['sequence']}\n")
     diamond_output_path = cfg.tmp_path.joinpath('diamond.cds.tsv')
     diamond_db_path = cfg.db_path.joinpath('psc.dmnd')
     cmd = [
