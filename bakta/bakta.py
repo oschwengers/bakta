@@ -241,28 +241,27 @@ def main():
         cdss_not_found.extend(tmp)
         print(f'\tdetected IPSs: {len(cdss_ips)}')
         
-        cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
-        with cds_fasta_path.open(mode='w') as fh:
-            hex_digests = set()
-            for cds in genome['features'][bc.FEATURE_CDS]:
-                # if('discarded' not in cds):
-                if(cds['aa_hexdigest'] not in hex_digests):
-                    fh.write(f">{cds['aa_hexdigest']}\n{cds['sequence']}\n")
-                    hex_digests.add(cds['aa_hexdigest'])
         if(len(cdss_not_found) > 0):
+            cds_fasta_path = cfg.tmp_path.joinpath('cds.unidentified.faa')
+            with cds_fasta_path.open(mode='w') as fh:
+                for cds in cdss_not_found:
+                    fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['sequence']}\n")
             log.debug('search CDS PSC')
-            cdss_psc, cdss_not_found = psc.search(cdss_not_found)
+            cdss_psc, cdss_not_found = psc.search(cdss_not_found, cds_fasta_path)
             print(f'\tfound PSCs: {len(cdss_psc)}')
-        
-        print('\tlookup annotations...')
-        log.debug('lookup CDS PSCs')
-        psc.lookup(genome['features'][bc.FEATURE_CDS])  # lookup PSC info
+            print('\tlookup annotations...')
+            log.debug('lookup CDS PSCs')
+            psc.lookup(genome['features'][bc.FEATURE_CDS])  # lookup PSC info
 
         # conduct expert systems annotation
-        print('\tconduct expert systems')
-        print('\t\tamrfinder...')
+        print('\tconduct expert systems...')
+        cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
+        with cds_fasta_path.open(mode='w') as fh:
+            for cds in genome['features'][bc.FEATURE_CDS]:
+                fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['sequence']}\n")
         log.debug('conduct expert system: amrfinder')
-        exp_amr.search(genome['features'][bc.FEATURE_CDS])
+        amr_found = exp_amr.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
+        print(f'\t\tamrfinder: {len(amr_found)}')
         
         print('\tmark hypotheticals and combine annotations...')
         log.debug('combine CDS annotations')

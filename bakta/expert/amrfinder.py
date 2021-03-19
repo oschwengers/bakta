@@ -8,9 +8,8 @@ import bakta.constants as bc
 
 log = logging.getLogger('EXPERT-AMRFINDER')
 
-def search(cdss):
+def search(cdss, cds_fasta_path):
     """Conduct expert CDS analysis with AMRFinderPlus."""
-    cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
     amrfinder_output_path = cfg.tmp_path.joinpath('amrfinder.tsv')
     cmd = [
         'amrfinder',
@@ -34,15 +33,16 @@ def search(cdss):
         log.warning('AMR expert system failed! amrfinder-error-code=%d', proc.returncode)
         raise Exception(f'amrfinder error! error code: {proc.returncode}')
 
-    cds_by_hexdigest = {cds['aa_hexdigest']: cds for cds in cdss}
+    cds_found = []
+    cds_by_hexdigest = {f"{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}": cds for cds in cdss}
     with amrfinder_output_path.open() as fh:
         for line in fh:
             if(line[:7] != 'Protein'):
-                (aa_hexdigest, gene, product, scope, element_type, element_subtype, clazz, subclass, method, target_length, reference_sequence_length,
+                (aa_identifier, gene, product, scope, element_type, element_subtype, clazz, subclass, method, target_length, reference_sequence_length,
                 cov_ref_seq, ident_ref_seq, alignment_length, accession_closest_seq, name_closest_seq, hmm_id, hmm_description) = line.split('\t')
                 target_cov = float(cov_ref_seq) / 100
                 identity = float(ident_ref_seq) / 100
-                cds = cds_by_hexdigest[aa_hexdigest]
+                cds = cds_by_hexdigest[aa_identifier]
                 if('expert' not in cds):
                     cds['expert'] = {}
                 cds['expert']['amrfinder'] = {
@@ -55,13 +55,7 @@ def search(cdss):
                     'hit: gene=%s, product=%s, target-cov=%0.3f, identity=%0.3f, contig=%s, start=%i, stop=%i, strand=%s',
                     gene, product, target_cov, identity, cds['contig'], cds['start'], cds['stop'], cds['strand']
                 )
+                cds_found.append(cds)
 
-    pscs_found = []
-    pscs_not_found = []
-    for cds in cdss:
-        if('psc' in cds):
-            pscs_found.append(cds)
-        else:
-            pscs_not_found.append(cds)
-    log.info('found=%i', len(pscs_found))
-    return pscs_found, pscs_not_found
+    log.info('found=%i', len(cds_found))
+    return cds_found
