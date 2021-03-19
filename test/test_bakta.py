@@ -2,12 +2,6 @@ from pathlib import Path
 from subprocess import run
 
 
-def setup_module(module):
-    """Update AMRFinderPlus db."""
-    proc = run(['amrfinder', '--update'])
-    assert proc.returncode == 0
-
-
 def test_bakta_mock_skipped_features(tmpdir):
     # fast test skipping all feature detections
     proc = run(["bin/bakta", '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-cds', '--skip-sorf', '--skip-ori', '--skip-gap', 'test/data/NC_002127.1.fna'])
