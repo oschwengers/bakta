@@ -54,6 +54,7 @@ def check():
         'antifam.h3m',
         'antifam.h3p',
         'bakta.db',
+        'expert-protein-sequences.dmnd',
         'ncRNA-genes.i1f',
         'ncRNA-genes.i1i',
         'ncRNA-genes.i1m',
