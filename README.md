@@ -37,10 +37,10 @@ To provide standardized annotations adhearing to [FAIR](https://www.go-fair.org/
 
 - **Protein sequence identification**
 Fostering the FAIR aspect, Bakta identifies identical protein sequences (**IPS**) via `MD5` digests which are annotated with database cross-references (**dbxref**) to RefSeq (`WP_*`), UniRef100 (`UniRef100_*`) and UniParc (`UPI*`).
-By doing so, IPS allow the surveillance of distinct gene alleles and streamlining comparative analysis as well as posterior (external) annotations of `putative` & `hypothetical` protein sequences which can be mapped back to existing CDS via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)). Currently, Bakta identifies ~169 mio distinct UniRef100 sequences and for certain genomes, up to 99 % of all CDS can be identified this way, sparing expensive homology searches.
+By doing so, IPS allow the surveillance of distinct gene alleles and streamlining comparative analysis as well as posterior (external) annotations of `putative` & `hypothetical` protein sequences which can be mapped back to existing CDS via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)). Currently, Bakta identifies ~169 mio distinct UniRef100 sequences and for certain genomes, up to 99 % of all CDS can be identified this way, skipping expensive homology searches.
 
 - **Short open reading frames**
-Next to standard feature types (tRNA, tmRNA, rRNA, ncRNA, ncRNA cis-regulatory regions, CRISPR, CDS, oriC/V/T and gaps) Bakta also detects and annotates short open reading frames (**sORF**) which are not predicted by tools like `Prodigal`.
+Next to standard feature types (tRNA, tmRNA, rRNA, ncRNA genes, ncRNA cis-regulatory regions, CRISPR, CDS, oriC/V/T and gaps) Bakta also detects and annotates short open reading frames (**sORF**) which are not predicted by tools like `Prodigal`.
 
 - **Fast**
 Bakta can annotate a typical bacterial genome in 10 &plusmn;5 min on a laptop, plasmids in a couple of seconds/minutes.
@@ -361,7 +361,9 @@ Conceptual terms:
 2. discard spurious CDS via AntiFam
 3. Detection of UPSs via MD5 digests and lookup of related IPS and PCS
 4. Homology search of remainder via Diamond vs. PSC (coverage=0.8, identity=0.9)
-5. Execution of expert systems, *e.g.* AMR genes via AMRFinderPlus
+5. Execution of expert systems:
+  - AMR: AMRFinderPlus
+  - Alignments: NCBI BlastRules
 6. Combination of available IPS, PSC & expert system information favouring more specific annotations and avoiding redundancy
 
 CDS without IPS or PSC hits as well as those without gene symbols or product descriptions different from `hypothetical` will be marked as `hypothetical`.
@@ -407,6 +409,18 @@ IPS & PSC have been comprehensively pre-annotated integrating annotations & data
 - NCBI AMRFinderPlus (IPS exact matches, PSC HMM hits reaching trusted cutoffs)
 - ISFinder db (coverage=90%, identify=99% -> 2,981)
 
+To provide high quality annotations for distinct protein sequences of high importance (AMR, VF, *etc*) which cannot sufficiently be covered by the IPS/PSC approach, Bakta provides additional expert systems. For instance, AMR genes, are annotated via NCBI's AMRFinderPlus.
+An expandable general purpose framework for homology based expert system supports the incorporation of high quality annotations from multiple sources. This currenlty comprises NCBI's BlastRules and will be complemented with more expert annotation sources over time. Internally, this expert system is based on a Diamond DB comprising the following information in a standardized format:
+
+- source: *e.g.* BlastRules
+- rank: a precedence rank
+- min identity
+- min query coverage
+- min model coverage
+- gene lable
+- product description
+- dbxrefs
+
 Rfam covariance models:
 
 - ncRNA: 750
@@ -421,11 +435,10 @@ All database releases (latest 1.0, 23 Gb zipped, 43 Gb unzipped) are hosted at Z
 ## WIP
 
 We're keen to constantly improve and further expand Bakta. If you miss any features, please do not hesitate to ask for it!
-There are several features & improvements which we're currently working on or have plans to do so as well as barely ideas:
+There are several features & improvements which we're currently working on or have plans to do so as well as mere ideas:
 
 Workflow:
 
-- analysis & annotation of `hypothetical` CDS [#28](https://github.com/oschwengers/bakta/issues/28)
 - detections of pseudo genes [#4](https://github.com/oschwengers/bakta/issues/4)
 
 Annotation:
@@ -436,14 +449,13 @@ Annotation:
 Technical:
 
 - 3rd party dependency version checks at runtime [#21](https://github.com/oschwengers/bakta/issues/21)
-- CWL description file [#27](https://github.com/oschwengers/bakta/issues/27)
 - Expand tests [#29](https://github.com/oschwengers/bakta/issues/29)
 - (idea) download/update the database within Bakta
 
 ## Citation
 
 A manuscript is not yet in preparation, but might be soon... To temporarily cite our work, please transitionally refer to:
-> Schwengers O., Goesmann A. (2020) Bakta: Rapid & standardized annotation of bacterial genomes & plasmids. GitHub https://github.com/oschwengers/bakta
+> Schwengers O., Goesmann A. (2021) Bakta: Rapid & standardized annotation of bacterial genomes & plasmids. GitHub https://github.com/oschwengers/bakta
 
 Bakta takes advantage of many publicly available databases. If you find any of the data used within Bakta useful, please also be sure to credit the primary source also:
 
