@@ -45,6 +45,7 @@ def search(cdss, cds_fasta_path):
                 if('expert' not in cds):
                     cds['expert'] = {}
                 cds['expert']['amrfinder'] = {
+                    'rank': 95,
                     'gene': gene,
                     'product': product,
                     'target-cov': target_cov,
