@@ -37,21 +37,31 @@ def combine_annotation(feature):
         for db_xref in ips['db_xrefs']:
             db_xrefs.add(db_xref)
     if(expert):
-        for exp, anno in expert.items():
-            exp_gene = anno.get('gene', None)
-            if(exp_gene):
-                gene = exp_gene
-            exp_product = anno.get('product', None)
-            if(exp_product):
-                product = exp_product
+        rank = 0
+        for expert_system, expert_hit in expert.items():
+            expert_rank = expert_hit['rank']
+            if(expert_rank > rank):
+                expert_gene = expert_hit.get('gene', None)
+                if(expert_gene):
+                    gene = expert_gene
+                expert_product = expert_hit.get('product', None)
+                if(expert_product):
+                    product = expert_product
+                expert_db_xrefs = expert_hit.get('db_xrefs', None)
+                if(expert_db_xrefs):
+                    for expert_db_xref in expert_db_xrefs:
+                        db_xrefs.add(expert_db_xref)
+                rank = expert_rank
     
     if(gene):
         feature['gene'] = gene
+    
     if(product):
         feature['product'] = product
     else:
         feature['product'] = bc.HYPOTHETICAL_PROTEIN
         feature['hypothetical'] = True
+    
     feature['db_xrefs'] = sorted(list(db_xrefs))
 
 
