@@ -1,12 +1,11 @@
 import logging
-from concurrent.futures import ThreadPoolExecutor
 import subprocess as sp
-import sqlite3
 
 import bakta.config as cfg
-import bakta.constants as bc
+
 
 log = logging.getLogger('EXPERT-AMRFINDER')
+
 
 def search(cdss, cds_fasta_path):
     """Conduct expert CDS analysis with AMRFinderPlus."""
