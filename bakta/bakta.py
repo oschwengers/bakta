@@ -12,6 +12,7 @@ import bakta.io.json as json
 import bakta.io.tsv as tsv
 import bakta.io.gff as gff
 import bakta.io.insdc as insdc
+import bakta.expert.amrfinder as exp_amr
 import bakta.features.annotation as anno
 import bakta.features.t_rna as t_rna
 import bakta.features.tm_rna as tm_rna
@@ -20,7 +21,7 @@ import bakta.features.nc_rna as nc_rna
 import bakta.features.nc_rna_region as nc_rna_region
 import bakta.features.crispr as crispr
 import bakta.features.orf as orf
-import bakta.features.cds as cds
+import bakta.features.cds as feat_cds
 import bakta.features.s_orf as s_orf
 import bakta.features.gaps as gaps
 import bakta.features.ori as ori
@@ -218,6 +219,7 @@ def main():
     # - lookup UPS matches
     # - lookup IPS matches
     # - search PSC for unannotated CDSs
+    # - conduct expert systems analysis 
     # - lookup & combine annotations
     # - analyze hypotheticals
     ############################################################################
@@ -226,7 +228,7 @@ def main():
     else:
         print('predict & annotate CDSs...')
         log.debug('predict CDS')
-        genome['features'][bc.FEATURE_CDS] = cds.predict(genome, contigs_path)
+        genome['features'][bc.FEATURE_CDS] = feat_cds.predict(genome, contigs_path)
         print(f"\tpredicted: {len(genome['features'][bc.FEATURE_CDS])} ")
        
         log.debug('detect spurious CDS')
@@ -240,25 +242,38 @@ def main():
         print(f'\tdetected IPSs: {len(cdss_ips)}')
         
         if(len(cdss_not_found) > 0):
+            cds_fasta_path = cfg.tmp_path.joinpath('cds.unidentified.faa')
+            with cds_fasta_path.open(mode='w') as fh:
+                for cds in cdss_not_found:
+                    fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['sequence']}\n")
             log.debug('search CDS PSC')
-            cdss_psc, cdss_not_found = psc.search(cdss_not_found)
+            cdss_psc, cdss_not_found = psc.search(cdss_not_found, cds_fasta_path)
             print(f'\tfound PSCs: {len(cdss_psc)}')
-        
-        print('\tlookup annotations...')
-        log.debug('lookup CDS PSCs')
-        psc.lookup(genome['features'][bc.FEATURE_CDS])  # lookup PSC info
+            print('\tlookup annotations...')
+            log.debug('lookup CDS PSCs')
+            psc.lookup(genome['features'][bc.FEATURE_CDS])  # lookup PSC info
+
+        # conduct expert systems annotation
+        print('\tconduct expert systems...')
+        cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
+        with cds_fasta_path.open(mode='w') as fh:
+            for cds in genome['features'][bc.FEATURE_CDS]:
+                fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['sequence']}\n")
+        log.debug('conduct expert system: amrfinder')
+        amr_found = exp_amr.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
+        print(f'\t\tamrfinder: {len(amr_found)}')
         
         print('\tmark hypotheticals and combine annotations...')
         log.debug('combine CDS annotations')
         for feat in genome['features'][bc.FEATURE_CDS]:
-            anno.combine_ips_psc_annotation(feat)  # combine IPS & PSC annotations and mark hypotheticals
+            anno.combine_annotation(feat)  # combine IPS & PSC annotations and mark hypotheticals
         
         print('analyze hypotheticals...')
         log.debug('analyze hypotheticals')
         hypotheticals = [cds for cds in genome['features'][bc.FEATURE_CDS] if 'hypothetical' in cds]
-        pfam_hits = cds.predict_pfam(hypotheticals)
+        pfam_hits = feat_cds.predict_pfam(hypotheticals)
         print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
-        cds.analyze_proteins(hypotheticals)
+        feat_cds.analyze_proteins(hypotheticals)
         print('\tcalculated proteins statistics')
     
     ############################################################################
@@ -307,7 +322,7 @@ def main():
         sorfs_filtered = s_orf.annotation_filter(sorfs)
         log.debug('combine sORF annotations')
         for feat in sorfs_filtered:
-            anno.combine_ips_psc_annotation(feat)  # combine IPS and PSC annotations
+            anno.combine_annotation(feat)  # combine IPS and PSC annotations
         genome['features'][bc.FEATURE_SORF] = sorfs_filtered
         print(f'\tfiltered sORFs: {len(sorfs_filtered)}')
     

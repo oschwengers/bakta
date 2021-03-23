@@ -99,6 +99,7 @@ Bacta requires the following 3rd party executables which must be installed & exe
 - Hmmer (3.3.1) <https://doi.org/10.1093/nar/gkt263> <http://hmmer.org>
 - Diamond (2.0.2) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
 - Blast+ (2.7.1) <https://www.ncbi.nlm.nih.gov/pubmed/2231712> <https://blast.ncbi.nlm.nih.gov>
+- AMRFinderPlus (3.10.1) <https://github.com/ncbi/amr>
 
 On Ubuntu/Debian/Mint you can install these via:
 
@@ -360,7 +361,8 @@ Conceptual terms:
 2. discard spurious CDS via AntiFam
 3. Detection of UPSs via MD5 digests and lookup of related IPS and PCS
 4. Homology search of remainder via Diamond vs. PSC (coverage=0.8, identity=0.9)
-5. Combination of available IPS & PSC information favouring more specific annotations and avoiding redundancy
+5. Execution of expert systems, *e.g.* AMR genes via AMRFinderPlus
+6. Combination of available IPS, PSC & expert system information favouring more specific annotations and avoiding redundancy
 
 CDS without IPS or PSC hits as well as those without gene symbols or product descriptions different from `hypothetical` will be marked as `hypothetical`.
 

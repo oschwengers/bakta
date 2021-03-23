@@ -22,12 +22,8 @@ DB_PSC_COL_GO = 'go_ids'
 log = logging.getLogger('PSC')
 
 
-def search(cdss):
+def search(cdss, cds_fasta_path):
     """Conduct homology search of CDSs against PCS db."""
-    cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
-    with cds_fasta_path.open(mode='w') as fh:
-        for cds in cdss:
-            fh.write(f">{cds['aa_hexdigest']}\n{cds['sequence']}\n")
     diamond_output_path = cfg.tmp_path.joinpath('diamond.cds.tsv')
     diamond_db_path = cfg.db_path.joinpath('psc.dmnd')
     cmd = [
@@ -59,13 +55,13 @@ def search(cdss):
         log.warning('PSC failed! diamond-error-code=%d', proc.returncode)
         raise Exception(f'diamond error! error code: {proc.returncode}')
 
-    cds_by_hexdigest = {cds['aa_hexdigest']: cds for cds in cdss}
+    cds_by_hexdigest = {f"{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}": cds for cds in cdss}
     with diamond_output_path.open() as fh:
         for line in fh:
-            (aa_hexdigest, cluster_id, identity, alignment_length, align_mismatches,
+            (aa_identifier, cluster_id, identity, alignment_length, align_mismatches,
                 align_gaps, query_start, query_end, subject_start, subject_end,
                 evalue, bitscore) = line.split('\t')
-            cds = cds_by_hexdigest[aa_hexdigest]
+            cds = cds_by_hexdigest[aa_identifier]
             query_cov = int(alignment_length) / len(cds['sequence'])
             identity = float(identity) / 100
             if(query_cov >= bc.MIN_PROTEIN_COVERAGE and identity >= bc.MIN_PROTEIN_IDENTITY):

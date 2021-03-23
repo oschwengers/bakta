@@ -6,10 +6,11 @@ import bakta.constants as bc
 log = logging.getLogger('ANNOTATION')
 
 
-def combine_ips_psc_annotation(feature):
+def combine_annotation(feature):
     ups = feature.get('ups', None)
     ips = feature.get('ips', None)
     psc = feature.get('psc', None)
+    expert = feature.get('expert', None)
 
     gene = None
     product = None
@@ -35,6 +36,14 @@ def combine_ips_psc_annotation(feature):
             product = ips_product
         for db_xref in ips['db_xrefs']:
             db_xrefs.add(db_xref)
+    if(expert):
+        for exp, anno in expert.items():
+            exp_gene = anno.get('gene', None)
+            if(exp_gene):
+                gene = exp_gene
+            exp_product = anno.get('product', None)
+            if(exp_product):
+                product = exp_product
     
     if(gene):
         feature['gene'] = gene

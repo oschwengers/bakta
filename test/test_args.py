@@ -47,7 +47,7 @@ def test_database(tmpdir):
 
     # parameter OK
     env['BAKTA_DB'] = 'test/db'
-    proc = run(["bin/bakta", '--output', tmpdir, 'test/data/NC_002127.1.fna'], env=env)
+    proc = run(["bin/bakta", '--output', tmpdir, '--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-cds', '--skip-sorf', '--skip-ori', '--skip-gap', 'test/data/NC_002127.1.fna'], env=env)
     assert proc.returncode == 0
 
 
@@ -63,7 +63,7 @@ def test_prodigal_tf(tmpdir):
     assert proc.returncode != 0
 
     # OK
-    proc = run(["bin/bakta", '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--prodigal-tf', 'test/data/prodigal.tf', 'test/data/NC_002127.1.fna'])
+    proc = run(["bin/bakta", '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--prodigal-tf', 'test/data/prodigal.tf', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-sorf', '--skip-ori', '--skip-gap', 'test/data/NC_002127.1.fna'])
     assert proc.returncode == 0
     assert Path.exists(Path(tmpdir).joinpath('test.log'))
     assert Path.exists(Path(tmpdir).joinpath('test.json'))

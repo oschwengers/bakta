@@ -41,5 +41,8 @@ jobs:
         conda list
         conda config --show
         printenv | sort
+    - name: Conda init
+      run: |
+        amrfinder --update
     - name: Run PyTest
       run: pytest
