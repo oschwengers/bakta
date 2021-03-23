@@ -233,6 +233,16 @@ python3 ${BAKTA_DB_SCRIPTS}/annotate-pfam.py --db bakta.db --hmm-results hmmscan
 rm pfam-families* pfam *.tsv Pfam* hmmscan.tblout
 
 
+############################################################################
+# Setup expert protein sequences
+# - import NCBI BlastRules models
+############################################################################
+wget -nv https://ftp.ncbi.nlm.nih.gov/pub/blastrules/current/proteins.fasta
+wget -nv https://ftp.ncbi.nlm.nih.gov/pub/blastrules/current/blast-rules_4.0.tsv
+python3 ${BAKTA_DB_SCRIPTS}/expert/setup-ncbiblastrules.py --expert-sequence expert-protein-sequences.faa --ncbi-blastrule-tsv blast-rules_4.0.tsv --ncbi-blastrule-proteins proteins.fasta
+diamond makedb --in expert-protein-sequences.faa --db expert-protein-sequences
+
+
 # Cleanup
 python3 ${BAKTA_DB_SCRIPTS}/optimize-db.py --db bakta.db
 rm psc.faa node.dmp
