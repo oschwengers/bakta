@@ -32,29 +32,34 @@ def search(cdss, cds_fasta_path):
         log.warning('AMR expert system failed! amrfinder-error-code=%d', proc.returncode)
         raise Exception(f'amrfinder error! error code: {proc.returncode}')
 
-    cds_found = []
+    cds_found = set()
     cds_by_hexdigest = {f"{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}": cds for cds in cdss}
     with amrfinder_output_path.open() as fh:
         for line in fh:
             if(line[:7] != 'Protein'):
                 (aa_identifier, gene, product, scope, element_type, element_subtype, clazz, subclass, method, target_length, reference_sequence_length,
                 cov_ref_seq, ident_ref_seq, alignment_length, accession_closest_seq, name_closest_seq, hmm_id, hmm_description) = line.split('\t')
-                target_cov = float(cov_ref_seq) / 100
-                identity = float(ident_ref_seq) / 100
                 cds = cds_by_hexdigest[aa_identifier]
-                if('expert' not in cds):
-                    cds['expert'] = {}
-                cds['expert']['amrfinder'] = {
-                    'gene': gene,
+                query_cov = int(alignment_length) / len(cds['sequence'])
+                model_cov = float(cov_ref_seq) / 100
+                identity = float(ident_ref_seq) / 100
+                expert_hit = {
+                    'system': 'amrfinder',
+                    'rank': 95,
+                    'gene': gene if gene != '' else None,
                     'product': product,
-                    'target-cov': target_cov,
+                    'query-cov': query_cov,
+                    'model-cov': model_cov,
                     'identity': identity
                 }
+                if('expert' not in cds):
+                    cds['expert'] = {}
+                cds['expert']['amrfinder'] = expert_hit
                 log.debug(
                     'hit: gene=%s, product=%s, target-cov=%0.3f, identity=%0.3f, contig=%s, start=%i, stop=%i, strand=%s',
-                    gene, product, target_cov, identity, cds['contig'], cds['start'], cds['stop'], cds['strand']
+                    gene, product, model_cov, identity, cds['contig'], cds['start'], cds['stop'], cds['strand']
                 )
-                cds_found.append(cds)
+                cds_found.add(aa_identifier)
 
     log.info('found=%i', len(cds_found))
     return cds_found

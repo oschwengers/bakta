@@ -13,6 +13,7 @@ import bakta.io.tsv as tsv
 import bakta.io.gff as gff
 import bakta.io.insdc as insdc
 import bakta.expert.amrfinder as exp_amr
+import bakta.expert.protein_sequences as exp_aa_seq
 import bakta.features.annotation as anno
 import bakta.features.t_rna as t_rna
 import bakta.features.tm_rna as tm_rna
@@ -260,8 +261,11 @@ def main():
             for cds in genome['features'][bc.FEATURE_CDS]:
                 fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['sequence']}\n")
         log.debug('conduct expert system: amrfinder')
-        amr_found = exp_amr.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
-        print(f'\t\tamrfinder: {len(amr_found)}')
+        expert_amr_found = exp_amr.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
+        print(f'\t\tamrfinder: {len(expert_amr_found)}')
+        log.debug('conduct expert system: aa seqs')
+        expert_aa_found = exp_aa_seq.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
+        print(f'\t\tprotein sequences: {len(expert_aa_found)}')
         
         print('\tmark hypotheticals and combine annotations...')
         log.debug('combine CDS annotations')

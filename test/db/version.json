@@ -1,6 +1,6 @@
 {
-  "date": "2020-11-20",
-  "major": 1,
+  "date": "2021-03-23",
+  "major": 2,
   "minor": 0,
   "dependencies": [
     {
@@ -38,6 +38,16 @@
     {
       "name": "UniProtKB/Swiss-Prot",
       "release": "2020_04"
+    }
+  ],
+  "experts": [
+    {
+      "name": "AMRFinderPlus",
+      "release": "3.10.1"
+    },
+    {
+      "name": "NCBI BlastRules",
+      "release": "4.0"
     }
   ]
 }
