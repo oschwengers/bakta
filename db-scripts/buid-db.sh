@@ -236,12 +236,16 @@ rm pfam-families* pfam *.tsv Pfam* hmmscan.tblout
 ############################################################################
 # Setup expert protein sequences
 # - import NCBI BlastRules models
+# - import VFDB sequences
 ############################################################################
 wget -nv https://ftp.ncbi.nlm.nih.gov/pub/blastrules/current/proteins.fasta
 wget -nv https://ftp.ncbi.nlm.nih.gov/pub/blastrules/current/blast-rules_4.0.tsv
 python3 ${BAKTA_DB_SCRIPTS}/expert/setup-ncbiblastrules.py --expert-sequence expert-protein-sequences.faa --ncbi-blastrule-tsv blast-rules_4.0.tsv --ncbi-blastrule-proteins proteins.fasta
+wget -nv http://www.mgc.ac.cn/VFs/Down/VFDB_setA_pro.fas.gz
+gunzip VFDB_setA_pro.fas.gz
+python3 ${BAKTA_DB_SCRIPTS}/expert/setup-vfdb.py --expert-sequence expert-protein-sequences.faa --proteins VFDB_setA_pro.fas
 diamond makedb --in expert-protein-sequences.faa --db expert-protein-sequences
-
+rm blast-rules_4.0.tsv proteins.fasta VFDB_setA_pro.fas expert-protein-sequences.faa
 
 # Cleanup
 python3 ${BAKTA_DB_SCRIPTS}/optimize-db.py --db bakta.db

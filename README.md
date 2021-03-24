@@ -363,7 +363,7 @@ Conceptual terms:
 4. Homology search of remainder via Diamond vs. PSC (coverage=0.8, identity=0.9)
 5. Execution of expert systems:
   - AMR: AMRFinderPlus
-  - Alignments: NCBI BlastRules
+  - Alignments: NCBI BlastRules, VFDB
 6. Combination of available IPS, PSC & expert system information favouring more specific annotations and avoiding redundancy
 
 CDS without IPS or PSC hits as well as those without gene symbols or product descriptions different from `hypothetical` will be marked as `hypothetical`.
@@ -410,7 +410,7 @@ IPS & PSC have been comprehensively pre-annotated integrating annotations & data
 - ISFinder db (coverage=90%, identify=99% -> 2,981)
 
 To provide high quality annotations for distinct protein sequences of high importance (AMR, VF, *etc*) which cannot sufficiently be covered by the IPS/PSC approach, Bakta provides additional expert systems. For instance, AMR genes, are annotated via NCBI's AMRFinderPlus.
-An expandable general purpose framework for homology based expert system supports the incorporation of high quality annotations from multiple sources. This currenlty comprises NCBI's BlastRules and will be complemented with more expert annotation sources over time. Internally, this expert system is based on a Diamond DB comprising the following information in a standardized format:
+An expandable alignment-based expert system supports the incorporation of high quality annotations from multiple sources. This currenlty comprises NCBI's BlastRules as well as VFDB and will be complemented with more expert annotation sources over time. Internally, this expert system is based on a Diamond DB comprising the following information in a standardized format:
 
 - source: *e.g.* BlastRules
 - rank: a precedence rank
@@ -468,6 +468,7 @@ Bakta takes advantage of many publicly available databases. If you find any of t
 - Mob-suite: <https://doi.org/10.1099/mgen.0.000206>
 - DoriC: <https://doi.org/10.1093/nar/gky1014>
 - COG: <https://doi.org/10.1093/bib/bbx117>
+- VFDB: <https://doi.org/10.1093/nar/gky1080>
 
 ## FAQ
 

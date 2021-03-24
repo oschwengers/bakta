@@ -21,7 +21,7 @@ def search(cdss, cds_fasta_path):
         '--id', str(50),  # '50',
         '--query-cover', str(80),  # '80'
         '--subject-cover', str(80),  # '80'
-        '--max-target-seqs', '1',  # single best output
+        '--max-target-seqs', '5',  # single best output
         '--outfmt', '6', 'qseqid', 'sseqid', 'slen', 'length', 'pident', 'evalue', 'bitscore', 'stitle',
         '--threads', str(cfg.threads),
         '--tmpdir', str(cfg.tmp_path),  # use tmp folder
