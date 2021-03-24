@@ -6,17 +6,17 @@ from Bio import SeqIO
 
 
 parser = argparse.ArgumentParser(
-    description='Setup NCBI BlastRules expert system.'
+    description='Import NCBI BlastRules into aa seq expert system.'
 )
-parser.add_argument('--expert-sequence', action='store', dest='expert_sequence', required=True, help='Path to Bakta expert sequence file.')
+parser.add_argument('--expert-sequence', action='store', dest='expert_sequences', required=True, help='Path to Bakta expert sequence file.')
+parser.add_argument('--proteins', action='store', dest='proteins', required=True, help='Path to input proteins file.')
 parser.add_argument('--ncbi-blastrule-tsv', action='store', dest='blastrule_tsv', required=True, help='Path to NCBI blastrule file.')
-parser.add_argument('--ncbi-blastrule-proteins', action='store', dest='blastrule_proteins', required=True, help='Path to NCBI blastrule proteins file.')
 args = parser.parse_args()
 
 
-expert_sequence_path = Path(args.expert_sequence).resolve()
+expert_sequences_path = Path(args.expert_sequences).resolve()
+proteins_path = Path(args.proteins).resolve()
 blastrule_tsv_path = Path(args.blastrule_tsv).resolve()
-blastrule_proteins_path = Path(args.blastrule_proteins).resolve()
 
 
 logging.basicConfig(
@@ -61,9 +61,9 @@ with blastrule_tsv_path.open(encoding='windows-1252') as fh:
                 blast_rules[refseq_acc] = br
 print(f'\tstored BlastRule ids: {len(blast_rules)}')
 
-blast_rule_seqs = 0
+aa_seqs = 0
 print('import NCBI BlastRule proteins...')
-with blastrule_proteins_path.open() as fh_in, expert_sequence_path.open('w+') as fh_out:
+with proteins_path.open() as fh_in, expert_sequences_path.open('a') as fh_out:
     for record in SeqIO.parse(fh_in, 'fasta'):
         br_id = record.id
         br_seq = str(record.seq).upper()
@@ -76,9 +76,9 @@ with blastrule_proteins_path.open() as fh_in, expert_sequence_path.open('w+') as
             fh_out.write(f">{refseq_id} BlastRules~~~{br['rank']}~~~{br['identity']}~~~{br['query_cov']}~~~{br['subject_cov']}~~~{br['gene']}~~~{br['product']}~~~{','.join(br['dbxref'])}\n")
             fh_out.write(f"{br_seq}\n")
             log.info('write seq: RefSeq-id=%s, rank=%i, id=%f, q-cov=%f, s-cov=%f, gene=%s, product=%s, dbxrefs=%s', refseq_id, br['rank'], br['identity'], br['query_cov'], br['subject_cov'], br['gene'], br['product'], ','.join(br['dbxref']) )
-            blast_rule_seqs += 1
-print(f'\tstored BlastRule sequences: {blast_rule_seqs}')
-log.debug('written BlastRule sequences: %i', blast_rule_seqs)
+            aa_seqs += 1
+print(f'\tstored BlastRule sequences: {aa_seqs}')
+log.debug('written BlastRule sequences: %i', aa_seqs)
 
 
 print("\nsuccessfully setup BlastRules expert system!")

@@ -42,7 +42,7 @@ def search(cdss, cds_fasta_path):
         log.warning('diamond failed! diamond-error-code=%d', proc.returncode)
         raise Exception(f'diamond error! error code: {proc.returncode}')
 
-    cds_found = []
+    cds_found = set()
     cds_by_hexdigest = {f"{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}": cds for cds in cdss}
     with diamond_output_path.open() as fh:
         for line in fh:
@@ -80,7 +80,7 @@ def search(cdss, cds_fasta_path):
                     'hit: contig=%s, start=%i, stop=%i, strand=%s, system=%s, rank=%i, query-cov=%0.3f, model-cov=%0.3f, identity=%0.3f, gene=%s, product=%s, evalue=%1.1e, bitscore=%f',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], expert_system, rank, query_cov, model_cov, identity, gene, product, evalue, bitscore
                 )
-                cds_found.append(cds)
+                cds_found.add(aa_identifier)
 
     log.info('found=%i', len(cds_found))
     return cds_found 
