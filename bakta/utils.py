@@ -13,7 +13,8 @@ import bakta.constants as bc
 import bakta.config as cfg
 
 log = logging.getLogger('UTILS')
-
+# List of tuples consisting of parameters for dependency checks.
+# Minimum version number, placeholder for maximum version, version regex expression, tool name, command line parameter, sys and log output handle
 dependencies = [("2.0.6", None, "\d\.\d\.\d", "tRNAscan-SE", "-h", "--skip-trna"),
 ("1.2.38", None, "\d\.\d\.\d{1,2}", "aragorn", "-h", "skip-tmrna"),
 ("1.1.2", None, "\d\.\d\.\d", "cmscan", "-h", "--skip-rrna --skip-ncrna --skip-ncrna-region"),
@@ -73,11 +74,14 @@ def parse_arguments():
     arg_group_general.add_argument('--citation', action='store_true', help='Print citation')
     return parser.parse_args()
 
+# Method for reading tool version with regex. Input: regex expression, tool name and command line parameter for tool. Returns: version number
 def read_tool_output(regex, command, option):
+	# stderr must be added in case the tool output is not piped into stdout
         tool_output = str(sp.check_output([f'{command}',f'{option}'], stderr=sp.STDOUT))
         version_match = re.search(rf'{regex}', tool_output)
         return(version_match.group())
 
+# Method for comparing tool version with required version. Input: tool version, minimum and maximum version. Returns: boolean value for major, minor, patch
 def compare_version(tool_version, tool_min, tool_max):
         v_major, v_minor, v_patch = tool_version.split(".", 2)
         min_major, min_minor, min_patch = tool_min.split(".", 2)
@@ -86,11 +90,13 @@ def compare_version(tool_version, tool_min, tool_max):
         patch = True if int(v_patch) >= int(min_patch) else True if int(v_minor) > int(min_minor) else False
         return(major, minor, patch)
 
+# Method for checking dependencies. Iterates through list of tools.
 def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
     for dependency in dependencies:
         version = read_tool_output(dependency[2], dependency[3], dependency[4])
         major_true, minor_true, patch_true = compare_version(version, dependency[0], dependency[1])
+	# If one of the major, minor or patch versions does not fit the criteria, bakta is stopped and an error message displayed/logged.
         if (major_true == False or minor_true == False or patch_true == False):
                 log.error(f'{dependency[3]} not correct version!')
                 sys.exit(f'ERROR: insufficient {dependency[3]} version installed. Please either install  {dependency[3]} version  {dependency[0]} or skip this step!')
