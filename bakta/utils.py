@@ -82,8 +82,8 @@ def compare_version(tool_version, tool_min, tool_max):
         v_major, v_minor, v_patch = tool_version.split(".", 2)
         min_major, min_minor, min_patch = tool_min.split(".", 2)
         major = True if int(v_major) >= int(min_major) else False
-        minor = True if int(v_minor) >= int(min_minor) else False
-        patch = True if int(v_patch) >= int(min_patch) else False
+        minor = True if int(v_minor) >= int(min_minor) else True if int(v_major) > int(min_major) else False
+        patch = True if int(v_patch) >= int(min_patch) else True if int(v_minor) > int(min_minor) else False
         return(major, minor, patch)
 
 def test_dependencies():
