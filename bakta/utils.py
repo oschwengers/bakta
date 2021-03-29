@@ -20,7 +20,7 @@ dependencies = [("2.0.6", None, "\d\.\d\.\d", "tRNAscan-SE", "-h", "--skip-trna"
 ("2.6.3", None, "\d\.\d\.\d", "prodigal", "-v", "--skip-cds"),
 ("3.3.1", None, "\d\.\d\.\d", "hmmsearch", "-h", "--skip-cds --skip-sorf"),
 ("2.0.4", None, "\d\.\d\.\d", "diamond", "help", "--skip-cds --skip-sorf")]
- #("1.06", None, "\d\.\d{1,2}", "pilercr", "-options"),
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -81,7 +81,6 @@ def read_tool_output(regex, command, option):
 def compare_version(tool_version, tool_min, tool_max):
         v_major, v_minor, v_patch = tool_version.split(".", 2)
         min_major, min_minor, min_patch = tool_min.split(".", 2)
-        #vmajor, vminor, vpatch = int(tool_max.split("."))
         major = True if int(v_major) >= int(min_major) else False
         minor = True if int(v_minor) >= int(min_minor) else False
         patch = True if int(v_patch) >= int(min_patch) else False
