@@ -33,8 +33,8 @@ log_psc = logging.getLogger('PSC')
 
 
 nrps_processed = 0
-ips_updated = 0
-psc_annotated = set()
+ips_annotated = 0
+psc_annotated = 0
 with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
@@ -55,36 +55,34 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     with genes_path.open() as fh:
         for line in fh:
             nrps_processed += 1
-            (allele, gene_family, whitelisted_taxa, product, scope, amr_type,
+            (
+                allele, gene_family, whitelisted_taxa, product, scope, amr_type,
                 subtype, clazz, subclazz, refseq_protein_accession,
                 refseq_nucleotide_accession, curated_refseq_start,
                 genbank_protein_accession, genbank_nucleotide_accession,
                 genbank_strand_orientation, genbank_cds_start, genbank_cds_stop,
-                pubmed_reference, blacklisted_taxa, db_version) = line.split('\t')
-            if(refseq_protein_accession != '' and 'WP_' in refseq_protein_accession):
+                pubmed_reference, blacklisted_taxa, db_version
+            ) = line.split('\t')
+            if('WP_' in refseq_protein_accession):
                 refseq_protein_accession = refseq_protein_accession[3:]  # remove 'WP_' in NCBI NRP IDs
-                if(scope == 'core'):
-                    if(amr_type == 'AMR' and subtype == 'AMR'):
-                        rec_ups = conn.execute('SELECT * FROM ups WHERE ncbi_nrp_id=?', (refseq_protein_accession,)).fetchone()
-                        if(rec_ups is None):
-                            log_ups.debug('no NRP hit: NRP-id=%s', refseq_protein_accession)
-                            continue
-                        log_ips.debug(
-                            'nrp-id=%s, allele=%s, gene-family=%s, product=%s',
-                            refseq_protein_accession, allele, gene_family, product
-                        )
-                        gene = allele if allele != '' else gene_family
-                        uniref100_id = rec_ups['uniref100_id']
-                        if(gene == ''):
-                            conn.execute('UPDATE ips SET product=? WHERE uniref100_id=?', (product, uniref100_id))  # annotate IPS with NCBI nrp id (WP_*) -> UniRef100_id
-                            log_ips.info('UPDATE ips SET product=%s WHERE uniref100_id=%s', product, uniref100_id)
-                            ips_updated += 1
-                        else:
-                            conn.execute('UPDATE ips SET gene=?, product=? WHERE uniref100_id=?', (gene, product, uniref100_id))  # annotate IPS with NCBI nrp id (WP_*) -> UniRef100
-                            log_ips.info('UPDATE ips SET gene=%s, product=%s WHERE uniref100_id=%s', gene, product, uniref100_id)
-                            ips_updated += 1
-                elif(scope == 'plus'):
-                    pass
+                rec_ups = conn.execute('SELECT * FROM ups WHERE ncbi_nrp_id=?', (refseq_protein_accession,)).fetchone()
+                if(rec_ups is None):
+                    log_ups.debug('no NRP hit: NRP-id=%s', refseq_protein_accession)
+                    continue
+                log_ips.debug(
+                    'nrp-id=%s, allele=%s, gene-family=%s, product=%s',
+                    refseq_protein_accession, allele, gene_family, product
+                )
+                gene = allele if allele != '' else gene_family
+                uniref100_id = rec_ups['uniref100_id']
+                if(gene == ''):
+                    conn.execute('UPDATE ips SET product=? WHERE uniref100_id=?', (product, uniref100_id))  # annotate IPS with NCBI nrp id (WP_*) -> UniRef100_id
+                    log_ips.info('UPDATE ips SET product=%s WHERE uniref100_id=%s', product, uniref100_id)
+                    ips_annotated += 1
+                else:
+                    conn.execute('UPDATE ips SET gene=?, product=? WHERE uniref100_id=?', (gene, product, uniref100_id))  # annotate IPS with NCBI nrp id (WP_*) -> UniRef100
+                    log_ips.info('UPDATE ips SET gene=%s, product=%s WHERE uniref100_id=%s', gene, product, uniref100_id)
+                    ips_annotated += 1
             if((nrps_processed % 100) == 0):
                 conn.commit()
                 print(f'\t... {nrps_processed}')
@@ -99,19 +97,22 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     amr_hmms = {}
     with hmms_path.open() as fh:
         for line in fh:
-            (accession, short_name, TC1, TC2, gene_symbol, length, family_type, curated, product_name,
-                AMRFinder_reportable, db_type, subtype, clazz, subclass) = line.split('\t')
+            (
+                family_id, parent_family_id, gene_symbol, hmm_id, hmm_tc1, hmm_tc2, 
+                blastrule_complete_ident, blastrule_complete_wp_coverage, blastrule_complete_br_coverage, blastrule_partial_ident, blastrule_partial_wp_coverage, blastrule_partial_br_coverage,
+                reportable, family_type, family_subtype, family_class, family_subclass, product_name
+            ) = line.split('\t')
             hmm = {
-                'acc': accession,
+                'acc': hmm_id,
                 'gene': gene_symbol,
-                'type': family_type,
-                'product': product_name
+                'product': product_name.strip()
             }
-            amr_hmms[accession] = hmm
+            if(hmm_id != '-'):
+                amr_hmms[hmm_id] = hmm
+    print(f'read {len(amr_hmms)} HMMs')
 
     print('parse NCBI AMR hits...')
-    exception_hits_per_psc = set()
-    equivalog_hits_per_psc = set()
+    hit_per_psc = {}
     with hmm_result_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
@@ -119,48 +120,32 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                 hit = {
                     'psc_id': psc_id,
                     'hmm_id': hmm_id,
-                    'evalue': float(evalue),
                     'bitscore': float(bitscore)
                 }
-                hmm = amr_hmms.get(hit['hmm_id'], None)
-                if(hmm is not None):
-                    if(hmm['type'] == 'exception'):
-                        if(hmm['gene'] == ''):
-                            conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (hmm['product'], psc_id))  # annotate IPS with NCBI nrp id (WP_*) -> UniRef100_id
-                            log_psc.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', hmm['product'], psc_id)
-                            psc_annotated.add(psc_id)
-                        else:
-                            conn.execute('UPDATE psc SET gene=?, product=? WHERE uniref90_id=?', (hmm['gene'], hmm['product'], psc_id))  # annotate IPS with NCBI nrp id (WP_*) -> UniRef100
-                            log_psc.info('UPDATE psc SET gene=%s, product=%s WHERE uniref90_id=%s', hmm['gene'], hmm['product'], psc_id)
-                            psc_annotated.add(psc_id)
-                        exception_hits_per_psc.add(psc_id)
-                    elif(hmm['type'] == 'equivalog'):
-                        if(psc_id not in exception_hits_per_psc):
-                            if(hmm['gene'] == ''):
-                                conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (hmm['product'], psc_id))  # annotate IPS with NCBI nrp id (WP_*) -> UniRef100_id
-                                log_psc.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', hmm['product'], psc_id)
-                                psc_annotated.add(psc_id)
-                            else:
-                                conn.execute('UPDATE psc SET gene=?, product=? WHERE uniref90_id=?', (hmm['gene'], hmm['product'], psc_id))  # annotate IPS with NCBI nrp id (WP_*) -> UniRef100
-                                log_psc.info('UPDATE psc SET gene=%s, product=%s WHERE uniref90_id=%s', hmm['gene'], hmm['product'], psc_id)
-                                psc_annotated.add(psc_id)
-                            equivalog_hits_per_psc.add(psc_id)
-                    elif(hmm['type'] == 'subfamily'):
-                        if(psc_id not in exception_hits_per_psc and psc_id not in equivalog_hits_per_psc):
-                            if(hmm['gene'] == ''):
-                                conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (hmm['product'], psc_id))  # annotate IPS with NCBI nrp id (WP_*) -> UniRef100_id
-                                log_psc.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', hmm['product'], psc_id)
-                                psc_annotated.add(psc_id)
-                            else:
-                                conn.execute('UPDATE psc SET gene=?, product=? WHERE uniref90_id=?', (hmm['gene'], hmm['product'], psc_id))  # annotate IPS with NCBI nrp id (WP_*) -> UniRef100
-                                log_psc.info('UPDATE psc SET gene=%s, product=%s WHERE uniref90_id=%s', hmm['gene'], hmm['product'], psc_id)
-                                psc_annotated.add(psc_id)
+                if(psc_id not in hit_per_psc):
+                    hit_per_psc[psc_id] = hit
+                else:
+                    existing_hit = hit_per_psc[psc_id]
+                    if(hit['bitscore'] > existing_hit['bitscore']):
+                        hit_per_psc[psc_id] = hit
+    print(f'read {len(hit_per_psc)} hits')
+
+    for psc_id, hit in hit_per_psc.items():
+        hmm = amr_hmms.get(hit['hmm_id'], None)
+        if(hmm is not None):
+            if(hmm['gene'] == ''):
+                conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (hmm['product'], psc_id))  # annotate PSC
+                log_psc.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', hmm['product'], psc_id)
+                psc_annotated += 1
+            else:
+                conn.execute('UPDATE psc SET gene=?, product=? WHERE uniref90_id=?', (hmm['gene'], hmm['product'], psc_id))  # annotate PSC
+                log_psc.info('UPDATE psc SET gene=%s, product=%s WHERE uniref90_id=%s', hmm['gene'], hmm['product'], psc_id)
+                psc_annotated += 1
 
 print('\n')
 print(f'NRPs processed: {nrps_processed}')
-print(f'IPSs with annotated AMR gene / product: {ips_updated}')
-log_ips.debug('summary: IPS annotated=%d', ips_updated)
+print(f'IPSs with annotated AMR gene / product: {ips_annotated}')
+log_ips.debug('summary: IPS annotated=%d', ips_annotated)
 
-psc_updated = len(psc_annotated)
-print(f'PSCs with annotated AMR gene / product: {psc_updated}')
-log_ips.debug('summary: PSCs annotated=%d', psc_updated)
+print(f'PSCs with annotated AMR gene / product: {psc_annotated}')
+log_ips.debug('summary: PSCs annotated=%d', psc_annotated)
