@@ -12,6 +12,6 @@ dependencies:
   - piler-cr
   - prodigal>=2.6.3
   - hmmer>=3.3.1
-  - diamond>=2.0.4
+  - diamond>=2.0.6
   - blast>=2.7.1
   - ncbi-amrfinderplus>=3.10.1

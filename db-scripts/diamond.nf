@@ -17,7 +17,7 @@ process diamond {
     cpus 2
     memory '2 GB'
     clusterOptions '-l virtual_free=2G'
-    conda 'diamond=2.0.5'
+    conda 'diamond=2.0.6'
 
     input:
     file('input.faa') from chAAs
