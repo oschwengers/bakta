@@ -190,9 +190,9 @@ wget -nv ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderP
 printf "\n13/15: annotate IPSs and PSCs...\n"
 mv AMR.LIB ncbifam-amr
 hmmpress ncbifam-amr
-nextflow run ${BAKTA_DB_SCRIPTS}/hmmscan.nf --fasta psc.faa --db ncbifam-amr
-python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-amr.py --db bakta.db --genes ReferenceGeneCatalog.txt --hmms fam.tab --hmm-results hmmscan.tblout
-rm ReferenceGeneCatalog.txt ncbifam-amr* fam.tab hmmscan.tblout
+nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --fasta psc.faa --db ncbifam-amr
+python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-amr.py --db bakta.db --genes ReferenceGeneCatalog.txt --hmms fam.tab --hmm-results hmmsearch.tblout
+rm ReferenceGeneCatalog.txt ncbifam-amr* fam.tab hmmsearch.tblout
 
 
 ############################################################################
@@ -228,9 +228,9 @@ hmmpress pfam-families
 hmmfetch -o pfam -f Pfam-A.hmm pfam.non-families.tsv
 hmmpress pfam
 python3 ${BAKTA_DB_SCRIPTS}/extract-hypotheticals.py --psc psc.faa --db bakta.db --hypotheticals hypotheticals.faa
-nextflow run ${BAKTA_DB_SCRIPTS}/hmmscan.nf --fasta hypotheticals.faa --db pfam-families
-python3 ${BAKTA_DB_SCRIPTS}/annotate-pfam.py --db bakta.db --hmm-results hmmscan.tblout
-rm pfam-families* pfam *.tsv Pfam* hmmscan.tblout
+nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --fasta hypotheticals.faa --db pfam-families
+python3 ${BAKTA_DB_SCRIPTS}/annotate-pfam.py --db bakta.db --hmm-results hmmsearch.tblout
+rm pfam-families* pfam *.tsv Pfam* hmmsearch.tblout
 
 
 ############################################################################

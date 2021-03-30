@@ -2,7 +2,7 @@
 import java.nio.file.Paths
 
 params.in = 'psc.faa'
-params.out = 'hmmsearch'
+params.out = 'hmmsearch.tblout'
 
 params.block = 10000
 
@@ -25,8 +25,8 @@ process hmmsearch {
 
     script:
     """
-    hmmsearch -E 1E-10 --noali --tblout hmm.tblout --cpu ${task.cpus} ${params.db} input.faa
+    hmmsearch --cut_tc --noali --tblout hmm.tblout --cpu ${task.cpus} ${params.db} input.faa
     """
 }
 
-chHmmResults.collectFile( sort: false, name: "${params.out}.tblout", storeDir: '.', skip: 3, keepHeader: true)
+chHmmResults.collectFile( sort: false, name: params.out, storeDir: '.', skip: 3, keepHeader: true)

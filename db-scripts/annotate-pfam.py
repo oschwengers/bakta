@@ -45,7 +45,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
         for line in fh:
             if(line[0] != '#'):
                 cols = re.split('\s+', line.strip(), maxsplit=18)
-                psc_id = cols[2]
+                psc_id = cols[0]
                 product = cols[18]
                 product_terms = product.split()
                 if(len(product_terms) > 1):
