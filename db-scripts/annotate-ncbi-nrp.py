@@ -119,7 +119,7 @@ print(f'NRPs processed: {nrps_processed}')
 log_ups.debug('summary: # UPS with annotated NRP IDs=%i', ups_updated)
 print(f'UPSs with annotated WP_* id: {ups_updated}')
 
-log_ips.debug('summary: # IPSs with annotated genes=%i', ips_updated)
+log_ips.debug('summary: # IPS with annotated genes=%i', ips_updated)
 print(f'IPSs with annotated gene names: {ips_updated}')
 
 log_psc.debug('summary: # PSC with annotated genes=%i', psc_updated)

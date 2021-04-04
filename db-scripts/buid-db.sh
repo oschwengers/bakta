@@ -228,8 +228,8 @@ hmmpress pfam-families
 hmmfetch -o pfam -f Pfam-A.hmm pfam.non-families.tsv
 hmmpress pfam
 python3 ${BAKTA_DB_SCRIPTS}/extract-hypotheticals.py --psc psc.faa --db bakta.db --hypotheticals hypotheticals.faa
-nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --fasta hypotheticals.faa --db pfam-families
-python3 ${BAKTA_DB_SCRIPTS}/annotate-pfam.py --db bakta.db --hmm-results hmmsearch.tblout
+nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in hypotheticals.faa --db pfam-families
+python3 ${BAKTA_DB_SCRIPTS}/annotate-pfam.py --db bakta.db --hmms pfam-families --hmm-results hmmsearch.tblout
 rm pfam-families* pfam *.tsv Pfam* hmmsearch.tblout
 
 
@@ -248,5 +248,7 @@ diamond makedb --in expert-protein-sequences.faa --db expert-protein-sequences
 rm blast-rules_4.0.tsv proteins.fasta VFDB_setA_pro.fas expert-protein-sequences.faa
 
 # Cleanup
+ls -l bakta.db
 python3 ${BAKTA_DB_SCRIPTS}/optimize-db.py --db bakta.db
+ls -l bakta.db
 rm psc.faa node.dmp

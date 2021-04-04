@@ -87,7 +87,9 @@ with xopen(str(uniref50_path), mode='rb') as fh_xml:
         if((i % 1000000) == 0):
             print(f'\t... {i}')
 
-
+psc_total = 0
+psc_seqs = 0
+psc_sorf_seqs = 0
 print('parse & store PSC information...')
 with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA page_size = 4096;')
@@ -134,15 +136,18 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                             product = uniref50_product
                         conn.execute('INSERT INTO psc (uniref90_id, uniref50_id, product) VALUES (?,?,?)', (uniref90_id, uniref50_id, product))
                         log_psc.info('INSERT INTO psc (uniref90_id, uniref50_id, product) VALUES (%s,%s,%s)', uniref90_id, uniref50_id, product)
+                        psc_total += 1
                         seq = rep_member.find('./{*}sequence').text.upper()
                         seed_db_type = rep_member_dbref.get('type')
                         seed_db_id = rep_member_dbref.get('id')
                         if(len(seq) >= MAX_SORF_LENGTH):  # normael CDS
                             fh_fasta_psc.write(f'>{uniref90_id}\n{seq}\n')
                             log_psc.info('write seed: uniref90-id=%s, type=%s, id=%s, length=%s', uniref90_id, seed_db_type, seed_db_id, len(seq))
+                            psc_seqs += 1
                         else:  # short ORF
                             fh_fasta_sorf.write(f'>{uniref90_id}\n{seq}\n')
                             log_sorf.info('write seed: uniref90-id=%s, type=%s, id=%s, length=%s', uniref90_id, seed_db_type, seed_db_id, len(seq))
+                            psc_sorf_seqs += 1
                 else:  # search for seed member
                     for member_dbref in elem.findall('./{*}member/{*}dbReference'):
                         if(member_dbref.find('./{*}property[@type="isSeed"]') is not None):
@@ -159,6 +164,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                                     product = uniref50_product
                                 conn.execute('INSERT INTO psc (uniref90_id, uniref50_id, product) VALUES (?,?,?)', (uniref90_id, uniref50_id, product))
                                 log_psc.info('INSERT INTO psc (uniref90_id, uniref50_id, product) VALUES (%s,%s,%s)', uniref90_id, uniref50_id, product)
+                                psc_total += 1
                                 if(uniparc_id is not None):  # use UniParc ID
                                     seed_db_type = 'UniParc ID'
                                     seed_db_id = uniparc_id.attrib['value']
@@ -180,8 +186,8 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
             rep_member_dbref.clear()
             elem.clear()  # forstall out of memory errors
     conn.commit()
-print(f'\tparsed PSC: {i}')
-log_psc.debug('summary: # PSC=%d', i)
+print(f'\tparsed PSC: {psc_total}')
+log_psc.debug('summary: # PSC=%i', psc_total)
 
 
 print(f'UniParc ({len(uniref90_uniparc_ids)})...')
@@ -195,13 +201,19 @@ with xopen(str(uniparc_path), mode='rt') as fh_uniparc, psc_path.open(mode='at')
             if(len(seq) >= MAX_SORF_LENGTH):  # normael CDS
                 fh_fasta_psc.write(f'>{uniref90_id}\n{seq}\n')
                 log_psc.info('write seed: uniref90-id=%s, type=UniParc, id=%s, length=%s', uniref90_id, record.id, len(record.seq))
+                psc_seqs += 1
             else:  # short ORF
                 fh_fasta_sorf.write(f'>{uniref90_id}\n{seq}\n')
                 log_sorf.info('write seed: uniref90-id=%s, type=UniParc, id=%s, length=%s', uniref90_id, record.id, len(record.seq))
+                psc_sorf_seqs += 1
             uniref90_uniparc_ids.pop(record.id)
             i += 1
 print(f'\twritten UniParc seed sequences: {i}')
 log_psc.debug('written UniParc seed sequences: %i', i)
 
+print(f'\tPSC normal seqs: {psc_seqs}')
+log_psc.debug('summary: # PSC normal=%i', psc_seqs)
+print(f'\tPSC sORF seqs: {psc_sorf_seqs}')
+log_psc.debug('summary: # PSC sORFs=%i', psc_sorf_seqs)
 
 print("\nsuccessfully initialized PSC table!")

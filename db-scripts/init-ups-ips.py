@@ -78,8 +78,10 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.commit()
     conn.row_factory = sqlite3.Row
 
+    db_updates = 0
+    ups_seqs = 0
+    ips_seqs = 0
     i = 0
-    i_all = 0
     with xopen(str(uniref100_path), mode='rb') as fh_xml, ips_path.open(mode='wt') as fh_fasta_ips:
         for event, elem in et.iterparse(fh_xml, tag='{*}entry'):
             if('Fragment' not in elem.find('./{*}name').text):  # skip protein fragments
@@ -111,6 +113,8 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                         uniparc_id = rep_member_dbref.get('id', None) if rep_member_dbref.get('type', '') == 'UniParc ID' else None
                     conn.execute('INSERT INTO ups (hash, length, uniparc_id, uniref100_id) VALUES (?,?,?,?)', (seq_hash.digest(), length, uniparc_id, uniref100_id))
                     log_ups.info('INSERT INTO ups (hash, length, uniparc_id, uniref100_id) VALUES (%s,%s,%s,%s)', seq_hash_hexdigest, length, uniparc_id, uniref100_id)
+                    db_updates += 1
+                    ups_seqs += 1
                     product = rep_member_dbref.find('./{*}property[@type="protein name"]')
                     if(product is not None):
                         product = product.get('value')
@@ -132,7 +136,8 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     )
                     conn.execute('INSERT INTO ips (uniref100_id, uniref90_id, product) VALUES (?,?,?)', ips)
                     log_ips.info('INSERT INTO ips (uniref100_id, uniref90_id, product) VALUES (%s,%s,%s)', *ips)
-                    i += 1
+                    db_updates += 1
+                    ips_seqs += 1
                     # store UPS members of this IPS and store IDs for later hashing
                     for member_dbref in elem.findall('./{*}member/{*}dbReference'):
                         uniparc_id = member_dbref.find('./{*}property[@type="UniParc ID"]')  # search for UniParc annotation
@@ -150,20 +155,20 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                         else:
                             print(f'detected additional seed type! UniRef100-id={uniref100_id}, seed-type={seed_db_type}, seed-id={seed_db_id}')
                         member_dbref.clear()  # forstall out of memory errors
-                    if((i % 100000) == 0):
+                    if((db_updates % 100000) == 0):
                         conn.commit()
             elem.clear()  # forstall out of memory errors
-            i_all += 1
-            if((i_all % 1000000) == 0):
-                print(f'\t... {i_all}')
+            i += 1
+            if((i % 1000000) == 0):
+                print(f'\t... {i}')
     conn.commit()
-    print(f'\tstored representative IPS: {i}')
-    log_ips.debug('representative IPS: # IPS=%i', i)
+    print(f'\tstored representative IPS: {ips_seqs}')
+    log_ips.debug('summary: # IPS=%i', ips_seqs)
 
     print(f'UniParc ({len(uniparc_to_uniref100)})...')
     log_ups.debug('lookup non-representative UniParc member sequences: %s', len(uniparc_to_uniref100))
+    db_updates = 0
     i = 0
-    i_all = 0
     with xopen(str(uniparc_path), mode='rt') as fh_uniparc:
         for record in SeqIO.parse(fh_uniparc, 'fasta'):
             uniparc_id = record.id
@@ -186,19 +191,22 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     # update existing UPS with UniParc id
                     conn.execute('UPDATE ups SET uniparc_id=? WHERE hash=?', (uniparc_id_short, seq_hash.digest()))
                     log_ups.info('UPDATE ups SET uniparc_id=%s WHERE hash=%s', uniparc_id_short, seq_hash_hexdigest)
+                    db_updates += 1
                 else:
                     conn.execute('INSERT INTO ups (hash, length, uniparc_id, uniref100_id) VALUES (?,?,?,?)', (seq_hash.digest(), length, uniparc_id_short, uniref100_id))
                     log_ups.info('INSERT INTO ups (hash, length, uniparc_id, uniref100_id) VALUES (%s,%s,%s,%s)', seq_hash_hexdigest, length, uniparc_id_short, uniref100_id)
+                    db_updates += 1
+                    ups_seqs += 1
                     seq_hashes.add(seq_hash_hexdigest)
                     uniparc_to_uniref100.pop(uniparc_id)
-                    i += 1
-                    if((i % 100000) == 0):
-                        conn.commit()
-            i_all += 1
-            if((i_all % 1000000) == 0):
-                print(f'\t... {i_all}')
+                if((db_updates % 100000) == 0):
+                    conn.commit()
+            i += 1
+            if((i % 10000000) == 0):
+                print(f'\t... {i}')
     conn.commit()
-    print(f'\twritten UniParc member sequences: {i}')
-    log_ups.debug('written UniParc member sequences: %i', i)
+    print(f'\tstored UPS: {ups_seqs}')
+    log_ips.debug('summary: # UPS=%i', ups_seqs)
+
 
 print("\nsuccessfully initialized UPS & IPS tables!")

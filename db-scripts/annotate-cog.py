@@ -76,7 +76,6 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
 
     conn.row_factory = sqlite3.Row
     for line in fh:
-        psc_processed += 1
         (uniref90_id, sseqid, stitle, length, pident, qlen, slen, evalue) = line.strip().split('\t')
         length = int(length)
         qcov = length / int(qlen)
@@ -95,6 +94,7 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
                     if(rec_psc['gene'] is None and rec_psc['gene'] is not None):
                         conn.execute('UPDATE psc SET gene=? WHERE uniref90_id=?', (cog['gene'], uniref90_id))
                         log.info('UPDATE psc SET gene=%s WHERE uniref90_id=%s', cog['gene'], uniref90_id)
+        psc_processed += 1
         if((psc_processed % 100000) == 0):
             conn.commit()
             print(f'\t... {psc_processed}')

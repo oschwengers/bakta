@@ -78,7 +78,7 @@ with proteins_path.open() as fh_in, expert_sequences_path.open('a') as fh_out:
             log.info('write seq: RefSeq-id=%s, rank=%i, id=%f, q-cov=%f, s-cov=%f, gene=%s, product=%s, dbxrefs=%s', refseq_id, br['rank'], br['identity'], br['query_cov'], br['subject_cov'], br['gene'], br['product'], ','.join(br['dbxref']) )
             aa_seqs += 1
 print(f'\tstored BlastRule sequences: {aa_seqs}')
-log.debug('written BlastRule sequences: %i', aa_seqs)
+log.debug('summary: BlastRule sequences=%i', aa_seqs)
 
 
 print("\nsuccessfully setup BlastRules expert system!")

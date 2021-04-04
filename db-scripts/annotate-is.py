@@ -45,7 +45,6 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
 
     with ips_alignments_path.open() as fh:
         for line in fh:
-            ips_processed += 1
             (uniref100_id, sseqid, stitle, length, pident, qlen, slen, evalue) = line.strip().split('\t')
             length = int(length)
             qcov = length / int(qlen)
@@ -63,14 +62,13 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     log_ips.info('UPDATE ips SET gene=%s, product=%s WHERE uniref100_id=%s', gene, product, uniref100_id)
                     ips_updated += 1
             ips_processed += 1
-            if((ips_processed % 1000) == 0):
+            if((ips_processed % 10000) == 0):
                 conn.commit()
                 print(f'\t... {ips_processed}')
         conn.commit()
 
     with psc_alignments_path.open() as fh:
         for line in fh:
-            ips_processed += 1
             (uniref90_id, sseqid, stitle, length, pident, qlen, slen, evalue) = line.strip().split('\t')
             length = int(length)
             qcov = length / int(qlen)
@@ -88,7 +86,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     log_psc.info('UPDATE psc SET gene=%s, product=%s WHERE uniref90_id=%s', gene, product, uniref90_id)
                     psc_updated += 1
             psc_processed +=1
-            if((psc_processed % 1000) == 0):
+            if((psc_processed % 10000) == 0):
                 conn.commit()
                 print(f'\t... {psc_processed}')
         conn.commit()

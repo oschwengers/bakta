@@ -1,4 +1,5 @@
 import argparse
+import logging
 from pathlib import Path
 from xopen import xopen
 
@@ -16,6 +17,17 @@ pfam_path = Path(args.pfam).resolve()
 family_path = Path(args.family)
 non_family_path = Path(args.non_family)
 
+
+logging.basicConfig(
+    filename='bakta.db.log',
+    filemode='a',
+    format='%(name)s - EXPERT-SEQ - %(levelname)s - %(message)s',
+    level=logging.DEBUG
+)
+log = logging.getLogger('PFAM')
+
+
+non_families = 0
 with xopen(str(pfam_path)) as fh_pfam, family_path.open('w') as fh_family, non_family_path.open('w') as fh_non_family:
     entries = fh_pfam.read().split('//')
     for entry_text in entries:
@@ -51,3 +63,7 @@ with xopen(str(pfam_path)) as fh_pfam, family_path.open('w') as fh_family, non_f
             else:
                 print(f'{type}\t{acc}\t{desc}')
                 fh_non_family.write(f'{acc}\t{id}\t{desc}\n')
+                non_families += 1
+
+print(f'\tparsed non-family PFAM entries: {non_families}')
+log.debug('summary: # PFAM non-familiy=%i', non_families)

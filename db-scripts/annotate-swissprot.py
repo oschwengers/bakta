@@ -145,14 +145,10 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     if(gene):
                         conn.execute('UPDATE psc SET gene=? WHERE uniref90_id=?', (gene, uniref90_id))
                         log_psc.info('UPDATE psc SET gene=%s WHERE uniref90_id=%s', gene, uniref90_id)
-                        conn.execute('UPDATE ips SET gene=? WHERE uniref90_id=?', (None, uniref90_id))
-                        log_psc.info('UPDATE ips SET gene=%s WHERE uniref90_id=%s', None, uniref90_id)
                         update = True
                     if(product):
                         conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (product, uniref90_id))
                         log_psc.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', product, uniref90_id)
-                        conn.execute('UPDATE ips SET product=? WHERE uniref90_id=?', (None, uniref90_id))
-                        log_psc.info('UPDATE ips SET product=%s WHERE uniref90_id=%s', None, uniref90_id)
                         update = True
                     if(len(ec_ids) > 0):
                         ec_list = ','.join(ec_ids)

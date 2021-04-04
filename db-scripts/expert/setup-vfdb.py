@@ -59,7 +59,7 @@ with proteins_path.open() as fh_in, expert_sequences_path.open('a') as fh_out:
             )
             aa_seqs += 1
 print(f'\tstored VFDB sequences: {aa_seqs}')
-log.debug('written VFDB sequences: %i', aa_seqs)
+log.debug('summary: VFDB sequences=%i', aa_seqs)
 
 
 print("\nsuccessfully setup BlastRules expert system!")

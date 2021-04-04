@@ -148,4 +148,4 @@ print(f'IPSs with annotated AMR gene / product: {ips_annotated}')
 log_ips.debug('summary: IPS annotated=%d', ips_annotated)
 
 print(f'PSCs with annotated AMR gene / product: {psc_annotated}')
-log_ips.debug('summary: PSCs annotated=%d', psc_annotated)
+log_ips.debug('summary: PSC annotated=%d', psc_annotated)
