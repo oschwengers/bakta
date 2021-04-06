@@ -101,21 +101,6 @@ def test_dependencies():
                 log.error(f'{dependency[3][0]} not correct version!')
                 sys.exit(f'ERROR: insufficient {dependency[3][0]} version installed. Please either install  {dependency[3][0]} version  {dependency[0]} or skip {dependency[4]}!')
 
-    # test pilercr
-    if(cfg.skip_crispr is False):
-        try:
-            sp.check_call(
-                ['pilercr', '-options'],
-                stdout=sp.DEVNULL,
-                stderr=sp.DEVNULL
-            )
-        except FileNotFoundError:
-            log.exception('pilercr not found!')
-            sys.exit('ERROR: pilercr not executable! Please either install PILER-CR or skip the annotation of CRISPRs via \'--skip-crispr\'.')
-        except:
-            pass
-
-
 def create_locus_tag_prefix(contigs):
     """Create either genus/species or sequence MD5 hex based locus tag prefix."""
     hash = hashlib.md5()
