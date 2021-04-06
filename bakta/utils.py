@@ -80,14 +80,14 @@ def parse_arguments():
 def read_tool_output(regex, command, option):
 	# stderr must be added in case the tool output is not piped into stdout
 	tool_output = str(sp.check_output([f'{command}',f'{option}'], stderr=sp.STDOUT))
-        version_match = re.search(rf'{regex}', tool_output)
-        return(version_match)
+	version_match = re.search(rf'{regex}', tool_output)
+	return(version_match)
 
 # Method for comparing tool version with required version. Input: tool version, minimum and maximum version. Returns: boolean value for major, minor, patch
 def check_version(tool_version, tool_min, tool_max):
 # Check whether patch version is included by counting groups. If 3 groups are counted, the patch version is missing, thus only major and minor are checked.
 	number_checks = len(str(tool_version).split("."))
-        if number_checks == 3:
+	if number_checks == 3:
                 min_major, min_minor = tool_min.split(".", 1)
                 v_major = tool_version.group(1)
                 v_minor = tool_version.group(2)
@@ -100,7 +100,7 @@ def check_version(tool_version, tool_min, tool_max):
                                 return (False)
                 else:
                         return (False)
-        else:
+	else:
                 min_major, min_minor, min_patch = tool_min.split(".", 2)
                 v_major = tool_version.group(1)
                 v_minor = tool_version.group(2)
@@ -114,7 +114,7 @@ def check_version(tool_version, tool_min, tool_max):
                                 if v_patch >= min_patch:
                                         return (True)
                                 else:
-					return (False)
+                                        return (False)
                         else:
                                 return (False)
                 else:
