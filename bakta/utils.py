@@ -83,20 +83,47 @@ def read_tool_output(regex, command, option):
         return(version_match)
 
 # Method for comparing tool version with required version. Input: tool version, minimum and maximum version. Returns: boolean value for major, minor, patch
-def compare_version(tool_version, tool_min, tool_max):
-        v_major, v_minor, v_patch = tool_version.split(".", 2)
-        min_major, min_minor, min_patch = tool_min.split(".", 2)
-        major = True if int(v_major) >= int(min_major) else False
-        minor = True if int(v_minor) >= int(min_minor) else True if int(v_major) > int(min_major) else False
-        patch = True if int(v_patch) >= int(min_patch) else True if int(v_minor) > int(min_minor) else False
-        return(major, minor, patch)
+def check_version(tool_version, tool_min, tool_max):
+	number_checks = len(str(tool_version).split("."))
+        if number_checks == 3:
+                min_major, min_minor = tool_min.split(".", 1)
+                v_major = tool_version.group(1)
+                v_minor = tool_version.group(2)
+                if v_major > min_major:
+                        return (True)
+                elif v_major == min_major:
+                        if v_minor >= min_minor:
+                                return (True)
+                        else:
+                                return (False)
+                else:
+                        return (False)
+        else:
+                min_major, min_minor, min_patch = tool_min.split(".", 2)
+                v_major = tool_version.group(1)
+                v_minor = tool_version.group(2)
+                v_patch = tool_version.group(3)
+                if v_major > min_major:
+                        return (True)
+                elif v_major == min_major:
+                        if v_minor > min_minor:
+                                return (True)
+                        elif v_minor == min_minor:
+                                if v_patch >= min_patch:
+                                        return (True)
+                                else:
+					return (False)
+                        else:
+                                return (False)
+                else:
+                        return (False)
 
 # Method for checking dependencies. Iterates through list of tools.
 def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
     for dependency in dependencies:
         version = read_tool_output(dependency[2], dependency[3][0], dependency[3][1])
-        major_true, minor_true, patch_true = compare_version(version, dependency[0], dependency[1])
+        major_true, minor_true, patch_true = check_version(version, dependency[0], dependency[1])
 	# If one of the major, minor or patch versions does not fit the criteria, bakta is stopped and an error message displayed/logged.
         if (major_true == False or minor_true == False or patch_true == False):
                 log.error(f'{dependency[3][0]} not correct version!')
