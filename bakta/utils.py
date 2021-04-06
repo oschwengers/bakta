@@ -13,6 +13,7 @@ import bakta.constants as bc
 import bakta.config as cfg
 
 log = logging.getLogger('UTILS')
+# Regex to search for version number in tool output. Takes missing patch version into consideration.
 version_regex = "(\d+)\.(\d+)(?:\.(\d+))?"
 # List of tuples consisting of parameters for dependency checks.
 # Minimum version number, placeholder for maximum version, version regex expression, tool name, command line parameter, sys and log output handle
@@ -84,6 +85,7 @@ def read_tool_output(regex, command, option):
 
 # Method for comparing tool version with required version. Input: tool version, minimum and maximum version. Returns: boolean value for major, minor, patch
 def check_version(tool_version, tool_min, tool_max):
+# Check whether patch version is included by counting groups. If 3 groups are counted, the patch version is missing, thus only major and minor are checked.
 	number_checks = len(str(tool_version).split("."))
         if number_checks == 3:
                 min_major, min_minor = tool_min.split(".", 1)
