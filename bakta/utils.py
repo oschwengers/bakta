@@ -12,18 +12,21 @@ import bakta
 import bakta.constants as bc
 import bakta.config as cfg
 
+
 log = logging.getLogger('UTILS')
-# Regex to search for version number in tool output. Takes missing patch version into consideration.
-version_regex = "(\d+)\.(\d+)(?:\.(\d+))?"
-# List of tuples consisting of parameters for dependency checks.
-# Minimum version number, placeholder for maximum version, version regex expression, tool name, command line parameter, sys and log output handle
-dependencies = [("2.0.6", None, "\d\.\d\.\d", ("tRNAscan-SE", "-h"), "--skip-trna"),
-("1.2.38", None, "\d\.\d\.\d{1,2}", ("aragorn", "-h"), "skip-tmrna"),
-("1.1.2", None, ("cmscan", "-h"), ("--skip-rrna", "--skip-ncrna", "--skip-ncrna-region")),
-("2.6.3", None, "\d\.\d\.\d", ("prodigal", "-v"), "--skip-cds"),
-("3.3.1", None, ("hmmsearch", "-h"), ("--skip-cds", "--skip-sorf")),
-("2.0.4", None, ("diamond", "help"), ("--skip-cds", "--skip-sorf")),
-("1.06", None, ("pilercr", "-options"), "--skip-crispr")]
+
+
+version_regex = re.compile(r'(\d+)\.(\d+)(?:\.(\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
+dependencies = [  # List of parameter tuples for dependency checks: minimum version, maximum version, tool name & command line parameter, dependency check exclusion options
+    ('2.0.6', None, version_regex, ('tRNAscan-SE', '-h'), ('--skip-trna')),
+    ('1.2.38', None, version_regex, ('aragorn', '-h'), ('skip-tmrna')),
+    ('1.1.2', None, version_regex, ('cmscan', '-h'), ('--skip-rrna', '--skip-ncrna', '--skip-ncrna-region')),
+    ('2.6.3', None, version_regex, ('prodigal', '-v'), ('--skip-cds')),
+    ('3.3.1', None, version_regex, ('hmmsearch', '-h'), ('--skip-cds', '--skip-sorf')),
+    ('2.0.4', None, version_regex, ('diamond', 'help'), ('--skip-cds', '--skip-sorf')),
+    ('1.06', None, version_regex, ('pilercr', '-options'), ('--skip-crispr'))
+]
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -46,26 +49,26 @@ def parse_arguments():
     arg_group_organism.add_argument('--plasmid', action='store', default=None, help='Plasmid name')
     
     arg_group_annotation = parser.add_argument_group('Annotation')
-    arg_group_annotation.add_argument('--complete', action='store_true', help="All sequences are complete replicons (chromosome/plasmid[s])")
+    arg_group_annotation.add_argument('--complete', action='store_true', help='All sequences are complete replicons (chromosome/plasmid[s])')
     arg_group_annotation.add_argument('--prodigal-tf', action='store', default=None, dest='prodigal_tf', help='Path to existing Prodigal training file to use for CDS prediction')
     arg_group_annotation.add_argument('--translation-table', action='store', type=int, default=11, choices=[11, 4], dest='translation_table', help='Translation table to use: 11/4 (default = 11)')
     arg_group_annotation.add_argument('--gram', action='store', default='?', choices=['+', '-', '?'], help="Gram type: +/-/? (default = '?')")
     arg_group_annotation.add_argument('--locus', action='store', default=None, help="Locus prefix (instead of 'contig')")
     arg_group_annotation.add_argument('--locus-tag', action='store', default=None, dest='locus_tag', help='Locus tag prefix')
     arg_group_annotation.add_argument('--keep-contig-headers', action='store_true', dest='keep_contig_headers', help='Keep original contig headers')
-    arg_group_annotation.add_argument('--replicons', '-r', action='store', default=None, dest='replicons', help="Replicon information table (TSV)")
+    arg_group_annotation.add_argument('--replicons', '-r', action='store', default=None, dest='replicons', help='Replicon information table (TSV)')
 
     arg_group_workflow = parser.add_argument_group('Workflow')
-    arg_group_workflow.add_argument('--skip-trna', action='store_true', dest='skip_trna', help="Skip tRNA detection & annotation")
-    arg_group_workflow.add_argument('--skip-tmrna', action='store_true', dest='skip_tmrna', help="Skip tmRNA detection & annotation")
-    arg_group_workflow.add_argument('--skip-rrna', action='store_true', dest='skip_rrna', help="Skip rRNA detection & annotation")
-    arg_group_workflow.add_argument('--skip-ncrna', action='store_true', dest='skip_ncrna', help="Skip ncRNA detection & annotation")
-    arg_group_workflow.add_argument('--skip-ncrna-region', action='store_true', dest='skip_ncrna_region', help="Skip ncRNA region detection & annotation")
-    arg_group_workflow.add_argument('--skip-crispr', action='store_true', dest='skip_crispr', help="Skip CRISPR array detection & annotation")
-    arg_group_workflow.add_argument('--skip-cds', action='store_true', dest='skip_cds', help="Skip CDS detection & annotation")
-    arg_group_workflow.add_argument('--skip-sorf', action='store_true', dest='skip_sorf', help="Skip sORF detection & annotation")
-    arg_group_workflow.add_argument('--skip-gap', action='store_true', dest='skip_gap', help="Skip gap detection & annotation")
-    arg_group_workflow.add_argument('--skip-ori', action='store_true', dest='skip_ori', help="Skip oriC/oriT detection & annotation")
+    arg_group_workflow.add_argument('--skip-trna', action='store_true', dest='skip_trna', help='Skip tRNA detection & annotation')
+    arg_group_workflow.add_argument('--skip-tmrna', action='store_true', dest='skip_tmrna', help='Skip tmRNA detection & annotation')
+    arg_group_workflow.add_argument('--skip-rrna', action='store_true', dest='skip_rrna', help='Skip rRNA detection & annotation')
+    arg_group_workflow.add_argument('--skip-ncrna', action='store_true', dest='skip_ncrna', help='Skip ncRNA detection & annotation')
+    arg_group_workflow.add_argument('--skip-ncrna-region', action='store_true', dest='skip_ncrna_region', help='Skip ncRNA region detection & annotation')
+    arg_group_workflow.add_argument('--skip-crispr', action='store_true', dest='skip_crispr', help='Skip CRISPR array detection & annotation')
+    arg_group_workflow.add_argument('--skip-cds', action='store_true', dest='skip_cds', help='Skip CDS detection & annotation')
+    arg_group_workflow.add_argument('--skip-sorf', action='store_true', dest='skip_sorf', help='Skip sORF detection & annotation')
+    arg_group_workflow.add_argument('--skip-gap', action='store_true', dest='skip_gap', help='Skip gap detection & annotation')
+    arg_group_workflow.add_argument('--skip-ori', action='store_true', dest='skip_ori', help='Skip oriC/oriT detection & annotation')
 
     arg_group_general = parser.add_argument_group('General')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
@@ -76,63 +79,64 @@ def parse_arguments():
     arg_group_general.add_argument('--citation', action='store_true', help='Print citation')
     return parser.parse_args()
 
-# Method for reading tool version with regex. Input: regex expression, tool name and command line parameter for tool. Returns: version number
-def read_tool_output(regex, command, option):
-	# stderr must be added in case the tool output is not piped into stdout
-	tool_output = str(sp.check_output([f'{command}',f'{option}'], stderr=sp.STDOUT))
-	version_match = re.search(rf'{regex}', tool_output)
-	return(version_match)
 
-# Method for comparing tool version with required version. Input: tool version, minimum and maximum version. Returns: boolean value for major, minor, patch
-def check_version(tool_version, tool_min, tool_max):
-# Check whether patch version is included by counting groups. If 3 groups are counted, the patch version is missing, thus only major and minor are checked.
-	number_checks = len(str(tool_version).split("."))
-	if number_checks == 3:
-                min_major, min_minor = tool_min.split(".", 1)
-                v_major = tool_version.group(1)
-                v_minor = tool_version.group(2)
-                if v_major > min_major:
-                        return (True)
-                elif v_major == min_major:
-                        if v_minor >= min_minor:
-                                return (True)
-                        else:
-                                return (False)
+# Method for reading tool version with regex. Input: regex expression, tool name and command line parameter for tool. Returns: version number
+def read_tool_output(dep_version_regex, command, option):
+	# stderr must be added in case the tool output is not piped into stdout
+	tool_output = str(sp.check_output([' '.join(command),' '.join(option)], stderr=sp.STDOUT))
+	version_match = re.search(dep_version_regex, tool_output)
+	return version_match
+
+
+def check_version(tool_version, tool_min, tool_max):  # Method for comparing tool version with required version. Input: tool version, minimum and maximum version. Returns: boolean value for major, minor, patch
+    # Check whether patch version is included by counting groups. If 3 groups are counted, the patch version is missing, thus only major and minor are checked.
+    semver_length = len(tool_version.group(0).split('.'))
+    if(semver_length == 3):
+        (min_major, min_minor) = tool_min.split('.', 1)
+        v_major = tool_version.group(1)
+        v_minor = tool_version.group(2)
+        if(v_major > min_major):
+            return True
+        elif(v_major == min_major):
+            if(v_minor >= min_minor):
+                return True
+            else:
+                return False
+        else:
+            return False
+    else:
+        min_major, min_minor, min_patch = tool_min.split('.', 2)
+        v_major = tool_version.group(1)
+        v_minor = tool_version.group(2)
+        v_patch = tool_version.group(3)
+        if(v_major > min_major):
+            return True
+        elif(v_major == min_major):
+            if(v_minor > min_minor):
+                return True
+            elif(v_minor == min_minor):
+                if(v_patch >= min_patch):
+                    return True
                 else:
-                        return (False)
-	else:
-                min_major, min_minor, min_patch = tool_min.split(".", 2)
-                v_major = tool_version.group(1)
-                v_minor = tool_version.group(2)
-                v_patch = tool_version.group(3)
-                if v_major > min_major:
-                        return (True)
-                elif v_major == min_major:
-                        if v_minor > min_minor:
-                                return (True)
-                        elif v_minor == min_minor:
-                                if v_patch >= min_patch:
-                                        return (True)
-                                else:
-                                        return (False)
-                        else:
-                                return (False)
-                else:
-                        return (False)
+                    return False
+            else:
+                return False
+        else:
+            return False
+
 
 # Method for checking dependencies. Iterates through list of tools.
 def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
-# List of dependencies is iterated through and versions are read and checked with required versions.
-    for dependency in dependencies:
-        version = read_tool_output(version_regex, dependency[2][0], dependency[2][1])
+    for dependency in dependencies:  # check dependencies' versions.
+        version = read_tool_output(dependency[2], dependency[3][0], dependency[3][1])
         check_result = check_version(version, dependency[0], dependency[1])
-# If version is insufficient, an error is logged and an error message displayed. Else, information on the used version is being logged.
         if (check_result == False):
-                log.error(f'ERROR: Wrong dependency version for {dependency[2][0]}! The installed version is {version.group()}, but minimum required version is {dependency[0]}.')
-                sys.exit(f'ERROR: insufficient {dependency[2][0]} version installed. Please either install  {dependency[2][0]} version  {dependency[0]} or skip {dependency[3]}!')
+            log.error('wrong dependency version for %s: installed={version.group()}, minimum=%s', dependency[2][0], dependency[0])
+            sys.exit(f'ERROR: Wrong {dependency[2][0]} version installed. Please, either install {dependency[2][0]} version {dependency[0]} or skip {dependency[3]}!')
         else:
-                log.info(f'Dependency check for {dependency[2][0]} approved. Following versions installed: {version.group()}')
+            log.info('dependency check: tool=%s, version=%s', dependency[2][0], version.group(0))
+
 
 def create_locus_tag_prefix(contigs):
     """Create either genus/species or sequence MD5 hex based locus tag prefix."""
