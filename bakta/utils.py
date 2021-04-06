@@ -17,10 +17,11 @@ log = logging.getLogger('UTILS')
 # Minimum version number, placeholder for maximum version, version regex expression, tool name, command line parameter, sys and log output handle
 dependencies = [("2.0.6", None, "\d\.\d\.\d", ("tRNAscan-SE", "-h"), "--skip-trna"),
 ("1.2.38", None, "\d\.\d\.\d{1,2}", ("aragorn", "-h"), "skip-tmrna"),
-("1.1.2", None, "\d\.\d\.\d", ("cmscan", "-h"), "--skip-rrna --skip-ncrna --skip-ncrna-region"),
+("1.1.2", None, ("cmscan", "-h"), ("--skip-rrna", "--skip-ncrna", "--skip-ncrna-region")),
 ("2.6.3", None, "\d\.\d\.\d", ("prodigal", "-v"), "--skip-cds"),
-("3.3.1", None, "\d\.\d\.\d", ("hmmsearch", "-h"), "--skip-cds --skip-sorf"),
-("2.0.4", None, "\d\.\d\.\d", ("diamond", "help"), "--skip-cds --skip-sorf")]
+("3.3.1", None, ("hmmsearch", "-h"), ("--skip-cds", "--skip-sorf")),
+("2.0.4", None, ("diamond", "help"), ("--skip-cds", "--skip-sorf")),
+("1.06", None, ("pilercr", "-options"), "--skip-crispr")]
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
