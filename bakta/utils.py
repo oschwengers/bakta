@@ -13,6 +13,7 @@ import bakta.constants as bc
 import bakta.config as cfg
 
 log = logging.getLogger('UTILS')
+version_regex = "(\d+)\.(\d+)(?:\.(\d+))?"
 # List of tuples consisting of parameters for dependency checks.
 # Minimum version number, placeholder for maximum version, version regex expression, tool name, command line parameter, sys and log output handle
 dependencies = [("2.0.6", None, "\d\.\d\.\d", ("tRNAscan-SE", "-h"), "--skip-trna"),
@@ -77,9 +78,9 @@ def parse_arguments():
 # Method for reading tool version with regex. Input: regex expression, tool name and command line parameter for tool. Returns: version number
 def read_tool_output(regex, command, option):
 	# stderr must be added in case the tool output is not piped into stdout
-        tool_output = str(sp.check_output([f'{command}',f'{option}'], stderr=sp.STDOUT))
+	tool_output = str(sp.check_output([f'{command}',f'{option}'], stderr=sp.STDOUT))
         version_match = re.search(rf'{regex}', tool_output)
-        return(version_match.group())
+        return(version_match)
 
 # Method for comparing tool version with required version. Input: tool version, minimum and maximum version. Returns: boolean value for major, minor, patch
 def compare_version(tool_version, tool_min, tool_max):
