@@ -121,13 +121,16 @@ def check_version(tool_version, tool_min, tool_max):
 # Method for checking dependencies. Iterates through list of tools.
 def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
+# List of dependencies is iterated through and versions are read and checked with required versions.
     for dependency in dependencies:
-        version = read_tool_output(dependency[2], dependency[3][0], dependency[3][1])
-        major_true, minor_true, patch_true = check_version(version, dependency[0], dependency[1])
-	# If one of the major, minor or patch versions does not fit the criteria, bakta is stopped and an error message displayed/logged.
-        if (major_true == False or minor_true == False or patch_true == False):
-                log.error(f'{dependency[3][0]} not correct version!')
-                sys.exit(f'ERROR: insufficient {dependency[3][0]} version installed. Please either install  {dependency[3][0]} version  {dependency[0]} or skip {dependency[4]}!')
+        version = read_tool_output(version_regex, dependency[2][0], dependency[2][1])
+        check_result = check_version(version, dependency[0], dependency[1])
+# If version is insufficient, an error is logged and an error message displayed. Else, information on the used version is being logged.
+        if (check_result == False):
+                log.error(f'ERROR: Wrong dependency version for {dependency[2][0]}! The installed version is {version.group()}, but minimum required version is {dependency[0]}.')
+                sys.exit(f'ERROR: insufficient {dependency[2][0]} version installed. Please either install  {dependency[2][0]} version  {dependency[0]} or skip {dependency[3]}!')
+        else:
+                log.info(f'Dependency check for {dependency[2][0]} approved. Following versions installed: {version.group()}')
 
 def create_locus_tag_prefix(contigs):
     """Create either genus/species or sequence MD5 hex based locus tag prefix."""
