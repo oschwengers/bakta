@@ -1,5 +1,6 @@
 
 import argparse
+import csv
 import hashlib
 import logging
 import multiprocessing as mp
@@ -252,8 +253,11 @@ def parse_replicon_table(replicon_table_path):
     replicons = {}
     try:
         with replicon_table_path.open() as fh:
-            for line in fh:
-                (original_locus_id, new_locus_id, replicon_type, topology, name) = line.strip().split('\t')
+            dialect = csv.Sniffer().sniff(fh.read(1024), delimiters=",\t")
+            fh.seek(0)
+            reader = csv.reader(fh, dialect)
+            for row in reader:
+                (original_locus_id, new_locus_id, replicon_type, topology, name) = row
                 # TODO: add locus id checks
                 if(new_locus_id == '' or new_locus_id == ''):
                     new_locus_id = None
