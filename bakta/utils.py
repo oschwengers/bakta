@@ -132,10 +132,10 @@ def test_dependencies():
         version = read_tool_output(dependency[2], dependency[3][0], dependency[3][1])
         check_result = check_version(version, dependency[0], dependency[1])
         if (check_result == False):
-            log.error('wrong dependency version for %s: installed={version.group()}, minimum=%s', dependency[2][0], dependency[0])
-            sys.exit(f'ERROR: Wrong {dependency[2][0]} version installed. Please, either install {dependency[2][0]} version {dependency[0]} or skip {dependency[3]}!')
+            log.error('wrong dependency version for %s: installed=%s, minimum=%s', dependency[3][0], version.group(0), dependency[0])
+            sys.exit(f'ERROR: Wrong {dependency[2][0]} version installed. Please, either install {dependency[3][0]} version {dependency[0]} or skip {dependency[4]}!')
         else:
-            log.info('dependency check: tool=%s, version=%s', dependency[2][0], version.group(0))
+            log.info('dependency check: tool=%s, version=%s', dependency[3][0], version.group(0))
 
 
 def create_locus_tag_prefix(contigs):
