@@ -18,7 +18,7 @@ log = logging.getLogger('UTILS')
 
 
 version_regex = re.compile(r'(\d+)\.(\d+)(?:\.(\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
-version_tuple = collections.namedtuple('version_tuple', 'major minor patch') # named tuple for version checking
+version_tuple = collections.namedtuple('version_tuple', 'major minor patch', defaults=(None,)) # named tuple for version checking
 dependencies = [  # List of parameter tuples for dependency checks: minimum version, maximum version, tool name & command line parameter, dependency check exclusion options
     (version_tuple(2,0,6), None, version_regex, ('tRNAscan-SE', '-h'), ('--skip-trna')),
     (version_tuple(1,2,38), None, version_regex, ('aragorn', '-h'), ('skip-tmrna')),
@@ -86,13 +86,24 @@ def read_tool_output(dep_version_regex, command):
         """Method for reading tool version with regex. Input: regex expression, tool command. Retursn: version number."""
 	tool_output = str(sp.check_output(command, stderr=sp.STDOUT)) # stderr must be added in case the tool output is not piped into stdout
 	version_match = re.search(dep_version_regex, tool_output)
-	return version_match
+        if version_match.group(3) is None:
+            version_output = version_tuple(int(version_match.group(1)), int(version_match.group(2)))
+            semver_length = 2
+        elif version_match.group(2) is None:
+            version_output = version_tuple(int(version_match.group(1)))
+            semver_length = 1
+        elif version_match.group(1) is None:
+            log.error('no regex match found for: tool=%s, regex=%s', command, dep_version_regex)
+            sys.exit('No %s version found in tool output! Please check if tool is installed and operable.', command)
+        else:
+            version_output = version_tuple(int(version_match.group(1)), int(version_match.group(2)), int(version_match.group(3)))
+            semver_length = 3
+	return version_output, semver_length
 
 
-def check_version(tool_version, tool_min, tool_max):
+def check_version(tool_version, semver_length, tool_min, tool_max):
     """Method for checking tool versions with required version. Input: tool version, minimum and maximum version. Returns: boolean value for positive or negative check."""
     # Check whether patch version is included by counting groups. If 3 groups are counted, the patch version is missing, thus only major and minor are checked.
-    semver_length = len(tool_version.group(0).split('.'))
     if(semver_length == 3):
         (min_major, min_minor) = tool_min.split('.', 1)
         v_major = tool_version.group(1)
@@ -131,8 +142,8 @@ def check_version(tool_version, tool_min, tool_max):
 def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
     for dependency in dependencies:  # check dependencies' versions.
-        version = read_tool_output(dependency[2], dependency[3])
-        check_result = check_version(version, dependency[0], dependency[1])
+        version, semver_length = read_tool_output(dependency[2], dependency[3])
+        check_result = check_version(version, semver_length, dependency[0], dependency[1])
         if (check_result == False):
             log.error('wrong dependency version for %s: installed=%s, minimum=%s', dependency[3][0], version.group(0), dependency[0])
             sys.exit(f'ERROR: Wrong {dependency[2][0]} version installed. Please, either install {dependency[3][0]} version {dependency[0]} or skip {dependency[4]}!')
