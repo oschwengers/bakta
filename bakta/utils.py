@@ -18,15 +18,15 @@ log = logging.getLogger('UTILS')
 
 
 version_regex = re.compile(r'(\d+)\.(\d+)(?:\.(\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
-version_tuple = collections.namedtuple('version_tuple', 'major minor patch', defaults=(None,)) # named tuple for version checking, defaults are None for missing major/minor/patch
+Version = collections.namedtuple('Version', ['major', 'minor', 'patch'], defaults=[None, None]) # named tuple for version checking, defaults are None for missing major/minor/patch
 dependencies = [  # List of parameter tuples for dependency checks: minimum version, maximum version, tool name & command line parameter, dependency check exclusion options
-    (version_tuple(2,0,6), version_tuple(None, None, None), version_regex, ('tRNAscan-SE', '-h'), ('--skip-trna')),
-    (version_tuple(1,2,38), version_tuple(None, None, None), version_regex, ('aragorn', '-h'), ('skip-tmrna')),
-    (version_tuple(1,1,2), version_tuple(None, None, None), version_regex, ('cmscan', '-h'), ('--skip-rrna', '--skip-ncrna', '--skip-ncrna-region')),
-    (version_tuple(2,6,3), version_tuple(None, None, None), version_regex, ('prodigal', '-v'), ('--skip-cds')),
-    (version_tuple(3,3,1), version_tuple(None, None, None), version_regex, ('hmmsearch', '-h'), ('--skip-cds', '--skip-sorf')),
-    (version_tuple(2,0,4), version_tuple(None, None, None), version_regex, ('diamond', 'help'), ('--skip-cds', '--skip-sorf')),
-    (version_tuple(1,6,None), version_tuple(None, None, None), version_regex, ('pilercr', '-options'), ('--skip-crispr'))
+    (Version(2,0,6), Version(None), version_regex, ('tRNAscan-SE', '-h'), ('--skip-trna')),
+    (Version(1,2,38), Version(None), version_regex, ('aragorn', '-h'), ('skip-tmrna')),
+    (Version(1,1,2), Version(None), version_regex, ('cmscan', '-h'), ('--skip-rrna', '--skip-ncrna', '--skip-ncrna-region')),
+    (Version(2,6,3), Version(None), version_regex, ('prodigal', '-v'), ('--skip-cds')),
+    (Version(3,3,1), Version(None), version_regex, ('hmmsearch', '-h'), ('--skip-cds', '--skip-sorf')),
+    (Version(2,0,4), Version(None), version_regex, ('diamond', 'help'), ('--skip-cds', '--skip-sorf')),
+    (Version(1,6,None), Version(None), version_regex, ('pilercr', '-options'), ('--skip-crispr'))
 ]
 
 
@@ -87,16 +87,16 @@ def read_tool_output(dep_version_regex, command):
         tool_output = str(sp.check_output(command, stderr=sp.STDOUT)) # stderr must be added in case the tool output is not piped into stdout
         version_match = re.search(dep_version_regex, tool_output)
         if version_match.group(3) is None:
-            version_output = version_tuple(int(version_match.group(1)), int(version_match.group(2)))
+            version_output = Version(int(version_match.group(1)), int(version_match.group(2)))
             semver_length = 2
         elif version_match.group(2) is None:
-            version_output = version_tuple(int(version_match.group(1)))
+            version_output = Version(int(version_match.group(1)))
             semver_length = 1
         elif version_match.group(1) is None:
             log.error('no regex match found for dependency: tool=%s, regex=%s', command, dep_version_regex)
             sys.exit('ERROR: No %s version found in tool output! Please check if tool is installed and operable.', command)
         else:
-            version_output = version_tuple(int(version_match.group(1)), int(version_match.group(2)), int(version_match.group(3)))
+            version_output = Version(int(version_match.group(1)), int(version_match.group(2)), int(version_match.group(3)))
             semver_length = 3
         return version_output, semver_length
 
@@ -175,10 +175,9 @@ def check_version(tool_version, semver_length, tool_min, tool_max, tool_name):
         log.error('dependency check: error in check for maximum tool version: tool=%s, minimum=%s, tool version=%s, semver length=%s', tool_name, tool_max, tool_version, semver_length)
         sys.exit('ERROR: Error in check for maximum tool version of %s. Please check correct installation of the tool', tool_name)
 
-# Method for checking dependencies. Iterates through list of tools.
 def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
-    for dependency in dependencies:  # check dependencies' versions.
+    for dependency in dependencies:
         version, semver_length = read_tool_output(dependency[2], dependency[3])
         check_result = check_version(version, semver_length, dependency[0], dependency[1], dependency[3][0])
         if (check_result == False):
