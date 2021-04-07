@@ -80,15 +80,15 @@ def parse_arguments():
     return parser.parse_args()
 
 
-# Method for reading tool version with regex. Input: regex expression, tool name and command line parameter for tool. Returns: version number
 def read_tool_output(dep_version_regex, command, option):
-	# stderr must be added in case the tool output is not piped into stdout
-	tool_output = str(sp.check_output([' '.join(command),' '.join(option)], stderr=sp.STDOUT))
+        """Method for reading tool version with regex. Input: regex expression, tool command. Retursn: version number."""
+	tool_output = str(sp.check_output([' '.join(command),' '.join(option)], stderr=sp.STDOUT)) # stderr must be added in case the tool output is not piped into stdout
 	version_match = re.search(dep_version_regex, tool_output)
 	return version_match
 
 
-def check_version(tool_version, tool_min, tool_max):  # Method for comparing tool version with required version. Input: tool version, minimum and maximum version. Returns: boolean value for major, minor, patch
+def check_version(tool_version, tool_min, tool_max):
+    """Method for checking tool versions with required version. Input: tool version, minimum and maximum version. Returns: boolean value for positive or negative check."""
     # Check whether patch version is included by counting groups. If 3 groups are counted, the patch version is missing, thus only major and minor are checked.
     semver_length = len(tool_version.group(0).split('.'))
     if(semver_length == 3):
