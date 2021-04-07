@@ -18,15 +18,15 @@ log = logging.getLogger('UTILS')
 
 
 version_regex = re.compile(r'(\d+)\.(\d+)(?:\.(\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
-version_tuple = collections.namedtuple('version_tuple', 'major minor patch', defaults=(None,)) # named tuple for version checking
+version_tuple = collections.namedtuple('version_tuple', 'major minor patch', defaults=(None,)) # named tuple for version checking, defaults are None for missing major/minor/patch
 dependencies = [  # List of parameter tuples for dependency checks: minimum version, maximum version, tool name & command line parameter, dependency check exclusion options
-    (version_tuple(2,0,6), None, version_regex, ('tRNAscan-SE', '-h'), ('--skip-trna')),
-    (version_tuple(1,2,38), None, version_regex, ('aragorn', '-h'), ('skip-tmrna')),
-    (version_tuple(1,1,2), None, version_regex, ('cmscan', '-h'), ('--skip-rrna', '--skip-ncrna', '--skip-ncrna-region')),
-    (version_tuple(2,6,3), None, version_regex, ('prodigal', '-v'), ('--skip-cds')),
-    (version_tuple(3,3,1), None, version_regex, ('hmmsearch', '-h'), ('--skip-cds', '--skip-sorf')),
-    (version_tuple(2,0,4), None, version_regex, ('diamond', 'help'), ('--skip-cds', '--skip-sorf')),
-    (version_tuple(1,6,None), None, version_regex, ('pilercr', '-options'), ('--skip-crispr'))
+    (version_tuple(2,0,6), version_tuple(None, None, None), version_regex, ('tRNAscan-SE', '-h'), ('--skip-trna')),
+    (version_tuple(1,2,38), version_tuple(None, None, None), version_regex, ('aragorn', '-h'), ('skip-tmrna')),
+    (version_tuple(1,1,2), version_tuple(None, None, None), version_regex, ('cmscan', '-h'), ('--skip-rrna', '--skip-ncrna', '--skip-ncrna-region')),
+    (version_tuple(2,6,3), version_tuple(None, None, None), version_regex, ('prodigal', '-v'), ('--skip-cds')),
+    (version_tuple(3,3,1), version_tuple(None, None, None), version_regex, ('hmmsearch', '-h'), ('--skip-cds', '--skip-sorf')),
+    (version_tuple(2,0,4), version_tuple(None, None, None), version_regex, ('diamond', 'help'), ('--skip-cds', '--skip-sorf')),
+    (version_tuple(1,6,None), version_tuple(None, None, None), version_regex, ('pilercr', '-options'), ('--skip-crispr'))
 ]
 
 
