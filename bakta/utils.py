@@ -86,6 +86,10 @@ def read_tool_output(dep_version_regex, command):
         """Method for reading tool version with regex. Input: regex expression, tool command. Retursn: version number."""
         tool_output = str(sp.check_output(command, stderr=sp.STDOUT)) # stderr must be added in case the tool output is not piped into stdout
         version_match = re.search(dep_version_regex, tool_output)
+        if version_match is None:
+            log.error('dependency check: regex did not match with output string: regex=%s, command=%s', dep_version_regex, command)
+            sys.exit('ERROR: No version found in output of tool %s using %s regex.', command, dep_version_regex)
+
         if version_match.group(3) is None:
             version_output = Version(int(version_match.group(1)), int(version_match.group(2)))
             semver_length = 2
