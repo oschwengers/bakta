@@ -80,9 +80,9 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def read_tool_output(dep_version_regex, command, option):
+def read_tool_output(dep_version_regex, command):
         """Method for reading tool version with regex. Input: regex expression, tool command. Retursn: version number."""
-	tool_output = str(sp.check_output([' '.join(command),' '.join(option)], stderr=sp.STDOUT)) # stderr must be added in case the tool output is not piped into stdout
+	tool_output = str(sp.check_output(command, stderr=sp.STDOUT)) # stderr must be added in case the tool output is not piped into stdout
 	version_match = re.search(dep_version_regex, tool_output)
 	return version_match
 
@@ -129,7 +129,7 @@ def check_version(tool_version, tool_min, tool_max):
 def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
     for dependency in dependencies:  # check dependencies' versions.
-        version = read_tool_output(dependency[2], dependency[3][0], dependency[3][1])
+        version = read_tool_output(dependency[2], dependency[3])
         check_result = check_version(version, dependency[0], dependency[1])
         if (check_result == False):
             log.error('wrong dependency version for %s: installed=%s, minimum=%s', dependency[3][0], version.group(0), dependency[0])
