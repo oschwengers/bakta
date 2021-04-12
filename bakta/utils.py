@@ -83,28 +83,42 @@ def parse_arguments():
     return parser.parse_args()
 
 
-def read_tool_output(dep_version_regex, command):
+def read_tool_output(dependency):
         """Method for reading tool version with regex. Input: regex expression, tool command. Retursn: version number."""
+        dependency_version_regex = dependency[2]
+        command = dependency[3]
+        skip_options = dependency[4]
         try:
             tool_output = str(sp.check_output(command, stderr=sp.STDOUT)) # stderr must be added in case the tool output is not piped into stdout
+        except FileNotFoundError:
+            log.exception('dependency not found! tool=%s', command[0])
+            sys.exit(f"ERROR: {command[0]} not found or not executable! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
         except sp.CalledProcessError:
-            log.exception('dependency check: no tool output, tool=%s', command)
-            sys.exit('ERROR: No tool output found! Please check %s installation!', command)
-        version_match = re.search(dep_version_regex, tool_output)
-        if version_match is None:
-            log.error('dependency check: regex did not match with output string: regex=%s, command=%s', dep_version_regex, command)
-            sys.exit('ERROR: No version found in output of tool %s using %s regex.', command, dep_version_regex)
+            log.exception('dependency check failed! tool=%s', command[0])
+            sys.exit(f"ERROR: {command[0]} could not be executed! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
+        version_match = re.search(dependency_version_regex, tool_output)
+        
+        try:
+            if version_match is None:
+                log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', dependency_version_regex, command)
+                sys.exit('ERROR: Could not detect/read %s version!', command[0])
 
-        if version_match.group(3) is None:
-            version_output = Version(int(version_match.group(1)), int(version_match.group(2)))
-        elif version_match.group(2) is None:
-            version_output = Version(int(version_match.group(1)))
-        elif version_match.group(1) is None:
-            log.error('no regex match found for dependency: tool=%s, regex=%s', command, dep_version_regex)
-            sys.exit('ERROR: No %s version found in tool output! Please check if tool is installed and operable.', command)
-        else:
-            version_output = Version(int(version_match.group(1)), int(version_match.group(2)), int(version_match.group(3)))
-        return version_output
+            major = int(version_match.group(1))
+            minor = int(version_match.group(2))
+            patch = int(version_match.group(3))
+            if major is None:
+                log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', dependency_version_regex, command)
+                sys.exit('ERROR: Could not detect/read %s version!', command[0])
+            elif minor is None:
+                version_output = Version(int(major))
+            elif patch is None:
+                version_output = Version(int(major), int(minor))
+            else:
+                version_output = Version(int(major), int(minor), int(patch))
+            return version_output
+        except:
+            log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', dependency_version_regex, command)
+            sys.exit('ERROR: Could not detect/read %s version!', command[0])
 
 
 def check_version(tool_version, tool_min, tool_max, tool_name):
@@ -133,7 +147,7 @@ def check_version(tool_version, tool_min, tool_max, tool_name):
 def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
     for dependency in Dependencies:
-        version = read_tool_output(dependency[2], dependency[3])
+        version = read_tool_output(dependency)
         check_result = check_version(version, dependency[0], dependency[1], dependency[3][0])
         if (check_result == False):
             log.error('wrong dependency version for %s: installed=%s, minimum=%s', dependency[3][0], version, dependency[0])
