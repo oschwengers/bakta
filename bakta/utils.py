@@ -121,21 +121,21 @@ def read_tool_output(dependency):
             sys.exit('ERROR: Could not detect/read %s version!', command[0])
 
 
-def check_version(tool_version, tool_min, tool_max):
+def check_version(tool, min, max):
     """Method for checking tool versions with required version. Input: tool version, minimum and maximum version. Returns: boolean value for positive or negative check."""
-    if tool_version.major < tool_min.major or tool_version.major > tool_max.major:
+    if tool.major < min.major or tool.major > max.major:
         return False
     else:
-        if tool_version.major == tool_min.major or tool_version.major == tool_max.major:
-            if tool_version.minor < tool_min.minor and tool_version.major == tool_min.major:
+        if tool.major == min.major or tool.major == max.major:
+            if tool.minor < min.minor and tool.major == min.major:
                 return False
-            elif tool_version.minor > tool_max.minor and tool_version.major == tool_max.major:
+            elif tool.minor > max.minor and tool.major == max.major:
                 return False
             else:
-                if tool_version.minor == tool_min.minor or tool_version.minor == tool_max.minor:
-                    if tool_version.patch < tool_min.patch and tool_version.minor == tool_min.minor:
+                if tool.minor == min.minor or tool.minor == max.minor:
+                    if tool.patch < min.patch and tool.minor == min.minor:
                         return False
-                    elif tool_version.patch > tool_max.patch and tool_version.minor == tool_max.minor and tool_version.major == tool_max.major:
+                    elif tool.patch > max.patch and tool.minor == max.minor and tool.major == max.major:
                         return False
                     else:
                         return True
