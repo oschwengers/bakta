@@ -113,26 +113,26 @@ def check_version(tool_version, semver_length, tool_min, tool_max, tool_name):
         if tool_version.major < tool_min.major:
             return False
         else:
-            return True
+            result = True
     elif (semver_length == 2):
         if(tool_version.major > tool_min.major):
-            return True
+            result = True
         elif(tool_version.major == tool_min.major):
             if(tool_version.minor >= tool_min.minor):
-                return True
+                result = True
             else:
                 return False
         else:
             return False
     elif (semver_length == 3):
         if(tool_version.major > tool_min.major):
-            return True
+            result = True
         elif(tool_version.major == tool_min.major):
             if(tool_version.minor > tool_min.minor):
-                return True
+                result = True
             elif(tool_version.minor == tool_min.minor):
                 if(tool_version.patch >= tool_min.patch):
-                    return True
+                    result = True
                 else:
                     return False
             else:
@@ -149,26 +149,26 @@ def check_version(tool_version, semver_length, tool_min, tool_max, tool_name):
         if tool_version.major > tool_max.major:
             return False
         else:
-            return True
+            result = True
     elif (semver_length == 2):
         if(tool_version.major < tool_max.major):
-            return True
+            result = True
         elif(tool_version.major == tool_max.major):
             if(tool_version.minor <= tool_max.minor):
-                return True
+                result = True
             else:
                 return False
         else:
             return False
     elif (semver_length == 3):
         if(tool_version.major < tool_max.major):
-            return True
+            result = True
         elif(tool_version.major == tool_max.major):
             if(tool_version.minor < tool_max.minor):
-                return True
+                result = True
             elif(tool_version.minor == tool_max.minor):
                 if(tool_version.patch <= tool_max.patch):
-                    return True
+                    result = True
                 else:
                     return False
             else:
@@ -178,6 +178,7 @@ def check_version(tool_version, semver_length, tool_min, tool_max, tool_name):
     else:
         log.error('dependency check: error in check for maximum tool version: tool=%s, minimum=%s, tool version=%s, semver length=%s', tool_name, tool_max, tool_version, semver_length)
         sys.exit('ERROR: Error in check for maximum tool version of %s. Please check correct installation of the tool', tool_name)
+    return result
 
 def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
