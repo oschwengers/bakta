@@ -17,7 +17,7 @@ import bakta.config as cfg
 log = logging.getLogger('UTILS')
 
 Min_version = -1
-Max_Version = 1000000000000
+Max_version = 1000000000000
 Version_regex = re.compile(r'(\d+)\.(\d+)(?:\.(\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
 Version = collections.namedtuple('Version', ['major', 'minor', 'patch'], defaults=[0, 0]) # named tuple for version checking, defaults are None for missing major/minor/patch
 Dependencies = [  # List of parameter tuples for dependency checks: minimum version, maximum version, tool name & command line parameter, dependency check exclusion options
@@ -97,99 +97,44 @@ def read_tool_output(dep_version_regex, command):
 
         if version_match.group(3) is None:
             version_output = Version(int(version_match.group(1)), int(version_match.group(2)))
-            semver_length = 2
         elif version_match.group(2) is None:
             version_output = Version(int(version_match.group(1)))
-            semver_length = 1
         elif version_match.group(1) is None:
             log.error('no regex match found for dependency: tool=%s, regex=%s', command, dep_version_regex)
             sys.exit('ERROR: No %s version found in tool output! Please check if tool is installed and operable.', command)
         else:
             version_output = Version(int(version_match.group(1)), int(version_match.group(2)), int(version_match.group(3)))
-            semver_length = 3
-        return version_output, semver_length
+        return version_output
 
 
-def check_version(tool_version, semver_length, tool_min, tool_max, tool_name):
+def check_version(tool_version, tool_min, tool_max, tool_name):
     """Method for checking tool versions with required version. Input: tool version, minimum and maximum version. Returns: boolean value for positive or negative check."""
-    if tool_min.major is None:
-        log.info('dependency check: no minimum version required for %s', tool_name)
-    elif (semver_length == 1):
-        if tool_version.major < tool_min.major:
-            return False
-        else:
-            result = True
-    elif (semver_length == 2):
-        if(tool_version.major > tool_min.major):
-            result = True
-        elif(tool_version.major == tool_min.major):
-            if(tool_version.minor >= tool_min.minor):
-                result = True
-            else:
-                return False
-        else:
-            return False
-    elif (semver_length == 3):
-        if(tool_version.major > tool_min.major):
-            result = True
-        elif(tool_version.major == tool_min.major):
-            if(tool_version.minor > tool_min.minor):
-                result = True
-            elif(tool_version.minor == tool_min.minor):
-                if(tool_version.patch >= tool_min.patch):
-                    result = True
-                else:
-                    return False
-            else:
-                return False
-        else:
-            return False
+    if tool_version.major < tool_min.major or tool_version.major > tool_max.major:
+        return False
     else:
-        log.error('dependency check: error in check for minimum tool version: tool=%s, minimum=%s, tool version=%s, semver length=%s', tool_name, tool_min, tool_version, semver_length)
-        sys.exit('ERROR: Error in check for minimum tool version of %s. Please check correct installation of the tool', tool_name)
-
-    if tool_max.major is None:
-        log.info('dependency check: no maximum version required for %s', tool_name)
-    elif (semver_length == 1):
-        if tool_version.major > tool_max.major:
-            return False
-        else:
-            result = True
-    elif (semver_length == 2):
-        if(tool_version.major < tool_max.major):
-            result = True
-        elif(tool_version.major == tool_max.major):
-            if(tool_version.minor <= tool_max.minor):
-                result = True
-            else:
+        if tool_version.major == tool_min.major or tool_version.major == tool_max.major:
+            if tool_version.minor < tool_min.minor and tool_version.major == tool_min.major:
                 return False
-        else:
-            return False
-    elif (semver_length == 3):
-        if(tool_version.major < tool_max.major):
-            result = True
-        elif(tool_version.major == tool_max.major):
-            if(tool_version.minor < tool_max.minor):
-                result = True
-            elif(tool_version.minor == tool_max.minor):
-                if(tool_version.patch <= tool_max.patch):
-                    result = True
+            elif tool_version.minor > tool_max.minor and tool_version.major == tool_max.major:
+                return False
+            else:
+                if tool_version.minor == tool_min.minor or tool_version.minor == tool_max.minor:
+                    if tool_version.patch < tool_min.patch and tool_version.minor == tool_min.minor:
+                        return False
+                    elif tool_version.patch > tool_max.patch and tool_version.minor == tool_max.minor and tool_version.major == tool_max.major:
+                        return False
+                    else:
+                        return True
                 else:
-                    return False
-            else:
-                return False
+                    return True
         else:
-            return False
-    else:
-        log.error('dependency check: error in check for maximum tool version: tool=%s, minimum=%s, tool version=%s, semver length=%s', tool_name, tool_max, tool_version, semver_length)
-        sys.exit('ERROR: Error in check for maximum tool version of %s. Please check correct installation of the tool', tool_name)
-    return result
+            return True
 
 def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
     for dependency in Dependencies:
-        version, semver_length = read_tool_output(dependency[2], dependency[3])
-        check_result = check_version(version, semver_length, dependency[0], dependency[1], dependency[3][0])
+        version = read_tool_output(dependency[2], dependency[3])
+        check_result = check_version(version, dependency[0], dependency[1], dependency[3][0])
         if (check_result == False):
             log.error('wrong dependency version for %s: installed=%s, minimum=%s', dependency[3][0], version, dependency[0])
             sys.exit(f'ERROR: Wrong {dependency[2][0]} version installed. Please, either install {dependency[3][0]} version {dependency[0]} or skip {dependency[4]}!')
