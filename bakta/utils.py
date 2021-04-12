@@ -7,12 +7,30 @@ import multiprocessing as mp
 import os
 import sys
 import subprocess as sp
+import re
+import collections
 
 import bakta
 import bakta.constants as bc
 import bakta.config as cfg
 
+
 log = logging.getLogger('UTILS')
+Version = collections.namedtuple('Version', ['major', 'minor', 'patch'], defaults=[0, 0]) # named tuple for version checking, defaults are zero for missing minor/patch
+
+
+VERSION_MIN_DIGIT = -1
+VERSION_MAX_DIGIT = 1000000000000
+VERSION_REGEX = re.compile(r'(\d+)\.(\d+)(?:\.(\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
+DEPENDENCIES = [  # List of dependencies: tuples for: min version, max version, tool name & command line parameter, dependency check exclusion options
+    (Version(2,0,6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('tRNAscan-SE', '-h'), ('--skip-trna')),
+    (Version(1,2,38), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('aragorn', '-h'), ('skip-tmrna')),
+    (Version(1,1,2), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('cmscan', '-h'), ('--skip-rrna', '--skip-ncrna', '--skip-ncrna-region')),
+    (Version(2,6,3), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('prodigal', '-v'), ('--skip-cds')),
+    (Version(3,3,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('hmmsearch', '-h'), ('--skip-cds', '--skip-sorf')),
+    (Version(2,0,4), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('diamond', 'help'), ('--skip-cds', '--skip-sorf')),
+    (Version(1,6,VERSION_MIN_DIGIT), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('pilercr', '-options'), ('--skip-crispr'))
+]
 
 
 def parse_arguments():
@@ -36,26 +54,26 @@ def parse_arguments():
     arg_group_organism.add_argument('--plasmid', action='store', default=None, help='Plasmid name')
     
     arg_group_annotation = parser.add_argument_group('Annotation')
-    arg_group_annotation.add_argument('--complete', action='store_true', help="All sequences are complete replicons (chromosome/plasmid[s])")
+    arg_group_annotation.add_argument('--complete', action='store_true', help='All sequences are complete replicons (chromosome/plasmid[s])')
     arg_group_annotation.add_argument('--prodigal-tf', action='store', default=None, dest='prodigal_tf', help='Path to existing Prodigal training file to use for CDS prediction')
     arg_group_annotation.add_argument('--translation-table', action='store', type=int, default=11, choices=[11, 4], dest='translation_table', help='Translation table to use: 11/4 (default = 11)')
     arg_group_annotation.add_argument('--gram', action='store', default='?', choices=['+', '-', '?'], help="Gram type: +/-/? (default = '?')")
     arg_group_annotation.add_argument('--locus', action='store', default=None, help="Locus prefix (instead of 'contig')")
     arg_group_annotation.add_argument('--locus-tag', action='store', default=None, dest='locus_tag', help='Locus tag prefix')
     arg_group_annotation.add_argument('--keep-contig-headers', action='store_true', dest='keep_contig_headers', help='Keep original contig headers')
-    arg_group_annotation.add_argument('--replicons', '-r', action='store', default=None, dest='replicons', help="Replicon information table (TSV)")
+    arg_group_annotation.add_argument('--replicons', '-r', action='store', default=None, dest='replicons', help='Replicon information table (TSV)')
 
     arg_group_workflow = parser.add_argument_group('Workflow')
-    arg_group_workflow.add_argument('--skip-trna', action='store_true', dest='skip_trna', help="Skip tRNA detection & annotation")
-    arg_group_workflow.add_argument('--skip-tmrna', action='store_true', dest='skip_tmrna', help="Skip tmRNA detection & annotation")
-    arg_group_workflow.add_argument('--skip-rrna', action='store_true', dest='skip_rrna', help="Skip rRNA detection & annotation")
-    arg_group_workflow.add_argument('--skip-ncrna', action='store_true', dest='skip_ncrna', help="Skip ncRNA detection & annotation")
-    arg_group_workflow.add_argument('--skip-ncrna-region', action='store_true', dest='skip_ncrna_region', help="Skip ncRNA region detection & annotation")
-    arg_group_workflow.add_argument('--skip-crispr', action='store_true', dest='skip_crispr', help="Skip CRISPR array detection & annotation")
-    arg_group_workflow.add_argument('--skip-cds', action='store_true', dest='skip_cds', help="Skip CDS detection & annotation")
-    arg_group_workflow.add_argument('--skip-sorf', action='store_true', dest='skip_sorf', help="Skip sORF detection & annotation")
-    arg_group_workflow.add_argument('--skip-gap', action='store_true', dest='skip_gap', help="Skip gap detection & annotation")
-    arg_group_workflow.add_argument('--skip-ori', action='store_true', dest='skip_ori', help="Skip oriC/oriT detection & annotation")
+    arg_group_workflow.add_argument('--skip-trna', action='store_true', dest='skip_trna', help='Skip tRNA detection & annotation')
+    arg_group_workflow.add_argument('--skip-tmrna', action='store_true', dest='skip_tmrna', help='Skip tmRNA detection & annotation')
+    arg_group_workflow.add_argument('--skip-rrna', action='store_true', dest='skip_rrna', help='Skip rRNA detection & annotation')
+    arg_group_workflow.add_argument('--skip-ncrna', action='store_true', dest='skip_ncrna', help='Skip ncRNA detection & annotation')
+    arg_group_workflow.add_argument('--skip-ncrna-region', action='store_true', dest='skip_ncrna_region', help='Skip ncRNA region detection & annotation')
+    arg_group_workflow.add_argument('--skip-crispr', action='store_true', dest='skip_crispr', help='Skip CRISPR array detection & annotation')
+    arg_group_workflow.add_argument('--skip-cds', action='store_true', dest='skip_cds', help='Skip CDS detection & annotation')
+    arg_group_workflow.add_argument('--skip-sorf', action='store_true', dest='skip_sorf', help='Skip sORF detection & annotation')
+    arg_group_workflow.add_argument('--skip-gap', action='store_true', dest='skip_gap', help='Skip gap detection & annotation')
+    arg_group_workflow.add_argument('--skip-ori', action='store_true', dest='skip_ori', help='Skip oriC/oriT detection & annotation')
 
     arg_group_general = parser.add_argument_group('General')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
@@ -67,106 +85,78 @@ def parse_arguments():
     return parser.parse_args()
 
 
+def read_tool_output(dependency):
+        """Method for reading tool version with regex. Input: regex expression, tool command. Retursn: version number."""
+        version_regex = dependency[2]
+        command = dependency[3]
+        skip_options = dependency[4]
+        try:
+            tool_output = str(sp.check_output(command, stderr=sp.STDOUT)) # stderr must be added in case the tool output is not piped into stdout
+        except FileNotFoundError:
+            log.exception('dependency not found! tool=%s', command[0])
+            sys.exit(f"ERROR: {command[0]} not found or not executable! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
+        except sp.CalledProcessError:
+            log.exception('dependency check failed! tool=%s', command[0])
+            sys.exit(f"ERROR: {command[0]} could not be executed! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
+        version_match = re.search(version_regex, tool_output)
+        
+        try:
+            if version_match is None:
+                log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', version_regex, command)
+                sys.exit('ERROR: Could not detect/read %s version!', command[0])
+
+            major = version_match.group(1)
+            minor = version_match.group(2)
+            patch = version_match.group(3)
+            if major is None:
+                log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', version_regex, command)
+                sys.exit('ERROR: Could not detect/read %s version!', command[0])
+            elif minor is None:
+                version_output = Version(int(major))
+            elif patch is None:
+                version_output = Version(int(major), int(minor))
+            else:
+                version_output = Version(int(major), int(minor), int(patch))
+            return version_output
+        except:
+            log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', version_regex, command)
+            sys.exit('ERROR: Could not detect/read %s version!', command[0])
+
+
+def check_version(tool, min, max):
+    """Method for checking tool versions with required version. Input: tool version, minimum and maximum version. Returns: boolean value for positive or negative check."""
+    if tool.major < min.major or tool.major > max.major:
+        return False
+    else:
+        if tool.major == min.major or tool.major == max.major:
+            if tool.minor < min.minor and tool.major == min.major:
+                return False
+            elif tool.minor > max.minor and tool.major == max.major:
+                return False
+            else:
+                if tool.minor == min.minor or tool.minor == max.minor:
+                    if tool.patch < min.patch and tool.minor == min.minor:
+                        return False
+                    elif tool.patch > max.patch and tool.minor == max.minor and tool.major == max.major:
+                        return False
+                    else:
+                        return True
+                else:
+                    return True
+        else:
+            return True
+
+
 def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
-
-    # test tRNAscan-SE
-    if(cfg.skip_trna is False):
-        try:
-            sp.check_call(
-                ['tRNAscan-SE', '-h'],
-                stdout=sp.DEVNULL,
-                stderr=sp.DEVNULL
-            )
-        except FileNotFoundError:
-            log.exception('tRNAscan-SE not found!')
-            sys.exit('ERROR: tRNAscan-SE not executable! Please either install tRNAscan-SE (>=v2.0.6) or skip the annotation of tRNAs via \'--skip-trna\'.')
-        except:
-            pass
-
-    # test Aragorn
-    if(cfg.skip_tmrna is False):
-        try:
-            sp.check_call(
-                ['aragorn', '-h'],
-                stdout=sp.DEVNULL,
-                stderr=sp.DEVNULL
-            )
-        except FileNotFoundError:
-            log.exception('aragorn not found!')
-            sys.exit('ERROR: aragorn not executable! Please either install Aragorn (>=1.2.38) or skip the annotation of tmRNAs via \'--skip-tmrna\'.')
-        except:
-            pass
-
-    # test cmscan
-    if(cfg.skip_rrna is False or cfg.skip_ncrna is False or cfg.skip_ncrna_region is False):
-        try:
-            sp.check_call(
-                ['cmscan', '-h'],
-                stdout=sp.DEVNULL,
-                stderr=sp.DEVNULL
-            )
-        except FileNotFoundError:
-            log.exception('cmscan not found!')
-            sys.exit('ERROR: \'cmscan\' not executable! Please either install Infernal (>=v1.1.2) or skip the annotation of rRNAs, ncRNAs & ncRNA regions via \'--skip-rrna --skip-ncrna --skip-ncrna-region\'.')
-        except:
-            pass
-
-    # test prodigal
-    if(cfg.skip_cds is False):
-        try:
-            sp.check_call(
-                ['prodigal', '-v'],
-                stdout=sp.DEVNULL,
-                stderr=sp.DEVNULL
-            )
-        except FileNotFoundError:
-            log.exception('prodigal not found!')
-            sys.exit('ERROR: \'prodigal\' not executable! Please either install Prodigal (>=v2.6.3) or skip the annotation of CDSs via \'--skip-cds\'.')
-        except:
-            pass
-
-    # test hmmsearch
-    if(cfg.skip_cds is False or cfg.skip_sorf is False):
-        try:
-            sp.check_call(
-                ['hmmsearch', '-h'],
-                stdout=sp.DEVNULL,
-                stderr=sp.DEVNULL
-            )
-        except FileNotFoundError:
-            log.exception('hmmsearch not found!')
-            sys.exit('ERROR: \'hmmsearch\' not executable! Please either install HMMER (>=3.3.1) or skip the annotation of CDSs & sORFs via \'--skip-cds --skip-sorf\'.')
-        except:
-            pass
-
-    # test diamond
-    if(cfg.skip_cds is False or cfg.skip_sorf is False):
-        try:
-            sp.check_call(
-                ['diamond', '--version'],
-                stdout=sp.DEVNULL,
-                stderr=sp.DEVNULL
-            )
-        except FileNotFoundError:
-            log.exception('diamond not found!')
-            sys.exit('ERROR: \'diamond\' not executable! Please either install Diamond (>=v2.0.4) or skip the annotation of CDSs & sORFs via \'--skip-cds --skip-sorf\'.')
-        except:
-            pass
-
-    # test pilercr
-    if(cfg.skip_crispr is False):
-        try:
-            sp.check_call(
-                ['pilercr', '-options'],
-                stdout=sp.DEVNULL,
-                stderr=sp.DEVNULL
-            )
-        except FileNotFoundError:
-            log.exception('pilercr not found!')
-            sys.exit('ERROR: pilercr not executable! Please either install PILER-CR or skip the annotation of CRISPRs via \'--skip-crispr\'.')
-        except:
-            pass
+    for dependency in DEPENDENCIES:
+        version = read_tool_output(dependency)
+        check_result = check_version(version, dependency[0], dependency[1])
+        if (check_result == False):
+            log.error('wrong dependency version for %s: installed=%s, minimum=%s', dependency[3][0], version, dependency[0])
+            sys.exit(f'ERROR: Wrong {dependency[2][0]} version installed. Please, either install {dependency[3][0]} version {dependency[0]} or skip {dependency[4]}!')
+        else:
+            log.info('dependency check: tool=%s, version=%s', dependency[3][0], version)
 
 
 def create_locus_tag_prefix(contigs):
@@ -200,7 +190,6 @@ def has_annotation(feature, attribute):
 
 
 def calc_genome_stats(genome, features):
-    
     genome_size = genome['size']
     log.info('genome-size=%i', genome_size)
 
