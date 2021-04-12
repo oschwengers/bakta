@@ -23,23 +23,22 @@ git config --global user.email you@yourdomain.example.com
 1. Separate subject from body with a blank line
 2. Use the imperative mood in the subject line ("Fix", "Add", "Change" instead of "Fixed", "Added", "Changed")
 3. Limit the subject line to 50 characters
-4. Reference an issue in the beginning of a subject line
+4. Reference an issue at the end of a subject line
 5. Do not end the subject line with a period
 6. Wrap the body at 72 characters
 7. Use the body to explain what and why vs. how
 
 Bad:
 <pre>
-Some changes fixing this and that...
+some changes fixing this and that...
 </pre>
 
 Good:
 <pre>
-#123 Fix broken link in ABR reports
+fix broken link in reports #123
 
-As CARD changed some of their website structure we need to update link templates for antibiotic resistance (ABR) models.
+As foo changed their internal data structure in the last release bar, we need to update our external links accordingly.
 </pre>
 
 # Helpful Sources
 - https://www.atlassian.com/git/tutorials
-
