@@ -16,17 +16,18 @@ import bakta.config as cfg
 
 log = logging.getLogger('UTILS')
 
-
-version_regex = re.compile(r'(\d+)\.(\d+)(?:\.(\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
-Version = collections.namedtuple('Version', ['major', 'minor', 'patch'], defaults=[None, None]) # named tuple for version checking, defaults are None for missing major/minor/patch
-dependencies = [  # List of parameter tuples for dependency checks: minimum version, maximum version, tool name & command line parameter, dependency check exclusion options
-    (Version(2,0,6), Version(None), version_regex, ('tRNAscan-SE', '-h'), ('--skip-trna')),
-    (Version(1,2,38), Version(None), version_regex, ('aragorn', '-h'), ('skip-tmrna')),
-    (Version(1,1,2), Version(None), version_regex, ('cmscan', '-h'), ('--skip-rrna', '--skip-ncrna', '--skip-ncrna-region')),
-    (Version(2,6,3), Version(None), version_regex, ('prodigal', '-v'), ('--skip-cds')),
-    (Version(3,3,1), Version(None), version_regex, ('hmmsearch', '-h'), ('--skip-cds', '--skip-sorf')),
-    (Version(2,0,4), Version(None), version_regex, ('diamond', 'help'), ('--skip-cds', '--skip-sorf')),
-    (Version(1,6,None), Version(None), version_regex, ('pilercr', '-options'), ('--skip-crispr'))
+Min_version = -1
+Max_Version = 1000000000000
+Version_regex = re.compile(r'(\d+)\.(\d+)(?:\.(\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
+Version = collections.namedtuple('Version', ['major', 'minor', 'patch'], defaults=[0, 0]) # named tuple for version checking, defaults are None for missing major/minor/patch
+Dependencies = [  # List of parameter tuples for dependency checks: minimum version, maximum version, tool name & command line parameter, dependency check exclusion options
+    (Version(2,0,6), Version(Max_version, Max_version, Max_version), Version_regex, ('tRNAscan-SE', '-h'), ('--skip-trna')),
+    (Version(1,2,38), Version(Max_version, Max_version, Max_version), Version_regex, ('aragorn', '-h'), ('skip-tmrna')),
+    (Version(1,1,2), Version(Max_version, Max_version, Max_version), Version_regex, ('cmscan', '-h'), ('--skip-rrna', '--skip-ncrna', '--skip-ncrna-region')),
+    (Version(2,6,3), Version(Max_version, Max_version, Max_version), Version_regex, ('prodigal', '-v'), ('--skip-cds')),
+    (Version(3,3,1), Version(Max_version, Max_version, Max_version), Version_regex, ('hmmsearch', '-h'), ('--skip-cds', '--skip-sorf')),
+    (Version(2,0,4), Version(Max_version, Max_version, Max_version), Version_regex, ('diamond', 'help'), ('--skip-cds', '--skip-sorf')),
+    (Version(1,6,Min_version), Version(Max_version, Max_version, Max_version), Version_regex, ('pilercr', '-options'), ('--skip-crispr'))
 ]
 
 
@@ -186,7 +187,7 @@ def check_version(tool_version, semver_length, tool_min, tool_max, tool_name):
 
 def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
-    for dependency in dependencies:
+    for dependency in Dependencies:
         version, semver_length = read_tool_output(dependency[2], dependency[3])
         check_result = check_version(version, semver_length, dependency[0], dependency[1], dependency[3][0])
         if (check_result == False):
