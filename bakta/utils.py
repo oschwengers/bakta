@@ -121,7 +121,7 @@ def read_tool_output(dependency):
             sys.exit('ERROR: Could not detect/read %s version!', command[0])
 
 
-def check_version(tool_version, tool_min, tool_max, tool_name):
+def check_version(tool_version, tool_min, tool_max):
     """Method for checking tool versions with required version. Input: tool version, minimum and maximum version. Returns: boolean value for positive or negative check."""
     if tool_version.major < tool_min.major or tool_version.major > tool_max.major:
         return False
@@ -148,7 +148,7 @@ def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
     for dependency in Dependencies:
         version = read_tool_output(dependency)
-        check_result = check_version(version, dependency[0], dependency[1], dependency[3][0])
+        check_result = check_version(version, dependency[0], dependency[1])
         if (check_result == False):
             log.error('wrong dependency version for %s: installed=%s, minimum=%s', dependency[3][0], version, dependency[0])
             sys.exit(f'ERROR: Wrong {dependency[2][0]} version installed. Please, either install {dependency[3][0]} version {dependency[0]} or skip {dependency[4]}!')
