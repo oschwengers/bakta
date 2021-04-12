@@ -2,19 +2,19 @@
 from bakta import utils as bu
 
 
-#  bu.check_version(tool_version, semver_depth, MIN_VERSION, MAX_VERSION, tool_name) == True/False
+#  bu.check_version(tool_version, semver_depth, VERSION_MIN_DIGIT, VERSION_MAX_DIGIT, tool_name) == True/False
 
 
 def test_major():
     # meeting conditions without max version
-    assert bu.check_version(bu.Version(1,0,0), bu.Version(1,0,0), bu.Version(bu.MAX_VERSION,bu.MAX_VERSION,bu.MAX_VERSION)) == True
-    assert bu.check_version(bu.Version(1,0), bu.Version(1,0,0), bu.Version(bu.MAX_VERSION,bu.MAX_VERSION,bu.MAX_VERSION)) == True
-    assert bu.check_version(bu.Version(1), bu.Version(1,0,0), bu.Version(bu.MAX_VERSION,bu.MAX_VERSION,bu.MAX_VERSION)) == True
+    assert bu.check_version(bu.Version(1,0,0), bu.Version(1,0,0), bu.Version(bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT)) == True
+    assert bu.check_version(bu.Version(1,0), bu.Version(1,0,0), bu.Version(bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT)) == True
+    assert bu.check_version(bu.Version(1), bu.Version(1,0,0), bu.Version(bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT)) == True
 
     # meeting conditions without min version
-    assert bu.check_version(bu.Version(1,0,0), bu.Version(bu.MIN_VERSION,bu.MIN_VERSION,bu.MIN_VERSION), bu.Version(1,0,0)) == True
-    assert bu.check_version(bu.Version(1,0), bu.Version(bu.MIN_VERSION,bu.MIN_VERSION,bu.MIN_VERSION), bu.Version(1,0,0)) == True
-    assert bu.check_version(bu.Version(1), bu.Version(bu.MIN_VERSION,bu.MIN_VERSION,bu.MIN_VERSION), bu.Version(1,0,0)) == True
+    assert bu.check_version(bu.Version(1,0,0), bu.Version(bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT), bu.Version(1,0,0)) == True
+    assert bu.check_version(bu.Version(1,0), bu.Version(bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT), bu.Version(1,0,0)) == True
+    assert bu.check_version(bu.Version(1), bu.Version(bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT), bu.Version(1,0,0)) == True
 
     # meeting conditions on lower bound
     assert bu.check_version(bu.Version(1,0,0), bu.Version(1,0,0), bu.Version(1,0,0)) == True
@@ -43,14 +43,14 @@ def test_major():
     
     
     # unmeeting major conditions without max version
-    assert bu.check_version(bu.Version(1,0,0), bu.Version(2,0,0), bu.Version(bu.MAX_VERSION,bu.MAX_VERSION,bu.MAX_VERSION)) == False
-    assert bu.check_version(bu.Version(1,0), bu.Version(2,0), bu.Version(bu.MAX_VERSION,bu.MAX_VERSION,bu.MAX_VERSION)) == False
-    assert bu.check_version(bu.Version(1), bu.Version(2), bu.Version(bu.MAX_VERSION,bu.MAX_VERSION,bu.MAX_VERSION)) == False
+    assert bu.check_version(bu.Version(1,0,0), bu.Version(2,0,0), bu.Version(bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT)) == False
+    assert bu.check_version(bu.Version(1,0), bu.Version(2,0), bu.Version(bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT)) == False
+    assert bu.check_version(bu.Version(1), bu.Version(2), bu.Version(bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT)) == False
 
     # unmeeting major conditions without min version
-    assert bu.check_version(bu.Version(2,0,0), bu.Version(bu.MIN_VERSION,bu.MIN_VERSION,bu.MIN_VERSION), bu.Version(1,0,0)) == False
-    assert bu.check_version(bu.Version(2,0), bu.Version(bu.MIN_VERSION,bu.MIN_VERSION,bu.MIN_VERSION), bu.Version(1,0,0)) == False
-    assert bu.check_version(bu.Version(2), bu.Version(bu.MIN_VERSION,bu.MIN_VERSION,bu.MIN_VERSION), bu.Version(1,0,0)) == False
+    assert bu.check_version(bu.Version(2,0,0), bu.Version(bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT), bu.Version(1,0,0)) == False
+    assert bu.check_version(bu.Version(2,0), bu.Version(bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT), bu.Version(1,0,0)) == False
+    assert bu.check_version(bu.Version(2), bu.Version(bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT), bu.Version(1,0,0)) == False
 
     # unmeeting major conditions on lower bound
     assert bu.check_version(bu.Version(1,0,0), bu.Version(2,0,0), bu.Version(3,0,0)) == False
@@ -65,12 +65,12 @@ def test_major():
 
 def test_minor():
     # meeting conditions without max version
-    assert bu.check_version(bu.Version(1,10,0), bu.Version(1,1,0), bu.Version(bu.MAX_VERSION,bu.MAX_VERSION,bu.MAX_VERSION)) == True
-    assert bu.check_version(bu.Version(1,10), bu.Version(1,1,0), bu.Version(bu.MAX_VERSION,bu.MAX_VERSION,bu.MAX_VERSION)) == True
+    assert bu.check_version(bu.Version(1,10,0), bu.Version(1,1,0), bu.Version(bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT)) == True
+    assert bu.check_version(bu.Version(1,10), bu.Version(1,1,0), bu.Version(bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT)) == True
 
     # meeting conditions without min version
-    assert bu.check_version(bu.Version(1,1,0), bu.Version(bu.MIN_VERSION,bu.MIN_VERSION,bu.MIN_VERSION), bu.Version(1,10,0)) == True
-    assert bu.check_version(bu.Version(1,1), bu.Version(bu.MIN_VERSION,bu.MIN_VERSION,bu.MIN_VERSION), bu.Version(1,10,0)) == True
+    assert bu.check_version(bu.Version(1,1,0), bu.Version(bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT), bu.Version(1,10,0)) == True
+    assert bu.check_version(bu.Version(1,1), bu.Version(bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT), bu.Version(1,10,0)) == True
 
     # meeting conditions on lower bound
     assert bu.check_version(bu.Version(1,0,0), bu.Version(1,0,0), bu.Version(1,10,0)) == True
@@ -85,12 +85,12 @@ def test_minor():
     
 
     # unmeeting major conditions without max version
-    assert bu.check_version(bu.Version(1,0,0), bu.Version(1,10,0), bu.Version(bu.MAX_VERSION,bu.MAX_VERSION,bu.MAX_VERSION)) == False
-    assert bu.check_version(bu.Version(1,0), bu.Version(1,10), bu.Version(bu.MAX_VERSION,bu.MAX_VERSION,bu.MAX_VERSION)) == False
+    assert bu.check_version(bu.Version(1,0,0), bu.Version(1,10,0), bu.Version(bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT)) == False
+    assert bu.check_version(bu.Version(1,0), bu.Version(1,10), bu.Version(bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT)) == False
 
     # unmeeting major conditions without min version
-    assert bu.check_version(bu.Version(1,10,0), bu.Version(bu.MIN_VERSION,bu.MIN_VERSION,bu.MIN_VERSION), bu.Version(1,0,0)) == False
-    assert bu.check_version(bu.Version(1,10), bu.Version(bu.MIN_VERSION,bu.MIN_VERSION,bu.MIN_VERSION), bu.Version(1,0)) == False
+    assert bu.check_version(bu.Version(1,10,0), bu.Version(bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT), bu.Version(1,0,0)) == False
+    assert bu.check_version(bu.Version(1,10), bu.Version(bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT), bu.Version(1,0)) == False
 
     # unmeeting major conditions on lower bound
     assert bu.check_version(bu.Version(1,0,0), bu.Version(1,10,0), bu.Version(1,0,0)) == False
@@ -103,10 +103,10 @@ def test_minor():
 
 def test_patch():
     # meeting conditions without max version
-    assert bu.check_version(bu.Version(1,0,10), bu.Version(1,0,1), bu.Version(bu.MAX_VERSION,bu.MAX_VERSION,bu.MAX_VERSION)) == True
+    assert bu.check_version(bu.Version(1,0,10), bu.Version(1,0,1), bu.Version(bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT)) == True
 
     # meeting conditions without min version
-    assert bu.check_version(bu.Version(1,0,10), bu.Version(bu.MIN_VERSION,bu.MIN_VERSION,bu.MIN_VERSION), bu.Version(1,0,10)) == True
+    assert bu.check_version(bu.Version(1,0,10), bu.Version(bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT), bu.Version(1,0,10)) == True
 
     # meeting conditions on lower bound
     assert bu.check_version(bu.Version(1,0,1), bu.Version(1,0,1), bu.Version(1,0,10)) == True
@@ -119,10 +119,10 @@ def test_patch():
     
 
     # unmeeting major conditions without max version
-    assert bu.check_version(bu.Version(1,0,0), bu.Version(1,0,10), bu.Version(bu.MAX_VERSION,bu.MAX_VERSION,bu.MAX_VERSION)) == False
+    assert bu.check_version(bu.Version(1,0,0), bu.Version(1,0,10), bu.Version(bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT,bu.VERSION_MAX_DIGIT)) == False
 
     # unmeeting major conditions without min version
-    assert bu.check_version(bu.Version(1,0,10), bu.Version(bu.MIN_VERSION,bu.MIN_VERSION,bu.MIN_VERSION), bu.Version(1,0,0)) == False
+    assert bu.check_version(bu.Version(1,0,10), bu.Version(bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT,bu.VERSION_MIN_DIGIT), bu.Version(1,0,0)) == False
 
     # unmeeting major conditions on lower bound
     assert bu.check_version(bu.Version(1,0,0), bu.Version(1,0,10), bu.Version(1,0,10)) == False

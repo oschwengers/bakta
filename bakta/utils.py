@@ -15,19 +15,20 @@ import bakta.config as cfg
 
 
 log = logging.getLogger('UTILS')
+Version = collections.namedtuple('Version', ['major', 'minor', 'patch'], defaults=[0, 0]) # named tuple for version checking, defaults are zero for missing minor/patch
 
-MIN_VERSION = -1
-MAX_VERSION = 1000000000000
+
+VERSION_MIN_DIGIT = -1
+VERSION_MAX_DIGIT = 1000000000000
 VERSION_REGEX = re.compile(r'(\d+)\.(\d+)(?:\.(\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
-Version = collections.namedtuple('Version', ['major', 'minor', 'patch'], defaults=[0, 0]) # named tuple for version checking, defaults are None for missing major/minor/patch
-Dependencies = [  # List of parameter tuples for dependency checks: minimum version, maximum version, tool name & command line parameter, dependency check exclusion options
-    (Version(2,0,6), Version(MAX_VERSION, MAX_VERSION, MAX_VERSION), VERSION_REGEX, ('tRNAscan-SE', '-h'), ('--skip-trna')),
-    (Version(1,2,38), Version(MAX_VERSION, MAX_VERSION, MAX_VERSION), VERSION_REGEX, ('aragorn', '-h'), ('skip-tmrna')),
-    (Version(1,1,2), Version(MAX_VERSION, MAX_VERSION, MAX_VERSION), VERSION_REGEX, ('cmscan', '-h'), ('--skip-rrna', '--skip-ncrna', '--skip-ncrna-region')),
-    (Version(2,6,3), Version(MAX_VERSION, MAX_VERSION, MAX_VERSION), VERSION_REGEX, ('prodigal', '-v'), ('--skip-cds')),
-    (Version(3,3,1), Version(MAX_VERSION, MAX_VERSION, MAX_VERSION), VERSION_REGEX, ('hmmsearch', '-h'), ('--skip-cds', '--skip-sorf')),
-    (Version(2,0,4), Version(MAX_VERSION, MAX_VERSION, MAX_VERSION), VERSION_REGEX, ('diamond', 'help'), ('--skip-cds', '--skip-sorf')),
-    (Version(1,6,MIN_VERSION), Version(MAX_VERSION, MAX_VERSION, MAX_VERSION), VERSION_REGEX, ('pilercr', '-options'), ('--skip-crispr'))
+DEPENDENCIES = [  # List of dependencies: tuples for: min version, max version, tool name & command line parameter, dependency check exclusion options
+    (Version(2,0,6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('tRNAscan-SE', '-h'), ('--skip-trna')),
+    (Version(1,2,38), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('aragorn', '-h'), ('skip-tmrna')),
+    (Version(1,1,2), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('cmscan', '-h'), ('--skip-rrna', '--skip-ncrna', '--skip-ncrna-region')),
+    (Version(2,6,3), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('prodigal', '-v'), ('--skip-cds')),
+    (Version(3,3,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('hmmsearch', '-h'), ('--skip-cds', '--skip-sorf')),
+    (Version(2,0,4), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('diamond', 'help'), ('--skip-cds', '--skip-sorf')),
+    (Version(1,6,VERSION_MIN_DIGIT), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('pilercr', '-options'), ('--skip-crispr'))
 ]
 
 
@@ -85,7 +86,7 @@ def parse_arguments():
 
 def read_tool_output(dependency):
         """Method for reading tool version with regex. Input: regex expression, tool command. Retursn: version number."""
-        dependency_version_regex = dependency[2]
+        version_regex = dependency[2]
         command = dependency[3]
         skip_options = dependency[4]
         try:
@@ -96,18 +97,18 @@ def read_tool_output(dependency):
         except sp.CalledProcessError:
             log.exception('dependency check failed! tool=%s', command[0])
             sys.exit(f"ERROR: {command[0]} could not be executed! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
-        version_match = re.search(dependency_version_regex, tool_output)
+        version_match = re.search(version_regex, tool_output)
         
         try:
             if version_match is None:
-                log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', dependency_version_regex, command)
+                log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', version_regex, command)
                 sys.exit('ERROR: Could not detect/read %s version!', command[0])
 
-            major = int(version_match.group(1))
-            minor = int(version_match.group(2))
-            patch = int(version_match.group(3))
+            major = version_match.group(1)
+            minor = version_match.group(2)
+            patch = version_match.group(3)
             if major is None:
-                log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', dependency_version_regex, command)
+                log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', version_regex, command)
                 sys.exit('ERROR: Could not detect/read %s version!', command[0])
             elif minor is None:
                 version_output = Version(int(major))
@@ -117,7 +118,7 @@ def read_tool_output(dependency):
                 version_output = Version(int(major), int(minor), int(patch))
             return version_output
         except:
-            log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', dependency_version_regex, command)
+            log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', version_regex, command)
             sys.exit('ERROR: Could not detect/read %s version!', command[0])
 
 
@@ -147,7 +148,7 @@ def check_version(tool, min, max):
 
 def test_dependencies():
     """Test the proper installation of necessary 3rd party executables."""
-    for dependency in Dependencies:
+    for dependency in DEPENDENCIES:
         version = read_tool_output(dependency)
         check_result = check_version(version, dependency[0], dependency[1])
         if (check_result == False):
@@ -188,7 +189,6 @@ def has_annotation(feature, attribute):
 
 
 def calc_genome_stats(genome, features):
-    
     genome_size = genome['size']
     log.info('genome-size=%i', genome_size)
 
