@@ -87,7 +87,7 @@ def read_tool_output(dep_version_regex, command):
         """Method for reading tool version with regex. Input: regex expression, tool command. Retursn: version number."""
         try:
             tool_output = str(sp.check_output(command, stderr=sp.STDOUT)) # stderr must be added in case the tool output is not piped into stdout
-        except subprocess.CalledProcessError:
+        except sp.CalledProcessError:
             log.exception('dependency check: no tool output, tool=%s', command)
             sys.exit('ERROR: No tool output found! Please check %s installation!', command)
         version_match = re.search(dep_version_regex, tool_output)
