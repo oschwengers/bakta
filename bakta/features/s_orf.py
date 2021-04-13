@@ -125,12 +125,12 @@ def overlap_filter(genome, orfs_raw):
         for contig in genome['contigs']:
             contig_sorfs = sorfs_per_contig[contig['id']]
             log.debug('filter: contig=%s, # sORFs=%i', contig['id'], len(contig_sorfs))
-            if(len(contig_sorfs) < 100):  # execute sORF filter tasks
+            if(len(contig_sorfs) < 100):  # execute sORF filter task
                 sorf_keys = filter_sorf(contig_sorfs, cdss_per_contig[contig['id']], r_rna_per_contig[contig['id']], t_rnas_per_contig[contig['id']], crispr_arrays_per_contig[contig['id']])
                 for sorf_key in [sk for sk in sorf_keys if sk is not None]:
                     discarded_sorf_keys.add(sorf_key)
             elif(len(contig_sorfs) < 1000):  # submit sORF filter task to thread pool
-                futures.append(tpe.submit(filter_sorf, sorf_chunk, cdss_per_contig[contig['id']], r_rna_per_contig[contig['id']], t_rnas_per_contig[contig['id']], crispr_arrays_per_contig[contig['id']]))
+                futures.append(tpe.submit(filter_sorf, contig_sorfs, cdss_per_contig[contig['id']], r_rna_per_contig[contig['id']], t_rnas_per_contig[contig['id']], crispr_arrays_per_contig[contig['id']]))
             else:  # submit sORF chunk filter tasks to thread pool
                 chunk_size = math.ceil(len(contig_sorfs) / cfg.threads) if (len(contig_sorfs) >= cfg.threads * 1000) else 1000
                 log.debug('filter: chunk-size=%i', chunk_size)
