@@ -125,8 +125,11 @@ def overlap_filter(genome, orfs_raw):
             log.debug('filter short ORFs on contig: %s', contig['id'])
             # submit sORF filter tasks to thread pool
             contig_sorfs = sorfs_per_contig[contig['id']]
-            for i in range(0, len(contig_sorfs), 10000):
-                sorf_chunk = contig_sorfs[i:i + 10000]
+            chunk_size = len(contig_sorfs) / cfg.threads
+            if(chunk_size < 1000):
+                chunk_size = 1000
+            for i in range(0, len(contig_sorfs), chunk_size):
+                sorf_chunk = contig_sorfs[i:i + chunk_size]
                 futures.append(tpe.submit(filter_sorf, sorf_chunk, cdss_per_contig[contig['id']], r_rna_per_contig[contig['id']], t_rnas_per_contig[contig['id']], crispr_arrays_per_contig[contig['id']]))
         for f in futures:
             sorf_keys = f.result()
