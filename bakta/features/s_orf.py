@@ -1,5 +1,6 @@
 
 import logging
+import math
 import subprocess as sp
 from collections import OrderedDict
 import concurrent.futures as cf
@@ -122,15 +123,15 @@ def overlap_filter(genome, orfs_raw):
     with cf.ProcessPoolExecutor(max_workers=cfg.threads - 1) as tpe:
         futures = []
         for contig in genome['contigs']:
-            log.debug('filter short ORFs on contig: %s', contig['id'])
             contig_sorfs = sorfs_per_contig[contig['id']]
+            log.debug('filter: contig=%s, # sORFs=%i', contig['id'], len(contig_sorfs))
             if(len(contig_sorfs) < 1000):  # execute sORF filter tasks
                 sorf_keys = filter_sorf(contig_sorfs, cdss_per_contig[contig['id']], r_rna_per_contig[contig['id']], t_rnas_per_contig[contig['id']], crispr_arrays_per_contig[contig['id']])
                 for sorf_key in [sk for sk in sorf_keys if sk is not None]:
                     discarded_sorf_keys.add(sorf_key)
             else:  # submit sORF filter tasks to thread pool
-                chunk_size = int(len(contig_sorfs) / cfg.threads) if (len(contig_sorfs) >= cfg.threads * 1000) else 1000
-                log.debug('filter: # sORFs=%i, chunk-size=%i', len(contig_sorfs), chunk_size)
+                chunk_size = math.ceil(len(contig_sorfs) / cfg.threads) if (len(contig_sorfs) >= cfg.threads * 1000) else 1000
+                log.debug('filter: chunk-size=%i', chunk_size)
                 for i in range(0, len(contig_sorfs), chunk_size):
                     sorf_chunk = contig_sorfs[i:i + chunk_size]
                     log.debug('filter chunk: i=%i, chunk-elements=%i', i, len(sorf_chunk))
