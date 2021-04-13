@@ -119,23 +119,25 @@ def overlap_filter(genome, orfs_raw):
         orfs.append(sorf)
 
     discarded_sorf_keys = set()
-    with cf.ProcessPoolExecutor(max_workers=cfg.threads) as tpe:
+    with cf.ProcessPoolExecutor(max_workers=cfg.threads - 1) as tpe:
         futures = []
         for contig in genome['contigs']:
             log.debug('filter short ORFs on contig: %s', contig['id'])
-            # submit sORF filter tasks to thread pool
             contig_sorfs = sorfs_per_contig[contig['id']]
-            chunk_size = len(contig_sorfs) / cfg.threads
-            if(chunk_size < 1000):
-                chunk_size = 1000
-            for i in range(0, len(contig_sorfs), chunk_size):
-                sorf_chunk = contig_sorfs[i:i + chunk_size]
-                futures.append(tpe.submit(filter_sorf, sorf_chunk, cdss_per_contig[contig['id']], r_rna_per_contig[contig['id']], t_rnas_per_contig[contig['id']], crispr_arrays_per_contig[contig['id']]))
-        for f in futures:
-            sorf_keys = f.result()
-            for sorf_key in sorf_keys:
-                if(sorf_key is not None):
+            if(len(contig_sorfs) < 1000):  # execute sORF filter tasks
+                sorf_keys = filter_sorf(contig_sorfs, cdss_per_contig[contig['id']], r_rna_per_contig[contig['id']], t_rnas_per_contig[contig['id']], crispr_arrays_per_contig[contig['id']])
+                for sorf_key in [sk for sk in sorf_keys if sk is not None]:
                     discarded_sorf_keys.add(sorf_key)
+            else:  # submit sORF filter tasks to thread pool
+                chunk_size = int(len(contig_sorfs) / cfg.threads) if (len(contig_sorfs) >= cfg.threads * 1000) else 1000
+                log.debug('filter: # sORFs=%i, chunk-size=%i', len(contig_sorfs), chunk_size)
+                for i in range(0, len(contig_sorfs), chunk_size):
+                    sorf_chunk = contig_sorfs[i:i + chunk_size]
+                    log.debug('filter chunk: i=%i, chunk-elements=%i', i, len(sorf_chunk))
+                    futures.append(tpe.submit(filter_sorf, sorf_chunk, cdss_per_contig[contig['id']], r_rna_per_contig[contig['id']], t_rnas_per_contig[contig['id']], crispr_arrays_per_contig[contig['id']]))
+        for f in futures:
+            for sorf_key in [sk for sk in f.result() if sk is not None]:
+                discarded_sorf_keys.add(sorf_key)
     
     valid_sorfs = []
     discarded_sorfs = []
