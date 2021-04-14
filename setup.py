@@ -27,7 +27,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'biopython >= 1.78',
-        'xopen >= 0.9.0'
+        'xopen >= 1.1.0'
     ],
     entry_points={
         'console_scripts': [
