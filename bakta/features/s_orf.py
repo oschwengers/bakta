@@ -35,7 +35,7 @@ def extract(genome):
                 aa_end = aa_seq.find('*', aa_start)
                 while aa_start > -1 and aa_end > -1:
                     orf_length = aa_end - aa_start
-                    if(orf_length >= bc.MIN_SORF_LENGTH and orf_length <= bc.MAX_SORF_LENGTH):  # get all CDS starts (M)
+                    if(orf_length >= bc.MIN_SORF_LENGTH and orf_length < bc.MAX_SORF_LENGTH):  # get all CDS starts (M)
                         if(strand == bc.STRAND_FORWARD):
                             dna_start = aa_start * 3 + frame + 1  # +1: 0 based idx to 1 based
                             dna_stop = aa_end * 3 + 2 + frame + 1
