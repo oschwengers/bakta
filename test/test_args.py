@@ -34,11 +34,10 @@ def test_genome_failing(cmd_line):
     "cmd_line,env_key,env_value",
     [
         (["bin/bakta", 'test/data/NC_002127.1.fna'], '', ''),  # no provided
-        (["bin/bakta", '--db', 'test/db', 'foo.fasta'], '', ''),  # non-existing
         (["bin/bakta", '--db', 'test/data/NC_002127.1.fna'], '', ''),  # parameter missing path
-        (["bin/bakta", '--db', 'test/', 'test/data/NC_002127.1.fna'], '', ''),  # parameter wrong path
-        (["bin/bakta", '--db', 'test/', 'test/data/NC_002127.1.fna'], 'BAKTA_DB', ''),  # environment missing path
-        (["bin/bakta", '--db', 'test/', 'test/data/NC_002127.1.fna'], 'BAKTA_DB', 'test/'),  # parameter wrong path
+        (["bin/bakta", '--db', 'test/foo', 'test/data/NC_002127.1.fna'], '', ''),  # parameter wrong path
+        (["bin/bakta", 'test/data/NC_002127.1.fna'], 'BAKTA_DB', ''),  # environment missing path
+        (["bin/bakta", 'test/data/NC_002127.1.fna'], 'BAKTA_DB', 'test/foo'),  # environment wrong path
     ]
 )
 def test_database_failing(cmd_line, env_key, env_value):
