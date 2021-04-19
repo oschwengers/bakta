@@ -61,6 +61,7 @@ FEATURE_GAP = 'gap'
 FEATURE_ORIC = 'oriC'
 FEATURE_ORIV = 'oriV'
 FEATURE_ORIT = 'oriT'
+FEATURE_SIGNAL_PEPTIDE = 'signal peptide'
 
 ############################################################################
 # INSDC feature tags
