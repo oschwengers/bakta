@@ -24,6 +24,7 @@ import bakta.features.nc_rna_region as nc_rna_region
 import bakta.features.crispr as crispr
 import bakta.features.orf as orf
 import bakta.features.cds as feat_cds
+import bakta.features.signal_peptides as feat_signal_peptide
 import bakta.features.s_orf as s_orf
 import bakta.features.gaps as gaps
 import bakta.features.ori as ori
@@ -261,12 +262,15 @@ def main():
         with cds_fasta_path.open(mode='w') as fh:
             for cds in genome['features'][bc.FEATURE_CDS]:
                 fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['sequence']}\n")
-        log.debug('conduct expert system: amrfinder')
-        expert_amr_found = exp_amr.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
-        print(f'\t\tamrfinder: {len(expert_amr_found)}')
-        log.debug('conduct expert system: aa seqs')
-        expert_aa_found = exp_aa_seq.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
-        print(f'\t\tprotein sequences: {len(expert_aa_found)}')
+       # log.debug('conduct expert system: amrfinder')
+       # expert_amr_found = exp_amr.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
+       # print(f'\t\tamrfinder: {len(expert_amr_found)}')
+       # log.debug('conduct expert system: aa seqs')
+       # expert_aa_found = exp_aa_seq.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
+       # print(f'\t\tprotein sequences: {len(expert_aa_found)}')
+        
+        genome['features']['bc.FEATURE_SIGNAL_PEPTIDE'] = feat_signal_peptide.execute_deepsig(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
+        print(f"\tsignal peptides predicted: {len(genome['features']['bc.FEATURE_SIGNAL_PEPTIDE'])}")
         
         print('\tmark hypotheticals and combine annotations...')
         log.debug('combine CDS annotations')
