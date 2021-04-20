@@ -44,7 +44,7 @@ def execute_deepsig(orfs, orf_fasta_path):
                 identifier, tool, feature_type, start, stop, feature_annotation_score, placeholder, placeholder2, description = line.split("\t")
                 aa_identifier = identifier.split("-")[0]
                 orf = sequences_by_hexdigest[aa_identifier]
-                if orf['strand']=='-':
+                if orf['strand']=='-'
                     start_nucleotides = start #TODO: figure out correct reverse positions
                     stop_nucleotides = stop
                 else:
