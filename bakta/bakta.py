@@ -333,7 +333,14 @@ def main():
             anno.combine_annotation(feat)  # combine IPS and PSC annotations
         genome['features'][bc.FEATURE_SORF] = sorfs_filtered
         print(f'\tfiltered sORFs: {len(sorfs_filtered)}')
-    
+        
+        s_orfs_fasta_path = cfg.tmp_path.joinpath('sorf.faa')
+        with s_orfs_fasta_path.open(mode='w') as fsorf:
+            for sorf in genome['features'][bc.FEATURE_SORF]:
+                fsorf.write(f">{sorf['aa_hexdigest']}-{sorf['contig']}-{sorf['start']}\n{sorf['sequence']}\n")
+        genome['features']['bc.FEATURE_SIGNAL_PEPTIDE'] = feat_signal_peptide.execute_deepsig(genome['features'][bc.FEATURE_SORF], s_orfs_fasta_path)
+        print(f"\tsignal peptides predicted: {len(genome['features']['bc.FEATURE_SIGNAL_PEPTIDE'])}")
+
     ############################################################################
     # gap annotation
     # - in-mem gap detection
