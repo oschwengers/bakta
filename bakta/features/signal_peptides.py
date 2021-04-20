@@ -45,14 +45,9 @@ def execute_deepsig(orfs, orf_fasta_path):
                 identifier, tool, feature_type, start, stop, feature_annotation_score, placeholder, placeholder2, description = line.split("\t")
                 aa_identifier = identifier.split("-")[0]
                 orf = sequences_by_hexdigest[aa_identifier]
-                if orf['strand']=='-':
-                seq = sequences_by_hexdigest[aa_identifier]
-                if seq['strand']=='-':
-                    start_nucleotides = start #TODO: figure out correct reverse positions
-                    stop_nucleotides = stop
-                else:
-                    start_nucleotides = int(start)*3-2
-                    stop_nucleotides = int(stop)*3-2
+
+                start_nucleotides, stop_nucleotides = start_stop_orf(orf, start, stop)
+
                 sig_pep['type'] = bc.FEATURE_SIGNAL_PEPTIDE
                 sig_pep['start'] = start_nucleotides
                 sig_pep['stop'] = stop_nucleotides
@@ -63,3 +58,15 @@ def execute_deepsig(orfs, orf_fasta_path):
 
                 sig_peps.append(sig_pep)
     return sig_peps
+
+def start_stop_orf(orf, start, stop):
+    """Method for determining correct position of the signal peptide on nucleotide sequence."""
+    start = int(start)
+    stop = int(stop)
+    if orf['strand'] == '-':
+        start_nucleotides = orf['stop']-((stop-1)*3+2)
+        stop_nucleotides = orf['stop']-((start-1)*3)
+    else:
+        start_nucleotides = orf['start']+((start-1)*3)
+        stop_nucleotides = orf['start']+((stop-1)*3)+2
+    return start_nucleotides,stop_nucleotides
