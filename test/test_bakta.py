@@ -3,23 +3,13 @@ import pytest
 from pathlib import Path
 from subprocess import run
 
-
-FILES = [
-    'test.log',
-    'test.json',
-    'test.tsv',
-    'test.gff3',
-    'test.gbff',
-    'test.embl',
-    'test.fna',
-    'test.faa'
-]
+from .conftest import FILES, SKIP_PARAMETERS
 
 
 @pytest.mark.slow
 def test_bakta_mock_skipped_features(tmpdir):
     # fast test skipping all feature detections
-    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-cds', '--skip-sorf', '--skip-ori', '--skip-gap', 'test/data/NC_002127.1.fna'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test'] + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)
