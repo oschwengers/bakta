@@ -23,7 +23,7 @@ import bakta.features.nc_rna_region as nc_rna_region
 import bakta.features.crispr as crispr
 import bakta.features.orf as orf
 import bakta.features.cds as feat_cds
-import bakta.features.signal_peptides as feat_signal_peptide
+import bakta.features.signal_peptides as signal_peptide
 import bakta.features.s_orf as s_orf
 import bakta.features.gaps as gaps
 import bakta.features.ori as ori
@@ -268,8 +268,8 @@ def main():
        # expert_aa_found = exp_aa_seq.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
        # print(f'\t\tprotein sequences: {len(expert_aa_found)}')
         
-        genome['features']['bc.FEATURE_SIGNAL_PEPTIDE'] = feat_signal_peptide.execute_deepsig(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
-        print(f"\tsignal peptides predicted: {len(genome['features']['bc.FEATURE_SIGNAL_PEPTIDE'])}")
+        sig_pep_found = signal_peptide.execute_deepsig(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
+        print(f"\tdeepsig: {len(sig_pep_found)}")
         
         print('\tmark hypotheticals and combine annotations...')
         log.debug('combine CDS annotations')
@@ -338,8 +338,8 @@ def main():
         with s_orfs_fasta_path.open(mode='w') as fsorf:
             for sorf in genome['features'][bc.FEATURE_SORF]:
                 fsorf.write(f">{sorf['aa_hexdigest']}-{sorf['contig']}-{sorf['start']}\n{sorf['sequence']}\n")
-        genome['features']['bc.FEATURE_SIGNAL_PEPTIDE'] = feat_signal_peptide.execute_deepsig(genome['features'][bc.FEATURE_SORF], s_orfs_fasta_path)
-        print(f"\tsignal peptides predicted: {len(genome['features']['bc.FEATURE_SIGNAL_PEPTIDE'])}")
+        sig_pep_found_sorf = signal_peptide.execute_deepsig(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
+        print(f"\tdeepsig: {len(sig_pep_found_sorf)}")
 
     ############################################################################
     # gap annotation
