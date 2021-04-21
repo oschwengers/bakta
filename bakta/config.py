@@ -127,7 +127,7 @@ def setup(args):
     # input / output configurations
     min_contig_length = args.min_contig_length
     log.info('min_contig_length=%s', min_contig_length)
-    log.info('prefix=%s', prefix)  # set in bakta.py before globael logger config
+    log.info('prefix=%s', prefix)  # set in bakta.py before global logger config
     log.info('output-path=%s', output_path)
 
     # organism configurations

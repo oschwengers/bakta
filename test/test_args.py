@@ -131,3 +131,10 @@ def test_replicons_ok(tmpdir):
     tmpdir_path = Path(tmpdir)
     for file in FILES:
         assert Path.exists(tmpdir_path.joinpath(file))
+
+
+def test_output_failing():
+    # test database arguments
+    cmd_line = ['bin/bakta', '--output', '/', 'test/data/draft-w-plasmids.fna']
+    proc = run(cmd_line)
+    assert proc.returncode != 0
