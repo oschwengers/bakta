@@ -249,19 +249,18 @@ The `<prefix>` can be set via `--prefix <prefix>`. If no prefix is set, Bakta us
 Usage:
 
 ```bash
-bakta --help
 usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH] [--prefix PREFIX] [--output OUTPUT] [--genus GENUS] [--species SPECIES] [--strain STRAIN] [--plasmid PLASMID] [--complete] [--prodigal-tf PRODIGAL_TF] [--translation-table {11,4}] [--gram {+,-,?}] [--locus LOCUS]
              [--locus-tag LOCUS_TAG] [--keep-contig-headers] [--replicons REPLICONS] [--skip-trna] [--skip-tmrna] [--skip-rrna] [--skip-ncrna] [--skip-ncrna-region] [--skip-crispr] [--skip-cds] [--skip-sorf] [--skip-gap] [--skip-ori] [--help] [--verbose] [--threads THREADS]
-             [--tmp-dir TMP_DIR] [--version] [--citation]
+             [--tmp-dir TMP_DIR] [--version]
              <genome>
 
-Comprehensive and rapid annotation of bacterial genomes.
+Rapid & standardized annotation of bacterial genomes & plasmids.
 
 positional arguments:
-  <genome>              (Draft) genome in fasta format
+  <genome>              Genome sequences in (zipped) fasta format
 
 Input / Output:
-  --db DB, -d DB        Database path (default = <bakta_path>/db)
+  --db DB, -d DB        Database path (default = <bakta_path>/db). Can also be provided as BAKTA_DB environment variable.
   --min-contig-length MIN_CONTIG_LENGTH, -m MIN_CONTIG_LENGTH
                         Minimum contig size (default = 1)
   --prefix PREFIX, -p PREFIX
@@ -280,7 +279,7 @@ Annotation:
   --prodigal-tf PRODIGAL_TF
                         Path to existing Prodigal training file to use for CDS prediction
   --translation-table {11,4}
-                        Translation table to use: 11/4 (default = 11)
+                        Translation table: 11/4 (default = 11)
   --gram {+,-,?}        Gram type: +/-/? (default = '?')
   --locus LOCUS         Locus prefix (instead of 'contig')
   --locus-tag LOCUS_TAG
@@ -288,7 +287,7 @@ Annotation:
   --keep-contig-headers
                         Keep original contig headers
   --replicons REPLICONS, -r REPLICONS
-                        Replicon information table (TSV)
+                        Replicon information table (tsv)
 
 Workflow:
   --skip-trna           Skip tRNA detection & annotation
@@ -309,7 +308,6 @@ General:
                         Number of threads to use (default = number of available CPUs)
   --tmp-dir TMP_DIR     Location for temporary files (default = system dependent auto detection)
   --version             show program's version number and exit
-  --citation            Print citation
 ```
 
 ## Annotation workflow

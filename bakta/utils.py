@@ -37,12 +37,14 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         prog='bakta',
         description='Rapid & standardized annotation of bacterial genomes & plasmids.',
+        epilog=f'Citation:\n{bc.CITATION}',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
         add_help=False
     )
-    parser.add_argument('genome', metavar='<genome>', help='(Draft) genome in fasta format')
+    parser.add_argument('genome', metavar='<genome>', help='Genome sequences in (zipped) fasta format')
 
     arg_group_io = parser.add_argument_group('Input / Output')
-    arg_group_io.add_argument('--db', '-d', action='store', default=None, help='Database path (default = <bakta_path>/db)')
+    arg_group_io.add_argument('--db', '-d', action='store', default=None, help='Database path (default = <bakta_path>/db). Can also be provided as BAKTA_DB environment variable.')
     arg_group_io.add_argument('--min-contig-length', '-m', action='store', type=int, default=1, dest='min_contig_length', help='Minimum contig size (default = 1)')
     arg_group_io.add_argument('--prefix', '-p', action='store', default=None, help='Prefix for output files')
     arg_group_io.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
@@ -56,12 +58,12 @@ def parse_arguments():
     arg_group_annotation = parser.add_argument_group('Annotation')
     arg_group_annotation.add_argument('--complete', action='store_true', help='All sequences are complete replicons (chromosome/plasmid[s])')
     arg_group_annotation.add_argument('--prodigal-tf', action='store', default=None, dest='prodigal_tf', help='Path to existing Prodigal training file to use for CDS prediction')
-    arg_group_annotation.add_argument('--translation-table', action='store', type=int, default=11, choices=[11, 4], dest='translation_table', help='Translation table to use: 11/4 (default = 11)')
+    arg_group_annotation.add_argument('--translation-table', action='store', type=int, default=11, choices=[11, 4], dest='translation_table', help='Translation table: 11/4 (default = 11)')
     arg_group_annotation.add_argument('--gram', action='store', default='?', choices=['+', '-', '?'], help="Gram type: +/-/? (default = '?')")
     arg_group_annotation.add_argument('--locus', action='store', default=None, help="Locus prefix (instead of 'contig')")
     arg_group_annotation.add_argument('--locus-tag', action='store', default=None, dest='locus_tag', help='Locus tag prefix')
     arg_group_annotation.add_argument('--keep-contig-headers', action='store_true', dest='keep_contig_headers', help='Keep original contig headers')
-    arg_group_annotation.add_argument('--replicons', '-r', action='store', default=None, dest='replicons', help='Replicon information table (TSV)')
+    arg_group_annotation.add_argument('--replicons', '-r', action='store', default=None, dest='replicons', help='Replicon information table (tsv)')
 
     arg_group_workflow = parser.add_argument_group('Workflow')
     arg_group_workflow.add_argument('--skip-trna', action='store_true', dest='skip_trna', help='Skip tRNA detection & annotation')
@@ -81,7 +83,6 @@ def parse_arguments():
     arg_group_general.add_argument('--threads', '-t', action='store', type=int, default=mp.cpu_count(), help='Number of threads to use (default = number of available CPUs)')
     arg_group_general.add_argument('--tmp-dir', action='store', default=None, dest='tmp_dir', help='Location for temporary files (default = system dependent auto detection)')
     arg_group_general.add_argument('--version', action='version', version=f'%(prog)s {bakta.__version__}')
-    arg_group_general.add_argument('--citation', action='store_true', help='Print citation')
     return parser.parse_args()
 
 
