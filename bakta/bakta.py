@@ -37,10 +37,6 @@ def main():
 
     # parse arguments
     args = bu.parse_arguments()
-    
-    if(args.citation):  # print citation
-        print(bc.CITATION)
-        sys.exit()
 
     ############################################################################
     # Setup logging
