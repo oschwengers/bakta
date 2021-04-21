@@ -154,19 +154,19 @@ def setup(args):
     complete = args.complete
     log.info('complete=%s', complete)
     prodigal_tf = args.prodigal_tf
-    if(prodigal_tf):
+    if(prodigal_tf is not None):
         try:
             prodigal_tf_path = Path(args.prodigal_tf).resolve()
             if(not os.access(str(prodigal_tf_path), os.R_OK)):
                 log.error('prodigal training file not readable! path=%s', prodigal_tf_path)
                 sys.exit(f'ERROR: Prodigal training file ({prodigal_tf_path}) not readable!')
-            if(genome_path.stat().st_size == 0):
+            if(prodigal_tf == '' or prodigal_tf_path.stat().st_size == 0):
                 log.error('empty prodigal training file! path=%s', prodigal_tf_path)
                 sys.exit(f'ERROR: Prodigal training file ({prodigal_tf_path}) is empty!')
             prodigal_tf = prodigal_tf_path
         except:
-            log.error('provided prodigal training file not valid! path=%s', args.prodigal_tf)
-            sys.exit(f'ERROR: Prodigal training file ({args.prodigal_tf}) not valid!')
+            log.error('provided prodigal training file not valid! path=%s', prodigal_tf)
+            sys.exit(f'ERROR: Prodigal training file ({prodigal_tf}) not valid!')
     log.info('prodigal_tf=%s', prodigal_tf)
     translation_table = args.translation_table
     log.info('translation_table=%s', translation_table)
@@ -185,13 +185,13 @@ def setup(args):
             if(not os.access(str(replicon_table_path), os.R_OK)):
                 log.error('replicon table not readable! path=%s', replicon_table_path)
                 sys.exit(f'ERROR: replicon table file ({replicon_table_path}) not readable!')
-            if(genome_path.stat().st_size == 0):
+            if(replicons == '' or replicon_table_path.stat().st_size == 0):
                 log.error('empty replicon table file! path=%s', replicon_table_path)
                 sys.exit(f'ERROR: replicon table file ({replicon_table_path}) is empty!')
             replicons = replicon_table_path
         except:
-            log.error('provided replicon file not valid! path=%s', args.replicons)
-            sys.exit(f'ERROR: replicon table file ({args.replicons}) not valid!')
+            log.error('provided replicon file not valid! path=%s', replicons)
+            sys.exit(f'ERROR: replicon table file ({replicons}) not valid!')
     log.info('replicon-table=%s', replicons)
     
     # workflow configurations
