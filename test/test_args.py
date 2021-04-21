@@ -92,3 +92,51 @@ def test_prodigal_tf_ok(tmpdir):
     tmpdir_path = Path(tmpdir)
     for file in FILES:
         assert Path.exists(tmpdir_path.joinpath(file))
+    # test database arguments
+
+    # parameter OK
+    proc = run(["bin/bakta", '--db', 'test/db', '--output', tmpdir, '--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-cds', '--skip-sorf', '--skip-ori', '--skip-gap', 'test/data/NC_002127.1.fna'])
+    assert proc.returncode == 0
+
+    # environment OK
+    env = os.environ
+    env['BAKTA_DB'] = 'test/db'
+    proc = run(["bin/bakta", '--output', tmpdir, '--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-cds', '--skip-sorf', '--skip-ori', '--skip-gap', 'test/data/NC_002127.1.fna'], env=env)
+    assert proc.returncode == 0
+
+
+def test_replicons_failiing(tmpdir):
+    # test replicons file arguments
+
+    # missing path
+    proc = run(["bin/bakta", '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--replicons', 'test/data/NC_002127.1.fna'])
+    assert proc.returncode != 0
+
+    # empty
+    proc = run(["bin/bakta", '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--replicons', '', 'test/data/NC_002127.1.fna'])
+    assert proc.returncode != 0
+
+    # not existing
+    proc = run(["bin/bakta", '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--replicons', 'test/data/foo', 'test/data/NC_002127.1.fna'])
+    assert proc.returncode != 0
+
+
+@pytest.mark.slow
+def test_replicons_ok(tmpdir):
+    # test replicons file arguments
+
+    # OK: replicons as CSV
+    proc = run(["bin/bakta", '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--replicons', 'test/data/replicons.csv', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-sorf', '--skip-ori', '--skip-gap', 'test/data/NC_002127.1.fna'])
+    assert proc.returncode == 0
+
+    tmpdir_path = Path(tmpdir)
+    for file in FILES:
+        assert Path.exists(tmpdir_path.joinpath(file))
+
+    # OK: replicons as TSV
+    proc = run(["bin/bakta", '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--replicons', 'test/data/replicons.tsv', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-sorf', '--skip-ori', '--skip-gap', 'test/data/NC_002127.1.fna'])
+    assert proc.returncode == 0
+
+    tmpdir_path = Path(tmpdir)
+    for file in FILES:
+        assert Path.exists(tmpdir_path.joinpath(file))
