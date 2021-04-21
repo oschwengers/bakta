@@ -179,7 +179,7 @@ def setup(args):
     keep_contig_headers = args.keep_contig_headers
     log.info('keep_contig_headers=%s', keep_contig_headers)
     replicons = args.replicons
-    if(replicons):
+    if(replicons is not None):
         try:
             replicon_table_path = Path(args.replicons).resolve()
             if(not os.access(str(replicon_table_path), os.R_OK)):
