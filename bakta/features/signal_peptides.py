@@ -51,11 +51,14 @@ def execute_deepsig(orfs, orf_fasta_path):
                 sig_pep['type'] = bc.FEATURE_SIGNAL_PEPTIDE
                 sig_pep['start'] = start_nucleotides
                 sig_pep['stop'] = stop_nucleotides
-                sig_pep['feature_annotation_score'] = feature_annotation_score
-                sig_pep['identifier'] = aa_identifier
-                sig_pep['sequence'] = orf['sequence']
-                sig_pep['strand'] = orf['strand']
-
+                sig_pep['feature__annotation_score'] = feature_annotation_score
+                if (bc.FEATURE_SIGNAL_PEPTIDE not in orf):
+                    orf[bc.FEATURE_SIGNAL_PEPTIDE]={}
+                orf[bc.FEATURE_SIGNAL_PEPTIDE]=sig_pep
+                log.debug(
+                    'hit: identifier=%s, start=%s, stop=%s, feature annotation score=%s',
+                    aa_identifier, start_nucleotides, stop_nucleotides, feature_annotation_score
+                )
                 sig_peps.append(sig_pep)
     return sig_peps
 
