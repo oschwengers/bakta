@@ -80,7 +80,7 @@ def parse_arguments():
     arg_group_general.add_argument('--verbose', '-v', action='store_true', help='Print verbose information')
     arg_group_general.add_argument('--threads', '-t', action='store', type=int, default=mp.cpu_count(), help='Number of threads to use (default = number of available CPUs)')
     arg_group_general.add_argument('--tmp-dir', action='store', default=None, dest='tmp_dir', help='Location for temporary files (default = system dependent auto detection)')
-    arg_group_general.add_argument('--version', action='version', version='%(prog)s ' + bakta.__version__)
+    arg_group_general.add_argument('--version', action='version', version=f'%(prog)s {bakta.__version__}')
     arg_group_general.add_argument('--citation', action='store_true', help='Print citation')
     return parser.parse_args()
 
