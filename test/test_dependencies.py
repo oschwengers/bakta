@@ -5,7 +5,7 @@ from bakta import utils as bu
 
 
 @pytest.mark.parametrize(
-    "tool_version,min_version,max_version,expected",
+    'tool_version,min_version,max_version,expected',
     [
         # major
         # meeting conditions without max version
