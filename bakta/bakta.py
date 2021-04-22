@@ -268,8 +268,9 @@ def main():
         expert_aa_found = exp_aa_seq.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
         print(f'\t\tprotein sequences: {len(expert_aa_found)}')
         
-        sig_pep_found = signal_peptide.execute_deepsig(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
-        print(f"\tdeepsig: {len(sig_pep_found)}")
+        if(cfg.gram != '?'):
+            sig_peptides_found = signal_peptide.execute_deepsig(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
+            print(f"\tsignal peptides: {len(sig_peptides_found)}")
         
         print('\tmark hypotheticals and combine annotations...')
         log.debug('combine CDS annotations')
@@ -338,8 +339,10 @@ def main():
         with s_orfs_fasta_path.open(mode='w') as fsorf:
             for sorf in genome['features'][bc.FEATURE_SORF]:
                 fsorf.write(f">{sorf['aa_hexdigest']}-{sorf['contig']}-{sorf['start']}\n{sorf['sequence']}\n")
-        sig_pep_found_sorf = signal_peptide.execute_deepsig(genome['features'][bc.FEATURE_SORF], s_orfs_fasta_path)
-        print(f"\tdeepsig: {len(sig_pep_found_sorf)}")
+        
+        if(cfg.gram != '?'):
+            sig_peptides_found = signal_peptide.execute_deepsig(genome['features'][bc.FEATURE_SORF], s_orfs_fasta_path)
+            print(f"\tsignal peptides: {len(sig_peptides_found)}")
 
     ############################################################################
     # gap annotation
