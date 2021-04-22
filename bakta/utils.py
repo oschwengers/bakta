@@ -159,7 +159,7 @@ def test_dependencies():
         check_result = check_version(version, dependency[0], dependency[1])
         if (check_result == False):
             log.error('wrong dependency version for %s: installed=%s, minimum=%s', dependency[3][0], version, dependency[0])
-            sys.exit(f'ERROR: Wrong {dependency[2][0]} version installed. Please, either install {dependency[3][0]} version {dependency[0]} or skip {dependency[4]}!')
+            sys.exit(f'ERROR: Wrong {dependency[3][0]} version installed. Please, either install {dependency[3][0]} version {dependency[0]} or skip {dependency[4]}!')
         else:
             log.info('dependency check: tool=%s, version=%s', dependency[3][0], version)
 
