@@ -12,10 +12,7 @@ log = logging.getLogger('SIGNAL_PEPTIDES')
 def execute_deepsig(orfs, orf_fasta_path):
     """Search for Signal Peptides using DeepSig tool."""
     deepsig_output_path = cfg.tmp_path.joinpath('deepsig.gff3')
-    if cfg.gram == '?':
-        sys.exit('No gram information.') #TODO: add proper optout/return
-    else:
-        gram = 'gramn' if cfg.gram == '-' else 'gramp'
+    gram = 'gramn' if cfg.gram == '-' else 'gramp'
     cmd = [
         'deepsig.py',
         '-f', str(orf_fasta_path),
