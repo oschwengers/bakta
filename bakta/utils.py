@@ -16,25 +16,28 @@ import bakta.config as cfg
 
 
 log = logging.getLogger('UTILS')
-Version = collections.namedtuple('Version', ['major', 'minor', 'patch'], defaults=[0, 0]) # named tuple for version checking, defaults are zero for missing minor/patch
+
 
 def print_version(self):
     return f'v{self.major}.{self.minor}.{self.patch}'
 
+Version = collections.namedtuple('Version', ['major', 'minor', 'patch'], defaults=[0, 0]) # named tuple for version checking, defaults are zero for missing minor/patch
 Version.__str__ = print_version
+
 
 VERSION_MIN_DIGIT = -1
 VERSION_MAX_DIGIT = 1000000000000
 VERSION_REGEX = re.compile(r'(\d+)\.(\d+)(?:\.(\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
-DEPENDENCIES = [  # List of dependencies: tuples for: min version, max version, tool name & command line parameter, dependency check exclusion options
-    (Version(2,0,6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('tRNAscan-SE', '-h'), ('--skip-trna')),
-    (Version(1,2,38), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('aragorn', '-h'), ('skip-tmrna')),
-    (Version(1,1,2), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('cmscan', '-h'), ('--skip-rrna', '--skip-ncrna', '--skip-ncrna-region')),
-    (Version(2,6,3), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('prodigal', '-v'), ('--skip-cds')),
-    (Version(3,3,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('hmmsearch', '-h'), ('--skip-cds', '--skip-sorf')),
-    (Version(2,0,4), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('diamond', 'help'), ('--skip-cds', '--skip-sorf')),
-    (Version(1,6,VERSION_MIN_DIGIT), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('pilercr', '-options'), ('--skip-crispr'))
-]
+
+# List of dependencies: tuples for: min version, max version, tool name & command line parameter, dependency check exclusion options
+DEPENDENCY_TRNASCAN = (Version(2,0,6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('tRNAscan-SE', '-h'), ('--skip-trna'))
+DEPENDENCY_ARAGORN = (Version(1,2,38), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('aragorn', '-h'), ('skip-tmrna'))
+DEPENDENCY_CMSCAN = (Version(1,1,2), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('cmscan', '-h'), ('--skip-rrna', '--skip-ncrna', '--skip-ncrna-region'))
+DEPENDENCY_PILERCR = (Version(1,6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('pilercr', '-options'), ('--skip-crispr'))
+DEPENDENCY_PRODIGAL = (Version(2,6,3), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('prodigal', '-v'), ('--skip-cds'))
+DEPENDENCY_HMMSEARCH = (Version(3,3,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('hmmsearch', '-h'), ('--skip-cds', '--skip-sorf'))
+DEPENDENCY_DIAMOND = (Version(2,0,4), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('diamond', 'help'), ('--skip-cds', '--skip-sorf'))
+DEPENDENCY_BLASTN = (Version(2,7,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('blastn', '-version'), ('--skip-ori'))
 
 
 def parse_arguments():
@@ -152,16 +155,42 @@ def check_version(tool, min, max):
             return True
 
 
+def test_dependency(dependency):
+    """Test the proper installation of the required 3rd party executable."""
+
+    version = read_tool_output(dependency)
+    check_result = check_version(version, dependency[0], dependency[1])
+    if (check_result == False):
+        log.error('wrong dependency version for %s: installed=%s, minimum=%s', dependency[3][0], version, dependency[0])
+        sys.exit(f'ERROR: Wrong {dependency[3][0]} version installed. Please, either install {dependency[3][0]} version {dependency[0]} or use {dependency[4]}!')
+    else:
+        log.info('dependency: tool=%s, version=%s', dependency[3][0], version)
+
+
 def test_dependencies():
-    """Test the proper installation of necessary 3rd party executables."""
-    for dependency in DEPENDENCIES:
-        version = read_tool_output(dependency)
-        check_result = check_version(version, dependency[0], dependency[1])
-        if (check_result == False):
-            log.error('wrong dependency version for %s: installed=%s, minimum=%s', dependency[3][0], version, dependency[0])
-            sys.exit(f'ERROR: Wrong {dependency[3][0]} version installed. Please, either install {dependency[3][0]} version {dependency[0]} or skip {dependency[4]}!')
-        else:
-            log.info('dependency check: tool=%s, version=%s', dependency[3][0], version)
+    """Test the proper installation of all required 3rd party executables."""
+
+    if(not cfg.skip_trna):
+        test_dependency(DEPENDENCY_TRNASCAN)
+    
+    if(not cfg.skip_tmrna):
+        test_dependency(DEPENDENCY_ARAGORN)
+    
+    if(not cfg.skip_rrna or not cfg.skip_ncrna or not cfg.skip_ncrna_region):
+        test_dependency(DEPENDENCY_CMSCAN)
+    
+    if(not cfg.skip_crispr):
+        test_dependency(DEPENDENCY_PILERCR)
+    
+    if(not cfg.skip_cds):
+        test_dependency(DEPENDENCY_PRODIGAL)
+    
+    if(not cfg.skip_cds or not cfg.skip_sorf):
+        test_dependency(DEPENDENCY_HMMSEARCH)
+        test_dependency(DEPENDENCY_DIAMOND)
+    
+    if(not cfg.skip_ori):
+        test_dependency(DEPENDENCY_BLASTN)
 
 
 def create_locus_tag_prefix(contigs):
