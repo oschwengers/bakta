@@ -8,9 +8,7 @@
 
 # Bakta: Rapid & standardized annotation of bacterial genomes & plasmids
 
-Bakta is a tool for the rapid & standardized local annotation of bacterial genomes & plasmids. It provides **dbxref**-rich and **sORF**-including annotations in machine-readable `JSON` & bioinformatics standard file formats for automatic downstream analysis.
-
-> Bakta is still quite young. So please, test it, bend, sequeeze and smash it, try to crash it... but don't forget to file bug reports ;-) Of course, feedback of any kind and feature requests are highly welcome and very much appreciated!
+Bakta is a tool for the rapid & standardized annotation of bacterial genomes & plasmids. It provides **dbxref**-rich and **sORF**-including annotations in machine-readable `JSON` & bioinformatics standard file formats for automatic downstream analysis.
 
 ## Contents
 
