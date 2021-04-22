@@ -18,6 +18,10 @@ import bakta.config as cfg
 log = logging.getLogger('UTILS')
 Version = collections.namedtuple('Version', ['major', 'minor', 'patch'], defaults=[0, 0]) # named tuple for version checking, defaults are zero for missing minor/patch
 
+def print_version(self):
+    return f'v{self.major}.{self.minor}.{self.patch}'
+
+Version.__str__ = print_version
 
 VERSION_MIN_DIGIT = -1
 VERSION_MAX_DIGIT = 1000000000000
