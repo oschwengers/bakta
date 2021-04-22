@@ -262,12 +262,12 @@ def main():
         with cds_fasta_path.open(mode='w') as fh:
             for cds in genome['features'][bc.FEATURE_CDS]:
                 fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['sequence']}\n")
-       # log.debug('conduct expert system: amrfinder')
-       # expert_amr_found = exp_amr.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
-       # print(f'\t\tamrfinder: {len(expert_amr_found)}')
-       # log.debug('conduct expert system: aa seqs')
-       # expert_aa_found = exp_aa_seq.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
-       # print(f'\t\tprotein sequences: {len(expert_aa_found)}')
+        log.debug('conduct expert system: amrfinder')
+        expert_amr_found = exp_amr.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
+        print(f'\t\tamrfinder: {len(expert_amr_found)}')
+        log.debug('conduct expert system: aa seqs')
+        expert_aa_found = exp_aa_seq.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
+        print(f'\t\tprotein sequences: {len(expert_aa_found)}')
         
         sig_pep_found = signal_peptide.execute_deepsig(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
         print(f"\tdeepsig: {len(sig_pep_found)}")
