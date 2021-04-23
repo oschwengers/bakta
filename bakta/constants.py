@@ -78,6 +78,7 @@ INSDC_FEATURE_REPEAT_TYPE = 'rpt_type'  # /rpt_type=<repeat_type>  # 'direct'
 INSDC_FEATURE_REPEAT_UNIT_RANGE = 'rpt_unit_range'  # /rpt_unit_range=<base_range>
 INSDC_FEATURE_REPEAT_UNIT_SEQ = 'rpt_unit_seq'  # /rpt_unit_seq="text"
 INSDC_FEATURE_CDS = 'CDS'
+INSDC_FEATURE_SIGNAL_PEPTIDE = 'sig_peptide'
 INSDC_FEATURE_GAP = 'gap'
 INSDC_FEATURE_ASSEMBLY_GAP = 'assembly_gap'
 INSDC_FEATURE_MISC_FEATURE = 'misc_feature'
