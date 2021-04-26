@@ -119,6 +119,8 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                         if('uniref90_id' in feature['psc']):
                             psc_subject_id = feature['psc']['uniref90_id']
                             inference.append(f'similar to AA sequence:UniProtKB:{psc_subject_id}')
+                    if('signal_peptide' in feature):
+                        qualifiers['sig_pep']=f"start: {feature['signal_peptide']['start']}; stop: {feature['signal_peptide']['stop']}; feature_annotation_score: {feature['signal_peptide']['feature_annotation_score']}"
                 qualifiers['inference'] = inference
             elif(feature['type'] == bc.FEATURE_T_RNA):
                 # TODO: Position anticodon
