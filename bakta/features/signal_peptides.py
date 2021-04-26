@@ -48,7 +48,7 @@ def execute_deepsig(orfs, orf_fasta_path):
                 sig_pep['type'] = bc.FEATURE_SIGNAL_PEPTIDE
                 sig_pep['start'] = start_nucleotides
                 sig_pep['stop'] = stop_nucleotides
-                sig_pep['feature__annotation_score'] = feature_annotation_score
+                sig_pep['feature_annotation_score'] = feature_annotation_score
                 if (bc.FEATURE_SIGNAL_PEPTIDE not in orf):
                     orf[bc.FEATURE_SIGNAL_PEPTIDE]={}
                 orf[bc.FEATURE_SIGNAL_PEPTIDE]=sig_pep
