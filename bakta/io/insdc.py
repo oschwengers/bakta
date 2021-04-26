@@ -155,11 +155,11 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 qualifiers['ncRNA_class'] = 'other'
                 insdc_feature_type = bc.INSDC_FEATURE_REGULATORY
             elif(feature['type'] == bc.FEATURE_CRISPR):
-                qualifiers['repeats'] = feature['repeats']
-                qualifiers['repeat_consensus'] = feature['repeat_consensus']
-                qualifiers['repeat_length'] = feature['repeat_length']
-                qualifiers['spacer_length'] = feature['spacer_length']
-                insdc_feature_type = bc.INSDC_FEATURE_MISC_FEATURE
+                qualifiers[bc.INSDC_FEATURE_REPEAT_FAMILY] = 'CRISPR'
+                qualifiers[bc.INSDC_FEATURE_REPEAT_TYPE] = 'direct'
+                qualifiers[bc.INSDC_FEATURE_REPEAT_UNIT_SEQ] = feature['repeat_consensus']
+                qualifiers['inference'] = 'COORDINATES:alignment:pilercr:1.02'
+                insdc_feature_type = bc.INSDC_FEATURE_REPEAT_REGION
             
             strand = None
             if(feature['strand'] == bc.STRAND_FORWARD):
