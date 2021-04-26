@@ -107,18 +107,17 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 insdc_feature_type = bc.INSDC_FEATURE_CDS
                 inference = []
                 inference.append('ab initio prediction:Prodigal:2.6' if feature['type'] == bc.FEATURE_CDS else 'ab initio prediction:Bakta')
-                if('hypothetical' not in feature):
-                    if('ups' in feature):
-                        if('ncbi_nrp_id' in feature['ups']):
-                            qualifiers['protein_id'] = feature['ups']['ncbi_nrp_id']
-                    if('ips' in feature):
-                        if('uniref100_id' in feature['ips']):
-                            ips_subject_id = feature['ips']['uniref100_id']
-                            inference.append(f'similar to AA sequence:UniProtKB:{ips_subject_id}')
-                    if('psc' in feature):
-                        if('uniref90_id' in feature['psc']):
-                            psc_subject_id = feature['psc']['uniref90_id']
-                            inference.append(f'similar to AA sequence:UniProtKB:{psc_subject_id}')
+                if('ups' in feature):
+                    if('ncbi_nrp_id' in feature['ups']):
+                        qualifiers['protein_id'] = feature['ups']['ncbi_nrp_id']
+                if('ips' in feature):
+                    if('uniref100_id' in feature['ips']):
+                        ips_subject_id = feature['ips']['uniref100_id']
+                        inference.append(f'similar to AA sequence:UniProtKB:{ips_subject_id}')
+                if('psc' in feature):
+                    if('uniref90_id' in feature['psc']):
+                        psc_subject_id = feature['psc']['uniref90_id']
+                        inference.append(f'similar to AA sequence:UniProtKB:{psc_subject_id}')
                 qualifiers['inference'] = inference
             elif(feature['type'] == bc.FEATURE_T_RNA):
                 # TODO: Position anticodon
