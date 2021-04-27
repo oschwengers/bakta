@@ -437,7 +437,6 @@ Annotation:
 
 Technical:
 
-- 3rd party dependency version checks at runtime [#21](https://github.com/oschwengers/bakta/issues/21)
 - Expand tests [#29](https://github.com/oschwengers/bakta/issues/29)
 - (idea) download/update the database within Bakta
 
@@ -462,7 +461,7 @@ Bakta takes advantage of many publicly available databases. If you find any of t
 ## FAQ
 
 * __Bakta is running too long without CPU load... why?__
-Bakta takes advantage of an SQLite DB which results in high storage IO loads. If this DB is stored on a remote / network volume, the lookup of IPS/PSC annotations might take a long time. In these cases, please, consider moving the DB to a local volume/hard drive. Setting POSIX permissions of the db directory to read/access only (`555`) and files to read only (`444`) might also help:
+Bakta takes advantage of an SQLite DB which results in high storage IO loads. If this DB is stored on a remote / network volume, the lookup of IPS/PSC annotations might take a long time. In these cases, please, consider moving the DB to a local volume or hard drive. Setting POSIX permissions of the db directory to read/access only (`555`) and files to read only (`444`) might also help:
 
 ```bash
 chmod 444 <db-path>/*
