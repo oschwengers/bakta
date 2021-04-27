@@ -3,25 +3,30 @@ import json
 import logging
 import os
 import sys
+import tarfile
+import hashlib
+
+from pathlib import Path
+import requests
 
 import bakta
-import bakta.config as cfg
+import bakta.utils as bu
 
 log = logging.getLogger('DB')
 
 
-def check():
+def check(db_path):
     """Check if database directory exists, is accessible and contains necessary files."""
 
-    if(cfg.db_path is None):
+    if(db_path is None):
         log.error('directory not provided nor detected!')
         sys.exit('ERROR: database directory not provided nor detected! Please provide a valid path to the database directory.')
 
-    if(not os.access(str(cfg.db_path), os.R_OK & os.X_OK)):
-        log.error('directory (%s) not readable/accessible!', cfg.db_path)
-        sys.exit(f'ERROR: database directory ({cfg.db_path}) not readable/accessible!')
+    if(not os.access(str(db_path), os.R_OK & os.X_OK)):
+        log.error('directory (%s) not readable/accessible!', db_path)
+        sys.exit(f'ERROR: database directory ({db_path}) not readable/accessible!')
 
-    version_path = cfg.db_path.joinpath('version.json')
+    version_path = db_path.joinpath('version.json')
     if(not os.access(str(version_path), os.R_OK) or not version_path.is_file()):
         log.error('version file not readable!')
         sys.exit('ERROR: database version file (version.json) not readable!')
@@ -79,9 +84,148 @@ def check():
     ]
 
     for file_name in file_names:
-        path = cfg.db_path.joinpath(file_name)
+        path = db_path.joinpath(file_name)
         if(not os.access(str(path), os.R_OK) or not path.is_file()):
             log.error('file not readable! file=%s', file_name)
             sys.exit(f'ERROR: database file ({file_name}) not readable!')
 
     return db_info
+
+
+def fetch_db_versions():
+    db_version_url = 'https://raw.githubusercontent.com/oschwengers/bakta/db-download/db-version.json'
+    try:
+        with requests.get(db_version_url) as resp:
+            versions = json.load(resp.content)
+    except IOError as e:
+        print(e, file=sys.stderr)
+        raise e
+    else:
+        print('successfully catched db versions')
+        return versions
+
+
+def download(version, db_path):
+    db_url = f"https://zenodo.org/record/{version['record']}/files/db.tar.gz"
+    try:
+        print(f"Download db version tarball: version={version['major']}.{version['minor']}, url={db_url}")
+        with db_path.open('wb') as fh_out, requests.get(db_url, stream=True) as resp:
+            total_length = resp.headers.get('content-length')
+            if total_length is None: # no content length header
+                fh_out.write(resp.content)
+            else:
+                dl = 0
+                total_length = int(total_length)
+                for data in resp.iter_content(chunk_size=4096):
+                    dl += len(data)
+                    fh_out.write(data)
+                    done = int(50 * dl / total_length)
+                    sys.stdout.write(f"\r\t[{'=' * done}{' ' * (50-done)}]")
+                    sys.stdout.flush()
+    except IOError:
+        sys.exit(f'ERROR: Could not download file from Zenodo! url={db_url}, path={db_path}')
+
+
+def md5sum(db_path, buffer_size=8192):
+    md5 = hashlib.md5()
+    with db_path.open('b') as fh:
+        data = fh.read(buffer_size)
+        while data:
+            md5.update(data)
+            data = fh.read(buffer_size)
+    return md5.hexdigest()
+
+
+def untar(db_path, output_path):
+    print(f'extract DB tarball: file={db_path}, output={output_path}')
+    try:
+        with db_path.open('rb') as fh_in, tarfile.open(fileobj=fh_in, mode='r:gz') as tar_file:
+            tar_file.extractall(path=str(output_path))
+    except OSError:
+        sys.exit(f'ERROR: Could not extract {db_path} to ')
+
+
+def main():
+    # parse options and arguments
+    parser = bu.init_parser()
+    group_runtime = parser.add_argument_group('Runtime & auxiliary options')
+    group_runtime.add_argument('--help', '-h', action='help', help='Show this help message and exit')
+    group_runtime.add_argument('--version', '-V', action='version', version=f'%(prog)s {bakta.__version__}')
+    
+    subparsers = parser.add_subparsers(dest='subcommand', help='sub-command help')
+    subparsers.add_parser('list', help='List available database versions')  #  add list sub-command options
+    
+    parser_download = subparsers.add_parser('download', help='Download a database')  #  add download sub-command options
+    parser_download.add_argument('--output', '-o', action='store', default=Path.cwd(), help='output directory (default = current working directory)')
+    parser_download.add_argument('--minor', '-n', action='store', type=int, default=0, help='Database minor version (default = most recent db minor version)')
+    
+    args = parser.parse_args()
+    if(args.subcommand == 'list'):
+        versions = fetch_db_versions()
+        print('Available DB versions:')
+        for v in sorted(versions, key=lambda v: (v['major'], v['minor'])):
+            print(f"{v['major']}.{v['minor']}\t{v['date']}\t{v['doi']}")
+    elif(args.subcommand == 'download'):
+        try:
+            output_path = Path(args.output)
+            if(not output_path.exists()):
+                output_path.mkdir(parents=True, exist_ok=True)
+            elif(not os.access(str(output_path), os.X_OK)):
+                sys.exit(f'ERROR: output path ({output_path}) not accessible!')
+            elif(not os.access(str(output_path), os.W_OK)):
+                sys.exit(f'ERROR: output path ({output_path}) not writable!')
+            output_path = output_path.resolve()
+        except:
+            sys.exit(f'ERROR: could not resolve or create output directory ({args.output})!')
+
+        print(f'fetch DB versions...')
+        versions = fetch_db_versions()
+        compatible_versions = [v for v in versions if v['major'] == bakta.__db_schema_version__]
+        if(len(compatible_versions) == 0):
+            sys.exit(f'Error: no compatible version available for current major db version {bakta.__db_schema_version__}')
+        else:
+            print(f'\t...compatible DB versions: {len(compatible_versions)}')
+        
+        required_version = None
+        if(args.minor > 0):
+            for v in versions:
+                if(v['minor'] == args.minor):
+                    required_version = v
+                    break
+            if(required_version is None):
+                sys.exit(f"requested DB minor version {args.minor} is not available. Please use 'bakta_db list' to get a list of available DB versions")
+        else:
+            compatible_sorted = sorted(compatible_versions, key=lambda v:v['minor'], reverse=True)
+            required_version = compatible_sorted[0]
+        
+        print(f"download database: {required_version['major']}.{required_version['minor']}\t{required_version['date']}\t{required_version['doi']}...")
+        db_path = output_path.joinpath('db.tar.gz')
+        download(required_version, db_path)
+        print('\t... done')
+
+        print('check MD5 sum...')
+        md5sum = md5sum(db_path)
+        if(md5sum == required_version['md5']):
+            print(f'\t...database file OK')
+        else:
+            sys.exit(f"Error: corrupt database file! MD5 should be '{required_version['md5']}' but is '{md5sum}'")
+        
+        print('extract db from tarball...')
+        untar(db_path, output_path)
+
+
+        db_info = check(db_path)
+        if(db_info['major'] != required_version['major']):
+            sys.exit(f"ERROR: wrong major db detected! required={required_version['major']}, detected={db_info['major']}")
+        elif(db_info['minor'] != required_version['minor']):
+            sys.exit(f"ERROR: wrong minor db detected! required={required_version['minor']}, detected={db_info['minor']}")
+        else:
+            print(f"successfully downloaded Bakta DB version {required_version['major']}.{required_version['minor']} (DOI: {required_version['doi']}) to {db_path}")
+        
+    else:
+        parser.print_help()
+        sys.exit('Error: no subcommand provided!')
+
+
+if __name__ == '__main__':
+    main()
