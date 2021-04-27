@@ -101,15 +101,12 @@ def fetch_db_versions():
         print(e, file=sys.stderr)
         raise e
     else:
-        print('successfully catched db versions')
         return versions
 
 
-def download(version, db_path):
-    db_url = f"https://zenodo.org/record/{version['record']}/files/db.tar.gz"
+def download(db_url, tarball_path):
     try:
-        print(f"Download db version tarball: version={version['major']}.{version['minor']}, url={db_url}")
-        with db_path.open('wb') as fh_out, requests.get(db_url, stream=True) as resp:
+        with tarball_path.open('wb') as fh_out, requests.get(db_url, stream=True) as resp:
             total_length = resp.headers.get('content-length')
             if total_length is None: # no content length header
                 fh_out.write(resp.content)
@@ -123,12 +120,12 @@ def download(version, db_path):
                     sys.stdout.write(f"\r\t[{'=' * done}{' ' * (50-done)}]")
                     sys.stdout.flush()
     except IOError:
-        sys.exit(f'ERROR: Could not download file from Zenodo! url={db_url}, path={db_path}')
+        sys.exit(f'ERROR: Could not download file from Zenodo! url={db_url}, path={tarball_path}')
 
 
-def md5sum(db_path, buffer_size=8192):
+def calc_md5_sum(tarball_path, buffer_size=8192):
     md5 = hashlib.md5()
-    with db_path.open('b') as fh:
+    with tarball_path.open('rb') as fh:
         data = fh.read(buffer_size)
         while data:
             md5.update(data)
@@ -136,13 +133,12 @@ def md5sum(db_path, buffer_size=8192):
     return md5.hexdigest()
 
 
-def untar(db_path, output_path):
-    print(f'extract DB tarball: file={db_path}, output={output_path}')
+def untar(tarball_path, output_path):
     try:
-        with db_path.open('rb') as fh_in, tarfile.open(fileobj=fh_in, mode='r:gz') as tar_file:
+        with tarball_path.open('rb') as fh_in, tarfile.open(fileobj=fh_in, mode='r:gz') as tar_file:
             tar_file.extractall(path=str(output_path))
     except OSError:
-        sys.exit(f'ERROR: Could not extract {db_path} to ')
+        sys.exit(f'ERROR: Could not extract {tarball_path} to ')
 
 
 def main():
@@ -184,7 +180,7 @@ def main():
         if(len(compatible_versions) == 0):
             sys.exit(f'Error: no compatible version available for current major db version {bakta.__db_schema_version__}')
         else:
-            print(f'\t...compatible DB versions: {len(compatible_versions)}')
+            print(f'\t... compatible DB versions: {len(compatible_versions)}')
         
         required_version = None
         if(args.minor > 0):
@@ -198,29 +194,34 @@ def main():
             compatible_sorted = sorted(compatible_versions, key=lambda v:v['minor'], reverse=True)
             required_version = compatible_sorted[0]
         
-        print(f"download database: {required_version['major']}.{required_version['minor']}\t{required_version['date']}\t{required_version['doi']}...")
-        db_path = output_path.joinpath('db.tar.gz')
-        download(required_version, db_path)
+        tarball_path = output_path.joinpath('db.tar.gz')
+        db_url = f"https://zenodo.org/record/{required_version['record']}/files/db.tar.gz"
+        print(f"download database: v{required_version['major']}.{required_version['minor']}, {required_version['date']}, DOI: {required_version['doi']}, URL: {db_url}...")
+        download(db_url, tarball_path)
         print('\t... done')
 
         print('check MD5 sum...')
-        md5sum = md5sum(db_path)
-        if(md5sum == required_version['md5']):
+        md5_sum = calc_md5_sum(tarball_path)
+        if(md5_sum == required_version['md5']):
             print(f'\t...database file OK')
         else:
-            sys.exit(f"Error: corrupt database file! MD5 should be '{required_version['md5']}' but is '{md5sum}'")
+            sys.exit(f"Error: corrupt database file! MD5 should be '{required_version['md5']}' but is '{md5_sum}'")
         
-        print('extract db from tarball...')
-        untar(db_path, output_path)
+        print(f'extract DB tarball: file={tarball_path}, output={output_path}')
+        untar(tarball_path, output_path)
 
-
+        db_path = output_path.joinpath('db')
         db_info = check(db_path)
         if(db_info['major'] != required_version['major']):
             sys.exit(f"ERROR: wrong major db detected! required={required_version['major']}, detected={db_info['major']}")
         elif(db_info['minor'] != required_version['minor']):
             sys.exit(f"ERROR: wrong minor db detected! required={required_version['minor']}, detected={db_info['minor']}")
         else:
-            print(f"successfully downloaded Bakta DB version {required_version['major']}.{required_version['minor']} (DOI: {required_version['doi']}) to {db_path}")
+            print('successfully downloaded Bakta DB!')
+            print(f"\tversion: {required_version['major']}.{required_version['minor']}")
+            print(f"\tDOI: {required_version['doi']}")
+            print(f'\tpath: {db_path}')
+            print(f"\nRun Bakta using '--db {db_path} or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_path}'")
         
     else:
         parser.print_help()
