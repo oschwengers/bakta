@@ -32,7 +32,8 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'bakta=bakta.main:main'
+            'bakta=bakta.main:main',
+            'bakta_db=bakta.db:main'
         ]
     },
     classifiers=[
