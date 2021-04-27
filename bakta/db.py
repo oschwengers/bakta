@@ -93,10 +93,10 @@ def check(db_path):
 
 
 def fetch_db_versions():
-    db_version_url = 'https://raw.githubusercontent.com/oschwengers/bakta/db-download/db-version.json'
+    db_version_url = 'https://raw.githubusercontent.com/oschwengers/bakta/db-download/db-versions.json'
     try:
         with requests.get(db_version_url) as resp:
-            versions = json.load(resp.content)
+            versions = json.loads(resp.content)
     except IOError as e:
         print(e, file=sys.stderr)
         raise e
