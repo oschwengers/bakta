@@ -1,7 +1,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-brightgreen.svg)](https://github.com/oschwengers/bakta/blob/master/LICENSE)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/bakta.svg)
 ![GitHub release](https://img.shields.io/github/release/oschwengers/bakta.svg)
-![PyPI](https://img.shields.io/pypi/v/bakta.svg)
+[![PyPI](https://img.shields.io/pypi/v/bakta.svg)](https://pypi.org/project/bakta)
 ![PyPI - Status](https://img.shields.io/pypi/status/bakta.svg)
 [![Conda](https://img.shields.io/conda/v/bioconda/bakta.svg)](https://bioconda.github.io/recipes/bakta/README.html)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
