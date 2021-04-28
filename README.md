@@ -96,7 +96,7 @@ Bacta requires the following 3rd party executables which must be installed & exe
 - PILER-CR (1.06) <https://doi.org/10.1186/1471-2105-8-18> <http://www.drive5.com/pilercr>
 - Prodigal (2.6.3) <https://dx.doi.org/10.1186%2F1471-2105-11-119> <https://github.com/hyattpd/Prodigal>
 - Hmmer (3.3.1) <https://doi.org/10.1093/nar/gkt263> <http://hmmer.org>
-- Diamond (2.0.2) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
+- Diamond (2.0.6) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
 - Blast+ (2.7.1) <https://www.ncbi.nlm.nih.gov/pubmed/2231712> <https://blast.ncbi.nlm.nih.gov>
 - AMRFinderPlus (3.10.1) <https://github.com/ncbi/amr>
 
@@ -140,7 +140,7 @@ $ tar -xzf db.tar.gz
 $ rm db.tar.gz
 ```
 
-The db path can either be provided via parameter (`--db`) or environment variable (`BAKTA_DB`):
+The db path can be provided either via parameter (`--db`) or environment variable (`BAKTA_DB`):
 
 ```bash
 $ bakta --db <db-path> genome.fasta
@@ -149,7 +149,7 @@ $ export BAKTA_DB=<db-path>
 $ bakta genome.fasta
 ```
 
-Additionally, for a system-wide setup, the database can be copied to the Bakta base directory:
+For system-wide setups, the database can also be copied to the Bakta base directory:
 
 ```bash
 $ cp -r db/ <bakta-installation-dir>
@@ -160,13 +160,13 @@ $ cp -r db/ <bakta-installation-dir>
 Simple:
 
 ```bash
-$ bakta --db ~/db genome.fasta
+$ bakta --db <db-path> genome.fasta
 ```
 
 Expert: verbose output writing results to *results* directory with *ecoli123* file `prefix` and *eco634* `locus tag` using an existing prodigal training file, using additional replicon information and 8 threads:
 
 ```bash
-$ bakta --db ~/db --verbose --output results/ --prefix ecoli123 --locus-tag eco634 --prodigal-tf eco.tf --replicons replicon.tsv --threads 8 genome.fasta
+$ bakta --db <db-path> --verbose --output results/ --prefix ecoli123 --locus-tag eco634 --prodigal-tf eco.tf --replicons replicon.tsv --threads 8 genome.fasta
 ```
 
 ## Input/Output
