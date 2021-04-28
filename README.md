@@ -113,7 +113,7 @@ Tested with Ubuntu 20.04 - some older distributions might provide outdated versi
 Bakta requires a mandatory database which is publicly hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
 Further information is provided in the [database](#database) section below.
 
-Get a list of available DB versions:
+List available DB versions:
 
 ```bash
 $ bakta_db list
