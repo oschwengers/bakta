@@ -319,6 +319,7 @@ def main():
 
             print(f'replace old DB...')
             shutil.move(db_new_path, db_old_path)
+            shutil.rmtree(tmp_path)
             print('\t... done')
             print(f"\nRun Bakta using '--db {db_old_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_old_path}'")
     else:
