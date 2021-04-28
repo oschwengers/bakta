@@ -113,12 +113,23 @@ Tested with Ubuntu 20.04 - some older distributions might provide outdated versi
 Bakta requires a mandatory database which is publicly hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
 Further information is provided in the [database](#database) section below.
 
-Print a list of available DB versions and automatically download the most recent compatible version via bakta:
+Get a list of available DB versions:
 
 ```bash
 $ bakta_db list
 ...
-$ bakta_db download --output <output>
+```
+
+Download the most recent compatible database version:
+
+```bash
+$ bakta_db download --output <output-path>
+```
+
+Update an existing database:
+
+```bash
+$ bakta_db update --db <existing-db-path> [--tmp-dir <tmp-directory>]
 ```
 
 or download it manually:
@@ -448,7 +459,6 @@ Annotation:
 Technical:
 
 - Expand tests [#29](https://github.com/oschwengers/bakta/issues/29)
-- (idea) download/update the database within Bakta
 
 ## Citation
 
