@@ -215,6 +215,7 @@ def main():
         
         print(f'extract DB tarball: file={tarball_path}, output={output_path}')
         untar(tarball_path, output_path)
+        tarball_path.unlink()
 
         db_path = output_path.joinpath('db')
         db_info = check(db_path)
@@ -227,7 +228,7 @@ def main():
             print(f"\tversion: {required_version['major']}.{required_version['minor']}")
             print(f"\tDOI: {required_version['doi']}")
             print(f'\tpath: {db_path}')
-            print(f"\nRun Bakta using '--db {db_path} or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_path}'")
+            print(f"\nRun Bakta using '--db {db_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_path}'")
     elif(args.subcommand == 'update'):
         env = os.environ.copy()
         if(args.db):
@@ -302,6 +303,7 @@ def main():
         
         print(f'extract DB tarball: file={tarball_path}, output={tmp_path}')
         untar(tarball_path, tmp_path)
+        tarball_path.unlink()
 
         db_new_path = tmp_path.joinpath('db')
         db_new_info = check(db_new_path)
@@ -318,7 +320,7 @@ def main():
             print(f'replace old DB...')
             shutil.move(db_new_path, db_old_path)
             print('\t... done')
-            print(f"\nRun Bakta using '--db {db_old_path} or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_old_path}'")
+            print(f"\nRun Bakta using '--db {db_old_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_old_path}'")
     else:
         parser.print_help()
         sys.exit('Error: no subcommand provided!')
