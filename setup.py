@@ -40,7 +40,7 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.8',
-        'Development Status :: 4 - Beta ',
+        'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
         'Environment :: Console',
