@@ -40,7 +40,7 @@ DEPENDENCY_DIAMOND = (Version(2,0,4), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIG
 DEPENDENCY_BLASTN = (Version(2,7,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('blastn', '-version'), ('--skip-ori'))
 
 
-def parse_arguments():
+def init_parser():
     parser = argparse.ArgumentParser(
         prog='bakta',
         description='Rapid & standardized annotation of bacterial genomes & plasmids.',
@@ -48,6 +48,11 @@ def parse_arguments():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         add_help=False
     )
+    return parser
+
+
+def parse_arguments():
+    parser = init_parser()
     parser.add_argument('genome', metavar='<genome>', help='Genome sequences in (zipped) fasta format')
 
     arg_group_io = parser.add_argument_group('Input / Output')

@@ -119,4 +119,5 @@ TOPOLOGY_LINEAR = 'linear'
 DISCARD_TYPE_SPURIOUS = 'spurious'
 DISCARD_TYPE_OVERLAP = 'overlap'
 
+DB_VERSIONS_URL = 'https://raw.githubusercontent.com/oschwengers/bakta/master/db-versions.json'
 CITATION = 'Schwengers O., Goesmann A. (2020)\nBakta: comprehensive and rapid annotation of bacterial genomes.\nGitHub https://github.com/oschwengers/bakta'

@@ -6,6 +6,7 @@ channels:
 dependencies:
   - biopython>=1.78
   - xopen>=1.1.0
+  - requests>=2.25.1
   - trnascan-se>=2.0.6
   - aragorn>=1.2.38
   - infernal>=1.1.4
