@@ -36,14 +36,17 @@ To provide standardized annotations adhearing to [FAIR](https://www.go-fair.org/
 Fostering the FAIR aspect, Bakta identifies identical protein sequences (**IPS**) via `MD5` digests which are annotated with database cross-references (**dbxref**) to RefSeq (`WP_*`), UniRef100 (`UniRef100_*`) and UniParc (`UPI*`).
 By doing so, IPS allow the surveillance of distinct gene alleles and streamlining comparative analysis as well as posterior (external) annotations of `putative` & `hypothetical` protein sequences which can be mapped back to existing CDS via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)). Currently, Bakta identifies ~198 mio, ~185 mio and ~150 mio distinct protein sequences from UniParc, UniRef100 and RefSeq, respectively. Hence, for certain genomes, up to 99 % of all CDS can be identified this way, skipping expensive homology searches.
 
-- **Short open reading frames**
-Next to standard feature types (tRNA, tmRNA, rRNA, ncRNA genes, ncRNA cis-regulatory regions, CRISPR, CDS, oriC/V/T and gaps) Bakta also detects and annotates small proteins or short open reading frames (**sORF**) which are not predicted by tools like `Prodigal`.
+- **Small proteins / short open reading frames**
+Bakta detects and annotates small proteins/short open reading frames (**sORF**) which are not predicted by tools like `Prodigal`.
 
 - **Fast**
 Bakta can annotate a typical bacterial genome in 10 &plusmn;5 min on a laptop, plasmids in a couple of seconds/minutes.
 
 - **Expert annotation systems**
 To provide high quality annotations for certain proteins of higher interest, *e.g.* AMR & VF genes, Bakta includes & merges different expert annotation systems. Currently, Bakta uses NCBI's AMRFinderPlus for AMR gene annotations as well as an generalized protein sequence expert system with distinct coverage, identity and priority values for each sequence, currenlty comprising the [VFDB](http://www.mgc.ac.cn/VFs/main.htm) as well as NCBI's [BlastRules](https://ftp.ncbi.nih.gov/pub/blastrules/).
+
+- **Comprehensive workflow**
+Bakta annotates all standard/mandatory feature types (tRNA, tmRNA, rRNA, ncRNA genes, CRISPR, CDS) as well as ncRNA cis-regulatory regions, oriC/oriV/oriT and assembly gaps.
 
 - **Reasoning**
 By annotating bacterial genomes in a standardized, taxon-independent, high-throughput and local manner, Bakta targets the niche between fully-featured but computationally-demanding pipelines like [PGAP](https://github.com/ncbi/pgap) and rapid highly-customizable offline tools like [Prokka](https://github.com/tseemann/prokka). Indeed, Bakta is heavily inspired by Prokka (kudos to [Torsten Seemann](https://github.com/tseemann)) and many command line options are compatible for the sake of interoperability and user convenience. Hence, if Bakta does not fit your needs, please try Prokka.
