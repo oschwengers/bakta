@@ -19,7 +19,6 @@ Bakta is a tool for the rapid & standardized annotation of bacterial genomes & p
 - [Usage](#usage)
 - [Annotation workflow](#annoation_workflow)
 - [Database](#database)
-- [WIP](#wip)
 - [Citation](#citation)
 - [FAQ](#faq)
 - [Issues & Feature Requests](#issues)
@@ -445,27 +444,9 @@ To provide FAIR annotations, the database releases are SemVer versioned (w/o pat
 
 All database releases (latest 1.0, 25 Gb zipped, 48 Gb unzipped) are hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo..svg)](https://doi.org/10.5281/zenodo.)
 
-## WIP
-
-We're keen to constantly improve and further expand Bakta. If you miss any features, please do not hesitate to ask for it!
-There are several features & improvements which we're currently working on or have plans to do so as well as mere ideas:
-
-Workflow:
-
-- detections of pseudo genes [#4](https://github.com/oschwengers/bakta/issues/4)
-
-Annotation:
-
-- (idea) KEGG KofamKOALA annotation [#9](https://github.com/oschwengers/bakta/issues/9)
-- (idea) protein classification of IPS/PSC in terms of (`amr`, `virulence`, `mobilization`, `conjugation`, `replication`, *etc*) for subsequent visualization/analysis
-
-Technical:
-
-- Expand tests [#29](https://github.com/oschwengers/bakta/issues/29)
-
 ## Citation
 
-A manuscript is not yet in preparation, but might be soon... To temporarily cite our work, please transitionally refer to:
+A manuscript is in preparation. To temporarily cite our work, please transitionally refer to:
 > Schwengers O., Goesmann A. (2021) Bakta: Rapid & standardized annotation of bacterial genomes & plasmids. GitHub https://github.com/oschwengers/bakta
 
 Bakta takes advantage of many publicly available databases. If you find any of the data used within Bakta useful, please also be sure to credit the primary source also:
@@ -482,6 +463,9 @@ Bakta takes advantage of many publicly available databases. If you find any of t
 - VFDB: <https://doi.org/10.1093/nar/gky1080>
 
 ## FAQ
+
+* __Nice, but I'm mising XYZ...__
+Bakta is quite new and we're keen to constantly improve it and further expand its feature set. In case there's anything missing, please do not hesitate to open an issue and ask for it!
 
 * __Bakta is running too long without CPU load... why?__
 Bakta takes advantage of an SQLite DB which results in high storage IO loads. If this DB is stored on a remote / network volume, the lookup of IPS/PSC annotations might take a long time. In these cases, please, consider moving the DB to a local volume or hard drive. Setting POSIX permissions of the db directory to read/access only (`555`) and files to read only (`444`) might also help:
