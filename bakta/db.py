@@ -12,6 +12,7 @@ from pathlib import Path
 import requests
 
 import bakta
+import bakta.constants as bc
 import bakta.utils as bu
 
 log = logging.getLogger('DB')
@@ -95,9 +96,8 @@ def check(db_path):
 
 
 def fetch_db_versions():
-    db_version_url = 'https://raw.githubusercontent.com/oschwengers/bakta/db-download/db-versions.json'
     try:
-        with requests.get(db_version_url) as resp:
+        with requests.get(bc.DB_VERSIONS_URL) as resp:
             versions = json.loads(resp.content)
     except IOError as e:
         print(e, file=sys.stderr)
