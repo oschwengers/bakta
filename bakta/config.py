@@ -129,6 +129,9 @@ def setup(args):
 
     # input / output configurations
     min_contig_length = args.min_contig_length
+    if(min_contig_length <= 0):
+        log.error("wrong argument for 'min-contig-length' parameter! min_contig_length=%s", min_contig_length)
+        sys.exit(f"ERROR: wrong argument ({min_contig_length}) for 'min- contig-length' parameter! Value must be larger than 0")
     log.info('min_contig_length=%s', min_contig_length)
     log.info('prefix=%s', prefix)  # set in bakta.py before global logger config
     log.info('output-path=%s', output_path)

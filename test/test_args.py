@@ -161,3 +161,21 @@ def test_threads_failing(parameters, tmpdir):
     cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna']
     proc = run(cmd_line)
     assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--min-contig-length']),  # not provided
+        (['--min-contig-length', '']),  # empty
+        (['--min-contig-length', 'foo']),  # string
+        (['--min-contig-length', '-1']),  # smaller than zero
+        (['--min-contig-length', '0']),  # zero
+        (['--min-contig-length', '1.1']),  # float
+    ]
+)
+def test_min_contig_length_failing(parameters, tmpdir):
+    # test min-contig-length arguments
+    cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna']
+    proc = run(cmd_line)
+    assert proc.returncode != 0
