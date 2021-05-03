@@ -115,13 +115,11 @@ def setup(args):
     log.info('tmp-path=%s', tmp_path)
 
     try:
+        if(args.genome == ''):
+            raise ValueError('File path argument must be non-empty')
         genome_path = Path(args.genome).resolve()
-        if(not os.access(str(genome_path), os.R_OK)):
-            log.error('genome file not readable! path=%s', genome_path)
-            sys.exit(f'ERROR: genome file ({genome_path}) not readable!')
-        if(genome_path.stat().st_size == 0):
-            log.error('empty genome file! path=%s', genome_path)
-            sys.exit(f'ERROR: genome file ({genome_path}) is empty!')
+        check_readability('genome', genome_path)
+        check_content_size('genome', genome_path)
     except:
         log.error('provided genome file not valid! path=%s', args.genome)
         sys.exit(f'ERROR: genome file ({args.genome}) not valid!')
@@ -162,13 +160,11 @@ def setup(args):
     prodigal_tf = args.prodigal_tf
     if(prodigal_tf is not None):
         try:
+            if(prodigal_tf == ''):
+                raise ValueError('File path argument must be non-empty')
             prodigal_tf_path = Path(args.prodigal_tf).resolve()
-            if(not os.access(str(prodigal_tf_path), os.R_OK)):
-                log.error('prodigal training file not readable! path=%s', prodigal_tf_path)
-                sys.exit(f'ERROR: Prodigal training file ({prodigal_tf_path}) not readable!')
-            if(prodigal_tf == '' or prodigal_tf_path.stat().st_size == 0):
-                log.error('empty prodigal training file! path=%s', prodigal_tf_path)
-                sys.exit(f'ERROR: Prodigal training file ({prodigal_tf_path}) is empty!')
+            check_readability('prodigal training', prodigal_tf_path)
+            check_content_size('prodigal training', prodigal_tf_path)
             prodigal_tf = prodigal_tf_path
         except:
             log.error('provided prodigal training file not valid! path=%s', prodigal_tf)
@@ -187,13 +183,11 @@ def setup(args):
     replicons = args.replicons
     if(replicons is not None):
         try:
+            if(replicons == ''):
+                raise ValueError('File path argument must be non-empty')
             replicon_table_path = Path(args.replicons).resolve()
-            if(not os.access(str(replicon_table_path), os.R_OK)):
-                log.error('replicon table not readable! path=%s', replicon_table_path)
-                sys.exit(f'ERROR: replicon table file ({replicon_table_path}) not readable!')
-            if(replicons == '' or replicon_table_path.stat().st_size == 0):
-                log.error('empty replicon table file! path=%s', replicon_table_path)
-                sys.exit(f'ERROR: replicon table file ({replicon_table_path}) is empty!')
+            check_readability('replicon table', replicon_table_path)
+            check_content_size('replicon table', replicon_table_path)
             replicons = replicon_table_path
         except:
             log.error('provided replicon file not valid! path=%s', replicons)
@@ -222,3 +216,15 @@ def setup(args):
     log.info('skip-gap=%s', skip_gap)
     skip_ori = args.skip_ori
     log.info('skip-ori=%s', skip_ori)
+
+
+def check_readability(file_name, file_Path):
+    if(not os.access(str(file_Path), os.R_OK)):
+        log.error('%s file not readable! path=%s', file_name, file_Path)
+        sys.exit(f'ERROR: {file_name} file ({file_Path}) not readable!')
+
+
+def check_content_size(file_name, file_path):
+    if(file_path.stat().st_size == 0):
+        log.error('empty %s file! path=%s', file_name, file_path)
+        sys.exit(f'ERROR: {file_name} file ({file_path}) is empty!')
