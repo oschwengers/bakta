@@ -128,12 +128,6 @@ Download the most recent compatible database version:
 $ bakta_db download --output <output-path>
 ```
 
-Update an existing database:
-
-```bash
-$ bakta_db update --db <existing-db-path> [--tmp-dir <tmp-directory>]
-```
-
 or download it manually:
 
 ```bash
@@ -142,7 +136,13 @@ $ tar -xzf db.tar.gz
 $ rm db.tar.gz
 ```
 
-The db path can be provided either via parameter (`--db`) or environment variable (`BAKTA_DB`):
+Update an existing database:
+
+```bash
+$ bakta_db update --db <existing-db-path> [--tmp-dir <tmp-directory>]
+```
+
+The database path can be provided either via parameter (`--db`) or environment variable (`BAKTA_DB`):
 
 ```bash
 $ bakta --db <db-path> genome.fasta
@@ -156,6 +156,8 @@ For system-wide setups, the database can also be copied to the Bakta base direct
 ```bash
 $ cp -r db/ <bakta-installation-dir>
 ```
+
+As Bakta takes advantage of AMRFinderPlus for the annotation of AMR genes, AMRFinder is required to setup its own internal databases, once via `amrfinder -U`.
 
 ## Examples
 
@@ -463,6 +465,9 @@ Bakta takes advantage of many publicly available databases. If you find any of t
 - VFDB: <https://doi.org/10.1093/nar/gky1080>
 
 ## FAQ
+
+* __AMRFinder fails__
+If AMRFinder constantly crashes even on fresh setups, then AMRFinder needs to setup its own internal database. This is required only once: `amrfinder -U`.
 
 * __Nice, but I'm mising XYZ...__
 Bakta is quite new and we're keen to constantly improve it and further expand its feature set. In case there's anything missing, please do not hesitate to open an issue and ask for it!
