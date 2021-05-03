@@ -143,3 +143,21 @@ def test_output_failing():
     cmd_line = ['bin/bakta', '--output', '/', 'test/data/draft-w-plasmids.fna']
     proc = run(cmd_line)
     assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--threads']),  # not provided
+        (['--threads', '']),  # empty
+        (['--threads', 'foo']),  # string
+        (['--threads', '-1']),  # smaller than zero
+        (['--threads', '0']),  # zero
+        (['--threads', '1.1']),  # float
+    ]
+)
+def test_threads_failing(parameters, tmpdir):
+    # test threads arguments
+    cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna']
+    proc = run(cmd_line)
+    assert proc.returncode != 0

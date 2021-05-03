@@ -56,6 +56,9 @@ def setup(args):
     # runtime configurations
     global env, threads, verbose
     threads = args.threads
+    if(threads <= 0):
+        log.error("wrong argument for 'threads' parameter! threads=%s", threads)
+        sys.exit(f"ERROR: wrong argument ({threads}) for 'threads' parameter! Value must be larger than 0")
     log.info('threads=%i', threads)
     verbose = args.verbose
     log.info('verbose=%s', verbose)
