@@ -310,7 +310,7 @@ Annotation:
   --keep-contig-headers
                         Keep original contig headers
   --replicons REPLICONS, -r REPLICONS
-                        Replicon information table (tsv)
+                        Replicon information table (tsv/csv)
 
 Workflow:
   --skip-trna           Skip tRNA detection & annotation
