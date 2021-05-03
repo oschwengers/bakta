@@ -157,7 +157,7 @@ def main():
     parser_download.add_argument('--output', '-o', action='store', default=Path.cwd(), help='output directory (default = current working directory)')
     parser_download.add_argument('--minor', '-n', action='store', type=int, default=0, help='Database minor version (default = most recent db minor version)')
     
-    parser_update = subparsers.add_parser('update', help='Download a database')  #  add download sub-command options
+    parser_update = subparsers.add_parser('update', help='Update an existing database to the most recent compatible version')  #  add download sub-command options
     parser_update.add_argument('--db', '-d', action='store', default=None, help='Current database path (default = <bakta_path>/db). Can also be provided as BAKTA_DB environment variable.')
     parser_update.add_argument('--tmp-dir', '-t', action='store', dest='tmp_dir', default=Path.cwd(), help='Temporary directory to download & extract (default = current working directory)')
     
