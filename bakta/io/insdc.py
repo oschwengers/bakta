@@ -121,12 +121,12 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 qualifiers['inference'] = inference
             elif(feature['type'] == bc.FEATURE_T_RNA):
                 # TODO: Position anticodon
-                if('notes' in feature):
-                    if('anti_codon' in feature):
-                        qualifiers['note'] = feature['notes']
-                        i = feature['product'].find('-')
-                        t_rna_type = feature['product'][i+1:].lower()
-                        qualifiers['anticodon'] = f"(aa:{t_rna_type},seq:{feature['anti_codon'].lower()})"
+                if('amino_acid' in feature and 'anti_codon' in feature):
+                    if('anti_codon_pos' in feature):
+                        anti_codon_pos = feature['anti_codon_pos']
+                        qualifiers['anticodon'] = f"(pos:{anti_codon_pos[0]}..{anti_codon_pos[1]},aa:{feature['amino_acid']},seq:{feature['anti_codon']})"
+                    else:
+                        qualifiers['note'] = f"tRNA-{feature['amino_acid']} ({feature['anti_codon']})"
                 qualifiers['inference'] = 'profile:tRNAscan:2.0'
                 insdc_feature_type = bc.INSDC_FEATURE_T_RNA
             elif(feature['type'] == bc.FEATURE_TM_RNA):

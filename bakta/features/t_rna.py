@@ -87,8 +87,8 @@ def predict_t_rnas(genome, contigs_path):
             if(trna_type != 'Undet'):
                 trna['gene'] = f'{trna_type}_trna'
                 trna['product'] = f'tRNA-{trna_type}'
-                trna['anti_codon'] = anti_codon
-                trna['notes'] = [f'tRNA-{trna_type} ({anti_codon})']
+                trna['amino_acid'] = trna_type
+                trna['anti_codon'] = anti_codon.lower()
             
             if('pseudo' in note):
                 trna['gene'] = ''
@@ -113,6 +113,16 @@ def predict_t_rnas(genome, contigs_path):
         for record in SeqIO.parse(fh, 'fasta'):
             trna = trnas[record.id]
             trna['sequence'] = str(record.seq)
+            if('anti_codon' in trna):
+                anticodon_pos = trna['sequence'].lower().find(trna['anti_codon'])
+                if(anticodon_pos > -1):
+                    if(trna['strand'] == bc.STRAND_FORWARD):
+                        start = trna['start'] + anticodon_pos
+                        stop = start + 2
+                    else:
+                        stop = trna['stop'] - anticodon_pos
+                        start = stop - 2
+                    trna['anti_codon_pos'] = (start, stop)
     trnas = list(trnas.values())
     log.info('predicted=%i', len(trnas))
     return trnas
