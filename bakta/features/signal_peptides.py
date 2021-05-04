@@ -33,8 +33,8 @@ def execute_deepsig(orfs, orf_fasta_path):
         sys.exit('ERROR: deepsig failed to run through! error code: %s, error output: %s', proc.returncode, proc.stderr)
 
     sequences_by_hexdigest = {f"{orf['aa_hexdigest']}": orf for orf in orfs}
-    sig_pep = OrderedDict()
-    sig_peps = []
+
+    sig_peps = set()
     with deepsig_output_path.open() as fh:
         for line in fh:
             feature_type = line.split("\t")[2]
@@ -45,10 +45,12 @@ def execute_deepsig(orfs, orf_fasta_path):
 
                 start_nucleotides, stop_nucleotides = start_stop_orf(orf, start, stop)
 
-                sig_pep['type'] = bc.FEATURE_SIGNAL_PEPTIDE
-                sig_pep['start'] = start_nucleotides
-                sig_pep['stop'] = stop_nucleotides
-                sig_pep['feature_annotation_score'] = feature_annotation_score
+                sig_pep = {
+                    'type': bc.FEATURE_SIGNAL_PEPTIDE,
+                    'start': start_nucleotides,
+                    'stop': stop_nucleotides,
+                    'feature_annotation_score': feature_annotation_score
+                }
                 if (bc.FEATURE_SIGNAL_PEPTIDE not in orf):
                     orf[bc.FEATURE_SIGNAL_PEPTIDE]={}
                 orf[bc.FEATURE_SIGNAL_PEPTIDE]=sig_pep
@@ -56,7 +58,8 @@ def execute_deepsig(orfs, orf_fasta_path):
                     'hit: identifier=%s, start=%s, stop=%s, feature annotation score=%s',
                     aa_identifier, start_nucleotides, stop_nucleotides, feature_annotation_score
                 )
-                sig_peps.append(sig_pep)
+                sig_peps.add(identifier)
+
     return sig_peps
 
 def start_stop_orf(orf, start, stop):
