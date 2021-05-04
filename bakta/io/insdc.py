@@ -151,8 +151,10 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                     if(dbxref.split(':')[0] == 'RFAM'):
                         rfam_id = dbxref.split(':')[1]
                         qualifiers['inference'] = f'profile:Rfam:{rfam_id}'
-                qualifiers['ncRNA_class'] = 'other'
+                qualifiers['regulatory_class'] = select_regulatory_class(feature['product'])
                 insdc_feature_type = bc.INSDC_FEATURE_REGULATORY
+                qualifiers['function'] = feature['product']
+                qualifiers.pop('product', None)
             elif(feature['type'] == bc.FEATURE_CRISPR):
                 qualifiers[bc.INSDC_FEATURE_REPEAT_FAMILY] = 'CRISPR'
                 qualifiers[bc.INSDC_FEATURE_REPEAT_TYPE] = 'direct'
@@ -212,3 +214,18 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
         log.info('write EMBL output: path=%s', embl_output_path)
         SeqIO.write(contig_list, fh, format='embl')
 
+
+def select_regulatory_class(product):
+    product = product.lower()
+    if('leader' in product):
+        return bc.INSDC_FEATURE_REGULATORY_CLASS_ATTENUATOR
+    elif('riboswitch' in product):
+        return bc.INSDC_FEATURE_REGULATORY_CLASS_RIBOSWITCH
+    elif('thermometer' in product or 'thermoregulator' in product or 'sensor' in product):
+        return bc.INSDC_FEATURE_REGULATORY_CLASS_RESPONSE_ELEMENT
+    elif('ribosomal frameshifting' in product or 'selenocysteine insertion sequence' in product):
+        return bc.INSDC_FEATURE_REGULATORY_CLASS_RECODING_STIMULATORY_REGION
+    elif('ribosome binding site' in product):
+        return bc.INSDC_FEATURE_REGULATORY_CLASS_RIBOSOME_BINDING_SITE
+    else:
+        return bc.INSDC_FEATURE_REGULATORY_CLASS_OTHER
