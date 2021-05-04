@@ -136,6 +136,8 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     # add DbXrefs
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tProdigal\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
+                    if('signal peptide' in feat):
+                        write_signal_peptide(fh, feat)
                 elif(feat['type'] is bc.FEATURE_SORF):
                     annotations = {
                         'ID': feat['locus'],
@@ -151,6 +153,8 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     # add DbXrefs
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tBakta\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
+                    if('signal peptide' in feat):
+                        write_signal_peptide(fh, feat)
                 elif(feat['type'] is bc.FEATURE_GAP):
                     annotations = {
                         'Name': f"assembly gap [length={feat['length']}]",
@@ -198,3 +202,13 @@ def encode_annotations(annotations):
         else:
             annotation_strings.append(f'{key}={val}')
     return ';'.join(annotation_strings)
+
+def write_signal_peptide(fh, feat):
+    annotations={
+        'ID': feat['locus'],
+        'Name': 'signal peptide',
+        'product': 'signal peptide',
+        'feature_annotation_score': feat['signal peptide']['feature_annotation_score'],
+        'Parent': feat['locus']
+    }
+    fh.write(f"{feat['contig']}\tDeepSig\t{so.SO_SIGNAL_PEPTIDE.name}\t{feat['signal peptide']['start']}\t{feat['signal peptide']['stop']}\t.\t{feat['strand']}\t.\t{annotations}\n")
