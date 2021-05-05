@@ -81,12 +81,13 @@ def predict_nc_rnas(genome, contigs_path):
                     )
                 else:
                     rfam_id = f'RFAM:{accession}'
-                    db_xrefs = [rfam_id, so.SO_NCRNA_GENE.id]
+                    db_xrefs = [rfam_id]
                     if(rfam_id in rfam2go):
                         db_xrefs += rfam2go[rfam_id]
                     
                     ncrna = OrderedDict()
                     ncrna['type'] = bc.FEATURE_NC_RNA
+                    ncrna['class'] = determine_class(description)
                     ncrna['contig'] = contig_id
                     ncrna['start'] = start
                     ncrna['stop'] = stop
@@ -102,6 +103,11 @@ def predict_nc_rnas(genome, contigs_path):
                     elif(truncated == bc.FEATURE_END_3_PRIME):
                         ncrna['product'] = f"(3' truncated) {description}"
                     
+                    if(ncrna['class'] is not None):
+                        db_xrefs.append(ncrna['class'].id)
+                    else:
+                        db_xrefs.append(so.SO_NCRNA_GENE.id)
+                    
                     if(truncated):
                         ncrna['truncated'] = truncated
                     
@@ -116,3 +122,15 @@ def predict_nc_rnas(genome, contigs_path):
                     )
     log.info('predicted=%i', len(ncrnas))
     return ncrnas
+
+
+def determine_class(description):
+    description = description.lower()
+    if('ribozyme' in description):
+        return so.SO_NCRNA_GENE_RIBOZYME
+    elif('rnase p' in description):
+        return so.SO_NCRNA_GENE_RNASEP
+    elif('antisense' in description):
+        return so.SO_NCRNA_GENE_ANTISENSE
+    else:
+        None

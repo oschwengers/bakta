@@ -8,6 +8,7 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation, CompoundLocation, AfterP
 import bakta
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.so as so
 from bakta.constants import FEATURE_CDS
 
 log = logging.getLogger('INSDC')
@@ -144,14 +145,14 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                     if(dbxref.split(':')[0] == 'RFAM'):
                         rfam_id = dbxref.split(':')[1]
                         qualifiers['inference'] = f'profile:Rfam:{rfam_id}'
-                qualifiers['ncRNA_class'] = 'other'
+                qualifiers[bc.INSDC_FEATURE_NC_RNA_CLASS] = select_ncrna_class(feature)
                 insdc_feature_type = bc.INSDC_FEATURE_NC_RNA
             elif(feature['type'] == bc.FEATURE_NC_RNA_REGION):
                 for dbxref in feature['db_xrefs']:
                     if(dbxref.split(':')[0] == 'RFAM'):
                         rfam_id = dbxref.split(':')[1]
                         qualifiers['inference'] = f'profile:Rfam:{rfam_id}'
-                qualifiers['regulatory_class'] = select_regulatory_class(feature['product'])
+                qualifiers[bc.INSDC_FEATURE_REGULATORY_CLASS] = select_regulatory_class(feature)
                 insdc_feature_type = bc.INSDC_FEATURE_REGULATORY
                 qualifiers['function'] = feature['product']
                 qualifiers.pop('product', None)
@@ -215,8 +216,21 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
         SeqIO.write(contig_list, fh, format='embl')
 
 
-def select_regulatory_class(product):
-    product = product.lower()
+def select_ncrna_class(feature):
+    if(feature['class'] is None):
+        return bc.INSDC_FEATURE_NC_RNA_CLASS_OTHER
+    elif(feature['class'].id == so.SO_NCRNA_GENE_ANTISENSE.id):
+        return bc.INSDC_FEATURE_NC_RNA_CLASS_ANTISENSE
+    elif(feature['class'].id == so.SO_NCRNA_GENE_RIBOZYME.id):
+        return bc.INSDC_FEATURE_NC_RNA_CLASS_RIBOZYME
+    elif(feature['class'].id == so.SO_NCRNA_GENE_RNASEP.id):
+        return bc.INSDC_FEATURE_NC_RNA_CLASS_RNASEP
+    else:
+        return bc.INSDC_FEATURE_NC_RNA_CLASS_OTHER
+
+
+def select_regulatory_class(feature):
+    product = feature['product'].lower()
     if('leader' in product):
         return bc.INSDC_FEATURE_REGULATORY_CLASS_ATTENUATOR
     elif('riboswitch' in product):
