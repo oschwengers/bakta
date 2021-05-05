@@ -130,6 +130,8 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                         qualifiers['note'] = f"tRNA-{feature['amino_acid']} ({feature['anti_codon']})"
                 qualifiers['inference'] = 'profile:tRNAscan:2.0'
                 insdc_feature_type = bc.INSDC_FEATURE_T_RNA
+                if('pseudo' in feature):
+                    qualifiers['pseudo'] = None
             elif(feature['type'] == bc.FEATURE_TM_RNA):
                 qualifiers['inference'] = 'profile:aragorn:1.2'
                 insdc_feature_type = bc.INSDC_FEATURE_TM_RNA
