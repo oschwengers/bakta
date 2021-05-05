@@ -79,8 +79,6 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
         source = SeqFeature(FeatureLocation(0, contig['length'], strand=+1), type='source', qualifiers=source_qualifiers)
         seq_feature_list = [source]
 
-        accompanying_features=[]
-
         for feature in contig_features:
             insdc_feature_type = None
             qualifiers = {}
@@ -91,6 +89,8 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
             if('locus' in feature):
                 qualifiers['locus_tag'] = feature['locus']
             
+            accompanying_features=[]
+
             if(feature['type'] == bc.FEATURE_GAP):
                 insdc_feature_type = bc.INSDC_FEATURE_GAP
                 qualifiers['estimated_length'] = feature['length']
@@ -121,13 +121,14 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                         if('uniref90_id' in feature['psc']):
                             psc_subject_id = feature['psc']['uniref90_id']
                             inference.append(f'similar to AA sequence:UniProtKB:{psc_subject_id}')
-                    if('signal peptide' in feature):
-                        sigpep_qualifiers={}
+                    if(bc.FEATURE_SIGNAL_PEPTIDE in feature):
+                        sigpep = feature[bc.FEATURE_SIGNAL_PEPTIDE]
+                        sigpep_qualifiers = {}
                         sigpep_qualifiers['locus_tag'] = feature['locus']
                         sigpep_qualifiers['inference'] = 'ab initio prediction:DeepSig'
-                        sigpep_strand = 1 if feature['strand']==bc.STRAND_FORWARD else -1 if feature['strand']==bc.STRAND_REVERSE else 0
-                        sigpep_location = FeatureLocation(feature['signal peptide']['start'], feature['signal peptide']['stop'], strand = sigpep_strand)
-                        sigpep_feature = SeqFeature(sigpep_location, type='sig_pep', qualifiers=sigpep_qualifiers)
+                        sigpep_strand = 1 if feature['strand'] == bc.STRAND_FORWARD else -1 if feature['strand'] == bc.STRAND_REVERSE else 0
+                        sigpep_location = FeatureLocation(sigpep['start'], sigpep['stop'], strand = sigpep_strand)
+                        sigpep_feature = SeqFeature(sigpep_location, type = bc.INSDC_FEATURE_SIGNAL_PEPTIDE, qualifiers = sigpep_qualifiers)
                         accompanying_features.append(sigpep_feature)
                 qualifiers['inference'] = inference
             elif(feature['type'] == bc.FEATURE_T_RNA):
@@ -212,10 +213,9 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 seq_feature_list.append(gen_seqfeat)
             feat_seqfeat = SeqFeature(feature_location, type=insdc_feature_type, qualifiers=qualifiers)
             seq_feature_list.append(feat_seqfeat)
-            if accompanying_features:
+            if (len(accompanying_features) != 0):
                 for acc_feature in accompanying_features:
                     seq_feature_list.append(acc_feature)
-                del accompanying_features[:]
         contig_rec.features = seq_feature_list
         contig_list.append(contig_rec)
 
