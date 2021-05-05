@@ -272,7 +272,7 @@ def main():
         if(cfg.gram != '?'):
             sig_peptides_found = signal_peptide.execute_deepsig(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
             print(f"\tsignal peptides: {len(sig_peptides_found)}")
-        
+
         print('\tmark hypotheticals and combine annotations...')
         log.debug('combine CDS annotations')
         for feat in genome['features'][bc.FEATURE_CDS]:
@@ -336,12 +336,11 @@ def main():
         genome['features'][bc.FEATURE_SORF] = sorfs_filtered
         print(f'\tfiltered sORFs: {len(sorfs_filtered)}')
         
-        s_orfs_fasta_path = cfg.tmp_path.joinpath('sorf.faa')
-        with s_orfs_fasta_path.open(mode='w') as fsorf:
-            for sorf in genome['features'][bc.FEATURE_SORF]:
-                fsorf.write(f">{sorf['aa_hexdigest']}-{sorf['contig']}-{sorf['start']}\n{sorf['sequence']}\n")
-        
         if(cfg.gram != '?'):
+            s_orfs_fasta_path = cfg.tmp_path.joinpath('sorf.faa')
+            with s_orfs_fasta_path.open(mode='w') as fsorf:
+                for sorf in genome['features'][bc.FEATURE_SORF]:
+                    fsorf.write(f">{sorf['aa_hexdigest']}-{sorf['contig']}-{sorf['start']}\n{sorf['sequence']}\n")
             sig_peptides_found = signal_peptide.execute_deepsig(genome['features'][bc.FEATURE_SORF], s_orfs_fasta_path)
             print(f"\tsignal peptides: {len(sig_peptides_found)}")
 
