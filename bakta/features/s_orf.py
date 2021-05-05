@@ -11,6 +11,7 @@ import bakta.config as cfg
 import bakta.constants as bc
 import bakta.utils as bu
 import bakta.psc as psc
+import bakta.so as so
 
 log = logging.getLogger('S_ORF')
 
@@ -54,7 +55,7 @@ def extract(genome):
                         sorf['product'] = None
                         sorf['gene'] = None
                         sorf['frame'] = frame + 1
-                        sorf['db_xrefs'] = []
+                        sorf['db_xrefs'] = [so.SO_SORF.id]
                         sorf['sequence'] = sequence
                         sorf['aa_digest'] = aa_digest
                         sorf['aa_hexdigest'] = aa_hexdigest
