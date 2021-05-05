@@ -154,7 +154,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                         qualifiers['inference'] = f'profile:Rfam:{rfam_id}'
                 qualifiers[bc.INSDC_FEATURE_REGULATORY_CLASS] = select_regulatory_class(feature)
                 insdc_feature_type = bc.INSDC_FEATURE_REGULATORY
-                qualifiers['function'] = feature['product']
+                qualifiers['note'] = feature['product']
                 qualifiers.pop('product', None)
             elif(feature['type'] == bc.FEATURE_CRISPR):
                 qualifiers[bc.INSDC_FEATURE_REPEAT_FAMILY] = 'CRISPR'
@@ -162,6 +162,8 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 qualifiers[bc.INSDC_FEATURE_REPEAT_UNIT_SEQ] = feature['repeat_consensus']
                 qualifiers['inference'] = 'COORDINATES:alignment:pilercr:1.02'
                 insdc_feature_type = bc.INSDC_FEATURE_REPEAT_REGION
+                qualifiers['note'] = feature['product']
+                qualifiers.pop('product', None)
             
             strand = None
             if(feature['strand'] == bc.STRAND_FORWARD):
