@@ -16,7 +16,6 @@ def execute_deepsig(orfs, orf_fasta_path):
     cmd = [
         'deepsig.py',
         '-f', str(orf_fasta_path),
-        '-f', str(seqs_fasta_path),
         '-k', gram,
         '-o', str(deepsig_output_path)
     ]
