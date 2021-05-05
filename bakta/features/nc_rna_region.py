@@ -6,6 +6,7 @@ from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.so as so
 
 log = logging.getLogger('NC_RNA_REGION')
 
@@ -86,6 +87,7 @@ def predict_nc_rna_regions(genome, contigs_path):
                     
                     ncrna_region = OrderedDict()
                     ncrna_region['type'] = bc.FEATURE_NC_RNA_REGION
+                    ncrna_region['class'] = determine_class(description)
                     ncrna_region['contig'] = contig_id
                     ncrna_region['start'] = start
                     ncrna_region['stop'] = stop
@@ -101,6 +103,11 @@ def predict_nc_rna_regions(genome, contigs_path):
                     elif(truncated == bc.FEATURE_END_3_PRIME):
                         ncrna_region['product'] = f"(3' truncated) {description}"
                     
+                    if(ncrna_region['class'] is not None):
+                        db_xrefs.append(ncrna_region['class'].id)
+                    else:
+                        db_xrefs.append(so.SO_REGULATORY_REGION.id)
+                    
                     if(truncated):
                         ncrna_region['truncated'] = truncated
                     
@@ -115,3 +122,21 @@ def predict_nc_rna_regions(genome, contigs_path):
                     )
     log.info('predicted=%i', len(ncrnas))
     return ncrnas
+
+
+def determine_class(description):
+    description = description.lower()
+    if('leader' in description):
+        return so.SO_CIS_REG_ATTENUATOR
+    elif('ribosomal frameshifting' in description):
+        return so.SO_CIS_REG_FRAMESHIFT
+    elif('insertion sequence' in description):
+        return so.SO_CIS_REG_RECODING_STIMULATION_REGION
+    elif('riboswitch' in description or 'sensor' in description):
+        return so.SO_CIS_REG_RIBOSWITCH
+    elif('thermoregulator' in description or 'thermometer' in description or 'rose' in description):
+        return so.SO_CIS_REG_THERMOMETER
+    elif('ribosome binding site' in description):
+        return so.SO_CIS_REG_RIBOSOME_BINDING_SITE
+    else:
+        None

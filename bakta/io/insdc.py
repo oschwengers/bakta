@@ -230,16 +230,17 @@ def select_ncrna_class(feature):
 
 
 def select_regulatory_class(feature):
-    product = feature['product'].lower()
-    if('leader' in product):
+    if(feature['class'] is None):
+        return bc.INSDC_FEATURE_REGULATORY_CLASS_OTHER
+    elif(feature['class'].id == so.SO_CIS_REG_ATTENUATOR.id):
         return bc.INSDC_FEATURE_REGULATORY_CLASS_ATTENUATOR
-    elif('riboswitch' in product):
+    elif(feature['class'].id == so.SO_CIS_REG_RIBOSWITCH.id):
         return bc.INSDC_FEATURE_REGULATORY_CLASS_RIBOSWITCH
-    elif('thermometer' in product or 'thermoregulator' in product or 'sensor' in product):
+    elif(feature['class'].id == so.SO_CIS_REG_THERMOMETER.id):
         return bc.INSDC_FEATURE_REGULATORY_CLASS_RESPONSE_ELEMENT
-    elif('ribosomal frameshifting' in product or 'selenocysteine insertion sequence' in product):
+    elif(feature['class'].id == so.SO_CIS_REG_RECODING_STIMULATION_REGION.id or feature['class'].id == so.SO_CIS_REG_FRAMESHIFT.id):
         return bc.INSDC_FEATURE_REGULATORY_CLASS_RECODING_STIMULATORY_REGION
-    elif('ribosome binding site' in product):
+    elif(feature['class'].id == so.SO_CIS_REG_RIBOSOME_BINDING_SITE.id):
         return bc.INSDC_FEATURE_REGULATORY_CLASS_RIBOSOME_BINDING_SITE
     else:
         return bc.INSDC_FEATURE_REGULATORY_CLASS_OTHER
