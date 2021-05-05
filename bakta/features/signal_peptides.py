@@ -19,6 +19,7 @@ def execute_deepsig(orfs, orf_fasta_path):
     cmd = [
         'deepsig.py',
         '-f', str(orf_fasta_path),
+        '-f', str(seqs_fasta_path),
         '-k', gram,
         '-o', str(deepsig_output_path)
     ]
@@ -45,6 +46,8 @@ def execute_deepsig(orfs, orf_fasta_path):
                 aa_identifier = identifier.split("-")[0]
                 orf = sequences_by_hexdigest[aa_identifier]
                 if orf['strand']=='-':
+                seq = sequences_by_hexdigest[aa_identifier]
+                if seq['strand']=='-':
                     start_nucleotides = start #TODO: figure out correct reverse positions
                     stop_nucleotides = stop
                 else:
