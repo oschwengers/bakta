@@ -19,12 +19,14 @@ SO_TERMS = {
     'gly': so.SO_TRNA_GLY,
     'pro': so.SO_TRNA_PRO,
     'met': so.SO_TRNA_MET,
+    'fmet': so.SO_TRNA_MET,
     'asp': so.SO_TRNA_ASP,
     'thr': so.SO_TRNA_THR,
     'val': so.SO_TRNA_VAL,
     'tyr': so.SO_TRNA_TYR,
     'cys': so.SO_TRNA_CYS,
     'ile': so.SO_TRNA_ILE,
+    'ile2': so.SO_TRNA_ILE,
     'ser': so.SO_TRNA_SER,
     'leu': so.SO_TRNA_LEU,
     'trp': so.SO_TRNA_TRP,
@@ -73,7 +75,7 @@ def predict_t_rnas(genome, contigs_path):
             if(start > stop):  # reverse
                 start, stop = stop, start
                 strand = bc.STRAND_REVERSE
-
+            
             contig = contig.strip()  # bugfix for extra single whitespace in tRNAscan-SE output
 
             trna = OrderedDict()
@@ -98,7 +100,7 @@ def predict_t_rnas(genome, contigs_path):
             trna['score'] = float(score)
 
             trna['db_xrefs'] = []
-            so_term = SO_TERMS.get(trna_type.lower().replace('2', ''), None)
+            so_term = SO_TERMS.get(trna_type.lower(), None)
             if(so_term):
                 trna['db_xrefs'].append(so_term.id)
 
@@ -113,7 +115,7 @@ def predict_t_rnas(genome, contigs_path):
         for record in SeqIO.parse(fh, 'fasta'):
             trna = trnas[record.id]
             trna['sequence'] = str(record.seq)
-            if('anti_codon' in trna):
+            if('anti_codon' in trna and trna['amino_acid'].lower() not in ['fmet', 'ile2']):  # exclude fMet & Ile2 (INSDC wrong anticodon issue)
                 anticodon_pos = trna['sequence'].lower().find(trna['anti_codon'])
                 if(anticodon_pos > -1):
                     if(trna['strand'] == bc.STRAND_FORWARD):
