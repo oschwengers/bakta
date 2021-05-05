@@ -34,42 +34,44 @@ def execute_deepsig(orfs, orf_fasta_path):
 
     sequences_by_hexdigest = {f"{orf['aa_hexdigest']}": orf for orf in orfs}
 
-    sig_peps = set()
+    sig_peps = []
     with deepsig_output_path.open() as fh:
         for line in fh:
             feature_type = line.split("\t")[2]
             if feature_type == "Signal peptide":
                 identifier, tool, feature_type, start, stop, feature_annotation_score, placeholder, placeholder2, description = line.split("\t")
+                start = int(start)
+                stop = int(stop)
                 aa_identifier = identifier.split("-")[0]
-                orf = sequences_by_hexdigest[aa_identifier]
+                if (aa_identifier in sequences_by_hexdigest):
+                    orf = sequences_by_hexdigest[aa_identifier]
+                    start_nucleotides, stop_nucleotides = start_stop_orf(orf, start, stop)
 
-                start_nucleotides, stop_nucleotides = start_stop_orf(orf, start, stop)
-
-                sig_pep = {
-                    'type': bc.FEATURE_SIGNAL_PEPTIDE,
-                    'start': start_nucleotides,
-                    'stop': stop_nucleotides,
-                    'feature_annotation_score': feature_annotation_score
-                }
-                if (bc.FEATURE_SIGNAL_PEPTIDE not in orf):
-                    orf[bc.FEATURE_SIGNAL_PEPTIDE]={}
-                orf[bc.FEATURE_SIGNAL_PEPTIDE]=sig_pep
-                log.debug(
-                    'hit: identifier=%s, start=%s, stop=%s, feature annotation score=%s',
-                    aa_identifier, start_nucleotides, stop_nucleotides, feature_annotation_score
-                )
-                sig_peps.add(identifier)
-
+                    sig_pep = {
+                        'type': bc.FEATURE_SIGNAL_PEPTIDE,
+                        'start': start_nucleotides,
+                        'stop': stop_nucleotides,
+                        'feature_annotation_score': feature_annotation_score
+                    }
+                    if (bc.FEATURE_SIGNAL_PEPTIDE not in orf):
+                        orf[bc.FEATURE_SIGNAL_PEPTIDE] = {}
+                    orf[bc.FEATURE_SIGNAL_PEPTIDE] = sig_pep
+                    log.debug(
+                        'hit: identifier=%s, start=%s, stop=%s, feature annotation score=%s',
+                        aa_identifier, start_nucleotides, stop_nucleotides, feature_annotation_score
+                    )
+                    sig_peps.append(sig_pep)
+                else:
+                    log.error('signal peptide: unknown aa_identifier=%s', aa_identifier)
+                    sys.exit('ERROR: signal peptide found for unknown aa_identifier=%s!', aa_identifier)
     return sig_peps
 
 def start_stop_orf(orf, start, stop):
     """Method for determining correct position of the signal peptide on nucleotide sequence."""
-    start = int(start)
-    stop = int(stop)
     if orf['strand'] == '-':
         start_nucleotides = orf['stop']-((stop-1)*3+2)
         stop_nucleotides = orf['stop']-((start-1)*3)
     else:
         start_nucleotides = orf['start']+((start-1)*3)
         stop_nucleotides = orf['start']+((stop-1)*3)+2
-    return start_nucleotides,stop_nucleotides
+    return start_nucleotides, stop_nucleotides
