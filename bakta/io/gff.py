@@ -153,8 +153,8 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     fh.write(f"{feat['contig']}\tBakta\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_GAP):
                     annotations = {
-                        'Name': f"assembly gap [length={feat['length']}]",
-                        'product': f"assembly gap [length={feat['length']}]"
+                        'Name': f"assembly gap ({feat['length']} bp)",
+                        'product': f"assembly gap ({feat['length']} bp)"
                     }
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tBakta\t{so.SO_GAP.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
