@@ -35,7 +35,7 @@ SO_TERMS = {
     'arg': so.SO_TRNA_ARG,
     'his': so.SO_TRNA_HIS,
     'phe': so.SO_TRNA_PHE,
-    'selcys': so.SO_TRNA_SELCYS
+    'sec': so.SO_TRNA_SELCYS
 }
 
 
@@ -86,7 +86,7 @@ def predict_t_rnas(genome, contigs_path):
             trna['strand'] = strand
             trna['gene'] = ''
             trna['product'] = 'tRNA-Xxx'
-            if(trna_type != 'Undet'):
+            if(trna_type != 'Undet' and trna_type != 'Sup'):
                 trna['gene'] = f'{trna_type}_trna'
                 trna['product'] = f'tRNA-{trna_type}'
                 trna['amino_acid'] = trna_type
@@ -115,7 +115,7 @@ def predict_t_rnas(genome, contigs_path):
         for record in SeqIO.parse(fh, 'fasta'):
             trna = trnas[record.id]
             trna['sequence'] = str(record.seq)
-            if('anti_codon' in trna and trna['amino_acid'].lower() not in ['fmet', 'ile2']):  # exclude fMet & Ile2 (INSDC wrong anticodon issue)
+            if('anti_codon' in trna and trna['amino_acid'].lower() not in ['fmet', 'ile2', 'sec', 'sup']):  # exclude fMet, Ile2 and Sec (INSDC wrong anticodon issue)
                 anticodon_pos = trna['sequence'].lower().find(trna['anti_codon'])
                 if(anticodon_pos > -1):
                     if(trna['strand'] == bc.STRAND_FORWARD):
