@@ -47,6 +47,9 @@ To provide high quality annotations for certain proteins of higher interest, *e.
 - **Comprehensive workflow**
 Bakta annotates all standard/mandatory feature types (tRNA, tmRNA, rRNA, ncRNA genes, CRISPR, CDS) as well as ncRNA cis-regulatory regions, oriC/oriV/oriT and assembly gaps.
 
+- **GFF3 & INSDC conform annotations**
+Bakta writes GFF3 and INSDC (Genbank & EMBL) conform annotation files ready for submission (checked via [GenomeTools GFF3Validator](http://genometools.org/cgi-bin/gff3validator.cgi) and [ENA Webin-CLI](https://github.com/enasequence/webin-cli) for GFF3 and EMBL file formats, respectively for representative genomes of all ESKAPE species).
+
 - **Reasoning**
 By annotating bacterial genomes in a standardized, taxon-independent, high-throughput and local manner, Bakta targets the niche between fully-featured but computationally-demanding pipelines like [PGAP](https://github.com/ncbi/pgap) and rapid highly-customizable offline tools like [Prokka](https://github.com/tseemann/prokka). Indeed, Bakta is heavily inspired by Prokka (kudos to [Torsten Seemann](https://github.com/tseemann)) and many command line options are compatible for the sake of interoperability and user convenience. Hence, if Bakta does not fit your needs, please try Prokka.
 
