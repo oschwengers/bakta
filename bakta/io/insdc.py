@@ -95,7 +95,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 qualifiers['estimated_length'] = feature['length']
             elif(feature['type'] == bc.FEATURE_ORIC or feature['type'] == bc.FEATURE_ORIV):
                 # TODO: Add fuzzy positions for oriC/oriV
-                insdc_feature_type = bc.INSDC_FEATURE_ORIGIN_REPLICTION
+                insdc_feature_type = bc.INSDC_FEATURE_ORIGIN_REPLICATION
                 qualifiers['inference'] = 'similar to DNA sequence'
             elif(feature['type'] == bc.FEATURE_ORIT):
                 # TODO: Add fuzzy positions for oriT
