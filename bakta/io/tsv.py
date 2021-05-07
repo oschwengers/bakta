@@ -10,7 +10,7 @@ log = logging.getLogger('TSV')
 
 def write_tsv(contigs, features_by_contig, tsv_path):
     """Export features in TSV format."""
-    log.info('write tsv output: path=%s', tsv_path)
+    log.info('write tsv: path=%s', tsv_path)
     
     with tsv_path.open('wt') as fh:
         fh.write(f'#Annotated with Bakta (v{bakta.__version__}): https://github.com/oschwengers/bakta\n')
@@ -30,7 +30,7 @@ def write_tsv(contigs, features_by_contig, tsv_path):
 
 def write_hypothetical_tsv(hypotheticals, tsv_path):
     """Export hypothetical information in TSV format."""
-    log.info('write hypothetical tsv output: path=%s', tsv_path)
+    log.info('write hypothetical tsv: path=%s', tsv_path)
     
     with tsv_path.open('wt') as fh:
         fh.write(f'#Annotated with Bakta v{bakta.__version__}, https://github.com/oschwengers/bakta\n')

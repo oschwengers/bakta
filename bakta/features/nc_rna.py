@@ -66,6 +66,7 @@ def predict_nc_rnas(genome, contigs_path):
                     (start, stop) = (stop, start)
                 (start, stop) = (int(start), int(stop))
                 evalue = float(evalue)
+                score = float(score)
                 length = stop - start + 1
                 if(trunc == "5'"):
                     truncated = bc.FEATURE_END_5_PRIME
@@ -76,8 +77,8 @@ def predict_nc_rnas(genome, contigs_path):
                 
                 if(evalue > 1E-4):
                     log.debug(
-                        'discard low E value: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, length=%i, truncated=%s, evalue=%1.1e',
-                        contig_id, start, stop, strand, subject, length, truncated, evalue
+                        'discard low E value: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
+                        contig_id, start, stop, strand, subject, length, truncated, score, evalue
                     )
                 else:
                     rfam_id = f'RFAM:{accession}'
@@ -111,14 +112,14 @@ def predict_nc_rnas(genome, contigs_path):
                     if(truncated):
                         ncrna['truncated'] = truncated
                     
-                    ncrna['score'] = float(score)
+                    ncrna['score'] = score
                     ncrna['evalue'] = evalue
                     ncrna['db_xrefs'] = db_xrefs
 
                     ncrnas.append(ncrna)
                     log.info(
-                        'contig=%s, start=%i, stop=%i, strand=%s, product=%s, length=%i, truncated=%s, evalue=%1.1e',
-                        ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['product'], length, truncated, ncrna['evalue']
+                        'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
+                        ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['gene'], ncrna['product'], length, truncated, ncrna['score'], ncrna['evalue']
                     )
     log.info('predicted=%i', len(ncrnas))
     return ncrnas

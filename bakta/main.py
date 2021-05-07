@@ -3,6 +3,9 @@ import logging
 import os
 import sys
 import shutil
+import platform as pf
+
+from datetime import datetime
 from pathlib import Path
 
 import bakta
@@ -59,12 +62,18 @@ def main():
     logging.basicConfig(
         filename=str(output_path.joinpath(f'{cfg.prefix}.log')),
         filemode='w',
-        format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
+        format='%(asctime)s.%(msecs)03d - %(levelname)s - %(name)s - %(message)s',
+        datefmt='%H:%M:%S',
         level=logging.DEBUG if args.verbose else logging.INFO
     )
     log = logging.getLogger('MAIN')
-    log.info('version %s', bakta.__version__)
-    log.info('command line: %s', ' '.join(sys.argv))
+    log.info('version=%s', bakta.__version__)
+    log.info('developer: Oliver Schwengers, https://github.com/oschwengers')
+    log.info('command: %s', ' '.join(sys.argv))
+    log.info('local time: %s', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    log.info('machine: type=%s, cores=%s', pf.processor(), os.cpu_count())
+    log.info('system: type=%s, release=%s', pf.system(), pf.release())
+    log.info('python: version=%s, implementation=%s', pf.python_version(), pf.python_implementation())
 
     ############################################################################
     # Checks and configurations

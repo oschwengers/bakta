@@ -52,8 +52,8 @@ def extract(genome):
                         sorf['start'] = dna_start
                         sorf['stop'] = dna_stop
                         sorf['strand'] = strand
-                        sorf['product'] = None
                         sorf['gene'] = None
+                        sorf['product'] = None
                         sorf['frame'] = frame + 1
                         sorf['db_xrefs'] = [so.SO_SORF.id]
                         sorf['sequence'] = sequence

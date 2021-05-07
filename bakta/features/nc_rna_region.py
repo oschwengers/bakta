@@ -66,6 +66,7 @@ def predict_nc_rna_regions(genome, contigs_path):
                     (start, stop) = (stop, start)
                 (start, stop) = (int(start), int(stop))
                 evalue = float(evalue)
+                score = float(score)
                 length = stop - start + 1
                 if(trunc == "5'"):
                     truncated = bc.FEATURE_END_5_PRIME
@@ -76,8 +77,8 @@ def predict_nc_rna_regions(genome, contigs_path):
                 
                 if(evalue > 1E-4):
                     log.debug(
-                        'discard low E value: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, length=%i, truncated=%s, evalue=%1.1e',
-                        contig_id, start, stop, strand, subject, length, truncated, evalue
+                        'discard low E value: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
+                        contig_id, start, stop, strand, subject, length, truncated, score, evalue
                     )
                 else:
                     rfam_id = f'RFAM:{accession}'
@@ -92,7 +93,7 @@ def predict_nc_rna_regions(genome, contigs_path):
                     ncrna_region['start'] = start
                     ncrna_region['stop'] = stop
                     ncrna_region['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
-                    ncrna_region['gene'] = subject
+                    ncrna_region['label'] = subject
 
                     if(truncated is None):
                         ncrna_region['product'] = description
@@ -111,14 +112,14 @@ def predict_nc_rna_regions(genome, contigs_path):
                     if(truncated):
                         ncrna_region['truncated'] = truncated
                     
-                    ncrna_region['score'] = float(score)
+                    ncrna_region['score'] = score
                     ncrna_region['evalue'] = evalue
                     ncrna_region['db_xrefs'] = db_xrefs
 
                     ncrnas.append(ncrna_region)
                     log.info(
-                        'contig=%s, start=%i, stop=%i, strand=%s, product=%s, length=%i, truncated=%s, evalue=%1.1e',
-                        ncrna_region['contig'], ncrna_region['start'], ncrna_region['stop'], ncrna_region['strand'], ncrna_region['product'], length, truncated, ncrna_region['evalue']
+                        'contig=%s, start=%i, stop=%i, strand=%s, label=%s, product=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
+                        ncrna_region['contig'], ncrna_region['start'], ncrna_region['stop'], ncrna_region['strand'], ncrna_region['label'], ncrna_region['product'], length, truncated, ncrna_region['score'], ncrna_region['evalue']
                     )
     log.info('predicted=%i', len(ncrnas))
     return ncrnas

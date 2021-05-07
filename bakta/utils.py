@@ -212,6 +212,7 @@ def create_locus_tag_prefix(contigs):
             c = chr(ord('F') + int(c) + 1) 
         locus_prefix.append(c)
         i += 1
+    log.info('generated locus-tag: prefix=%s, MD5=%s', locus_prefix, hexdigest)
     return ''.join(locus_prefix)
 
 

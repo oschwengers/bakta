@@ -84,7 +84,7 @@ def predict_t_rnas(genome, contigs_path):
             trna['start'] = start
             trna['stop'] = stop
             trna['strand'] = strand
-            trna['gene'] = ''
+            trna['gene'] = None
             trna['product'] = 'tRNA-Xxx'
             if(trna_type != 'Undet' and trna_type != 'Sup'):
                 trna['gene'] = f'{trna_type}_trna'
@@ -93,7 +93,7 @@ def predict_t_rnas(genome, contigs_path):
                 trna['anti_codon'] = anti_codon.lower()
             
             if('pseudo' in note):
-                trna['gene'] = ''
+                trna['gene'] = None
                 trna['product'] = f"(pseudo) {trna['product']}"
                 trna['pseudo'] = True
             
@@ -107,8 +107,8 @@ def predict_t_rnas(genome, contigs_path):
             key = f'{contig}.trna{trna_id}'
             trnas[key] = trna
             log.info(
-                'contig=%s, start=%i, stop=%i, strand=%s, product=%s',
-                trna['contig'], trna['start'], trna['stop'], trna['strand'], trna.get('product', '')
+                'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, score=%1.1f',
+                trna['contig'], trna['start'], trna['stop'], trna['strand'], trna.get('gene', ''), trna['product'], trna['score']
             )
 
     with fasta_output_path.open() as fh:

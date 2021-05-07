@@ -56,6 +56,7 @@ def predict_r_rnas(genome, contigs_path):
                     (start, stop) = (stop, start)
                 (start, stop) = (int(start), int(stop))
                 evalue = float(evalue)
+                score = float(score)
                 length = stop - start + 1
                 if(trunc == "5'"):
                     truncated = bc.FEATURE_END_5_PRIME
@@ -79,8 +80,8 @@ def predict_r_rnas(genome, contigs_path):
                     consensus_length = 2925
                 else:
                     log.warning(
-                        'unknown rRNA detected! accession=%s, contig=%s, start=%i, stop=%i, strand=%s, length=%i, truncated=%s, evalue=%1.1e',
-                        accession, contig_id, start, stop, strand, length, truncated, evalue
+                        'unknown rRNA detected! accession=%s, contig=%s, start=%i, stop=%i, strand=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
+                        accession, contig_id, start, stop, strand, length, truncated, score, evalue
                     )
                     continue
                 
@@ -90,8 +91,8 @@ def predict_r_rnas(genome, contigs_path):
                 
                 if(coverage < 0.3):
                     log.debug(
-                        'discard low coverage: contig=%s, rRNA=%s, start=%i, stop=%i, strand=%s, length=%i, coverage=%0.3f, truncated=%s, evalue=%1.1e',
-                        contig_id, rrna_tag, start, stop, strand, length, coverage, truncated, evalue
+                        'discard low coverage: contig=%s, rRNA=%s, start=%i, stop=%i, strand=%s, length=%i, coverage=%0.3f, truncated=%s, score=%1.1f, evalue=%1.1e',
+                        contig_id, rrna_tag, start, stop, strand, length, coverage, truncated, score, evalue
                     )
                 else:
                     rrna = OrderedDict()
@@ -115,14 +116,14 @@ def predict_r_rnas(genome, contigs_path):
                         rrna['truncated'] = truncated
                     
                     rrna['coverage'] = coverage
-                    rrna['score'] = float(score)
+                    rrna['score'] = score
                     rrna['evalue'] = evalue
                     rrna['db_xrefs'] = db_xrefs
 
                     rrnas.append(rrna)
                     log.info(
-                        'contig=%s, start=%i, stop=%i, strand=%s, product=%s, length=%i, coverage=%0.3f, truncated=%s, evalue=%1.1e',
-                        rrna['contig'], rrna['start'], rrna['stop'], rrna['strand'], rrna['product'], length, coverage, truncated, evalue
+                        'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, length=%i, coverage=%0.3f, truncated=%s, score=%1.1f, evalue=%1.1e',
+                        rrna['contig'], rrna['start'], rrna['stop'], rrna['strand'], rrna['gene'], rrna['product'], length, coverage, truncated, score, evalue
                     )
 
     log.info('predicted=%i', len(rrnas))

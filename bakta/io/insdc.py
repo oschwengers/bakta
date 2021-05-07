@@ -15,7 +15,7 @@ log = logging.getLogger('INSDC')
 
 
 def write_insdc(genome, features, genbank_output_path, embl_output_path):
-    log.debug('prepare output: genbank=%s, embl=%s', genbank_output_path, embl_output_path)
+    log.debug('prepare: genbank=%s, embl=%s', genbank_output_path, embl_output_path)
 
     contig_list = []
     for contig in genome['contigs']:
@@ -212,11 +212,11 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
         contig_list.append(contig_rec)
 
     with genbank_output_path.open('wt', encoding='utf-8') as fh:
-        log.info('write GenBank output: path=%s', genbank_output_path)
+        log.info('write GenBank: path=%s', genbank_output_path)
         SeqIO.write(contig_list, fh, format='genbank')
 
     with embl_output_path.open('wt', encoding='utf-8') as fh:
-        log.info('write EMBL output: path=%s', embl_output_path)
+        log.info('write EMBL: path=%s', embl_output_path)
         SeqIO.write(contig_list, fh, format='embl')
 
 

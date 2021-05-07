@@ -22,7 +22,7 @@ def check(db_path):
     """Check if database directory exists, is accessible and contains necessary files."""
 
     if(db_path is None):
-        log.error('directory not provided nor detected!')
+        log.error('directory neither provided nor detected!')
         sys.exit('ERROR: database directory not provided nor detected! Please provide a valid path to the database directory.')
 
     if(not os.access(str(db_path), os.R_OK & os.X_OK)):
@@ -46,9 +46,7 @@ def check(db_path):
             log.error('wrong db version info file content! missed key=%s', key)
             sys.exit(f"ERROR: wrong db version info file format! Missed key '{key}' in JSON structure.")
     
-    log.info('detected: major=%i', db_info['major'])
-    log.info('detected: minor=%i', db_info['minor'])
-    log.info('detected: date=%s', db_info['date'])
+    log.info('detected: major=%i, minor=%i, date=%s', db_info['major'], db_info['minor'], db_info['date'])
     if(db_info['major'] < bakta.__db_schema_version__):
         log.error('wrong database version detected! required=%i, detected=%i', bakta.__db_schema_version__, db_info['major'])
         sys.exit(f"ERROR: wrong database version detected!\nBakta version {bakta.__version__} requires database version {bakta.__db_schema_version__}.x, but {db_info['major']}.{db_info['minor']} was detected. Please, update the database from https://doi.org/10.5281/zenodo.4247253")

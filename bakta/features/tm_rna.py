@@ -80,8 +80,8 @@ def predict_tm_rnas(genome, contigs_path):
                 
                 tmrnas.append(tmrna)
                 log.info(
-                    'contig=%s, start=%i, stop=%i, strand=%s',
-                    tmrna['contig'], tmrna['start'], tmrna['stop'], tmrna['strand']
+                    'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s',
+                    tmrna['contig'], tmrna['start'], tmrna['stop'], tmrna['strand'], tmrna['gene'], tmrna['product']
                 )
     log.info('predicted=%i', len(tmrnas))
     return tmrnas

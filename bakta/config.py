@@ -72,7 +72,7 @@ def setup(args):
             db_tmp_path = Path(db_dir).resolve()
             if(db_tmp_path.is_dir()):
                 db_path = db_tmp_path
-                log.info('database detected: type=parameter, path=%s', db_path)
+                log.info('database: type=parameter, path=%s', db_path)
             else:
                 log.error('unvalid database path: type=parameter, path=%s', db_tmp_path)
                 raise IOError()
@@ -85,7 +85,7 @@ def setup(args):
             db_tmp_path = Path(db_dir).resolve()
             if(db_tmp_path.is_dir()):
                 db_path = db_tmp_path
-                log.info('database detected: type=environment, path=%s', db_path)
+                log.info('database: type=environment, path=%s', db_path)
             else:
                 log.error('unvalid database path: type=environment, path=%s', db_tmp_path)
                 raise IOError()
@@ -97,16 +97,16 @@ def setup(args):
         log.debug('test base_dir db: db_tmp=%s', db_tmp_path)
         if(db_tmp_path.is_dir()):
             db_path = db_tmp_path
-            log.info('database detected: type=base-dir, path=%s', db_path)
+            log.info('database: type=base-dir, path=%s', db_path)
         else:
             log.error('unvalid database path: type=base-dir, path=%s', db_tmp_path)
-            sys.exit('ERROR: database neither auto-detected nor provided!\nPlease, download the mandatory db and provide it either via the --db parameter, via a BAKTA_DB environment variable or copy it into the Bakta base directory.\nFor further information please read the readme.md')
+            sys.exit('ERROR: database neither provided nor auto-detected!\nPlease, download the mandatory db and provide it via either the --db parameter, a BAKTA_DB environment variable or copy it into the Bakta base directory.\nFor further information please read the readme.md')
 
     if(args.tmp_dir):
         tmp_path = Path(args.tmp_dir)
         if(not tmp_path.exists()):
             log.debug('dedicated temp dir does not exist! tmp-dir=%s', tmp_path)
-            sys.exit(f'ERROR: dedicated temp dir ({tmp_path}) does not exist!')
+            sys.exit(f'ERROR: dedicated temporary directory ({tmp_path}) does not exist!')
         else:
             log.info('use dedicated temp dir: path=%s', tmp_path)
             tmp_path = Path(tempfile.mkdtemp(dir=str(tmp_path)))
