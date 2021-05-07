@@ -304,7 +304,7 @@ def calc_sorf_annotation_score(sorf):
         if(psc_product):
             score += 1
     log.debug(
-        'contig=%s, start=%i, stop=%i, gene=%s, product=%s, score=%i',
+        'sorf score: contig=%s, start=%i, stop=%i, gene=%s, product=%s, score=%i',
         sorf['contig'], sorf['start'], sorf['stop'], sorf.get('gene', '-'), sorf.get('product', '-'), score
     )
     return score

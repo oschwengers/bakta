@@ -204,16 +204,17 @@ def create_locus_tag_prefix(contigs):
     for contig in contigs:
         hash.update(str.encode(contig['sequence']))
     hexdigest = hash.hexdigest().upper()
-    locus_prefix = []
+    locus_prefix_chars = []
     i = 0
     while i < 6:
         c = hexdigest[i]
         if(c >= '0' and c <= '9'):
             c = chr(ord('F') + int(c) + 1) 
-        locus_prefix.append(c)
+        locus_prefix_chars.append(c)
         i += 1
+    locus_prefix = ''.join(locus_prefix_chars)
     log.info('generated locus-tag: prefix=%s, MD5=%s', locus_prefix, hexdigest)
-    return ''.join(locus_prefix)
+    return locus_prefix
 
 
 def calc_aa_hash(seq):
