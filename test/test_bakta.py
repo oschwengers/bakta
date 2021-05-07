@@ -20,7 +20,7 @@ def test_bakta_mock_skipped_features(tmpdir):
 @pytest.mark.slow
 def test_bakta_plasmid(tmpdir):
     # full test on plasmid
-    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', 'test/data/NC_002127.1.fna'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--prefix', 'test', 'test/data/NC_002127.1.fna'])
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)
@@ -31,7 +31,7 @@ def test_bakta_plasmid(tmpdir):
 @pytest.mark.slow
 def test_bakta_genome(tmpdir):
     # full test on plasmid
-    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', 'test/data/GCF_000008865.2.fna.gz'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--prefix', 'test', 'test/data/GCF_000008865.2.fna.gz'])
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)
