@@ -1,3 +1,4 @@
+import atexit
 import logging
 import os
 import sys
@@ -72,6 +73,7 @@ def main():
     # - test binary dependencies
     ############################################################################
     cfg.setup(args)  # check parameters and prepare global configuration
+    atexit.register(cleanup, log, cfg.tmp_path)  # register cleanup exit hook
     cfg.db_info = db.check(cfg.db_path)
     bu.test_dependencies()
     if(cfg.verbose):
@@ -484,9 +486,11 @@ def main():
         faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.faa')
         fasta.write_faa(hypotheticals, faa_path)
 
+
+def cleanup(log, tmp_path):
     # remove tmp dir
-    shutil.rmtree(str(cfg.tmp_path))
-    log.debug('removed tmp dir: %s', cfg.tmp_path)
+    shutil.rmtree(str(tmp_path))
+    log.info('removed tmp dir: %s', tmp_path)
 
 
 if __name__ == '__main__':
