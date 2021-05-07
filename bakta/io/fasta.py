@@ -1,5 +1,6 @@
 
 import logging
+import re
 
 from Bio import SeqIO
 from xopen import xopen
@@ -9,6 +10,8 @@ import bakta.constants as bc
 
 log = logging.getLogger('FASTA')
 
+
+FASTA_DNA_SEQUENCE_PATTERN = re.compile(r'[ATGCNatgcn]+')
 FASTA_LINE_WRAPPING = 60
 
 
@@ -19,6 +22,9 @@ def import_contigs(contigs_path):
     with xopen(str(contigs_path), threads=0) as fh:
         for record in SeqIO.parse(fh, 'fasta'):
             seq = str(record.seq).upper()
+            if(FASTA_DNA_SEQUENCE_PATTERN.fullmatch(seq) is None):
+                log.error('import: Fasta sequence contains invalid DNA characters! id=%s')
+                raise ValueError(f'Fasta sequence contains invalid DNA characters! id={record.id}')
             contig = {
                 'id': record.id,
                 'description': record.description,
