@@ -90,6 +90,8 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
             if('locus' in feature):
                 qualifiers['locus_tag'] = feature['locus']
             
+            accompanying_features=[]
+
             if(feature['type'] == bc.FEATURE_GAP):
                 insdc_feature_type = bc.INSDC_FEATURE_GAP
                 qualifiers['estimated_length'] = feature['length']
@@ -108,17 +110,27 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 insdc_feature_type = bc.INSDC_FEATURE_CDS
                 inference = []
                 inference.append('ab initio prediction:Prodigal:2.6' if feature['type'] == bc.FEATURE_CDS else 'ab initio prediction:Bakta')
-                if('ups' in feature):
-                    if('ncbi_nrp_id' in feature['ups']):
-                        qualifiers['protein_id'] = feature['ups']['ncbi_nrp_id']
-                if('ips' in feature):
-                    if('uniref100_id' in feature['ips']):
-                        ips_subject_id = feature['ips']['uniref100_id']
-                        inference.append(f'similar to AA sequence:UniProtKB:{ips_subject_id}')
-                if('psc' in feature):
-                    if('uniref90_id' in feature['psc']):
-                        psc_subject_id = feature['psc']['uniref90_id']
-                        inference.append(f'similar to AA sequence:UniProtKB:{psc_subject_id}')
+                if('hypothetical' not in feature):
+                    if('ups' in feature):
+                        if('ncbi_nrp_id' in feature['ups']):
+                            qualifiers['protein_id'] = feature['ups']['ncbi_nrp_id']
+                    if('ips' in feature):
+                        if('uniref100_id' in feature['ips']):
+                            ips_subject_id = feature['ips']['uniref100_id']
+                            inference.append(f'similar to AA sequence:UniProtKB:{ips_subject_id}')
+                    if('psc' in feature):
+                        if('uniref90_id' in feature['psc']):
+                            psc_subject_id = feature['psc']['uniref90_id']
+                            inference.append(f'similar to AA sequence:UniProtKB:{psc_subject_id}')
+                    if(bc.FEATURE_SIGNAL_PEPTIDE in feature):
+                        sigpep = feature[bc.FEATURE_SIGNAL_PEPTIDE]
+                        sigpep_qualifiers = {}
+                        sigpep_qualifiers['locus_tag'] = feature['locus']
+                        sigpep_qualifiers['inference'] = 'ab initio prediction:DeepSig'
+                        sigpep_strand = 1 if feature['strand'] == bc.STRAND_FORWARD else -1 if feature['strand'] == bc.STRAND_REVERSE else 0
+                        sigpep_location = FeatureLocation(sigpep['start'], sigpep['stop'], strand = sigpep_strand)
+                        sigpep_feature = SeqFeature(sigpep_location, type = bc.INSDC_FEATURE_SIGNAL_PEPTIDE, qualifiers = sigpep_qualifiers)
+                        accompanying_features.append(sigpep_feature)
                 qualifiers['inference'] = inference
             elif(feature['type'] == bc.FEATURE_T_RNA):
                 # TODO: Position anticodon
@@ -208,6 +220,9 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 seq_feature_list.append(gen_seqfeat)
             feat_seqfeat = SeqFeature(feature_location, type=insdc_feature_type, qualifiers=qualifiers)
             seq_feature_list.append(feat_seqfeat)
+            if (len(accompanying_features) != 0):
+                for acc_feature in accompanying_features:
+                    seq_feature_list.append(acc_feature)
         contig_rec.features = seq_feature_list
         contig_list.append(contig_rec)
 
