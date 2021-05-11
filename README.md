@@ -71,11 +71,12 @@ $ sudo docker pull oschwengers/bakta
 $ sudo docker run oschwengers/bakta --help
 ```
 
-Installation instructions, get-started and guides: Docker [docs](https://docs.docker.com)
-For further convenience, we provide a shell script (`bakta-docker.sh`) handling stuff like volume mounting, etc:
+Installation instructions and get-started guides: Docker [docs](https://docs.docker.com)
+
+For further convenience, we provide a shell script (`bakta-docker.sh`) handling Docker related parameters (volume mounting, user IDs, etc):
 
 ```bash
-$ bakta-docker.sh --help
+$ bakta-docker.sh --db <database> --output <output> <input>
 ```
 
 ### Singularity
