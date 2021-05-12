@@ -15,13 +15,13 @@ Bakta is a tool for the rapid & standardized annotation of bacterial genomes & p
 - [Description](#description)
 - [Installation](#installation)
 - [Examples](#examples)
-- [Input/Output](#inputoutput)
+- [Input & Output](#input-and-output)
 - [Usage](#usage)
-- [Annotation workflow](#annoation_workflow)
+- [Annotation Workflow](#annotation-workflow)
 - [Database](#database)
 - [Citation](#citation)
 - [FAQ](#faq)
-- [Issues & Feature Requests](#issues)
+- [Issues & Feature Requests](#issues-and-feature-requests)
 
 ## Description
 
@@ -56,7 +56,9 @@ By annotating bacterial genomes in a standardized, taxon-independent, high-throu
 ## Installation
 
 Bakta can be installed via BioConda, Docker, Singularity and Pip.
-However, we encourage to use [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) or [Docker](https://www.docker.com/get-started)/[Singularity](https://sylabs.io/singularity) to automatically install all required 3rd party dependencies. In all cases a mandatory [database](#database_download) must be downloaded.
+However, we encourage to use [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) or [Docker](https://www.docker.com/get-started)/[Singularity](https://sylabs.io/singularity) to automatically install all required 3rd party dependencies.
+
+In all cases a mandatory [database](#database-download) must be downloaded.
 
 ### BioConda
 
@@ -76,7 +78,7 @@ Installation instructions and get-started guides: Docker [docs](https://docs.doc
 For further convenience, we provide a shell script (`bakta-docker.sh`) handling Docker related parameters (volume mounting, user IDs, etc):
 
 ```bash
-$ bakta-docker.sh --db <database> --output <output> <input>
+$ bakta-docker.sh --db <db-path> --output <output-path> <input>
 ```
 
 ### Singularity
@@ -177,7 +179,7 @@ Expert: verbose output writing results to *results* directory with *ecoli123* fi
 $ bakta --db <db-path> --verbose --output results/ --prefix ecoli123 --locus-tag eco634 --prodigal-tf eco.tf --replicons replicon.tsv --threads 8 genome.fasta
 ```
 
-## Input/Output
+## Input and Output
 
 ### Input
 
@@ -337,7 +339,7 @@ General:
   --version             show program's version number and exit
 ```
 
-## Annotation workflow
+## Annotation Workflow
 
 ### RNAs
 
