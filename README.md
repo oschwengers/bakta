@@ -32,8 +32,8 @@ Bakta was designed to annotate bacteria and plasmids, only. This decision by des
 To provide standardized annotations adhearing to [FAIR](https://www.go-fair.org/fair-principles) principles, Bakta utilizes a comprehensive & versioned custom annotation database based on UniProt's [UniRef100 & UniRef90](https://www.uniprot.org/uniref/) protein clusters (`FAIR` -> [DOI](http://dx.doi.org/10.1038/s41597-019-0180-9)/[DOI](https://doi.org/10.1093/nar/gkaa1100)) enriched with dbxrefs (`GO`, `COG`, `EC`) and annotated by specialized niche databases. For each db version we provide a comprehensive log file of all imported sequences and annotations.
 
 - **Protein sequence identification**
-Fostering the FAIR aspect, Bakta identifies identical protein sequences (**IPS**) via `MD5` digests which are annotated with database cross-references (**dbxref**) to RefSeq (`WP_*`), UniRef100 (`UniRef100_*`) and UniParc (`UPI*`).
-By doing so, IPS allow the surveillance of distinct gene alleles and streamlining comparative analysis as well as posterior (external) annotations of `putative` & `hypothetical` protein sequences which can be mapped back to existing CDS via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)). Currently, Bakta identifies ~198 mio, ~185 mio and ~150 mio distinct protein sequences from UniParc, UniRef100 and RefSeq, respectively. Hence, for certain genomes, up to 99 % of all CDS can be identified this way, skipping expensive homology searches.
+Fostering the FAIR aspect, Bakta identifies identical protein sequences (**IPS**) via `MD5` hash digests which are annotated with database cross-references (**dbxref**) to RefSeq (`WP_*`), UniRef100 (`UniRef100_*`) and UniParc (`UPI*`).
+By doing so, IPS allow the surveillance of distinct gene alleles and streamlining comparative analysis as well as posterior (external) annotations of `putative` & `hypothetical` protein sequences which can be mapped back to existing CDS via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)). Currently, Bakta identifies ~198 mio, ~185 mio and ~150 mio distinct protein sequences from UniParc, UniRef100 and RefSeq, respectively. Hence, for certain genomes, up to 99 % of all CDS can be identified this way, skipping computationally expensive sequence alignments.
 
 - **Small proteins / short open reading frames**
 Bakta detects and annotates small proteins/short open reading frames (**sORF**) which are not predicted by tools like `Prodigal`.
@@ -45,13 +45,13 @@ Bakta can annotate a typical bacterial genome in 10 &plusmn;5 min on a laptop, p
 To provide high quality annotations for certain proteins of higher interest, *e.g.* AMR & VF genes, Bakta includes & merges different expert annotation systems. Currently, Bakta uses NCBI's AMRFinderPlus for AMR gene annotations as well as an generalized protein sequence expert system with distinct coverage, identity and priority values for each sequence, currenlty comprising the [VFDB](http://www.mgc.ac.cn/VFs/main.htm) as well as NCBI's [BlastRules](https://ftp.ncbi.nih.gov/pub/blastrules/).
 
 - **Comprehensive workflow**
-Bakta annotates all standard/mandatory feature types (tRNA, tmRNA, rRNA, ncRNA genes, CRISPR, CDS) as well as ncRNA cis-regulatory regions, oriC/oriV/oriT and assembly gaps.
+Bakta annotates ncRNA cis-regulatory regions, oriC/oriV/oriT and assembly gaps as well as standard feature types: tRNA, tmRNA, rRNA, ncRNA genes, CRISPR, CDS.
 
 - **GFF3 & INSDC conform annotations**
-Bakta writes GFF3 and INSDC (Genbank & EMBL) conform annotation files ready for submission (checked via [GenomeTools GFF3Validator](http://genometools.org/cgi-bin/gff3validator.cgi) and [ENA Webin-CLI](https://github.com/enasequence/webin-cli) for GFF3 and EMBL file formats, respectively for representative genomes of all ESKAPE species).
+Bakta writes GFF3 and INSDC-compliant (Genbank & EMBL) annotation files ready for submission (checked via [GenomeTools GFF3Validator](http://genometools.org/cgi-bin/gff3validator.cgi) and [ENA Webin-CLI](https://github.com/enasequence/webin-cli) for GFF3 and EMBL file formats, respectively for representative genomes of all ESKAPE species).
 
 - **Reasoning**
-By annotating bacterial genomes in a standardized, taxon-independent, high-throughput and local manner, Bakta targets the niche between fully-featured but computationally-demanding pipelines like [PGAP](https://github.com/ncbi/pgap) and rapid highly-customizable offline tools like [Prokka](https://github.com/tseemann/prokka). Indeed, Bakta is heavily inspired by Prokka (kudos to [Torsten Seemann](https://github.com/tseemann)) and many command line options are compatible for the sake of interoperability and user convenience. Hence, if Bakta does not fit your needs, please try Prokka.
+By annotating bacterial genomes in a standardized, taxon-independent, high-throughput and local manner, Bakta aims at a well-balanced tradeoff between fully-featured but computationally demanding pipelines like [PGAP](https://github.com/ncbi/pgap) and rapid highly-customizable offline tools like [Prokka](https://github.com/tseemann/prokka). Indeed, Bakta is heavily inspired by Prokka (kudos to [Torsten Seemann](https://github.com/tseemann)) and many command line options are compatible for the sake of interoperability and user convenience. Hence, if Bakta does not fit your needs, please try Prokka.
 
 ## Installation
 
@@ -63,7 +63,7 @@ In all cases a mandatory [database](#database-download) must be downloaded.
 ### BioConda
 
 ```bash
-$ conda install -c conda-forge -c bioconda -c defaults bakta
+$ conda install -c conda-forge -c bioconda bakta
 ```
 
 ### Docker
@@ -350,7 +350,7 @@ General:
 5. ncRNA cis-regulatory regions: Infernal vs. Rfam ncRNA covariance models
 6. CRISPR arrays: PILER-CR
 
-Bakta distinguishes ncRNA genes and (regulatory) regions in order to enable the distinct handling thereof during the annotation process, *i.e.* feature overlap detection.
+Bakta distinguishes ncRNA genes and (cis-regulatory) regions in order to enable the distinct handling thereof during the annotation process, *i.e.* feature overlap detection.
 
 ncRNA gene types:
 
@@ -370,11 +370,11 @@ ncRNA (cis-regulatory) region types:
 
 The structural prediction is conducted via Prodigal and complemented by a custom detection of sORF < 30 aa.
 
-To rapidly identify known protein sequences with exact sequence matches and to conduct a comprehensive annotations, Bakta utilizes a compact SQLite database comprising protein sequence digests and pre-annotations for millions of known protein sequences and clusters.
+To rapidly identify known protein sequences with exact sequence matches and to conduct a comprehensive annotations, Bakta utilizes a compact read-only SQLite database comprising protein sequence digests and pre-assigned annotations for millions of known protein sequences and clusters.
 
 Conceptual terms:
 
-- **UPS**: unique protein sequences identified via length and MD5 digests (100% coverage & 100% sequence identity)
+- **UPS**: unique protein sequences identified via length and MD5 hash digests (100% coverage & 100% sequence identity)
 - **IPS**: identical protein sequences comprising seeds of UniProt's UniRef100 protein sequence clusters
 - **PSC**: protein sequences clusters comprising seeds of UniProt's UniRef90 protein sequence clusters
 
@@ -383,7 +383,7 @@ Conceptual terms:
 1. Prediction via Prodigal respecting sequences' completeness (distinct prediction for complete replicons and uncompleted contigs)
 2. discard spurious CDS via AntiFam
 3. Detection of UPSs via MD5 digests and lookup of related IPS and PCS
-4. Homology search of remainder via Diamond vs. PSC (query/subject coverage=0.8, identity=0.9)
+4. Sequence alignments of remainder via Diamond vs. PSC (query/subject coverage=0.8, identity=0.9)
 5. Execution of expert systems:
   - AMR: AMRFinderPlus
   - Alignments: NCBI BlastRules, VFDB
@@ -402,7 +402,7 @@ Such hypothetical CDS are further analyzed:
 2. Apply strict feature type-dependent overlap filters
 3. discard spurious sORF via AntiFam
 4. Detection of UPS via MD5 hashes and lookup of related IPS
-5. Homology search of remainder via Diamond vs. an sORF subset of PSCs (coverage=0.9, identity=0.9)
+5. Sequence alignments of remainder via Diamond vs. an sORF subset of PSCs (coverage=0.9, identity=0.9)
 6. Exclude sORF without sufficient annotation information
 
 sORF not identified via IPS or PSC will be discarded. Additionally, all sORF without gene symbols or product descriptions different from `hypothetical` will be discarded.
@@ -416,7 +416,7 @@ Due due to uncertain nature of sORF prediction, only those identified via IPS / 
 ## Database
 
 The Bakta database comprises a set of AA & DNA sequence databases as well as HMM & covariance models.
-At its core Bakta utilizes a compact SQLite db storing protein sequence digests, lengths, pre-annotations and dbxrefs of UPS, IPS and PSC from:
+At its core Bakta utilizes a compact read-only SQLite db storing protein sequence digests, lengths, pre-assigned annotations and dbxrefs of UPS, IPS and PSC from:
 
 - **UPS**: UniParc / UniProtKB (198,764,035)
 - **IPS**: UniProt UniRef100 (185,077,759)
