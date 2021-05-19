@@ -30,7 +30,7 @@ def search(cdss, cds_fasta_path):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('AMR expert system failed! amrfinder-error-code=%d', proc.returncode)
-        raise Exception(f'amrfinder error! error code: {proc.returncode}')
+        raise Exception(f"amrfinder error! error code: {proc.returncode}. Please, execute 'amrfinder -u' to update AMRFinderPlus's internal database.")
 
     cds_found = set()
     cds_by_hexdigest = {f"{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}": cds for cds in cdss}
