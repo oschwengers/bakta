@@ -38,6 +38,7 @@ DEPENDENCY_PRODIGAL = (Version(2,6,3), Version(VERSION_MAX_DIGIT, VERSION_MAX_DI
 DEPENDENCY_HMMSEARCH = (Version(3,3,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('hmmsearch', '-h'), ('--skip-cds', '--skip-sorf'))
 DEPENDENCY_DIAMOND = (Version(2,0,4), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('diamond', 'help'), ('--skip-cds', '--skip-sorf'))
 DEPENDENCY_BLASTN = (Version(2,7,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('blastn', '-version'), ('--skip-ori'))
+DEPENDENCY_AMRFINDERPLUS = (Version(3,10), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('amrfinder', '--version'), ('--skip-cds'))
 
 
 def init_parser():
@@ -189,6 +190,7 @@ def test_dependencies():
     
     if(not cfg.skip_cds):
         test_dependency(DEPENDENCY_PRODIGAL)
+        test_dependency(DEPENDENCY_AMRFINDERPLUS)
     
     if(not cfg.skip_cds or not cfg.skip_sorf):
         test_dependency(DEPENDENCY_HMMSEARCH)
