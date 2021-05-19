@@ -207,7 +207,7 @@ def main():
         print('check MD5 sum...')
         md5_sum = calc_md5_sum(tarball_path)
         if(md5_sum == required_version['md5']):
-            print(f'\t...database file OK')
+            print(f'\t...database file OK: {md5_sum}')
         else:
             sys.exit(f"Error: corrupt database file! MD5 should be '{required_version['md5']}' but is '{md5_sum}'")
         
@@ -295,7 +295,7 @@ def main():
         print('check MD5 sum...')
         md5_sum = calc_md5_sum(tarball_path)
         if(md5_sum == required_version['md5']):
-            print(f'\t...database file OK')
+            print(f'\t...database file OK: {md5_sum}')
         else:
             sys.exit(f"Error: corrupt database file! MD5 should be '{required_version['md5']}' but is '{md5_sum}'")
         
