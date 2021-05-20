@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import shutil
+import subprocess as sp
 import sys
 import tarfile
 import tempfile
@@ -138,7 +139,7 @@ def untar(tarball_path, output_path):
         with tarball_path.open('rb') as fh_in, tarfile.open(fileobj=fh_in, mode='r:gz') as tar_file:
             tar_file.extractall(path=str(output_path))
     except OSError:
-        sys.exit(f'ERROR: Could not extract {tarball_path} to ')
+        sys.exit(f'ERROR: Could not extract {tarball_path} to {output_path}')
 
 
 def main():
@@ -221,12 +222,16 @@ def main():
             sys.exit(f"ERROR: wrong major db detected! required={required_version['major']}, detected={db_info['major']}")
         elif(db_info['minor'] != required_version['minor']):
             sys.exit(f"ERROR: wrong minor db detected! required={required_version['minor']}, detected={db_info['minor']}")
-        else:
-            print('successfully downloaded Bakta DB!')
-            print(f"\tversion: {required_version['major']}.{required_version['minor']}")
-            print(f"\tDOI: {required_version['doi']}")
-            print(f'\tpath: {db_path}')
-            print(f"\nRun Bakta using '--db {db_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_path}'")
+        print('successfully downloaded Bakta database!')
+        print(f"\tversion: {required_version['major']}.{required_version['minor']}")
+        print(f"\tDOI: {required_version['doi']}")
+        print(f'\tpath: {db_path}')
+
+        print(f'update AMRFinderPlus database...')
+        update_amrfinderplus_db()
+        print('\t... done')
+
+        print(f"\nRun Bakta using '--db {db_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_path}'")
     elif(args.subcommand == 'update'):
         env = os.environ.copy()
         if(args.db):
@@ -309,20 +314,44 @@ def main():
             sys.exit(f"ERROR: wrong major db detected! required={required_version['major']}, detected={db_new_info['major']}")
         elif(db_new_info['minor'] != required_version['minor']):
             sys.exit(f"ERROR: wrong minor db detected! required={required_version['minor']}, detected={db_new_info['minor']}")
-        else:
-            print('successfully downloaded Bakta DB:')
-            print(f"\tversion: {required_version['major']}.{required_version['minor']}")
-            print(f"\tDOI: {required_version['doi']}")
-            print(f'\tpath: {db_old_path}')
-
-            print(f'replace old DB...')
-            shutil.move(db_new_path, db_old_path)
-            shutil.rmtree(tmp_path)
-            print('\t... done')
-            print(f"\nRun Bakta using '--db {db_old_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_old_path}'")
+        print('successfully downloaded Bakta DB:')
+        print(f"\tversion: {required_version['major']}.{required_version['minor']}")
+        print(f"\tDOI: {required_version['doi']}")
+        print(f'\tpath: {db_old_path}')
+        print(f'replace old database...')
+        try:
+            shutil.move(db_new_path, db_old_path.parent)
+        except:
+            sys.exit(f'ERROR: cannot move new database to existing path! new-path={db_new_path}, existing-path={db_old_path.parent}')
+        shutil.rmtree(tmp_path)
+        print('\t... done')
+        
+        print(f'update AMRFinderPlus database...')
+        update_amrfinderplus_db()
+        print('\t... done')
+        
+        print(f"\nRun Bakta using '--db {db_old_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_old_path}'")
     else:
         parser.print_help()
         sys.exit('Error: no subcommand provided!')
+
+
+def update_amrfinderplus_db():
+    cmd = [
+        'amrfinder',
+        '-u'
+    ]
+    log.debug('cmd=%s', cmd)
+    proc = sp.run(
+        cmd,
+        stdout=sp.PIPE,
+        stderr=sp.PIPE,
+        universal_newlines=True
+    )
+    if(proc.returncode != 0):
+        log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
+        log.warning('AMRFinderPlus failed! amrfinder-error-code=%d', proc.returncode)
+        sys.exit(f"ERROR: AMRFinderPlus failed! command: 'amrfinder -u', error code: {proc.returncode}")
 
 
 if __name__ == '__main__':
