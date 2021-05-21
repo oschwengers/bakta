@@ -237,20 +237,10 @@ def calc_genome_stats(genome, features):
     # N50
     gc_sum = 0
     n_sum = 0
-    n50 = 0
-    contig_length_sum = 0
     for contig in genome['contigs']:
         seq = contig['sequence']
         gc_sum += seq.count('G') + seq.count('C')
         n_sum += seq.count('N')
-        contig_length = len(seq)
-        contig_length_sum += contig_length
-        if(contig_length_sum >= genome_size / 2):
-            n50 = contig_length
-            break
-    genome['n50'] = n50
-    log.info('N50=%i', n50)
-
     gc_ratio = gc_sum / (genome_size - n_sum)
     genome['gc'] = gc_ratio
     log.info('GC=%0.3f', gc_ratio)
@@ -258,6 +248,17 @@ def calc_genome_stats(genome, features):
     n_ratio = n_sum / genome_size
     genome['n_ratio'] = n_ratio
     log.info('N=%0.3f', n_ratio)
+    
+    n50 = 0
+    contig_length_sum = 0
+    for contig in sorted(genome['contigs'], key=lambda x: x['length'], reverse=True):
+        contig_length = len(contig['sequence'])
+        contig_length_sum += contig_length
+        if(contig_length_sum >= genome_size / 2):
+            n50 = contig_length
+            break
+    genome['n50'] = n50
+    log.info('N50=%i', n50)
 
     contigs_by_id = {c['id']: c for c in genome['contigs']}
     coding_nts = 0
