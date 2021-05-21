@@ -3,6 +3,8 @@ import json
 import logging
 import os
 import shutil
+import subprocess as sp
+import stat
 import sys
 import tarfile
 import tempfile
@@ -138,7 +140,7 @@ def untar(tarball_path, output_path):
         with tarball_path.open('rb') as fh_in, tarfile.open(fileobj=fh_in, mode='r:gz') as tar_file:
             tar_file.extractall(path=str(output_path))
     except OSError:
-        sys.exit(f'ERROR: Could not extract {tarball_path} to ')
+        sys.exit(f'ERROR: Could not extract {tarball_path} to {output_path}')
 
 
 def main():
@@ -166,6 +168,9 @@ def main():
         for v in sorted(versions, key=lambda v: (v['major'], v['minor'])):
             print(f"{v['major']}.{v['minor']}\t{v['date']}\t{v['doi']}")
     elif(args.subcommand == 'download'):
+
+        bu.test_dependency(bu.DEPENDENCY_AMRFINDERPLUS)
+
         try:
             output_path = Path(args.output)
             if(not output_path.exists()):
@@ -207,7 +212,7 @@ def main():
         print('check MD5 sum...')
         md5_sum = calc_md5_sum(tarball_path)
         if(md5_sum == required_version['md5']):
-            print(f'\t...database file OK')
+            print(f'\t...database file OK: {md5_sum}')
         else:
             sys.exit(f"Error: corrupt database file! MD5 should be '{required_version['md5']}' but is '{md5_sum}'")
         
@@ -221,13 +226,20 @@ def main():
             sys.exit(f"ERROR: wrong major db detected! required={required_version['major']}, detected={db_info['major']}")
         elif(db_info['minor'] != required_version['minor']):
             sys.exit(f"ERROR: wrong minor db detected! required={required_version['minor']}, detected={db_info['minor']}")
-        else:
-            print('successfully downloaded Bakta DB!')
-            print(f"\tversion: {required_version['major']}.{required_version['minor']}")
-            print(f"\tDOI: {required_version['doi']}")
-            print(f'\tpath: {db_path}')
-            print(f"\nRun Bakta using '--db {db_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_path}'")
+        print('successfully downloaded Bakta database!')
+        print(f"\tversion: {required_version['major']}.{required_version['minor']}")
+        print(f"\tDOI: {required_version['doi']}")
+        print(f'\tpath: {db_path}')
+
+        print(f'update AMRFinderPlus database...')
+        update_amrfinderplus_db()
+        print('\t... done')
+
+        print(f"\nRun Bakta using '--db {db_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_path}'")
     elif(args.subcommand == 'update'):
+
+        bu.test_dependency(bu.DEPENDENCY_AMRFINDERPLUS)
+        
         env = os.environ.copy()
         if(args.db):
             db_dir = args.db
@@ -272,6 +284,7 @@ def main():
             tmp_path = Path(tempfile.mkdtemp())
 
         db_old_info = check(db_old_path)
+        print(f"existing database: v{db_old_info['major']}.{db_old_info['minor']}")
         print(f'fetch DB versions...')
         versions = fetch_db_versions()
         compatible_versions = [v for v in versions if v['major'] == bakta.__db_schema_version__]
@@ -295,11 +308,11 @@ def main():
         print('check MD5 sum...')
         md5_sum = calc_md5_sum(tarball_path)
         if(md5_sum == required_version['md5']):
-            print(f'\t...database file OK')
+            print(f'\t...database file OK: {md5_sum}')
         else:
             sys.exit(f"Error: corrupt database file! MD5 should be '{required_version['md5']}' but is '{md5_sum}'")
         
-        print(f'extract DB tarball: file={tarball_path}, output={tmp_path}')
+        print(f'extract DB tarball: file={tarball_path}, output-directory={tmp_path}')
         untar(tarball_path, tmp_path)
         tarball_path.unlink()
 
@@ -309,20 +322,72 @@ def main():
             sys.exit(f"ERROR: wrong major db detected! required={required_version['major']}, detected={db_new_info['major']}")
         elif(db_new_info['minor'] != required_version['minor']):
             sys.exit(f"ERROR: wrong minor db detected! required={required_version['minor']}, detected={db_new_info['minor']}")
-        else:
-            print('successfully downloaded Bakta DB:')
-            print(f"\tversion: {required_version['major']}.{required_version['minor']}")
-            print(f"\tDOI: {required_version['doi']}")
-            print(f'\tpath: {db_old_path}')
-
-            print(f'replace old DB...')
-            shutil.move(db_new_path, db_old_path)
-            shutil.rmtree(tmp_path)
-            print('\t... done')
-            print(f"\nRun Bakta using '--db {db_old_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_old_path}'")
+        print('successfully downloaded Bakta DB:')
+        print(f"\tversion: {required_version['major']}.{required_version['minor']}")
+        print(f"\tDOI: {required_version['doi']}")
+        print(f'\tpath: {db_new_path}')
+        print(f'remove old database...')
+        try:
+            db_old_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)  # set write permissions on old directory
+            for db_old_file_path in db_old_path.iterdir():
+                db_old_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR)
+        except:
+            sys.exit(f'ERROR: cannot set read|write|execute permissions on old database! path={db_old_path}, owner={db_old_path.owner()}, group={db_old_path.group()}, permissions={oct(db_old_path.stat().st_mode )[-3:]}')
+        try:
+            shutil.rmtree(db_old_path)
+        except:
+            sys.exit(f'ERROR: cannot remove old database! path={db_old_path}, owner={db_old_path.owner()}, group={db_old_path.group()}, permissions={oct(db_old_path.stat().st_mode )[-3:]}')
+        db_old_path.mkdir()
+        
+        try:
+            db_new_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)  # set write permissions on db_new_path directory
+            for db_new_file_path in db_new_path.iterdir():
+                db_new_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR)
+        except:
+            sys.exit(f'ERROR: cannot set read|write|execute permissions on new database! path={db_new_path}, owner={db_new_path.owner()}, group={db_new_path.group()}, permissions={oct(db_new_path.stat().st_mode )[-3:]}')
+        try:
+            for db_new_file_path in db_new_path.iterdir():  # move new db files into old (existing) db directory
+                file_name = db_new_file_path.name
+                shutil.move(db_new_file_path, db_old_path.joinpath(file_name))
+        except:
+            sys.exit(f'ERROR: cannot move new database to existing path! new-path={db_new_path}, existing-path={db_old_path.parent}')
+        shutil.rmtree(tmp_path)
+        
+        try:
+            db_old_path.chmod(stat.S_IRUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)  # set write permissions on old (existing) directory with updated content
+            for db_old_file_path in db_old_path.iterdir():
+                db_old_file_path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+        except:
+            sys.exit(f'ERROR: cannot set read(|execute) permissions on new database! path={db_old_path}, owner={db_old_path.owner()}, group={db_old_path.group()}, permissions={oct(db_old_path.stat().st_mode )[-3:]}')
+        
+        print('\t... done')
+        
+        print(f'update AMRFinderPlus database...')
+        update_amrfinderplus_db()
+        print('\t... done')
+        
+        print(f"\nRun Bakta using '--db {db_old_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_old_path}'")
     else:
         parser.print_help()
         sys.exit('Error: no subcommand provided!')
+
+
+def update_amrfinderplus_db():
+    cmd = [
+        'amrfinder',
+        '-u'
+    ]
+    log.debug('cmd=%s', cmd)
+    proc = sp.run(
+        cmd,
+        stdout=sp.PIPE,
+        stderr=sp.PIPE,
+        universal_newlines=True
+    )
+    if(proc.returncode != 0):
+        log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
+        log.warning('AMRFinderPlus failed! amrfinder-error-code=%d', proc.returncode)
+        sys.exit(f"ERROR: AMRFinderPlus failed! command: 'amrfinder -u', error code: {proc.returncode}")
 
 
 if __name__ == '__main__':

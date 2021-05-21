@@ -30,14 +30,15 @@ VERSION_MAX_DIGIT = 1000000000000
 VERSION_REGEX = re.compile(r'(\d+)\.(\d+)(?:\.(\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
 
 # List of dependencies: tuples for: min version, max version, tool name & command line parameter, dependency check exclusion options
-DEPENDENCY_TRNASCAN = (Version(2,0,6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('tRNAscan-SE', '-h'), ('--skip-trna'))
-DEPENDENCY_ARAGORN = (Version(1,2,38), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('aragorn', '-h'), ('skip-tmrna'))
-DEPENDENCY_CMSCAN = (Version(1,1,2), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('cmscan', '-h'), ('--skip-rrna', '--skip-ncrna', '--skip-ncrna-region'))
-DEPENDENCY_PILERCR = (Version(1,6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('pilercr', '-options'), ('--skip-crispr'))
-DEPENDENCY_PRODIGAL = (Version(2,6,3), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('prodigal', '-v'), ('--skip-cds'))
-DEPENDENCY_HMMSEARCH = (Version(3,3,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('hmmsearch', '-h'), ('--skip-cds', '--skip-sorf'))
-DEPENDENCY_DIAMOND = (Version(2,0,4), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('diamond', 'help'), ('--skip-cds', '--skip-sorf'))
-DEPENDENCY_BLASTN = (Version(2,7,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('blastn', '-version'), ('--skip-ori'))
+DEPENDENCY_TRNASCAN = (Version(2,0,6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('tRNAscan-SE', '-h'), ['--skip-trna'])
+DEPENDENCY_ARAGORN = (Version(1,2,38), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('aragorn', '-h'), ['skip-tmrna'])
+DEPENDENCY_CMSCAN = (Version(1,1,2), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('cmscan', '-h'), ['--skip-rrna', '--skip-ncrna', '--skip-ncrna-region'])
+DEPENDENCY_PILERCR = (Version(1,6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('pilercr', '-options'), ['--skip-crispr'])
+DEPENDENCY_PRODIGAL = (Version(2,6,3), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('prodigal', '-v'), ['--skip-cds'])
+DEPENDENCY_HMMSEARCH = (Version(3,3,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('hmmsearch', '-h'), ['--skip-cds', '--skip-sorf'])
+DEPENDENCY_DIAMOND = (Version(2,0,4), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('diamond', 'help'), ['--skip-cds', '--skip-sorf'])
+DEPENDENCY_BLASTN = (Version(2,7,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('blastn', '-version'), ['--skip-ori'])
+DEPENDENCY_AMRFINDERPLUS = (Version(3,10), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('amrfinder', '--version'), ['--skip-cds'])
 
 
 def init_parser():
@@ -106,10 +107,10 @@ def read_tool_output(dependency):
         try:
             tool_output = str(sp.check_output(command, stderr=sp.STDOUT)) # stderr must be added in case the tool output is not piped into stdout
         except FileNotFoundError:
-            log.exception('dependency not found! tool=%s', command[0])
+            log.error('dependency not found! tool=%s', command[0])
             sys.exit(f"ERROR: {command[0]} not found or not executable! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
         except sp.CalledProcessError:
-            log.exception('dependency check failed! tool=%s', command[0])
+            log.error('dependency check failed! tool=%s', command[0])
             sys.exit(f"ERROR: {command[0]} could not be executed! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
         version_match = re.search(version_regex, tool_output)
         
@@ -189,6 +190,14 @@ def test_dependencies():
     
     if(not cfg.skip_cds):
         test_dependency(DEPENDENCY_PRODIGAL)
+        test_dependency(DEPENDENCY_AMRFINDERPLUS)
+
+        # test if AMRFinderPlus db is installed
+        process = sp.run(['amrfinder', '--debug'], capture_output=True)
+        if('No valid AMRFinder database found' in process.stderr.decode()):
+            log.error('AMRFinderPlus database not installed')
+            sys.exit(f"ERROR: AMRFinderPlus database not installed! Please, install AMRFinderPlus's internal database by executing: 'amrfinder -u'. This must be done only once.")
+
     
     if(not cfg.skip_cds or not cfg.skip_sorf):
         test_dependency(DEPENDENCY_HMMSEARCH)
