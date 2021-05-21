@@ -137,7 +137,7 @@ $ bakta_db download --output <output-path>
 or download it manually:
 
 ```bash
-$ wget https://zenodo.org/record/4337350/files/db.tar.gz
+$ wget https://zenodo.org/record/4662588/files/db.tar.gz
 $ tar -xzf db.tar.gz
 $ rm db.tar.gz
 ```
