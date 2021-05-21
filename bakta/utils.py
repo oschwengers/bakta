@@ -107,10 +107,10 @@ def read_tool_output(dependency):
         try:
             tool_output = str(sp.check_output(command, stderr=sp.STDOUT)) # stderr must be added in case the tool output is not piped into stdout
         except FileNotFoundError:
-            log.exception('dependency not found! tool=%s', command[0])
+            log.error('dependency not found! tool=%s', command[0])
             sys.exit(f"ERROR: {command[0]} not found or not executable! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
         except sp.CalledProcessError:
-            log.exception('dependency check failed! tool=%s', command[0])
+            log.error('dependency check failed! tool=%s', command[0])
             sys.exit(f"ERROR: {command[0]} could not be executed! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
         version_match = re.search(version_regex, tool_output)
         
