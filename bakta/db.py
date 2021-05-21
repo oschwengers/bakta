@@ -168,6 +168,9 @@ def main():
         for v in sorted(versions, key=lambda v: (v['major'], v['minor'])):
             print(f"{v['major']}.{v['minor']}\t{v['date']}\t{v['doi']}")
     elif(args.subcommand == 'download'):
+
+        bu.test_dependency(bu.DEPENDENCY_AMRFINDERPLUS)
+
         try:
             output_path = Path(args.output)
             if(not output_path.exists()):
@@ -234,6 +237,9 @@ def main():
 
         print(f"\nRun Bakta using '--db {db_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_path}'")
     elif(args.subcommand == 'update'):
+
+        bu.test_dependency(bu.DEPENDENCY_AMRFINDERPLUS)
+        
         env = os.environ.copy()
         if(args.db):
             db_dir = args.db
