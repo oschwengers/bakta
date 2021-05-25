@@ -306,7 +306,7 @@ def analyze_proteins(cdss):
                 'could not calc molecular weight! contig=%s, start=%i, stop=%i, strand=%s, frame=%s',
                 cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame']
             )
-            seq_stats['molecular_weight'] = float('nan')
+            seq_stats['molecular_weight'] = None
         try:
             seq_stats['isoelectric_point'] = seq.isoelectric_point()
         except:
@@ -314,5 +314,5 @@ def analyze_proteins(cdss):
                 'could not calc isoelectric point! contig=%s, start=%i, stop=%i, strand=%s, frame=%s',
                 cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame']
             )
-            seq_stats['isoelectric_point'] = float('nan')
+            seq_stats['isoelectric_point'] = None
         cds['seq_stats'] = seq_stats
