@@ -67,7 +67,8 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
             description = f"{description} plasmid {contig.get('name', 'unnamed')}"
             description += ', complete sequence' if contig['complete'] else ', whole genome shotgun sequence'
         elif(contig['type'] == bc.REPLICON_CHROMOSOME):
-            source_qualifiers['chromosome'] = contig['name'] if contig.get('name', None) else contig['id']
+            if contig.get('name', None):
+                source_qualifiers['chromosome'] = contig['name']
             description = f'{description} chromosome, complete genome' if contig['complete'] else f"{description} chromosome {contig['id']}, whole genome shotgun sequence"
         else:
             description += f" {contig['id']}, whole genome shotgun sequence"
