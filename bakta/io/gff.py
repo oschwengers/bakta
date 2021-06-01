@@ -102,7 +102,9 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     fh.write(f"{feat['contig']}\tInfernal\t{so.SO_REGULATORY_REGION.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_CRISPR):
                     annotations = {
+                        'ID': feat['locus'],
                         'Name': feat['product'],
+                        'locus_tag': feat['locus'],
                         'product': feat['product']
                     }
                     annotations = encode_annotations(annotations)
