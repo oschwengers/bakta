@@ -39,5 +39,7 @@ def write_hypothetical_tsv(hypotheticals, tsv_path):
         for hypo in hypotheticals:
             pfams = [f"{pfam['id']}|{pfam['name']}" for pfam in hypo.get('pfams', [])]
             seq_stats = hypo['seq_stats']
-            fh.write(f"{hypo['contig']}\t{hypo['start']}\t{hypo['stop']}\t{hypo['strand']}\t{hypo.get('locus', '')}\t{(seq_stats['molecular_weight']/100):.1f}\t{seq_stats['isoelectric_point']:.1f}\t{', '.join(sorted(pfams))}\t{', '.join(sorted(hypo.get('db_xrefs', [])))}\n")
+            mol_weight = f"{(seq_stats['molecular_weight']/100):.1f}" if seq_stats['molecular_weight'] else 'NA'
+            iso_point = f"{seq_stats['isoelectric_point']:.1f}" if seq_stats['isoelectric_point'] else 'NA'
+            fh.write(f"{hypo['contig']}\t{hypo['start']}\t{hypo['stop']}\t{hypo['strand']}\t{hypo.get('locus', '')}\t{mol_weight}\t{iso_point}\t{', '.join(sorted(pfams))}\t{', '.join(sorted(hypo.get('db_xrefs', [])))}\n")
     return
