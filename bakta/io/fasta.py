@@ -11,7 +11,7 @@ import bakta.constants as bc
 log = logging.getLogger('FASTA')
 
 
-FASTA_DNA_SEQUENCE_PATTERN = re.compile(r'[ATGCNatgcn]+')
+FASTA_DNA_SEQUENCE_PATTERN = re.compile(r'[ATGCNMRWSYKVHDBN]+', re.IGNORECASE)
 FASTA_LINE_WRAPPING = 60
 
 
