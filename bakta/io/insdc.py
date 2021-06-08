@@ -46,6 +46,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
             'date': date.today().strftime('%d-%b-%Y').upper(),
             'topology': contig['topology'],
             'data_file_division': 'HGT' if contig['type'] == bc.REPLICON_CONTIG else 'BCT',
+            # 'accession': '*',  # hold back unil EMBL output bug is fixed in BioPython (https://github.com/biopython/biopython/pull/3572)
             'comment': comment
             # TODO: taxonomy
         }
