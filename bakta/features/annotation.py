@@ -83,6 +83,10 @@ def detect_feature_overlaps(genome):
     for r_rna in genome['features'].get(bc.FEATURE_R_RNA, []):
         r_rnas = contig_r_rnas[r_rna['contig']]
         r_rnas.append(r_rna)
+    contig_ncrna_regions = {k['id']: [] for k in genome['contigs']}
+    for ncRNA_region in genome['features'].get(bc.FEATURE_NC_RNA_REGION, []):
+        ncRNA_regions = contig_ncrna_regions[ncRNA_region['contig']]
+        ncRNA_regions.append(ncRNA_region)
     contig_crispr_arrays = {k['id']: [] for k in genome['contigs']}
     for crispr_array in genome['features'].get(bc.FEATURE_CRISPR, []):
         crispr_arrays = contig_crispr_arrays[crispr_array['contig']]
@@ -115,6 +119,26 @@ def detect_feature_overlaps(genome):
                         "overlap: tRNA (%s) [%i, %i] overlapping with tmRNA (%s) [%i, %i] at %s on contig=%s",
                         tRNA['product'], tRNA['start'], tRNA['stop'], tmRNA['product'], tmRNA['start'], tmRNA['stop'], overlap, tRNA['contig']
                     )
+        
+        # mark ncRNA-regions overlapping with ncRNA-regions
+        for ncRNA_region in contig_ncrna_regions[contig['id']]:
+            for ncRNA_region_overlap in contig_ncrna_regions[contig['id']]:
+                if(ncRNA_region['stop'] < ncRNA_region_overlap['start'] or ncRNA_region['start'] > ncRNA_region_overlap['stop']):
+                    continue
+                if(ncRNA_region['db_xrefs'][0] == ncRNA_region_overlap['db_xrefs'][0]):
+                    continue  # same
+                else:  # overlap -> select ncRNA based on bitscore, discard the other
+                    if(ncRNA_region['score'] < ncRNA_region_overlap['score']):
+                        overlap = f"[{max(ncRNA_region['start'], ncRNA_region_overlap['start'])},{min(ncRNA_region['stop'], ncRNA_region_overlap['stop'])}]"
+                        ncRNA_region['discarded'] = {
+                            'type': bc.DISCARD_TYPE_OVERLAP,
+                            'feature_type': bc.FEATURE_NC_RNA_REGION,
+                            'description': f"{bc.FEATURE_NC_RNA_REGION} overlap with ({ncRNA_region_overlap['product']}) at {overlap}"
+                        }
+                        log.info(
+                            "overlap: ncRNA-region (%s) [%i, %i] overlapping with ncRNA-region (%s) [%i, %i] at %s on contig=%s, lower bitscore (%f/%f)",
+                            ncRNA_region['product'], ncRNA_region['start'], ncRNA_region['stop'], ncRNA_region_overlap['product'], ncRNA_region_overlap['start'], ncRNA_region_overlap['stop'], overlap, ncRNA_region['contig'], ncRNA_region['score'], ncRNA_region_overlap['score']
+                        )
         
         # mark CDS overlapping with tRNAs, tmRNAs, rRNAs, CRISPRs
         for cds in contig_cdss[contig['id']]:
