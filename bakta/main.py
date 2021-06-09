@@ -241,15 +241,16 @@ def main():
     else:
         print('predict & annotate CDSs...')
         log.debug('predict CDS')
-        genome['features'][bc.FEATURE_CDS] = feat_cds.predict(genome, contigs_path)
-        print(f"\tpredicted: {len(genome['features'][bc.FEATURE_CDS])} ")
+        cdss = feat_cds.predict(genome, contigs_path)
+        print(f"\tpredicted: {len(cdss)} ")
        
         log.debug('detect spurious CDS')
-        discarded_cds = orf.detect_spurious(genome['features'][bc.FEATURE_CDS]) if len(genome['features'][bc.FEATURE_CDS]) > 0 else []
-        print(f'\tdiscarded spurious: {len(discarded_cds)}')
+        discarded_cdss = orf.detect_spurious(cdss) if len(cdss) > 0 else []
+        print(f'\tdiscarded spurious: {len(discarded_cdss)}')
+        cdss = [cds for cds in cdss if 'discarded' not in cds]
         
         log.debug('lookup CDS UPS/IPS')
-        cdss_ups, cdss_not_found = ups.lookup(genome['features'][bc.FEATURE_CDS])
+        cdss_ups, cdss_not_found = ups.lookup(cdss)
         cdss_ips, tmp = ips.lookup(cdss_ups)
         cdss_not_found.extend(tmp)
         print(f'\tdetected IPSs: {len(cdss_ips)}')
@@ -264,33 +265,35 @@ def main():
             print(f'\tfound PSCs: {len(cdss_psc)}')
             print('\tlookup annotations...')
             log.debug('lookup CDS PSCs')
-            psc.lookup(genome['features'][bc.FEATURE_CDS])  # lookup PSC info
+            psc.lookup(cdss)  # lookup PSC info
 
         # conduct expert systems annotation
         print('\tconduct expert systems...')
         cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
         with cds_fasta_path.open(mode='w') as fh:
-            for cds in genome['features'][bc.FEATURE_CDS]:
+            for cds in cdss:
                 fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['sequence']}\n")
         log.debug('conduct expert system: amrfinder')
-        expert_amr_found = exp_amr.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
+        expert_amr_found = exp_amr.search(cdss, cds_fasta_path)
         print(f'\t\tamrfinder: {len(expert_amr_found)}')
         log.debug('conduct expert system: aa seqs')
-        expert_aa_found = exp_aa_seq.search(genome['features'][bc.FEATURE_CDS], cds_fasta_path)
+        expert_aa_found = exp_aa_seq.search(cdss, cds_fasta_path)
         print(f'\t\tprotein sequences: {len(expert_aa_found)}')
         
         print('\tmark hypotheticals and combine annotations...')
         log.debug('combine CDS annotations')
-        for feat in genome['features'][bc.FEATURE_CDS]:
-            anno.combine_annotation(feat)  # combine IPS & PSC annotations and mark hypotheticals
+        for cds in cdss:
+            anno.combine_annotation(cds)  # combine IPS & PSC annotations and mark hypotheticals
         
         print('analyze hypotheticals...')
         log.debug('analyze hypotheticals')
-        hypotheticals = [cds for cds in genome['features'][bc.FEATURE_CDS] if 'hypothetical' in cds]
+        hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
         pfam_hits = feat_cds.predict_pfam(hypotheticals)
         print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
         feat_cds.analyze_proteins(hypotheticals)
         print('\tcalculated proteins statistics')
+
+        genome['features'][bc.FEATURE_CDS] = cdss
     
     ############################################################################
     # sORF prediction
@@ -315,6 +318,7 @@ def main():
         log.debug('detect spurious sORF')
         discarded_sorfs = orf.detect_spurious(sorfs) if len(sorfs) > 0 else []
         print(f'\tdiscarded spurious: {len(discarded_sorfs)}')
+        sorfs = [sorf for sorf in sorfs if 'discarded' not in sorf]
 
         log.debug('lookup sORF UPS/IPS')
         sorf_upss, sorfs_not_found = ups.lookup(sorfs)
