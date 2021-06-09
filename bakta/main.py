@@ -263,9 +263,9 @@ def main():
             log.debug('search CDS PSC')
             cdss_psc, cdss_not_found = psc.search(cdss_not_found, cds_fasta_path)
             print(f'\tfound PSCs: {len(cdss_psc)}')
-            print('\tlookup annotations...')
-            log.debug('lookup CDS PSCs')
-            psc.lookup(cdss)  # lookup PSC info
+        print('\tlookup annotations...')
+        log.debug('lookup CDS PSCs')
+        psc.lookup(cdss)  # lookup PSC info
 
         # conduct expert systems annotation
         print('\tconduct expert systems...')
