@@ -457,9 +457,9 @@ All database releases (latest 1.0, 25 Gb zipped, 48 Gb unzipped) are hosted at Z
 ## Citation
 
 A manuscript is in preparation. To temporarily cite our work, please transitionally refer to:
-> Schwengers O., Goesmann A. (2021) Bakta: Rapid & standardized annotation of bacterial genomes & plasmids. GitHub https://github.com/oschwengers/bakta
+> Schwengers et al. (2021). Bakta: Rapid & standardized annotation of bacterial genomes & plasmids. GitHub: https://github.com/oschwengers/bakta
 
-Bakta takes advantage of many publicly available databases. If you find any of the data used within Bakta useful, please also be sure to credit the primary source also:
+Bakta is standing on the shoulder of giants taking advantage of many publicly available databases. If you find any of those used within Bakta useful, please credit these primary sources, as well:
 
 - UniProt: <https://doi.org/10.1093/nar/gky1049>
 - RefSeq: <https://doi.org/10.1093/nar/gkx1068>
