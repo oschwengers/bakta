@@ -280,18 +280,19 @@ def main():
         expert_aa_found = exp_aa_seq.search(cdss, cds_fasta_path)
         print(f'\t\tprotein sequences: {len(expert_aa_found)}')
         
-        print('\tmark hypotheticals and combine annotations...')
+        print('\tcombine annotations and mark hypotheticals...')
         log.debug('combine CDS annotations')
         for cds in cdss:
             anno.combine_annotation(cds)  # combine IPS & PSC annotations and mark hypotheticals
         
-        print('analyze hypotheticals...')
         log.debug('analyze hypotheticals')
         hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
-        pfam_hits = feat_cds.predict_pfam(hypotheticals)
-        print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
-        feat_cds.analyze_proteins(hypotheticals)
-        print('\tcalculated proteins statistics')
+        if(len(hypotheticals) > 0):
+            print(f'\tanalyze hypothetical proteins: {len(hypotheticals)}')
+            pfam_hits = feat_cds.predict_pfam(hypotheticals)
+            print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
+            feat_cds.analyze_proteins(hypotheticals)
+            print('\tcalculated proteins statistics')
 
         genome['features'][bc.FEATURE_CDS] = cdss
     
