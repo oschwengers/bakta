@@ -121,7 +121,7 @@ def overlap_filter(genome, orfs_raw):
         orfs.append(sorf)
 
     discarded_sorf_keys = set()
-    with cf.ProcessPoolExecutor(max_workers=cfg.threads - 1) as tpe:
+    with cf.ProcessPoolExecutor(max_workers=cfg.threads) as tpe:
         futures = []
         for contig in genome['contigs']:
             contig_sorfs = sorfs_per_contig[contig['id']]
