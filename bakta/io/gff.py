@@ -37,6 +37,8 @@ def write_gff3(genome, features_by_contig, gff3_path):
             annotations = encode_annotations(annotations)
             fh.write(f"{contig['id']}\tBakta\tregion\t1\t{str(contig['length'])}\t.\t+\t.\t{annotations}\n")
 
+            feature_ID_counter = 1
+
             for feat in features_by_contig[contig['id']]:
 
                 start = feat['start']
@@ -94,10 +96,12 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     fh.write(f"{feat['contig']}\tInfernal\t{so.SO_NCRNA_GENE.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_NC_RNA_REGION):
                     annotations = {
+                        'ID': feature_ID_counter,
                         'Name': feat['product'],
                         'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
+                    feature_ID_counter += 1
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tInfernal\t{so.SO_REGULATORY_REGION.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_CRISPR):
@@ -141,9 +145,11 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     fh.write(f"{feat['contig']}\tBakta\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_GAP):
                     annotations = {
+                        'ID': feature_ID_counter,
                         'Name': f"gap ({feat['length']} bp)",
                         'product': f"gap ({feat['length']} bp)"
                     }
+                    feature_ID_counter += 1
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tBakta\t{so.SO_GAP.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_ORIC):
