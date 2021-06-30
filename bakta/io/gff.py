@@ -24,6 +24,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
         fh.write(f'# annotated with Bakta (v{bakta.__version__}): https://github.com/oschwengers/bakta\n')
         fh.write(f"# database (v{cfg.db_info['major']}.{cfg.db_info['minor']}): https://doi.org/10.5281/zenodo.4247252\n")
         
+        feature_id_counter = 1
         for contig in genome['contigs']:  # write features
             fh.write(f"##sequence-region {contig['id']} 1 {contig['length']}\n")  # sequence region
 
@@ -94,10 +95,12 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     fh.write(f"{feat['contig']}\tInfernal\t{so.SO_NCRNA_GENE.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_NC_RNA_REGION):
                     annotations = {
+                        'ID': feature_id_counter,
                         'Name': feat['product'],
                         'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
+                    feature_id_counter += 1
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tInfernal\t{so.SO_REGULATORY_REGION.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_CRISPR):
@@ -141,9 +144,11 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     fh.write(f"{feat['contig']}\tBakta\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_GAP):
                     annotations = {
+                        'ID': feature_id_counter,
                         'Name': f"gap ({feat['length']} bp)",
                         'product': f"gap ({feat['length']} bp)"
                     }
+                    feature_id_counter += 1
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tBakta\t{so.SO_GAP.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_ORIC):
