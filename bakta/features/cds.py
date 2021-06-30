@@ -5,6 +5,7 @@ import subprocess as sp
 from collections import OrderedDict
 
 from Bio import SeqIO
+from Bio.Seq import Seq
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
 import bakta.config as cfg
@@ -316,3 +317,34 @@ def analyze_proteins(cdss):
             )
             seq_stats['isoelectric_point'] = None
         cds['seq_stats'] = seq_stats
+
+
+def get_nucleotide_seqeunce(feature, contigs):
+    """
+    Get the nucletide sequence for a feature entry.
+    :param feature: 'dict' (feature entry)
+    :param contigs: 'list' (contigs of the input genome)
+    :return: 'str' (DNA sequence of the feature)
+    """
+
+    if (feature['type'] == 'tRNA' or feature['type'] == 'tmRNA') and 'sequence' in feature:
+        if type(feature['sequence']) is str and len(feature['sequence']) > 0:
+            return feature['sequence']
+        else:
+            log.debug(f'Malformed tRNA entry: For product {feature["product"]} no sequence is available.')
+
+    for contig in contigs:
+        if contig['id'] == feature['contig']:
+            if feature['start'] < feature['stop']:
+                sequence = contig['sequence'][feature['start'] - 1:feature['stop']]
+            else:
+                sequence = contig['sequence'][feature['start'] - 1:] + contig['sequence'][:feature['stop']]
+            break
+    else:
+        log.warning('Extracting nucleotide sequence failed! Contig not found.')
+        raise Exception(f'Extracting nucleotide sequence failed! Error: Contig {feature["contig"]} not found')
+
+    if feature['strand'] == '+':
+        return sequence
+    else:
+        return str(Seq(sequence).reverse_complement())
