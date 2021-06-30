@@ -31,7 +31,6 @@ import bakta.features.cds as feat_cds
 import bakta.features.s_orf as s_orf
 import bakta.features.gaps as gaps
 import bakta.features.ori as ori
-import bakta.features.pseudo as pseudo
 import bakta.db as db
 import bakta.utils as bu
 import bakta.ups as ups
@@ -239,31 +238,6 @@ def main():
     ############################################################################
     if(cfg.skip_cds):
         print('skip CDS prediction...')
-
-        print('import precomputed genome...')
-        from json import load as jload
-
-        if cfg.threads == 4:
-            with open('/home/Julian/bakta/GCF_000008865.2_genome.json') as json_file:
-                genome = jload(json_file)
-        else:
-            with open('/homes/jhahnfel/bakta/GCF_000008865.2_genome.json') as json_file:
-                genome = jload(json_file)
-
-        for entry in [y for x in genome['features'].values() for y in x]:
-            foo = feat_cds.get_nucleotide_seqeunce(entry, genome['contigs'])
-        exit(0)
-
-        print('detect pseudogenes...')
-        log.debug('detect pseudogenes')
-        pseudogene_candidates = [cds for cds in genome['features'][bc.FEATURE_CDS] if 'hypothetical' in cds]
-        print(len(pseudogene_candidates))
-        # print(pseudogene_candidates[0])
-        pseudo_found, hypotheticals = pseudo.detect(pseudogene_candidates, genome['contigs'])
-        print(f'\tpotential pseudogenes: {len(pseudo_found)}')
-        # TODO update genome dict with new annotations
-        print(pseudo_found[0])
-
     else:
         print('predict & annotate CDSs...')
         log.debug('predict CDS')
