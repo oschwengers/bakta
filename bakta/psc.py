@@ -39,7 +39,8 @@ def search(cdss, cds_fasta_path):
         '--outfmt', '6',
         '--threads', str(cfg.threads),
         '--tmpdir', str(cfg.tmp_path),  # use tmp folder
-        '--block-size', '3'  # slightly increase block size for faster executions
+        '--block-size', '3',  # slightly increase block size for faster executions
+        '--fast'
     ]
     log.debug('cmd=%s', cmd)
     proc = sp.run(
