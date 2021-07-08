@@ -2,6 +2,7 @@
 import logging
 import subprocess as sp
 from collections import OrderedDict
+import os
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -20,7 +21,7 @@ def predict_oris(genome, contigs_path, ori_type):
         '-subject', str(contigs_path),
         '-culling_limit', '1',
         '-evalue', '1E-5',
-        '-num_threads', str(cfg.threads),
+        '-num_threads', str(min(int(cfg.threads), os.cpu_count())),
         '-outfmt', '6 qseqid qstart qend qlen sseqid sstart send length nident sstrand',
         '-out', str(output_path)
     ]
