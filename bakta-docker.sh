@@ -33,7 +33,7 @@ DB=
 OUTPUT=
 GENOME=$(realpath ${args[$argcount-1]})
 GENOME_FILENAME=$(basename $GENOME)
-args[$((argount-1))]=/bakta/$GENOME_FILENAME
+args[$((argcount-1))]=/bakta/$GENOME_FILENAME
 
 for i in `seq 0 $((argcount-1))`; do
     VAL=${args[i]}
