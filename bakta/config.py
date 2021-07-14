@@ -1,5 +1,6 @@
 
 import logging
+import multiprocessing as mp
 import os
 import sys
 import tempfile
@@ -57,8 +58,11 @@ def setup(args):
     global env, threads, verbose
     threads = args.threads
     if(threads <= 0):
-        log.error("wrong argument for 'threads' parameter! threads=%s", threads)
-        sys.exit(f"ERROR: wrong argument ({threads}) for 'threads' parameter! Value must be larger than 0")
+        log.error("wrong argument for 'threads' parameter! threads=%i", threads)
+        sys.exit(f"ERROR: wrong argument ({threads}) for 'threads' parameter! Value must be larger than 0.")
+    elif(threads > mp.cpu_count()):
+        log.error("wrong argument for 'threads' parameter! More threads requested than available: requested=%i, available=%i", threads, mp.cpu_count())
+        sys.exit(f"ERROR: wrong argument ({threads}) for 'threads' parameter! More threads requested ({threads}) than available ({mp.cpu_count()}).")
     log.info('threads=%i', threads)
     verbose = args.verbose
     log.info('verbose=%s', verbose)
