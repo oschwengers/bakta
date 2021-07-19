@@ -114,9 +114,9 @@ def predict_t_rnas(genome, contigs_path):
     with fasta_output_path.open() as fh:
         for record in SeqIO.parse(fh, 'fasta'):
             trna = trnas[record.id]
-            trna['sequence'] = str(record.seq)
+            trna['nucleotide_sequence'] = str(record.seq)
             if('anti_codon' in trna and trna['amino_acid'].lower() not in ['fmet', 'ile2', 'sec', 'sup']):  # exclude fMet, Ile2 and Sec (INSDC wrong anticodon issue)
-                anticodon_pos = trna['sequence'].lower().find(trna['anti_codon'])
+                anticodon_pos = trna['nucleotide_sequence'].lower().find(trna['anti_codon'])
                 if(anticodon_pos > -1):
                     if(trna['strand'] == bc.STRAND_FORWARD):
                         start = trna['start'] + anticodon_pos

@@ -76,7 +76,7 @@ def predict_tm_rnas(genome, contigs_path):
                 tmrna['gene'] = 'ssrA'
                 tmrna['product'] = 'transfer-messenger RNA, SsrA'
                 tmrna['db_xrefs'] = [so.SO_TMRNA.id]
-                tmrna['sequence'] = seq
+                tmrna['nucleotide_sequence'] = seq
                 
                 tmrnas.append(tmrna)
                 log.info(
