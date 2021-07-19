@@ -130,6 +130,8 @@ def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
                 cds['start'] = int(start)
                 cds['stop'] = int(stop)
                 cds['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
+                cds['nucleotide_sequence'] = get_nucleotide_sequence(cds['start'], cds['stop'], cds['strand'],
+                                                                     cds['contig'], genome['contigs'])
                 cds['gene'] = None
                 cds['product'] = None
                 cds['start_type'] = gff_annotations['start_type']
@@ -270,7 +272,7 @@ def predict_pfam(cdss):
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
-                cols = re.split('\s+', line.strip())
+                cols = re.split(r'\s+', line.strip())
                 aa_hexdigest = cols[0]
                 cds = orf_by_aa_digest[aa_hexdigest]
                 
@@ -319,32 +321,23 @@ def analyze_proteins(cdss):
         cds['seq_stats'] = seq_stats
 
 
-def get_nucleotide_seqeunce(feature, contigs):
+def get_nucleotide_sequence(start, stop, strand, contig_id, contigs):
     """
-    Get the nucletide sequence for a feature entry.
-    :param feature: 'dict' (feature entry)
-    :param contigs: 'list' (contigs of the input genome)
-    :return: 'str' (DNA sequence of the feature)
+    Get the nucleotide sequence of a cds.
     """
-
-    if (feature['type'] == 'tRNA' or feature['type'] == 'tmRNA') and 'sequence' in feature:
-        if type(feature['sequence']) is str and len(feature['sequence']) > 0:
-            return feature['sequence']
-        else:
-            log.debug(f'Malformed tRNA entry: For product {feature["product"]} no sequence is available.')
 
     for contig in contigs:
-        if contig['id'] == feature['contig']:
-            if feature['start'] < feature['stop']:
-                sequence = contig['sequence'][feature['start'] - 1:feature['stop']]
+        if contig['id'] == contig_id:
+            if start < stop:
+                sequence = contig['sequence'][start - 1:stop]
             else:
-                sequence = contig['sequence'][feature['start'] - 1:] + contig['sequence'][:feature['stop']]
+                sequence = contig['sequence'][start - 1:] + contig['sequence'][:stop]
             break
     else:
         log.warning('Extracting nucleotide sequence failed! Contig not found.')
-        raise Exception(f'Extracting nucleotide sequence failed! Error: Contig {feature["contig"]} not found')
+        raise Exception(f'Extracting nucleotide sequence failed! Error: Contig {contig_id} not found')
 
-    if feature['strand'] == '+':
+    if strand == '+':
         return sequence
     else:
         return str(Seq(sequence).reverse_complement())

@@ -40,9 +40,11 @@ def extract(genome):
                         if(strand == bc.STRAND_FORWARD):
                             dna_start = aa_start * 3 + frame + 1  # +1: 0 based idx to 1 based
                             dna_stop = aa_end * 3 + 2 + frame + 1
+                            nt_sequence = str(seq[dna_start - 1:dna_stop])
                         else:
                             dna_start = len(seq) - frame - (aa_end + 1) * 3 + 1
                             dna_stop = len(seq) - frame - aa_start * 3
+                            nt_sequence = str(seq[aa_start * 3 + frame:aa_end * 3 + 2 + frame + 1])
                         sequence = aa_seq[aa_start:aa_end]
                         (aa_digest, aa_hexdigest) = bu.calc_aa_hash(sequence)
 
@@ -57,6 +59,7 @@ def extract(genome):
                         sorf['frame'] = frame + 1
                         sorf['db_xrefs'] = [so.SO_SORF.id]
                         sorf['sequence'] = sequence
+                        sorf['nucleotide_sequence'] = nt_sequence
                         sorf['aa_digest'] = aa_digest
                         sorf['aa_hexdigest'] = aa_hexdigest
                         
