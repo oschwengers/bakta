@@ -489,6 +489,10 @@ def main():
     print('write translated CDS sequences...')
     faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.faa')
     fasta.write_faa(features, faa_path)
+
+    print('write CDS nucleotide sequences...')
+    cds_fna_path = cfg.output_path.joinpath(f'{cfg.prefix}.cds.fna')
+    fasta.write_fna(features, cds_fna_path, cds_only=True)
     
     if(cfg.skip_cds is False):
         hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
