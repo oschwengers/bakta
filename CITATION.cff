@@ -1,0 +1,24 @@
+cff-version: 1.1.0
+message: "If you use Bakta, please cite it using these metadata."
+authors: 
+  -
+    family-names: Schwengers
+    given-names: Oliver
+    orcid: https://orcid.org/0000-0003-4216-2721
+  -
+    family-names: Blom
+    given-names: Jochen
+    orcid: https://orcid.org/0000-0001-6455-3622
+  -
+    family-names: Goesmann
+    given-names: Alexander
+    orcid: https://orcid.org/0000-0002-7086-2568
+title: "Bakta: Rapid & standardized annotation of bacterial genomes & plasmids"
+version: 1.0.4
+keywords: 
+  - bioinformatics
+  - "genome-annotation"
+  - bacteria
+  - plasmids
+license: GPL-3.0
+
