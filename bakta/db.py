@@ -114,13 +114,13 @@ def download(db_url, tarball_path):
             total_length = resp.headers.get('content-length')
             if total_length is None: # no content length header
                 with alive_bar() as bar:
-                    for data in resp.iter_content(chunk_size=4096):
+                    for data in resp.iter_content(chunk_size=1024*1024):
                         fh_out.write(data)
                         bar()
             else:
                 total_length = int(int(total_length)/1024)  # length in Kb
                 with alive_bar(total=total_length) as bar:
-                    for data in resp.iter_content(chunk_size=4096):
+                    for data in resp.iter_content(chunk_size=1024*1024):
                         fh_out.write(data)
                         bar(incr=len(data)/1024)
     except IOError:
