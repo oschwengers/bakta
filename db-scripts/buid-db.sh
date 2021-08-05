@@ -25,13 +25,13 @@ grep "antitoxin;" rfam-genes.raw.txt >> rfam-genes.txt
 grep "antisense;" rfam-genes.raw.txt >> rfam-genes.txt
 grep "ribozyme;" rfam-genes.raw.txt >> rfam-genes.txt
 grep "sRNA;" rfam-genes.raw.txt >> rfam-genes.txt
-cut -f1 ${BAKTA_DB_SCRIPTS}/ncRNA-genes.blacklist.txt > ncRNA-genes.blacklist
-grep -e "Gene;[^ ]" rfam-genes.raw.txt | grep -v -f ncRNA-genes.blacklist >> rfam-genes.txt
+cut -f1 ${BAKTA_DB_SCRIPTS}/ncRNA-genes.blocklist.txt > ncRNA-genes.blocklist
+grep -e "Gene;[^ ]" rfam-genes.raw.txt | grep -v -f ncRNA-genes.blocklist >> rfam-genes.txt
 cmfetch -o ncRNA-genes -f Rfam.cm rfam-genes.txt
 cmpress ncRNA-genes
 wget http://current.geneontology.org/ontology/external2go/rfam2go
 awk -F ' ' '{print $1 "\t" $NF}' rfam2go > rfam-go.tsv
-rm rfam-genes.raw.txt rfam-genes.txt ncRNA-genes.blacklist ncRNA-genes rfam2go
+rm rfam-genes.raw.txt rfam-genes.txt ncRNA-genes.blocklist ncRNA-genes rfam2go
 
 
 # download and extract ncRNA regions (cis reg elements) covariance models from Rfam
@@ -41,11 +41,11 @@ grep "riboswitch;" rfam-regions.raw.txt >> rfam-regions.txt
 grep "thermoregulator;" rfam-regions.raw.txt >> rfam-regions.txt
 grep "leader;" rfam-regions.raw.txt >> rfam-regions.txt
 grep "frameshift_element;" rfam-regions.raw.txt >> rfam-regions.txt
-cut -f1 ${BAKTA_DB_SCRIPTS}/ncRNA-regions.blacklist.txt > ncRNA-regions.blacklist
-grep -e "Cis-reg;[^ ]" rfam-regions.raw.txt | grep -v -f ncRNA-regions.blacklist >> rfam-regions.txt
+cut -f1 ${BAKTA_DB_SCRIPTS}/ncRNA-regions.blocklist.txt > ncRNA-regions.blocklist
+grep -e "Cis-reg;[^ ]" rfam-regions.raw.txt | grep -v -f ncRNA-regions.blocklist >> rfam-regions.txt
 cmfetch -o ncRNA-regions -f Rfam.cm rfam-regions.txt
 cmpress ncRNA-regions
-rm rfam-regions.raw.txt rfam-regions.txt ncRNA-regions.blacklist ncRNA-regions Rfam.cm
+rm rfam-regions.raw.txt rfam-regions.txt ncRNA-regions.blocklist ncRNA-regions Rfam.cm
 
 
 # download and extract spurious ORF HMMs from AntiFam
