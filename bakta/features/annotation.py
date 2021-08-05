@@ -13,12 +13,19 @@ def combine_annotation(feature):
     ups = feature.get('ups', None)
     ips = feature.get('ips', None)
     psc = feature.get('psc', None)
+    pscc = feature.get('pscc', None)
     expert = feature.get('expert', None)
 
     gene = None
     product = None
     db_xrefs = set()
-    if(psc):
+    if(pscc):
+        pscc_product = pscc.get('product', None)
+        if(pscc_product):
+            product = pscc_product
+        for db_xref in pscc['db_xrefs']:
+            db_xrefs.add(db_xref)
+    if(psc and psc['valid']):
         psc_gene = psc.get('gene', None)
         if(psc_gene):
             gene = psc_gene
