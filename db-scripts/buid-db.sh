@@ -103,12 +103,13 @@ python3 ${BAKTA_DB_SCRIPTS}/init-db.py --db bakta.db
 printf "\n8/14: download UniProt UniRef90 ...\n"
 wget -nv ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref90/uniref90.xml.gz
 wget -nv ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref50/uniref50.xml.gz
+wget -nv ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/uniparc_active.fasta.gz
 printf "\n8/14: read UniRef90 entries and build Protein Sequence Cluster sequence and information databases:\n"
 python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --uniref90 uniref90.xml.gz --uniref50 uniref50.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --psc psc.faa --sorf sorf.faa
 printf "\n8/14: build PSC Diamond db ...\n"
 diamond makedb --in psc.faa --db psc
 diamond makedb --in sorf.faa --db sorf
-rm uniref90.xml.gz uniparc_active.fasta.gz sorf.faa
+rm uniref90.xml.gz sorf.faa
 
 
 ############################################################################
@@ -118,10 +119,9 @@ rm uniref90.xml.gz uniparc_active.fasta.gz sorf.faa
 ############################################################################
 printf "\n9/14: download UniProt UniRef100 ...\n"
 wget -nv ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref100/uniref100.xml.gz
-wget -nv ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/uniparc_active.fasta.gz
 printf "\n9/14: read, filter and store UniRef100 entries ...:\n"
 python3 ${BAKTA_DB_SCRIPTS}/init-ups-ips.py --taxonomy nodes.dmp --uniref100 uniref100.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --ips ips.faa
-rm uniref100.xml.gz
+rm uniref100.xml.gz uniparc_active.fasta.gz
 
 
 ############################################################################
@@ -133,8 +133,8 @@ rm uniref100.xml.gz
 printf "\n10/15: download RefSeq nonredundant proteins and clusters ...\n"
 wget -nv ftp://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_proteins.txt
 wget -nv ftp://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_clusters.txt
-for i in {1..1206}; do
-    wget -nv ftp://ftp.ncbi.nlm.nih.gov/refseq/release/bacteria/bacteria.nonredundant_protein.${i}.protein.faa.gz
+for i in {1..1396}; do
+    wget ftp://ftp.ncbi.nlm.nih.gov/refseq/release/bacteria/bacteria.nonredundant_protein.${i}.protein.faa.gz
     pigz -dc bacteria.nonredundant_protein.${i}.protein.faa.gz | seqtk seq -CU >> refseq-bacteria-nrp.trimmed.faa
     rm bacteria.nonredundant_protein.${i}.protein.faa.gz
 done
@@ -238,14 +238,14 @@ rm pfam-families* pfam *.tsv Pfam* hmmsearch.tblout
 # - import NCBI BlastRules models
 # - import VFDB sequences
 ############################################################################
-wget -nv https://ftp.ncbi.nlm.nih.gov/pub/blastrules/current/proteins.fasta
-wget -nv https://ftp.ncbi.nlm.nih.gov/pub/blastrules/current/blast-rules_4.0.tsv
-python3 ${BAKTA_DB_SCRIPTS}/expert/setup-ncbiblastrules.py --expert-sequence expert-protein-sequences.faa --ncbi-blastrule-tsv blast-rules_4.0.tsv --proteins proteins.fasta
+wget -nv https://ftp.ncbi.nlm.nih.gov/pub/blastrules/4.2.2.tgz
+tar -xzf 4.2.2.tgz
+python3 ${BAKTA_DB_SCRIPTS}/expert/setup-ncbiblastrules.py --expert-sequence expert-protein-sequences.faa --ncbi-blastrule-tsv 4.2.2/data/blast-rules_4.2.2.tsv --proteins 4.2.2/data/proteins.fasta
 wget -nv http://www.mgc.ac.cn/VFs/Down/VFDB_setA_pro.fas.gz
 gunzip VFDB_setA_pro.fas.gz
 python3 ${BAKTA_DB_SCRIPTS}/expert/setup-vfdb.py --expert-sequence expert-protein-sequences.faa --proteins VFDB_setA_pro.fas
 diamond makedb --in expert-protein-sequences.faa --db expert-protein-sequences
-rm blast-rules_4.0.tsv proteins.fasta VFDB_setA_pro.fas expert-protein-sequences.faa
+rm -r 4.2.2/ 4.2.2.tgz VFDB_setA_pro.fas expert-protein-sequences.faa
 
 # Cleanup
 ls -l bakta.db

@@ -23,6 +23,7 @@ logging.basicConfig(
 log_ups = logging.getLogger('UPS')
 log_ips = logging.getLogger('IPS')
 log_psc = logging.getLogger('PSC')
+log_pscc = logging.getLogger('PSCC')
 
 
 with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
@@ -83,6 +84,19 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     stmt = ' '.join(stmt.replace('\n', '').split())
     conn.execute(stmt)
     log_psc.info(stmt)
+    conn.commit()
+    print('\t...done')
+
+    print('create SQL table PSCC...')
+    log_pscc.info('DROP TABLE IF EXISTS pscc;')
+    conn.execute('DROP TABLE IF EXISTS pscc;')
+    stmt = '''CREATE TABLE pscc (
+        uniref50_id TEXT PRIMARY KEY,
+        product TEXT
+        ) WITHOUT ROWID;'''
+    stmt = ' '.join(stmt.replace('\n', '').split())
+    conn.execute(stmt)
+    log_pscc.info(stmt)
     conn.commit()
     print('\t...done')
 
