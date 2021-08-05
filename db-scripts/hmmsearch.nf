@@ -4,7 +4,7 @@ import java.nio.file.Paths
 params.in = 'psc.faa'
 params.out = 'hmmsearch.tblout'
 
-params.block = 10000
+params.block = 100000
 
 chAAs = Channel.fromPath( params.in )
     .splitFasta( by: params.block, file: true )
@@ -15,7 +15,7 @@ process hmmsearch {
     cpus 2
     memory '1 GB'
     clusterOptions '-l virtual_free=1G'
-    conda 'hmmer=3.3.1'
+    conda 'hmmer=3.3.2'
 
     input:
     path('input.faa') from chAAs

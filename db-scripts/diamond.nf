@@ -14,10 +14,9 @@ Channel.fromPath( params.in )
 process diamond {
     errorStrategy 'finish'
     maxRetries 3
-    cpus 2
-    memory '2 GB'
-    clusterOptions '-l virtual_free=2G'
-    conda 'diamond=2.0.6'
+    cpus 8
+    memory '32 GB'
+    conda 'diamond=2.0.11'
 
     input:
     file('input.faa') from chAAs
@@ -37,7 +36,8 @@ process diamond {
         -b4 \
         --threads ${task.cpus} \
         --out diamond.tsv \
-        --outfmt 6 qseqid sseqid stitle length pident qlen slen evalue
+        --outfmt 6 qseqid sseqid stitle length pident qlen slen evalue \
+        --fast
     """
 }
 
