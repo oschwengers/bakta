@@ -43,6 +43,6 @@ jobs:
         printenv | sort
     - name: Conda init
       run: |
-        amrfinder --update
+        amrfinder_update --database test/db/amrfinderplus-db --force_update
     - name: Run PyTest
       run: pytest
