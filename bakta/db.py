@@ -127,7 +127,7 @@ def download(db_url, tarball_path):
         sys.exit(f'ERROR: Could not download file from Zenodo! url={db_url}, path={tarball_path}')
 
 
-def calc_md5_sum(tarball_path, buffer_size=8192):
+def calc_md5_sum(tarball_path, buffer_size=1024*1024):
     md5 = hashlib.md5()
     with tarball_path.open('rb') as fh:
         data = fh.read(buffer_size)
@@ -233,8 +233,15 @@ def main():
         print(f"\tDOI: {required_version['doi']}")
         print(f'\tpath: {db_path}')
 
+        try:
+            db_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)  # set write permissions on old (existing) directory with updated content
+            for db_file_path in db_path.iterdir():
+                db_file_path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+        except:
+            sys.exit(f'ERROR: cannot set read(|execute) permissions on new database! path={db_path}, owner={db_path.owner()}, group={db_path.group()}, permissions={oct(db_path.stat().st_mode )[-3:]}')
+
         print(f'update AMRFinderPlus database...')
-        update_amrfinderplus_db()
+        update_amrfinderplus_db(db_path)
         print('\t... done')
 
         print(f"\nRun Bakta using '--db {db_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_path}'")
@@ -356,7 +363,7 @@ def main():
         shutil.rmtree(tmp_path)
         
         try:
-            db_old_path.chmod(stat.S_IRUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)  # set write permissions on old (existing) directory with updated content
+            db_old_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)  # set write permissions on old (existing) directory with updated content
             for db_old_file_path in db_old_path.iterdir():
                 db_old_file_path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
         except:
@@ -365,7 +372,7 @@ def main():
         print('\t... done')
         
         print(f'update AMRFinderPlus database...')
-        update_amrfinderplus_db()
+        update_amrfinderplus_db(db_old_path)
         print('\t... done')
         
         print(f"\nRun Bakta using '--db {db_old_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_old_path}'")
@@ -374,10 +381,12 @@ def main():
         sys.exit('Error: no subcommand provided!')
 
 
-def update_amrfinderplus_db():
+def update_amrfinderplus_db(db_path):
+    amrfinderplus_db_path = db_path.joinpath('amrfinderplus-db')
     cmd = [
-        'amrfinder',
-        '-u'
+        'amrfinder_update',
+        '--database', str(amrfinderplus_db_path),
+        '--force_update'
     ]
     log.debug('cmd=%s', cmd)
     proc = sp.run(
@@ -389,7 +398,7 @@ def update_amrfinderplus_db():
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('AMRFinderPlus failed! amrfinder-error-code=%d', proc.returncode)
-        sys.exit(f"ERROR: AMRFinderPlus failed! command: 'amrfinder -u', error code: {proc.returncode}")
+        sys.exit(f"ERROR: AMRFinderPlus failed! command: 'amrfinder_update --force_update --database {amrfinderplus_db_path}', error code: {proc.returncode}")
 
 
 if __name__ == '__main__':

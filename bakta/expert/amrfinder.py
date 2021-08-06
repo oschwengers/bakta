@@ -10,6 +10,8 @@ log = logging.getLogger('EXPERT-AMRFINDER')
 def search(cdss, cds_fasta_path):
     """Conduct expert CDS analysis with AMRFinderPlus."""
     amrfinder_output_path = cfg.tmp_path.joinpath('amrfinder.tsv')
+    amrfinderplus_db_path = cfg.db_path.joinpath('amrfinderplus-db')
+    amrfinderplus_db_latest_path = amrfinderplus_db_path.joinpath('latest')
     
     amrfinderplus_tmp_path = cfg.tmp_path.joinpath('amrfinderplus')
     amrfinderplus_tmp_path.mkdir()
@@ -18,6 +20,7 @@ def search(cdss, cds_fasta_path):
     
     cmd = [
         'amrfinder',
+        '--database', str(amrfinderplus_db_latest_path),
         '--protein', str(cds_fasta_path),
         '--plus',
         '--translation_table', str(cfg.translation_table),
@@ -36,7 +39,7 @@ def search(cdss, cds_fasta_path):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('AMR expert system failed! amrfinder-error-code=%d', proc.returncode)
-        raise Exception(f"amrfinder error! error code: {proc.returncode}. Please, execute 'amrfinder -u' to update AMRFinderPlus's internal database.")
+        raise Exception(f"amrfinder error! error code: {proc.returncode}. Please, try 'amrfinder_update --force_update --database {amrfinderplus_db_path}' to update AMRFinderPlus's internal database.")
 
     cds_found = set()
     cds_by_hexdigest = {f"{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}": cds for cds in cdss}
