@@ -67,11 +67,6 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA threads = 2;')
     conn.commit()
 
-    print('create IPS index on UniRef90 ids...')
-    conn.execute('CREATE INDEX ur90 ON ips ( uniref90_id )')
-    conn.commit()
-    log_ups.info('CREATE INDEX ur90 ON ips ( uniref90_id )')
-
     conn.row_factory = sqlite3.Row
     with xopen(str(xml_path), mode="rb") as fh:
         ups_entries = []
@@ -107,10 +102,10 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                 # parse SwissProt annotations
                 gene = elem.find('./{*}gene/{*}name[@type="primary"]')
                 if(gene is not None):
-                    gene = gene.text
+                    gene = gene.text if gene.text != '' else None
                 product = elem.find('./{*}protein/{*}recommendedName/{*}fullName')
                 if(product is not None):
-                    product = product.text
+                    product = product.text if product.text != '' else None
                 ec_ids = []
                 for ec_id in elem.findall('./{*}protein/{*}recommendedName/{*}ecNumber'):
                     ec_ids.append(ec_id.text)
@@ -166,11 +161,6 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                 conn.commit()
                 print(f'\t... {sp_processed}')
             elem.clear()  # forstall out of memory errors
-    
-    print('drop IPS index on NCBI UniRef90 ids...')
-    conn.execute('DROP INDEX ur90')
-    conn.commit()
-    log_ups.info('DROP INDEX ur90')
 
 print('\n')
 print(f'SwissProt proteins not found: {sp_not_found}')

@@ -1,4 +1,6 @@
 
+import java.nio.file.*
+
 params.in = 'psc.faa'
 params.out = 'diamond.tsv'
 
@@ -7,7 +9,16 @@ params.qcov = 80
 params.scov = 80
 params.block = 1000
 
-Channel.fromPath( params.in )
+def pathInput = Paths.get(params.in).toAbsolutePath().normalize()
+def pathDb = Paths.get(params.db).toAbsolutePath().normalize()
+def pathOutput = Paths.get(params.out).toAbsolutePath().normalize()
+
+print("run Diamond")
+print("query: ${pathInput}")
+print("DB: ${pathDb}")
+print("Output: ${pathOutput}")
+
+Channel.fromPath( pathInput )
     .splitFasta( by: params.block, file: true )
     .set( { chAAs } )
 
@@ -28,7 +39,7 @@ process diamond {
     """
     diamond blastp \
         --query input.faa \
-        --db ${params.db} \
+        --db ${pathDb} \
         --id ${params.id} \
         --query-cover ${params.qcov} \
         --subject-cover ${params.scov} \
@@ -41,4 +52,4 @@ process diamond {
     """
 }
 
-chDiamondResults.collectFile( sort: false, name: params.out, storeDir: '.')
+chDiamondResults.collectFile( sort: false, name: pathOutput, storeDir: '.')

@@ -160,7 +160,7 @@ do
 done
 printf "\n11/16: annotate PSCs ...\n"
 diamond makedb --in cog.faa --db cog.dmnd
-nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db cog.dmnd --block 100000 --id 90 --qcov 80 --scov 80 --out diamond.cog.tsv
+nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db cog.dmnd --block 1000000 --id 90 --qcov 80 --scov 80 --out diamond.cog.tsv
 python3 ${BAKTA_DB_SCRIPTS}/annotate-cog.py --db bakta.db --alignments diamond.cog.tsv --cog-ids cog-20.def.tab --gi-cog-mapping cog-20.cog.csv
 rm cognames2003-2015.tab cog2003-2015.csv prot2003-2015.fa.gz diamond.cog.tsv cog.*
 
@@ -190,7 +190,7 @@ wget ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/
 printf "\n13/16: annotate IPSs and PSCs...\n"
 mv AMR.LIB ncbifam-amr
 hmmpress ncbifam-amr
-nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --fasta psc.faa --db ncbifam-amr
+nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in psc.faa --db ncbifam-amr
 python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-amr.py --db bakta.db --genes ReferenceGeneCatalog.txt --hmms fam.tab --hmm-results hmmsearch.tblout
 rm ReferenceGeneCatalog.txt ncbifam-amr* fam.tab hmmsearch.tblout
 
@@ -205,10 +205,10 @@ wget https://raw.githubusercontent.com/oschwengers/ISfinder-sequences/2e9162bd5e
 printf "\n14/16: annotate IPSs ...\n"
 grep -A 1 ~~~Transposase~~~ IS.faa | tr -d - | tr -s "\n" > is.transposase.faa
 diamond makedb --in is.transposase.faa --db is
-nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in ips.faa --db is.dmnd --block 100000 --id 98 --qcov 99 --scov 99 --out diamond.ips.tsv
-nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db is.dmnd --block 100000 --id 90 --qcov 80 --scov 80 --out diamond.psc.tsv
-python3 ${BAKTA_DB_SCRIPTS}/annotate-is.py --db bakta.db --ips-alignments diamond.ips.tsv --psc-alignments diamond.psc.tsv
-rm IS.faa is.transposase.faa is.dmnd diamond.ips.tsv diamond.psc.tsv
+nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in ips.faa --db is.dmnd --block 1000000 --id 98 --qcov 99 --scov 99 --out diamond.is.ips.tsv
+nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db is.dmnd --block 1000000 --id 90 --qcov 80 --scov 80 --out diamond.is.psc.tsv
+python3 ${BAKTA_DB_SCRIPTS}/annotate-is.py --db bakta.db --ips-alignments diamond.is.ips.tsv --psc-alignments diamond.is.psc.tsv
+rm IS.faa is.transposase.faa is.dmnd diamond.is.ips.tsv diamond.is.psc.tsv
 
 
 ############################################################################
