@@ -10,6 +10,12 @@ log = logging.getLogger('EXPERT-AMRFINDER')
 def search(cdss, cds_fasta_path):
     """Conduct expert CDS analysis with AMRFinderPlus."""
     amrfinder_output_path = cfg.tmp_path.joinpath('amrfinder.tsv')
+    
+    amrfinderplus_tmp_path = cfg.tmp_path.joinpath('amrfinderplus')
+    amrfinderplus_tmp_path.mkdir()
+    env = cfg.env.copy()
+    env['TMPDIR'] = str(amrfinderplus_tmp_path)
+    
     cmd = [
         'amrfinder',
         '--protein', str(cds_fasta_path),
@@ -22,7 +28,7 @@ def search(cdss, cds_fasta_path):
     proc = sp.run(
         cmd,
         cwd=str(cfg.tmp_path),
-        env=cfg.env,
+        env=env,
         stdout=sp.PIPE,
         stderr=sp.PIPE,
         universal_newlines=True
