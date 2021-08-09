@@ -114,7 +114,10 @@ def lookup(features):
             rec = future.result()
             if(rec is not None):
                 psc = parse_annotation(rec)
-                feature['psc'] = {**feature['psc'], **psc}  # merge dicts to store alignment info for later PSC/PSCC annotations
+                if('psc' in feature):
+                    feature['psc'] = {**feature['psc'], **psc}  # merge dicts to store alignment info for later PSC/PSCC annotations
+                else:
+                    feature['psc'] = psc
                 no_psc_lookups += 1
                 log.debug(
                     'lookup: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, gene=%s, product=%s',
