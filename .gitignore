@@ -1,3 +1,6 @@
+# AMRFinderPlus database
+amrfinderplus-db/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
