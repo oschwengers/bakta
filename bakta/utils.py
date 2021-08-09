@@ -193,10 +193,17 @@ def test_dependencies():
         test_dependency(DEPENDENCY_AMRFINDERPLUS)
 
         # test if AMRFinderPlus db is installed
-        process = sp.run(['amrfinder', '--debug'], capture_output=True)
+        amrfinderplus_db_path = cfg.db_path.joinpath('amrfinderplus-db')
+        amrfinderplus_db_latest_path = amrfinderplus_db_path.joinpath('latest')
+        process = sp.run(
+            [
+                'amrfinder',
+                '--debug',
+                '--database', str(amrfinderplus_db_latest_path)
+            ], capture_output=True)
         if('No valid AMRFinder database found' in process.stderr.decode()):
             log.error('AMRFinderPlus database not installed')
-            sys.exit(f"ERROR: AMRFinderPlus database not installed! Please, install AMRFinderPlus's internal database by executing: 'amrfinder -u'. This must be done only once.")
+            sys.exit(f"ERROR: AMRFinderPlus database not installed! Please, install AMRFinderPlus's internal database by executing: 'amrfinder_update --database <database-path>/amrfinderplus-db'. This must be done only once.")
 
     
     if(not cfg.skip_cds or not cfg.skip_sorf):
