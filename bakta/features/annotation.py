@@ -25,7 +25,7 @@ def combine_annotation(feature):
             product = pscc_product
         for db_xref in pscc['db_xrefs']:
             db_xrefs.add(db_xref)
-    if(psc and psc.get('valid', False)):
+    if(psc and psc.get('valid', True)):
         psc_gene = psc.get('gene', None)
         if(psc_gene):
             gene = psc_gene
