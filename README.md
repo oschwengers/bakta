@@ -140,7 +140,10 @@ or download it manually:
 $ wget https://zenodo.org/record/4662588/files/db.tar.gz
 $ tar -xzf db.tar.gz
 $ rm db.tar.gz
+$ amrfinder_update --force_update --database db/amrfinderplus-db/
 ```
+
+In this case, please also download the AMRFinderPlus database as indicated above.
 
 Update an existing database:
 
