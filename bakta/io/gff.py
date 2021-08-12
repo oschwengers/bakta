@@ -53,11 +53,22 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'product': encode_attribute(feat['product']),
                         'Dbxref': feat['db_xrefs']
                     }
-                    # add gene annotation if available
-                    if(feat.get('gene', None)):
+                    if(feat.get('gene', None)):  # add gene annotation if available
                         annotations['gene'] = feat['gene']
                     if(feat.get('pseudo', False)):
                         annotations['pseudo'] = True
+                    if(cfg.compliant):
+                        gene_id = f"{feat['locus']}_gene"
+                        gene_annotations = {
+                            'ID': gene_id,
+                            'locus_tag': feat['locus']
+                        }
+                        if(feat.get('gene', None)):
+                            gene_annotations['gene'] = feat['gene']
+                        annotations['Parent'] = gene_id
+                        annotations['inference'] = 'profile:tRNAscan:2.0'
+                        gene_annotations = encode_annotations(gene_annotations)
+                        fh.write(f"{feat['contig']}\ttRNAscan-SE\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\ttRNAscan-SE\t{so.SO_TRNA.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_TM_RNA):
@@ -69,6 +80,17 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'product': encode_attribute(feat['product']),
                         'Dbxref': feat['db_xrefs']
                     }
+                    if(cfg.compliant):
+                        gene_id = f"{feat['locus']}_gene"
+                        gene_annotations = {
+                            'ID': gene_id,
+                            'locus_tag': feat['locus'],
+                            'gene': feat['gene']
+                        }
+                        annotations['Parent'] = gene_id
+                        annotations['inference'] = 'profile:aragorn:1.2'
+                        gene_annotations = encode_annotations(gene_annotations)
+                        fh.write(f"{feat['contig']}\tAragorn\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tAragorn\t{so.SO_TMRNA.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_R_RNA):
@@ -80,6 +102,20 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'product': encode_attribute(feat['product']),
                         'Dbxref': feat['db_xrefs']
                     }
+                    if(cfg.compliant):
+                        gene_id = f"{feat['locus']}_gene"
+                        gene_annotations = {
+                            'ID': gene_id,
+                            'locus_tag': feat['locus'],
+                            'gene': feat['gene']
+                        }
+                        annotations['Parent'] = gene_id
+                        for dbxref in feat['db_xrefs']:
+                            if(dbxref.split(':')[0] == 'RFAM'):
+                                rfam_id = dbxref.split(':')[1]
+                                annotations['inference'] = f'profile:Rfam:{rfam_id}'
+                        gene_annotations = encode_annotations(gene_annotations)
+                        fh.write(f"{feat['contig']}\tInfernal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tInfernal\t{so.SO_RRNA.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_NC_RNA):
@@ -91,6 +127,20 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'product': encode_attribute(feat['product']),
                         'Dbxref': feat['db_xrefs']
                     }
+                    if(cfg.compliant):
+                        gene_id = f"{feat['locus']}_gene"
+                        gene_annotations = {
+                            'ID': gene_id,
+                            'locus_tag': feat['locus'],
+                            'gene': feat['gene']
+                        }
+                        annotations['Parent'] = gene_id
+                        for dbxref in feat['db_xrefs']:
+                            if(dbxref.split(':')[0] == 'RFAM'):
+                                rfam_id = dbxref.split(':')[1]
+                                annotations['inference'] = f'profile:Rfam:{rfam_id}'
+                        gene_annotations = encode_annotations(gene_annotations)
+                        fh.write(f"{feat['contig']}\tInfernal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tInfernal\t{so.SO_NCRNA_GENE.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_NC_RNA_REGION):
@@ -119,12 +169,22 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'locus_tag': feat['locus'],
                         'product': encode_attribute(feat['product'])
                     }
-                    if('db_xrefs' in feat):
+                    if('db_xrefs' in feat):  # add DbXrefs
                         annotations['Dbxref'] = feat['db_xrefs']
-                    # add gene annotation if available
-                    if(feat.get('gene', None)):
+                    if(feat.get('gene', None)):  # add gene annotation if available
                         annotations['gene'] = feat['gene']
-                    # add DbXrefs
+                    if(cfg.compliant):
+                        gene_id = f"{feat['locus']}_gene"
+                        gene_annotations = {
+                            'ID': gene_id,
+                            'locus_tag': feat['locus']
+                        }
+                        if(feat.get('gene', None)):
+                            gene_annotations['gene'] = feat['gene']
+                        annotations['Parent'] = gene_id
+                        annotations['inference'] = 'ab initio prediction:Prodigal:2.6'
+                        gene_annotations = encode_annotations(gene_annotations)
+                        fh.write(f"{feat['contig']}\tProdigal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tProdigal\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_SORF):
@@ -134,12 +194,22 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'locus_tag': feat['locus'],
                         'product': encode_attribute(feat['product'])
                     }
-                    if('db_xrefs' in feat):
+                    if('db_xrefs' in feat):  # add DbXrefs
                         annotations['Dbxref'] = feat['db_xrefs']
-                    # add gene annotation if available
-                    if(feat.get('gene', None)):
+                    if(feat.get('gene', None)):  # add gene annotation if available
                         annotations['gene'] = feat['gene']
-                    # add DbXrefs
+                    if(cfg.compliant):
+                        gene_id = f"{feat['locus']}_gene"
+                        gene_annotations = {
+                            'ID': gene_id,
+                            'locus_tag': feat['locus']
+                        }
+                        if(feat.get('gene', None)):
+                            gene_annotations['gene'] = feat['gene']
+                        annotations['Parent'] = gene_id
+                        annotations['inference'] = 'ab initio prediction:Bakta'
+                        gene_annotations = encode_annotations(gene_annotations)
+                        fh.write(f"{feat['contig']}\tProdigal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tBakta\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_GAP):
