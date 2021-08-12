@@ -50,7 +50,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'ID': feat['locus'],
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
-                        'product': feat['product'],
+                        'product': encode_product(feat['product']),
                         'Dbxref': feat['db_xrefs']
                     }
                     # add gene annotation if available
@@ -66,7 +66,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
                         'gene': feat['gene'],
-                        'product': feat['product'],
+                        'product': encode_product(feat['product']),
                         'Dbxref': feat['db_xrefs']
                     }
                     annotations = encode_annotations(annotations)
@@ -77,7 +77,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
                         'gene': feat['gene'],
-                        'product': feat['product'],
+                        'product': encode_product(feat['product']),
                         'Dbxref': feat['db_xrefs']
                     }
                     annotations = encode_annotations(annotations)
@@ -88,7 +88,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
                         'gene': feat['gene'],
-                        'product': feat['product'],
+                        'product': encode_product(feat['product']),
                         'Dbxref': feat['db_xrefs']
                     }
                     annotations = encode_annotations(annotations)
@@ -97,7 +97,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     annotations = {
                         'ID': feature_id_counter,
                         'Name': feat['product'],
-                        'product': feat['product'],
+                        'product': encode_product(feat['product']),
                         'Dbxref': feat['db_xrefs']
                     }
                     feature_id_counter += 1
@@ -108,7 +108,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'ID': feat['locus'],
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
-                        'product': feat['product']
+                        'product': encode_product(feat['product'])
                     }
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tPILER-CR\t{so.SO_CRISPR.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
@@ -117,7 +117,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'ID': feat['locus'],
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
-                        'product': feat['product']
+                        'product': encode_product(feat['product'])
                     }
                     if('db_xrefs' in feat):
                         annotations['Dbxref'] = feat['db_xrefs']
@@ -132,7 +132,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'ID': feat['locus'],
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
-                        'product': feat['product']
+                        'product': encode_product(feat['product'])
                     }
                     if('db_xrefs' in feat):
                         annotations['Dbxref'] = feat['db_xrefs']
@@ -185,6 +185,16 @@ def write_gff3(genome, features_by_contig, gff3_path):
             fh.write(fasta.wrap_sequence(contig['sequence']))
     
     return
+
+
+def encode_product(product):
+    """Replace special characters forbidden in column 9 of the GFF3 format: https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md"""
+    product = product.replaceAll('%', '%25')
+    product = product.replaceAll(';', '%3B')
+    product = product.replaceAll('=', '%3D')
+    product = product.replaceAll('&', '%26')
+    product = product.replaceAll(',', '%2C')
+    return product
 
 
 def encode_annotations(annotations):
