@@ -94,6 +94,7 @@ def main():
         print(f'\tprefix: {cfg.prefix}')
         print(f'\ttmp directory: {cfg.tmp_path}')
         print(f'\t# threads: {cfg.threads}')
+        if(cfg.compliant): print(f'\tINSDC compliant: {cfg.compliant}')
         if(cfg.keep_contig_headers): print(f'\tkeep contig headers: {cfg.keep_contig_headers}')
         if(cfg.locus): print(f'\tlocus prefix: {cfg.locus}')
         if(cfg.locus_tag): print(f'\tlocus tag prefix: {cfg.locus_tag}')

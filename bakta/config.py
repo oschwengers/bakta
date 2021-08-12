@@ -38,6 +38,7 @@ locus = None
 locus_tag = None
 gram = None
 replicons = None
+compliant = None
 
 # workflow configuration
 skip_trna = None
@@ -158,7 +159,7 @@ def setup(args):
         taxon = None
 
     # annotation configurations
-    global complete, prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, gram, replicons
+    global complete, prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, gram, replicons, compliant
     complete = args.complete
     log.info('complete=%s', complete)
     prodigal_tf = args.prodigal_tf
@@ -197,6 +198,11 @@ def setup(args):
             log.error('provided replicon file not valid! path=%s', replicons)
             sys.exit(f'ERROR: replicon table file ({replicons}) not valid!')
     log.info('replicon-table=%s', replicons)
+    compliant = args.compliant
+    log.info('compliant=%s', compliant)
+    if(compliant):
+        min_contig_length = 200
+        log.info('compliant mode! min_contig_length=%s', min_contig_length)
     
     # workflow configurations
     global skip_trna, skip_tmrna, skip_rrna, skip_ncrna, skip_ncrna_region, skip_crispr, skip_cds, skip_sorf, skip_gap, skip_ori
