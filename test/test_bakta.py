@@ -51,8 +51,8 @@ def test_bakta_plasmid(tmpdir):
 
 @pytest.mark.slow
 def test_bakta_genome(tmpdir):
-    # full test on plasmid
-    proc = run(['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--prefix', 'test', 'test/data/GCF_000008865.2.fna.gz'])
+    # full test on genome in compliant mode
+    proc = run(['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--prefix', 'test', '--compliant', 'test/data/GCF_000008865.2.fna.gz'])
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)
