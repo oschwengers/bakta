@@ -159,7 +159,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'product': 'oriC'
                     }
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\tBlast+\t{so.SO_ORIC.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{feat['contig']}\tBLAST+\t{so.SO_ORIC.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_ORIV):
                     annotations = {
                         'ID': feat['locus'],
@@ -168,7 +168,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'product': 'oriV'
                     }
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\tBlast+\t{so.SO_ORIV.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{feat['contig']}\tBLAST+\t{so.SO_ORIV.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_ORIT):
                     annotations = {
                         'ID': feat['locus'],
@@ -177,7 +177,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'product': 'oriT'
                     }
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\tBlast+\t{so.SO_ORIT.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{feat['contig']}\tBLAST+\t{so.SO_ORIT.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
 
         fh.write('##FASTA\n')
         for contig in genome['contigs']:  # write sequences
