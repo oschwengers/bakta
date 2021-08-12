@@ -390,6 +390,7 @@ def qc_contigs(contigs, replicons):
                         contig_desc.append(f"[topology={contig['topology']}]")
                     if(contig['type'] == bc.REPLICON_CHROMOSOME):
                         contig_desc.append(f"[location=chromosome]")
+                contig_desc.append(f'[gcode={cfg.translation_table}]')
                 contig['description'] = ' '.join(contig_desc)
             if(cfg.complete):
                 contig['complete'] = True
