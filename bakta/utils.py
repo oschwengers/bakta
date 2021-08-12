@@ -41,7 +41,7 @@ DEPENDENCY_BLASTN = (Version(2,7,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGI
 DEPENDENCY_AMRFINDERPLUS = (Version(3,10), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('amrfinder', '--version'), ['--skip-cds'])
 
 
-INSDC_ID_REGEX = re.compile(r'[^A-Z\d-_.:*#]')  # https://www.ncbi.nlm.nih.gov/WebSub/html/help/fasta.html
+INSDC_ID_REGEX = re.compile(r'[^A-Za-z\d_.:*#-]')  # https://www.ncbi.nlm.nih.gov/WebSub/html/help/fasta.html
 
 
 def init_parser():
@@ -388,6 +388,8 @@ def qc_contigs(contigs, replicons):
                     contig_desc.append('[completeness=complete]')
                     if(contig['topology'] != bc.REPLICON_CONTIG):
                         contig_desc.append(f"[topology={contig['topology']}]")
+                    if(contig['type'] == bc.REPLICON_CHROMOSOME):
+                        contig_desc.append(f"[location=chromosome]")
                 contig['description'] = ' '.join(contig_desc)
             if(cfg.complete):
                 contig['complete'] = True
@@ -427,6 +429,16 @@ def qc_contigs(contigs, replicons):
             
             if(contig['type'] == bc.REPLICON_CONTIG):
                 complete_genome = False
+
+            if(cfg.compliant):  # check INSDC compliance
+                if(len(contig['id']) > 25):  # max 25 characters
+                    log.error('INSDC compliance: contig id larger than 25! contig-id=%s', contig['id'])
+                    sys.exit(f"ERROR: INSDC compliance failed! Contig ID ({contig['id']}) larger than 25 characers!")
+                unvalid_char_match = re.search(INSDC_ID_REGEX, contig['id'])
+                if(unvalid_char_match is not None):  # invalid characters
+                    log.error('INSDC compliance: contig id contains invalid characters! contig-id=%s', contig['id'])
+                    sys.exit(f"ERROR: INSDC compliance failed! Contig ID ({contig['id']}) contains invalid characters!")
+
             
             log.info(
                 "qc: revised sequence: id=%s, orig-id=%s, type=%s, complete=%s, topology=%s, name=%s, description='%s', orig-description='%s'",
