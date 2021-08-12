@@ -50,7 +50,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'ID': feat['locus'],
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
-                        'product': encode_product(feat['product']),
+                        'product': encode_attribute(feat['product']),
                         'Dbxref': feat['db_xrefs']
                     }
                     # add gene annotation if available
@@ -66,7 +66,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
                         'gene': feat['gene'],
-                        'product': encode_product(feat['product']),
+                        'product': encode_attribute(feat['product']),
                         'Dbxref': feat['db_xrefs']
                     }
                     annotations = encode_annotations(annotations)
@@ -77,7 +77,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
                         'gene': feat['gene'],
-                        'product': encode_product(feat['product']),
+                        'product': encode_attribute(feat['product']),
                         'Dbxref': feat['db_xrefs']
                     }
                     annotations = encode_annotations(annotations)
@@ -88,7 +88,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
                         'gene': feat['gene'],
-                        'product': encode_product(feat['product']),
+                        'product': encode_attribute(feat['product']),
                         'Dbxref': feat['db_xrefs']
                     }
                     annotations = encode_annotations(annotations)
@@ -97,7 +97,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     annotations = {
                         'ID': feature_id_counter,
                         'Name': feat['product'],
-                        'product': encode_product(feat['product']),
+                        'product': encode_attribute(feat['product']),
                         'Dbxref': feat['db_xrefs']
                     }
                     feature_id_counter += 1
@@ -108,7 +108,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'ID': feat['locus'],
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
-                        'product': encode_product(feat['product'])
+                        'product': encode_attribute(feat['product'])
                     }
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tPILER-CR\t{so.SO_CRISPR.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
@@ -117,7 +117,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'ID': feat['locus'],
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
-                        'product': encode_product(feat['product'])
+                        'product': encode_attribute(feat['product'])
                     }
                     if('db_xrefs' in feat):
                         annotations['Dbxref'] = feat['db_xrefs']
@@ -132,7 +132,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'ID': feat['locus'],
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
-                        'product': encode_product(feat['product'])
+                        'product': encode_attribute(feat['product'])
                     }
                     if('db_xrefs' in feat):
                         annotations['Dbxref'] = feat['db_xrefs']
@@ -189,13 +189,14 @@ def write_gff3(genome, features_by_contig, gff3_path):
     return
 
 
-def encode_product(product):
+def encode_attribute(product):
     """Replace special characters forbidden in column 9 of the GFF3 format: https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md"""
-    product = product.replaceAll('%', '%25')
-    product = product.replaceAll(';', '%3B')
-    product = product.replaceAll('=', '%3D')
-    product = product.replaceAll('&', '%26')
-    product = product.replaceAll(',', '%2C')
+    product = str(product)
+    product = product.replace('%', '%25')
+    product = product.replace(';', '%3B')
+    product = product.replace('=', '%3D')
+    product = product.replace('&', '%26')
+    product = product.replace(',', '%2C')
     return product
 
 
@@ -204,8 +205,9 @@ def encode_annotations(annotations):
     for key, val in annotations.items():
         if(type(val) is list):
             if(len(val) >= 1):
-                annotation = f"{key}={','.join(val)}" if type(val) is list else val
+                val = [encode_attribute(k) for k in val]
+                annotation = f"{key}={','.join(val)}"
                 annotation_strings.append(annotation)
         else:
-            annotation_strings.append(f'{key}={val}')
+            annotation_strings.append(f'{key}={encode_attribute(val)}')
     return ';'.join(annotation_strings)
