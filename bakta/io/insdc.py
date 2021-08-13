@@ -116,11 +116,11 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 if('ips' in feature):
                     if('uniref100_id' in feature['ips']):
                         ips_subject_id = feature['ips']['uniref100_id']
-                        inference.append(f'similar to AA sequence:UniProtKB:{ips_subject_id}')
+                        inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIPROTKB}:{ips_subject_id}')
                 if('psc' in feature):
                     if('uniref90_id' in feature['psc']):
                         psc_subject_id = feature['psc']['uniref90_id']
-                        inference.append(f'similar to AA sequence:UniProtKB:{psc_subject_id}')
+                        inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIPROTKB}:{psc_subject_id}')
                 qualifiers['inference'] = inference
             elif(feature['type'] == bc.FEATURE_T_RNA):
                 # TODO: Position anticodon
