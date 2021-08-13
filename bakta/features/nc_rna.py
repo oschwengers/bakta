@@ -81,7 +81,7 @@ def predict_nc_rnas(genome, contigs_path):
                         contig_id, start, stop, strand, subject, length, truncated, score, evalue
                     )
                 else:
-                    rfam_id = f'RFAM:{accession}'
+                    rfam_id = f'{bc.DB_XREF_RFAM}:{accession}'
                     db_xrefs = [rfam_id]
                     if(rfam_id in rfam2go):
                         db_xrefs += rfam2go[rfam_id]
