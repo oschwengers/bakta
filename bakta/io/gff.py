@@ -4,6 +4,7 @@ import logging
 import bakta
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.io.insdc as insdc
 import bakta.io.fasta as fasta
 import bakta.so as so
 
@@ -143,6 +144,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                                 rfam_id = dbxref.split(':')[1]
                                 annotations['inference'] = f'profile:Rfam:{rfam_id}'
                         annotations['Dbxref'] = [k for k in feat['db_xrefs'] if 'SO:' not in k]  # remove INSDC invalid SO terms
+                        annotations[bc.INSDC_FEATURE_NC_RNA_CLASS] = insdc.select_ncrna_class(feat)
                         gene_annotations = encode_annotations(gene_annotations)
                         fh.write(f"{feat['contig']}\tInfernal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
@@ -156,6 +158,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     }
                     if(cfg.compliant):
                         annotations['Dbxref'] = [k for k in feat['db_xrefs'] if 'SO:' not in k]  # remove INSDC invalid SO terms
+                        annotations[bc.INSDC_FEATURE_REGULATORY_CLASS] = insdc.select_regulatory_class(feat)
                     feature_id_counter += 1
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tInfernal\t{so.SO_REGULATORY_REGION.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
