@@ -18,10 +18,6 @@ HYPOTHETICAL_PROTEIN = 'hypothetical protein'  # hypothetical protein product de
 ############################################################################
 # DB identifiers
 ############################################################################
-DB_XREF_UNIREF_100 = 'UniRef100'
-DB_XREF_UNIREF_90 = 'UniRef90'
-DB_XREF_UNIREF_50 = 'UniRef50'
-DB_XREF_UNIPARC = 'UniParc'
 DB_XREF_UNIPROTKB = 'UniProtKB'
 DB_XREF_REFSEQ_NRP = 'RefSeq'
 DB_XREF_EC = 'EC'
