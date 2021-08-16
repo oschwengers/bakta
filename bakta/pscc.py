@@ -43,7 +43,7 @@ def lookup(features):
                 no_pscc_lookups += 1
                 log.debug(
                     'lookup: contig=%s, start=%i, stop=%i, strand=%s, UniRef50=%s, product=%s',
-                    feature['contig'], feature['start'], feature['stop'], feature['strand'], pscc.get(bakta.psc.DB_PSC_COL_UNIREF50, ''), pscc.get(bakta.psc.DB_PSC_COL_PRODUCT, '')
+                    feature['contig'], feature['start'], feature['stop'], feature['strand'], pscc.get(DB_PSCC_COL_UNIREF50, ''), pscc.get(DB_PSCC_COL_PRODUCT, '')
                 )
             else:
                 log.debug('lookup failed! uniref50_id=%s', uniref50_id)
