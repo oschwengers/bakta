@@ -402,3 +402,16 @@ def revise_product_insdc(feature):
         log.info('fix product: remove unbalanced brackets. new=%s, old=%s', product, old_product)
     
     feature['product'] = product
+    
+
+def revise_dbxref_insdc(dbxrefs):
+    """Remove INSDC non-compliant DbXrefs."""
+    insdc_valid_dbxrefs = [bc.DB_XREF_UNIPROTKB, bc.DB_XREF_GO, bc.DB_XREF_IS, bc.DB_XREF_PFAM, bc.DB_XREF_RFAM]
+    valid_dbxrefs = []
+    invalid_dbxrefs = []
+    for dbxref in dbxrefs:
+        if(dbxref.split(':')[0] in insdc_valid_dbxrefs):
+            valid_dbxrefs.append(dbxref)
+        else:
+            invalid_dbxrefs.append(dbxref)
+    return valid_dbxrefs, invalid_dbxrefs

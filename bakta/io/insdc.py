@@ -8,6 +8,7 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation, CompoundLocation, AfterP
 import bakta
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.features.annotation as anno
 import bakta.so as so
 from bakta.constants import FEATURE_CDS
 
@@ -86,7 +87,10 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
             insdc_feature_type = None
             qualifiers = {}
             if('db_xrefs' in feature):
-                qualifiers['db_xref'] = feature['db_xrefs']
+                if(cfg.compliant):
+                    qualifiers['db_xref'], qualifiers['note'] = anno.revise_dbxref_insdc(feature['db_xrefs'])
+                else:
+                    qualifiers['db_xref'] = feature['db_xrefs']
             if('product' in feature):
                 qualifiers['product'] = feature['product']
             if('locus' in feature):
@@ -110,9 +114,12 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 insdc_feature_type = bc.INSDC_FEATURE_CDS
                 inference = []
                 inference.append('ab initio prediction:Prodigal:2.6' if feature['type'] == bc.FEATURE_CDS else 'ab initio prediction:Bakta')
-                if('ups' in feature):
+                if('ups' in feature):  # prevent RefSeq identifiers in INSDC compliant mode
                     if('ncbi_nrp_id' in feature['ups']):
-                        qualifiers['protein_id'] = feature['ups']['ncbi_nrp_id']
+                        if(cfg.compliant):
+                            qualifiers['note'] = feature['ups']['ncbi_nrp_id']
+                        else:
+                            qualifiers['protein_id'] = feature['ups']['ncbi_nrp_id']
                 if('ips' in feature):
                     if('uniref100_id' in feature['ips']):
                         ips_subject_id = feature['ips']['uniref100_id']

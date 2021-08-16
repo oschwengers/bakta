@@ -1,9 +1,11 @@
 
+from bakta.features.annotation import revise_dbxref_insdc
 import logging
 
 import bakta
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.features.annotation as anno
 import bakta.io.insdc as insdc
 import bakta.io.fasta as fasta
 import bakta.so as so
@@ -62,7 +64,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         gene_id = f"{feat['locus']}_gene"
                         annotations['Parent'] = gene_id
                         annotations['inference'] = 'profile:tRNAscan:2.0'
-                        annotations['Dbxref'] = [k for k in feat['db_xrefs'] if 'SO:' not in k]  # remove INSDC invalid SO terms
+                        annotations['Dbxref'], annotations['Note'] = anno.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         gene_annotations = {
                             'ID': gene_id,
                             'locus_tag': feat['locus']
@@ -89,7 +91,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         gene_id = f"{feat['locus']}_gene"
                         annotations['Parent'] = gene_id
                         annotations['inference'] = 'profile:aragorn:1.2'
-                        annotations['Dbxref'] = [k for k in feat['db_xrefs'] if 'SO:' not in k]  # remove INSDC invalid SO terms
+                        annotations['Dbxref'], annotations['Note'] = anno.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         gene_annotations = {
                             'ID': gene_id,
                             'locus_tag': feat['locus'],
@@ -115,7 +117,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                             if(dbxref.split(':')[0] == 'RFAM'):
                                 rfam_id = dbxref.split(':')[1]
                                 annotations['inference'] = f'profile:Rfam:{rfam_id}'
-                        annotations['Dbxref'] = [k for k in feat['db_xrefs'] if 'SO:' not in k]  # remove INSDC invalid SO terms
+                        annotations['Dbxref'], annotations['Note'] = anno.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         gene_annotations = {
                             'ID': gene_id,
                             'locus_tag': feat['locus'],
@@ -149,7 +151,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                             if(dbxref.split(':')[0] == 'RFAM'):
                                 rfam_id = dbxref.split(':')[1]
                                 annotations['inference'] = f'profile:Rfam:{rfam_id}'
-                        annotations['Dbxref'] = [k for k in feat['db_xrefs'] if 'SO:' not in k]  # remove INSDC invalid SO terms
+                        annotations['Dbxref'], annotations['Note'] = anno.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         annotations[bc.INSDC_FEATURE_NC_RNA_CLASS] = insdc.select_ncrna_class(feat)
                         gene_annotations = encode_annotations(gene_annotations)
                         fh.write(f"{feat['contig']}\tInfernal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
@@ -163,7 +165,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'Dbxref': feat['db_xrefs']
                     }
                     if(cfg.compliant):
-                        annotations['Dbxref'] = [k for k in feat['db_xrefs'] if 'SO:' not in k]  # remove INSDC invalid SO terms
+                        annotations['Dbxref'], annotations['Note'] = anno.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         annotations[bc.INSDC_FEATURE_REGULATORY_CLASS] = insdc.select_regulatory_class(feat)
                     feature_id_counter += 1
                     annotations = encode_annotations(annotations)
@@ -176,7 +178,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'product': encode_attribute(feat['product'])
                     }
                     if(cfg.compliant):
-                        annotations['Dbxref'] = [k for k in feat['db_xrefs'] if 'SO:' not in k]  # remove INSDC invalid SO terms
+                        annotations['Dbxref'], annotations['Note'] = anno.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tPILER-CR\t{so.SO_CRISPR.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_CDS):
@@ -199,7 +201,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                             gene_annotations['gene'] = feat['gene']
                         annotations['Parent'] = gene_id
                         annotations['inference'] = 'ab initio prediction:Prodigal:2.6'
-                        annotations['Dbxref'] = [k for k in feat['db_xrefs'] if 'SO:' not in k]  # remove INSDC invalid SO terms
+                        annotations['Dbxref'], annotations['Note'] = anno.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         gene_annotations = encode_annotations(gene_annotations)
                         fh.write(f"{feat['contig']}\tProdigal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
@@ -224,7 +226,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                             gene_annotations['gene'] = feat['gene']
                         annotations['Parent'] = gene_id
                         annotations['inference'] = 'ab initio prediction:Bakta'
-                        annotations['Dbxref'] = [k for k in feat['db_xrefs'] if 'SO:' not in k]  # remove INSDC invalid SO terms
+                        annotations['Dbxref'], annotations['Note'] = anno.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         gene_annotations = encode_annotations(gene_annotations)
                         fh.write(f"{feat['contig']}\tProdigal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
