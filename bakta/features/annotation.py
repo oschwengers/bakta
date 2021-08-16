@@ -4,6 +4,7 @@ import re
 
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.io.insdc as insdc
 
 log = logging.getLogger('ANNOTATION')
 
@@ -60,9 +61,9 @@ def combine_annotation(feature):
     
     if(product):
         feature['product'] = product
-        revise_product(feature)
+        revise_cds_product(feature)
         if(cfg.compliant and not feature.get('hypothetical', False)):
-            revise_product_insdc(feature)
+            insdc.revise_product_insdc(feature)
     else:
         feature['product'] = bc.HYPOTHETICAL_PROTEIN
         feature['hypothetical'] = True
@@ -339,7 +340,7 @@ def calc_sorf_annotation_score(sorf):
     return score
 
 
-def revise_product(feature):
+def revise_cds_product(feature):
     """Revise product name for INSDC compliant submissions"""
     product = feature['product']
 
@@ -380,38 +381,3 @@ def revise_product(feature):
         log.info('fix product: remove product containing non-letters only. new=%s, old=%s', product, old_product)
     
     feature['product'] = product
-
-
-def revise_product_insdc(feature):
-    """Revise product name for INSDC compliant submissions"""
-    product = feature['product']
-
-    old_product = product
-    if(re.search(r'(uncharacteri[sz]ed)', product, flags=re.IGNORECASE)):  # replace putative synonyms)
-        product = re.sub(r'(uncharacteri[sz]ed)', 'putative', product, flags=re.IGNORECASE)
-        log.info('fix product: replace putative synonyms. new=%s, old=%s', product, old_product)
-
-    old_product = product
-    if(product.count('(') != product.count(')')):  # remove unbalanced parentheses
-        product = product.replace('(', '').replace(')', '')  # ToDo: find and replace only legend parentheses
-        log.info('fix product: remove unbalanced parantheses. new=%s, old=%s', product, old_product)
-    
-    old_product = product
-    if(product.count('[') != product.count(']')):  # remove unbalanced brackets
-        product = product.replace('[', '').replace(']', '')  # ToDo: find and replace only legend bracket
-        log.info('fix product: remove unbalanced brackets. new=%s, old=%s', product, old_product)
-    
-    feature['product'] = product
-    
-
-def revise_dbxref_insdc(dbxrefs):
-    """Remove INSDC non-compliant DbXrefs."""
-    insdc_valid_dbxrefs = [bc.DB_XREF_UNIPROTKB, bc.DB_XREF_GO, bc.DB_XREF_IS, bc.DB_XREF_PFAM, bc.DB_XREF_RFAM]
-    valid_dbxrefs = []
-    invalid_dbxrefs = []
-    for dbxref in dbxrefs:
-        if(dbxref.split(':')[0] in insdc_valid_dbxrefs):
-            valid_dbxrefs.append(dbxref)
-        else:
-            invalid_dbxrefs.append(dbxref)
-    return valid_dbxrefs, invalid_dbxrefs

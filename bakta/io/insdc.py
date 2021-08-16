@@ -1,4 +1,5 @@
 import logging
+import re
 from datetime import date, datetime
 
 from Bio import SeqIO
@@ -8,7 +9,6 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation, CompoundLocation, AfterP
 import bakta
 import bakta.config as cfg
 import bakta.constants as bc
-import bakta.features.annotation as anno
 import bakta.so as so
 from bakta.constants import FEATURE_CDS
 
@@ -88,7 +88,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
             qualifiers = {}
             if('db_xrefs' in feature):
                 if(cfg.compliant):
-                    qualifiers['db_xref'], qualifiers['note'] = anno.revise_dbxref_insdc(feature['db_xrefs'])
+                    qualifiers['db_xref'], qualifiers['note'] = revise_dbxref_insdc(feature['db_xrefs'])
                 else:
                     qualifiers['db_xref'] = feature['db_xrefs']
             if('product' in feature):
@@ -129,6 +129,11 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                         psc_subject_id = feature['psc']['uniref90_id']
                         inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIPROTKB}:{psc_subject_id}')
                 qualifiers['inference'] = inference
+                if(cfg.compliant):
+                    for note in qualifiers['note']:  # move EC numbers from note to EC_number
+                        if(bc.DB_XREF_EC in note):
+                            qualifiers['EC_number'] = note
+                    qualifiers['note'] = [note for note in qualifiers['note'] if bc.DB_XREF_EC not in note]
             elif(feature['type'] == bc.FEATURE_T_RNA):
                 # TODO: Position anticodon
                 if('amino_acid' in feature and 'anti_codon' in feature):
@@ -257,3 +262,38 @@ def select_regulatory_class(feature):
         return bc.INSDC_FEATURE_REGULATORY_CLASS_RIBOSOME_BINDING_SITE
     else:
         return bc.INSDC_FEATURE_REGULATORY_CLASS_OTHER
+
+
+def revise_product_insdc(feature):
+    """Revise product name for INSDC compliant submissions"""
+    product = feature['product']
+
+    old_product = product
+    if(re.search(r'(uncharacteri[sz]ed)', product, flags=re.IGNORECASE)):  # replace putative synonyms)
+        product = re.sub(r'(uncharacteri[sz]ed)', 'putative', product, flags=re.IGNORECASE)
+        log.info('fix product: replace putative synonyms. new=%s, old=%s', product, old_product)
+
+    old_product = product
+    if(product.count('(') != product.count(')')):  # remove unbalanced parentheses
+        product = product.replace('(', '').replace(')', '')  # ToDo: find and replace only legend parentheses
+        log.info('fix product: remove unbalanced parantheses. new=%s, old=%s', product, old_product)
+    
+    old_product = product
+    if(product.count('[') != product.count(']')):  # remove unbalanced brackets
+        product = product.replace('[', '').replace(']', '')  # ToDo: find and replace only legend bracket
+        log.info('fix product: remove unbalanced brackets. new=%s, old=%s', product, old_product)
+    
+    feature['product'] = product
+
+
+def revise_dbxref_insdc(dbxrefs):
+    """Remove INSDC non-compliant DbXrefs."""
+    insdc_valid_dbxrefs = [bc.DB_XREF_UNIPROTKB, bc.DB_XREF_GO, bc.DB_XREF_IS, bc.DB_XREF_PFAM, bc.DB_XREF_RFAM]
+    valid_dbxrefs = []
+    invalid_dbxrefs = []
+    for dbxref in dbxrefs:
+        if(dbxref.split(':')[0] in insdc_valid_dbxrefs):
+            valid_dbxrefs.append(dbxref)
+        else:
+            invalid_dbxrefs.append(dbxref)
+    return valid_dbxrefs, invalid_dbxrefs
