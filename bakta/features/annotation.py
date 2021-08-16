@@ -1,6 +1,8 @@
 
 import logging
+import re
 
+import bakta.config as cfg
 import bakta.constants as bc
 
 log = logging.getLogger('ANNOTATION')
@@ -58,6 +60,9 @@ def combine_annotation(feature):
     
     if(product):
         feature['product'] = product
+        revise_product(feature)
+        if(cfg.compliant and not feature.get('hypothetical', False)):
+            revise_product_insdc(feature)
     else:
         feature['product'] = bc.HYPOTHETICAL_PROTEIN
         feature['hypothetical'] = True
@@ -332,3 +337,68 @@ def calc_sorf_annotation_score(sorf):
         sorf['contig'], sorf['start'], sorf['stop'], sorf.get('gene', '-'), sorf.get('product', '-'), score
     )
     return score
+
+
+def revise_product(feature):
+    """Revise product name for INSDC compliant submissions"""
+    product = feature['product']
+
+    old_product = product
+    if(product[-1] == '.'):  # remove trailing period
+        product = product[0:-1]
+        log.info('fix product: replace trailing period. new=%s, old=%s', product, old_product)
+    
+    old_product = product
+    if('=' in product):  # remove equal chars
+        product = product.replace('=', '')
+        log.info('fix product: remove = character. new=%s, old=%s', product, old_product)
+    
+    old_product = product
+    if(re.search(r'\s+contig\s*', product, flags=re.IGNORECASE)):
+        product = bc.HYPOTHETICAL_PROTEIN
+        feature['hypothetical'] = True
+        log.info('fix product: remove product containing "contig". new=%s, old=%s', product, old_product)
+    
+    old_product = product
+    if(re.search(r'\shomolog(?: (\d+))?', product, flags=re.IGNORECASE)):  # replace Homologs
+        product = re.sub(r'\shomolog(?: (\d+))?', '-like protein', product, flags=re.IGNORECASE)
+        log.info('fix product: replace Homolog. new=%s, old=%s', product, old_product)
+
+    old_product = product
+    if(re.search(r'(potential|possible|probable|predicted)', product, flags=re.IGNORECASE)):  # replace putative synonyms)
+        product = re.sub(r'(potential|possible|probable|predicted)', 'putative', product, flags=re.IGNORECASE)
+        log.info('fix product: replace putative synonyms. new=%s, old=%s', product, old_product)
+    
+    old_product = product
+    if(re.search(r'\s+', product)):  # squeeze multiple whitespaces
+        product = re.sub(r'\s+', ' ', product)
+        log.info('fix product: squeeze multiple whitespaces. new=%s, old=%s', product, old_product)
+
+    if(re.fullmatch(r'[^A-Za-z]', product)):  # no letters -> set to Hypothetical
+        product = bc.HYPOTHETICAL_PROTEIN
+        feature['hypothetical'] = True
+        log.info('fix product: remove product containing non-letters only. new=%s, old=%s', product, old_product)
+    
+    feature['product'] = product
+
+
+def revise_product_insdc(feature):
+    """Revise product name for INSDC compliant submissions"""
+    product = feature['product']
+
+    old_product = product
+    if(re.search(r'(uncharacteri[sz]ed)', product, flags=re.IGNORECASE)):  # replace putative synonyms)
+        product = re.sub(r'(uncharacteri[sz]ed)', 'putative', product, flags=re.IGNORECASE)
+        log.info('fix product: replace putative synonyms. new=%s, old=%s', product, old_product)
+
+    old_product = product
+    if(product.count('(') != product.count(')')):  # remove unbalanced parentheses
+        product = product.replace('(', '').replace(')', '')  # ToDo: find and replace only legend parentheses
+        log.info('fix product: remove unbalanced parantheses. new=%s, old=%s', product, old_product)
+    
+    old_product = product
+    if(product.count('[') != product.count(']')):  # remove unbalanced brackets
+        product = product.replace('[', '').replace(']', '')  # ToDo: find and replace only legend bracket
+        log.info('fix product: remove unbalanced brackets. new=%s, old=%s', product, old_product)
+    
+    feature['product'] = product
