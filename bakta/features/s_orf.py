@@ -279,7 +279,7 @@ def search_pscs(sorfs):
         '--db', str(diamond_db_path),
         '--query', str(sorf_fasta_path),
         '--out', str(diamond_output_path),
-        '--id', str(int(bc.MIN_PROTEIN_IDENTITY * 100)),  # '90',
+        '--id', str(int(bc.MIN_SORF_IDENTITY * 100)),  # '90',
         '--query-cover', str(int(bc.MIN_SORF_COVERAGE * 100)),  # '90'
         '--subject-cover', str(int(bc.MIN_SORF_COVERAGE * 100)),  # '90'
         '--max-target-seqs', '1',  # single best output
@@ -312,7 +312,7 @@ def search_pscs(sorfs):
             sorf = sorf_by_aa_digest[sorf_hash]
             query_cov = int(alignment_length) / len(sorf['sequence'])
             identity = float(identity) / 100
-            if(query_cov >= bc.MIN_PROTEIN_COVERAGE and identity >= bc.MIN_PROTEIN_IDENTITY):
+            if(query_cov >= bc.MIN_SORF_COVERAGE and identity >= bc.MIN_SORF_IDENTITY):
                 sorf['psc'] = {
                     psc.DB_PSC_COL_UNIREF90: cluster_id,
                     'query-cov': query_cov,

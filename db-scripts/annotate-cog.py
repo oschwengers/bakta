@@ -35,7 +35,7 @@ with cog_ids_path.open(encoding='windows-1252') as fh:
     for line in fh:
         if(line[0] != '#'):
             (id, cat, product, gene, pathways, pubmed, pdb) = line.split('\t')
-            if(product.lower() == 'hypothetical protein' or product.lower() == 'uncharacterized protein'):
+            if(product.lower() == 'hypothetical protein' or product.lower() == 'uncharacterized protein' or product.lower() == 'uncharacterized conserved protein'):
                 product = None
             if(gene == ''):
                 gene = None
@@ -88,10 +88,10 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
                 psc_updated += 1
                 rec_psc = conn.execute('SELECT * FROM psc WHERE uniref90_id=?', (uniref90_id,)).fetchone()
                 if(rec_psc is not None):
-                    if(rec_psc['product'] is None and rec_psc['product'] is not None):
+                    if(rec_psc['product'] is None and cog['product'] is not None):
                         conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (cog['product'], uniref90_id))
                         log.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', cog['product'], uniref90_id)
-                    if(rec_psc['gene'] is None and rec_psc['gene'] is not None):
+                    if(rec_psc['gene'] is None and cog['gene'] is not None):
                         conn.execute('UPDATE psc SET gene=? WHERE uniref90_id=?', (cog['gene'], uniref90_id))
                         log.info('UPDATE psc SET gene=%s WHERE uniref90_id=%s', cog['gene'], uniref90_id)
         psc_processed += 1

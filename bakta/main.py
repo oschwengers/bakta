@@ -36,6 +36,7 @@ import bakta.utils as bu
 import bakta.ups as ups
 import bakta.ips as ips
 import bakta.psc as psc
+import bakta.pscc as pscc
 
 
 def main():
@@ -267,6 +268,7 @@ def main():
         print('\tlookup annotations...')
         log.debug('lookup CDS PSCs')
         psc.lookup(cdss)  # lookup PSC info
+        pscc.lookup(cdss)  # lookup PSCC info
 
         # conduct expert systems annotation
         print('\tconduct expert systems...')

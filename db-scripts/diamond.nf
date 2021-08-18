@@ -1,4 +1,6 @@
 
+import java.nio.file.*
+
 params.in = 'psc.faa'
 params.out = 'diamond.tsv'
 
@@ -7,17 +9,25 @@ params.qcov = 80
 params.scov = 80
 params.block = 1000
 
-Channel.fromPath( params.in )
+def pathInput = Paths.get(params.in).toAbsolutePath().normalize()
+def pathDb = Paths.get(params.db).toAbsolutePath().normalize()
+def pathOutput = Paths.get(params.out).toAbsolutePath().normalize()
+
+print("run Diamond")
+print("query: ${pathInput}")
+print("DB: ${pathDb}")
+print("Output: ${pathOutput}")
+
+Channel.fromPath( pathInput )
     .splitFasta( by: params.block, file: true )
     .set( { chAAs } )
 
 process diamond {
     errorStrategy 'finish'
     maxRetries 3
-    cpus 2
-    memory '2 GB'
-    clusterOptions '-l virtual_free=2G'
-    conda 'diamond=2.0.6'
+    cpus 8
+    memory '32 GB'
+    conda 'diamond=2.0.11'
 
     input:
     file('input.faa') from chAAs
@@ -29,7 +39,7 @@ process diamond {
     """
     diamond blastp \
         --query input.faa \
-        --db ${params.db} \
+        --db ${pathDb} \
         --id ${params.id} \
         --query-cover ${params.qcov} \
         --subject-cover ${params.scov} \
@@ -37,8 +47,9 @@ process diamond {
         -b4 \
         --threads ${task.cpus} \
         --out diamond.tsv \
-        --outfmt 6 qseqid sseqid stitle length pident qlen slen evalue
+        --outfmt 6 qseqid sseqid stitle length pident qlen slen evalue \
+        --fast
     """
 }
 
-chDiamondResults.collectFile( sort: false, name: params.out, storeDir: '.')
+chDiamondResults.collectFile( sort: false, name: pathOutput, storeDir: '.')

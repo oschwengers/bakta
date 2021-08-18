@@ -32,9 +32,9 @@ def search(cdss, cds_fasta_path):
         '--db', str(diamond_db_path),
         '--query', str(cds_fasta_path),
         '--out', str(diamond_output_path),
-        '--id', str(int(bc.MIN_PROTEIN_IDENTITY * 100)),  # '90',
-        '--query-cover', str(int(bc.MIN_PROTEIN_COVERAGE * 100)),  # '80'
-        '--subject-cover', str(int(bc.MIN_PROTEIN_COVERAGE * 100)),  # '80'
+        '--id', str(int(bc.MIN_PSCC_IDENTITY * 100)),  # '50',
+        '--query-cover', str(int(bc.MIN_PSC_COVERAGE * 100)),  # '80'
+        '--subject-cover', str(int(bc.MIN_PSC_COVERAGE * 100)),  # '80'
         '--max-target-seqs', '1',  # single best output
         '--outfmt', '6',
         '--threads', str(cfg.threads),
@@ -65,11 +65,12 @@ def search(cdss, cds_fasta_path):
             cds = cds_by_hexdigest[aa_identifier]
             query_cov = int(alignment_length) / len(cds['sequence'])
             identity = float(identity) / 100
-            if(query_cov >= bc.MIN_PROTEIN_COVERAGE and identity >= bc.MIN_PROTEIN_IDENTITY):
+            if(query_cov >= bc.MIN_PSC_COVERAGE and identity >= bc.MIN_PSCC_IDENTITY):
                 cds['psc'] = {
                     DB_PSC_COL_UNIREF90: cluster_id,
                     'query-cov': query_cov,
-                    'identity': identity
+                    'identity': identity,
+                    'valid': identity >= bc.MIN_PSC_IDENTITY
                 }
                 log.debug(
                     'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, UniRef90=%s',
@@ -79,7 +80,7 @@ def search(cdss, cds_fasta_path):
     pscs_found = []
     pscs_not_found = []
     for cds in cdss:
-        if('psc' in cds):
+        if('psc' in cds and cds['psc']['valid']):
             pscs_found.append(cds)
         else:
             pscs_not_found.append(cds)
@@ -97,26 +98,26 @@ def lookup(features):
             conn.row_factory = sqlite3.Row
             with ThreadPoolExecutor(max_workers=max(10, cfg.threads)) as tpe:  # use min 10 threads for IO bound non-CPU lookups
                 for feature in features:
+                    uniref90_id = None
                     if('psc' in feature):
                         uniref90_id = feature['psc'].get(DB_PSC_COL_UNIREF90, None)
                     elif('ips' in feature):
                         uniref90_id = feature['ips'].get(DB_PSC_COL_UNIREF90, None)
-                    else:
-                        continue  # skip PSC lookup for this feature object
-
-                    if(not uniref90_id):
-                        continue  # skip PSC lookup for this feature without a valid UniRef90 id
-                    if(bc.DB_PREFIX_UNIREF_90 in uniref90_id):
-                        uniref90_id = uniref90_id[9:]  # remove 'UniRef90_' prefix
-
-                    future = tpe.submit(fetch_db_psc_result, conn, uniref90_id)
-                    rec_futures.append((feature, future))
+                    
+                    if(uniref90_id is not None):
+                        if(bc.DB_PREFIX_UNIREF_90 in uniref90_id):
+                            uniref90_id = uniref90_id[9:]  # remove 'UniRef90_' prefix
+                        future = tpe.submit(fetch_db_psc_result, conn, uniref90_id)
+                        rec_futures.append((feature, future))
 
         for (feature, future) in rec_futures:
             rec = future.result()
             if(rec is not None):
                 psc = parse_annotation(rec)
-                feature['psc'] = psc
+                if('psc' in feature):
+                    feature['psc'] = {**feature['psc'], **psc}  # merge dicts to store alignment info for later PSC/PSCC annotations
+                else:
+                    feature['psc'] = psc
                 no_psc_lookups += 1
                 log.debug(
                     'lookup: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, gene=%s, product=%s',

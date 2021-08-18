@@ -61,7 +61,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                 refseq_nucleotide_accession, curated_refseq_start,
                 genbank_protein_accession, genbank_nucleotide_accession,
                 genbank_strand_orientation, genbank_cds_start, genbank_cds_stop,
-                pubmed_reference, blacklisted_taxa, db_version
+                pubmed_reference, blacklisted_taxa, synonyms, db_version
             ) = line.split('\t')
             if('WP_' in refseq_protein_accession):
                 refseq_protein_accession = refseq_protein_accession[3:]  # remove 'WP_' in NCBI NRP IDs
@@ -76,14 +76,14 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                 gene = allele if allele != '' else gene_family
                 uniref100_id = rec_ups['uniref100_id']
                 if(gene == ''):
-                    conn.execute('UPDATE ips SET product=? WHERE uniref100_id=?', (product, uniref100_id))  # annotate IPS with NCBI nrp id (WP_*) -> UniRef100_id
+                    conn.execute('UPDATE ips SET product=? WHERE uniref100_id=?', (product, uniref100_id))
                     log_ips.info('UPDATE ips SET product=%s WHERE uniref100_id=%s', product, uniref100_id)
                     ips_annotated += 1
                 else:
-                    conn.execute('UPDATE ips SET gene=?, product=? WHERE uniref100_id=?', (gene, product, uniref100_id))  # annotate IPS with NCBI nrp id (WP_*) -> UniRef100
+                    conn.execute('UPDATE ips SET gene=?, product=? WHERE uniref100_id=?', (gene, product, uniref100_id))
                     log_ips.info('UPDATE ips SET gene=%s, product=%s WHERE uniref100_id=%s', gene, product, uniref100_id)
                     ips_annotated += 1
-            if((nrps_processed % 100) == 0):
+            if((nrps_processed % 1000) == 0):
                 conn.commit()
                 print(f'\t... {nrps_processed}')
     conn.commit()
@@ -116,7 +116,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     with hmm_result_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
-                (psc_id, _, hmm_name, hmm_id, evalue, bitscore, _) = re.split('\s+', line.strip(), maxsplit=6)
+                (psc_id, _, hmm_name, hmm_id, evalue, bitscore, _) = re.split(r'\s+', line.strip(), maxsplit=6)
                 hit = {
                     'psc_id': psc_id,
                     'hmm_id': hmm_id,
