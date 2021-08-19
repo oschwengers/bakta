@@ -10,6 +10,8 @@ import subprocess as sp
 import re
 import collections
 
+from Bio.Seq import Seq
+
 import bakta
 import bakta.constants as bc
 import bakta.config as cfg
@@ -446,3 +448,16 @@ def qc_contigs(contigs, replicons):
                 contig['id'], contig.get('orig_id', ''), contig['type'], contig['complete'], contig['topology'], contig.get('name', ''), contig['description'], contig.get('orig_description', '')
             )
     return valid_contigs, complete_genome
+
+
+def extract_feature_sequence(feature, contig):
+    
+    if(feature.get('edge', False)):
+        seq = contig['sequence'][feature['start']-1:] + contig['sequence'][:feature['stop']]
+    else:
+        seq = contig['sequence'][feature['start']-1:feature['stop']]
+    
+    if(feature['strand'] == bc.STRAND_REVERSE):
+        seq = str(Seq(seq).reverse_complement())
+    
+    return seq
