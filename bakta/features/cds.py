@@ -217,6 +217,17 @@ def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
                 'truncated CDS: contig=%s, start=%i, stop=%i, strand=%s, frame=%s, truncated=%s, start-type=%s, RBS-motif=%s, aa-hexdigest=%s, seq=[%s..%s]',
                 partial_cds['contig'], partial_cds['start'], partial_cds['stop'], partial_cds['strand'], partial_cds['frame'], partial_cds['truncated'], partial_cds['start_type'], partial_cds['rbs_motif'], partial_cds['aa_hexdigest'], partial_cds['sequence'][:10], partial_cds['sequence'][-10:]
             )
+    
+
+    contigs = {c['id']: c for c in genome['contigs']}
+    for cds in cdss:  # extract nt sequences
+        contig = contigs[cds['contig']]
+        nt = bu.extract_feature_sequence(cds, contig)
+        cds['nt'] = nt
+        log.info(
+            'contig=%s, start=%i, stop=%i, strand=%s, nt=[%s..%s]',
+            cds['contig'], cds['start'], cds['stop'], cds['strand'], nt[:10], nt[-10:]
+        )
     return cdss
 
 

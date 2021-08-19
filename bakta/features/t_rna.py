@@ -8,6 +8,7 @@ from Bio import SeqIO
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
+import bakta.utils as bu
 
 log = logging.getLogger('T_RNA')
 
@@ -67,20 +68,21 @@ def predict_t_rnas(genome, contigs_path):
         raise Exception(f'tRNAscan-SE error! error code: {proc.returncode}')
 
     trnas = {}
+    contigs = {c['id']: c for c in genome['contigs']}
     with txt_output_path.open() as fh:
         for line in fh.readlines()[3:]:  # skip first 3 lines
-            (contig, trna_id, start, stop, trna_type, anti_codon, intron_begin, bounds_end, score, note) = line.split('\t')
+            (contig_id, trna_id, start, stop, trna_type, anti_codon, intron_begin, bounds_end, score, note) = line.split('\t')
 
             start, stop, strand = int(start), int(stop), bc.STRAND_FORWARD
             if(start > stop):  # reverse
                 start, stop = stop, start
                 strand = bc.STRAND_REVERSE
             
-            contig = contig.strip()  # bugfix for extra single whitespace in tRNAscan-SE output
+            contig_id = contig_id.strip()  # bugfix for extra single whitespace in tRNAscan-SE output
 
             trna = OrderedDict()
             trna['type'] = bc.FEATURE_T_RNA
-            trna['contig'] = contig.strip()
+            trna['contig'] = contig_id
             trna['start'] = start
             trna['stop'] = stop
             trna['strand'] = strand
@@ -99,24 +101,28 @@ def predict_t_rnas(genome, contigs_path):
             
             trna['score'] = float(score)
 
+            nt = bu.extract_feature_sequence(trna, contigs[contig_id])  # extract nt sequences
+            trna['nt'] = nt
+
             trna['db_xrefs'] = []
             so_term = SO_TERMS.get(trna_type.lower(), None)
             if(so_term):
                 trna['db_xrefs'].append(so_term.id)
 
-            key = f'{contig}.trna{trna_id}'
+            key = f'{contig_id}.trna{trna_id}'
             trnas[key] = trna
             log.info(
-                'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, score=%1.1f',
-                trna['contig'], trna['start'], trna['stop'], trna['strand'], trna.get('gene', ''), trna['product'], trna['score']
+                'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, score=%1.1f, nt=[%s..%s]',
+                trna['contig'], trna['start'], trna['stop'], trna['strand'], trna.get('gene', ''), trna['product'], trna['score'], nt[:10], nt[-10:]
             )
 
     with fasta_output_path.open() as fh:
         for record in SeqIO.parse(fh, 'fasta'):
             trna = trnas[record.id]
-            trna['sequence'] = str(record.seq)
+            nt = str(record.seq).upper()
+            assert trna['nt'] == nt
             if('anti_codon' in trna and trna['amino_acid'].lower() not in ['fmet', 'ile2', 'sec', 'sup']):  # exclude fMet, Ile2 and Sec (INSDC wrong anticodon issue)
-                anticodon_pos = trna['sequence'].lower().find(trna['anti_codon'])
+                anticodon_pos = trna['nt'].lower().find(trna['anti_codon'])
                 if(anticodon_pos > -1):
                     if(trna['strand'] == bc.STRAND_FORWARD):
                         start = trna['start'] + anticodon_pos

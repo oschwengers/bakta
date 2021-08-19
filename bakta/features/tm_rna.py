@@ -8,6 +8,7 @@ from Bio.Seq import Seq
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
+import bakta.utils as bu
 
 log = logging.getLogger('TM_RNA')
 
@@ -15,7 +16,6 @@ log = logging.getLogger('TM_RNA')
 def predict_tm_rnas(genome, contigs_path):
     """Search for tmRNA sequences."""
 
-    contigs = {c['id']: c for c in genome['contigs']}
     txt_output_path = cfg.tmp_path.joinpath('tmrna.tsv')
     cmd = [
         'aragorn',
@@ -45,13 +45,14 @@ def predict_tm_rnas(genome, contigs_path):
         raise Exception(f'aragorn error! error code: {proc.returncode}')
 
     tmrnas = []
+    contigs = {c['id']: c for c in genome['contigs']}
     with txt_output_path.open() as fh:
         contig = None
         for line in fh:
             line = line.strip()
             cols = line.split()
             if(line[0] == '>'):
-                contig = cols[0][1:]
+                contig_id = cols[0][1:]
             elif(len(cols) == 5):
                 (nr, type, location, tag_location, tag_aa) = line.split()
                 strand = bc.STRAND_FORWARD
@@ -61,30 +62,27 @@ def predict_tm_rnas(genome, contigs_path):
                 (start, stop) = location[1:-1].split(',')
                 start = int(start)
                 stop = int(stop)
-
-                # extract sequence
-                seq = contigs[contig]['sequence'][start:stop]
-                if(strand == bc.STRAND_REVERSE):
-                    seq = str(Seq(seq).reverse_complement())
                 
                 tmrna = OrderedDict()
                 tmrna['type'] = bc.FEATURE_TM_RNA
-                tmrna['contig'] = contig
+                tmrna['contig'] = contig_id
                 tmrna['start'] = start
                 tmrna['stop'] = stop
                 tmrna['strand'] = strand
                 tmrna['gene'] = 'ssrA'
                 tmrna['product'] = 'transfer-messenger RNA, SsrA'
                 tmrna['db_xrefs'] = [so.SO_TMRNA.id]
-                tmrna['sequence'] = seq
+
+                nt = bu.extract_feature_sequence(tmrna, contigs[contig_id])  # extract nt sequences
+                tmrna['nt'] = nt
 
                 if(start > stop):
                     tmrna['edge'] = True  # mark tmRNA as edge feature
                 
                 tmrnas.append(tmrna)
                 log.info(
-                    'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s',
-                    tmrna['contig'], tmrna['start'], tmrna['stop'], tmrna['strand'], tmrna['gene'], tmrna['product']
+                    'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s]',
+                    tmrna['contig'], tmrna['start'], tmrna['stop'], tmrna['strand'], tmrna['gene'], tmrna['product'], nt[:10], nt[-10:]
                 )
     log.info('predicted=%i', len(tmrnas))
     return tmrnas

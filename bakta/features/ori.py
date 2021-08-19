@@ -5,6 +5,7 @@ from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.utils as bu
 
 log = logging.getLogger('ORI')
 
@@ -94,9 +95,13 @@ def predict_oris(genome, contigs_path, ori_type):
                         (refined_start, refined_stop) = refine_ori_region(region_hits, ori)
                         ori['start'] = refined_start
                         ori['stop'] = refined_stop
+                        
+                        nt = bu.extract_feature_sequence(ori, contig)  # extract nt sequences
+                        ori['nt'] = nt
+                        
                         log.info(
-                            'type=%s, contig=%s, start=%i, stop=%i',
-                            ori_type, ori['contig'], ori['start'], ori['stop']
+                            'type=%s, contig=%s, start=%i, stop=%i, nt=[%s..%s]',
+                            ori_type, ori['contig'], ori['start'], ori['stop'], nt[:10], nt[-10:]
                         )
                         start = -1
                         stop = -1
