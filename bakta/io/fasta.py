@@ -74,3 +74,16 @@ def write_faa(features, faa_path):
         for feat in features:
             if(feat['type'] == bc.FEATURE_CDS or feat['type'] == bc.FEATURE_SORF):
                 fh.write(f">{feat['locus']} {feat['product']}\n{feat['sequence']}\n")
+
+
+def write_ffn(features, ffn_path):
+    """Write translated CDS sequences to Fasta file."""
+    log.info('write feature nucleotide sequences: path=%s', ffn_path)
+    
+    with ffn_path.open('wt') as fh:
+        for feat in features:
+            if('locus' in feat):
+                if(feat.get('product', '') != ''):
+                    fh.write(f">{feat['locus']} {feat['product']}\n{feat['nt']}\n")
+                else:
+                    fh.write(f">{feat['locus']}\n{feat['nt']}\n")
