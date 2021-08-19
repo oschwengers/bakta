@@ -77,6 +77,9 @@ def predict_tm_rnas(genome, contigs_path):
                 tmrna['product'] = 'transfer-messenger RNA, SsrA'
                 tmrna['db_xrefs'] = [so.SO_TMRNA.id]
                 tmrna['sequence'] = seq
+
+                if(start > stop):
+                    tmrna['edge'] = True  # mark tmRNA as edge feature
                 
                 tmrnas.append(tmrna)
                 log.info(
