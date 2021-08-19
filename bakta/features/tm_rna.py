@@ -20,7 +20,7 @@ def predict_tm_rnas(genome, contigs_path):
     cmd = [
         'aragorn',
         '-m',  # detect tmRNAs
-        '-gcbact',
+        f'-gc{cfg.translation_table}',
         '-w',  # batch mode
         '-o', str(txt_output_path),
         str(contigs_path)
