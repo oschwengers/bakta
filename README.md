@@ -233,6 +233,7 @@ Annotation results are provided in standard bioinformatics file formats:
 - `<prefix>.gbff`: annotations & sequences in (multi) GenBank format
 - `<prefix>.embl`: annotations & sequences in (multi) EMBL format
 - `<prefix>.fna`: replicon/contig DNA sequences as FASTA
+- `<prefix>.ffn`: feature nucleotide sequences as FASTA
 - `<prefix>.faa`: CDS/sORF amino acid sequences as FASTA
 - `<prefix>.hypotheticals.tsv`: further information on hypothetical protein CDS as simple human readble tab separated values
 - `<prefix>.hypotheticals.faa`: hypothetical protein CDS amino acid sequences as FASTA

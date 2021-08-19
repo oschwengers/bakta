@@ -7,6 +7,7 @@ from collections import OrderedDict
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
+import bakta.utils as bu
 
 log = logging.getLogger('R_RNA')
 
@@ -45,6 +46,7 @@ def predict_r_rnas(genome, contigs_path):
         raise Exception(f'cmscan error! error code: {proc.returncode}')
 
     rrnas = []
+    contigs = {c['id']: c for c in genome['contigs']}
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
@@ -120,10 +122,13 @@ def predict_r_rnas(genome, contigs_path):
                     rrna['evalue'] = evalue
                     rrna['db_xrefs'] = db_xrefs
 
+                    nt = bu.extract_feature_sequence(rrna, contigs[contig_id])  # extract nt sequences
+                    rrna['nt'] = nt
+
                     rrnas.append(rrna)
                     log.info(
-                        'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, length=%i, coverage=%0.3f, truncated=%s, score=%1.1f, evalue=%1.1e',
-                        rrna['contig'], rrna['start'], rrna['stop'], rrna['strand'], rrna['gene'], rrna['product'], length, coverage, truncated, score, evalue
+                        'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, length=%i, coverage=%0.3f, truncated=%s, score=%1.1f, evalue=%1.1e, nt=[%s..%s]',
+                        rrna['contig'], rrna['start'], rrna['stop'], rrna['strand'], rrna['gene'], rrna['product'], length, coverage, truncated, score, evalue, nt[:10], nt[-10:]
                     )
 
     log.info('predicted=%i', len(rrnas))

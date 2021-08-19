@@ -489,6 +489,10 @@ def main():
     fna_path = cfg.output_path.joinpath(f'{cfg.prefix}.fna')
     fasta.export_contigs(genome['contigs'], fna_path, description=True, wrap=True)
     
+    print('write feature nucleotide sequences...')
+    ffn_path = cfg.output_path.joinpath(f'{cfg.prefix}.ffn')
+    fasta.write_ffn(features, ffn_path)
+
     print('write translated CDS sequences...')
     faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.faa')
     fasta.write_faa(features, faa_path)

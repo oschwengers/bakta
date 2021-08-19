@@ -6,6 +6,7 @@ from collections import OrderedDict
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
+import bakta.utils as bu
 
 log = logging.getLogger('CRISPR')
 
@@ -38,6 +39,7 @@ def predict_crispr(genome, contigs_path):
 
     # parse orfs
     crispr_arrays = []
+    contigs = {c['id']: c for c in genome['contigs']}
     with output_path.open() as fh:
         contig_id = None
         skip_lines = True
@@ -68,11 +70,14 @@ def predict_crispr(genome, contigs_path):
                         crispr['repeats'] = int(copies)
                         crispr['repeat_consensus'] = repeat_consensus
                         crispr['db_xrefs'] = [so.SO_CRISPR.id]
+
+                        nt = bu.extract_feature_sequence(crispr, contigs[contig_id])  # extract nt sequences
+                        crispr['nt'] = nt
                         
                         crispr_arrays.append(crispr)
                         log.info(
-                            'contig=%s, start=%i, stop=%i, spacer-length=%i, repeat-length=%i, # repeats=%i, repeat-consensus=%s',
-                            crispr['contig'], crispr['start'], crispr['stop'], crispr['spacer_length'], crispr['repeat_length'], crispr['repeats'], crispr['repeat_consensus']
+                            'contig=%s, start=%i, stop=%i, spacer-length=%i, repeat-length=%i, # repeats=%i, repeat-consensus=%s, nt=[%s..%s]',
+                            crispr['contig'], crispr['start'], crispr['stop'], crispr['spacer_length'], crispr['repeat_length'], crispr['repeats'], crispr['repeat_consensus'], nt[:10], nt[-10:]
                         )
     log.info('predicted=%i', len(crispr_arrays))
     return crispr_arrays

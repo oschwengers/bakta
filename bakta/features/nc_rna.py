@@ -7,6 +7,7 @@ from collections import OrderedDict
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
+import bakta.utils as bu
 
 log = logging.getLogger('NC_RNA')
 
@@ -55,6 +56,7 @@ def predict_nc_rnas(genome, contigs_path):
                 rfam2go[rfam] = [go]
 
     ncrnas = []
+    contigs = {c['id']: c for c in genome['contigs']}
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
@@ -116,10 +118,13 @@ def predict_nc_rnas(genome, contigs_path):
                     ncrna['evalue'] = evalue
                     ncrna['db_xrefs'] = db_xrefs
 
+                    nt = bu.extract_feature_sequence(ncrna, contigs[contig_id])  # extract nt sequences
+                    ncrna['nt'] = nt
+
                     ncrnas.append(ncrna)
                     log.info(
-                        'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
-                        ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['gene'], ncrna['product'], length, truncated, ncrna['score'], ncrna['evalue']
+                        'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e, nt=[%s..%s]',
+                        ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['gene'], ncrna['product'], length, truncated, ncrna['score'], ncrna['evalue'], nt[:10], nt[-10:]
                     )
     log.info('predicted=%i', len(ncrnas))
     return ncrnas

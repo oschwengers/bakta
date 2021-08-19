@@ -43,6 +43,7 @@ def extract(genome):
                         else:
                             dna_start = len(seq) - frame - (aa_end + 1) * 3 + 1
                             dna_stop = len(seq) - frame - aa_start * 3
+                        nt = str(seq[dna_start - 1:dna_stop])
                         sequence = aa_seq[aa_start:aa_end]
                         (aa_digest, aa_hexdigest) = bu.calc_aa_hash(sequence)
 
@@ -57,13 +58,14 @@ def extract(genome):
                         sorf['frame'] = frame + 1
                         sorf['db_xrefs'] = [so.SO_SORF.id]
                         sorf['sequence'] = sequence
+                        sorf['nt'] = nt
                         sorf['aa_digest'] = aa_digest
                         sorf['aa_hexdigest'] = aa_hexdigest
                         
                         orfs.append(sorf)
                         log.debug(
-                            'contig=%s, start=%i, stop=%i, strand=%s, frame=%i, length=%i, seq=%s',
-                            contig['id'], sorf['start'], sorf['stop'], strand, frame, len(sequence), sequence
+                            'contig=%s, start=%i, stop=%i, strand=%s, frame=%i, length=%i, aa=%s, nt=[%s..%s]',
+                            contig['id'], sorf['start'], sorf['stop'], strand, frame, len(sequence), sequence, nt[:10], nt[-10:]
                         )
                     aa_start = aa_seq.find('M', aa_start + 1)
                     if(aa_start > aa_end):
