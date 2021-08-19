@@ -257,6 +257,12 @@ Additionally, Bakta provides detailed information on each annotated feature in a
     "features": [
         {
             "type": "cds",
+            "contig": "contig_1",
+            "start": 971,
+            "stop": 1351,
+            "strand": "-",
+            "gene": "lsoB",
+            "product": "type II toxin-antitoxin system antitoxin LsoB",
             ...
         },
         ...
