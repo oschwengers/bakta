@@ -161,17 +161,17 @@ def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
         for record in SeqIO.parse(fh, 'fasta'):
             cds = cdss.get(record.id, None)
             if(cds):
-                seq = str(record.seq)[:-1]  # discard trailing asterisk
-                cds['sequence'] = seq
-                cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(seq)
+                aa = str(record.seq)[:-1]  # discard trailing asterisk
+                cds['aa'] = aa
+                cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
             else:
                 partial_cds = partial_cdss_per_record.get(record.id, None)
                 if(partial_cds):
-                    seq = str(record.seq)
+                    aa = str(record.seq)
                     if(partial_cds['truncated'] == bc.FEATURE_END_5_PRIME):
-                        seq = seq[:-1]  # discard trailing asterisk
-                    partial_cds['sequence'] = seq
-                    partial_cds['aa_digest'], partial_cds['aa_hexdigest'] = bu.calc_aa_hash(seq)
+                        aa = aa[:-1]  # discard trailing asterisk
+                    partial_cds['aa'] = aa
+                    partial_cds['aa_digest'], partial_cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
                 else:
                     log.warning('unknown sequence detected! id=%s, sequence=%s', record.id, record.seq)
     cdss = list(cdss.values())
@@ -193,29 +193,29 @@ def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
                 cds = last_partial_cds
                 cds['stop'] = first_partial_cds['stop']
                 if(last_partial_cds['truncated'] == bc.FEATURE_END_3_PRIME):
-                    seq = last_partial_cds['sequence'] + first_partial_cds['sequence']  # merge sequence
+                    aa = last_partial_cds['aa'] + first_partial_cds['aa']  # merge sequence
                 else:
-                    seq = first_partial_cds['sequence'] + last_partial_cds['sequence']  # merge sequence
+                    aa = first_partial_cds['aa'] + last_partial_cds['aa']  # merge sequence
                     cds['start_type'] = first_partial_cds['start_type']
                     cds['rbs_motif'] = first_partial_cds['rbs_motif']
-                log.debug(f'trunc seq: seq-start={seq[:10]}, seq-end={seq[-10:]}')
+                log.debug(f'trunc seq: seq-start={aa[:10]}, seq-end={aa[-10:]}')
 
                 cds['edge'] = True  # mark CDS as edge feature
                 cds.pop('truncated')
                 
-                cds['sequence'] = seq
-                cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(seq)
+                cds['aa'] = aa
+                cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
                 cdss.append(cds)
                 log.info(
-                    'edge CDS: contig=%s, start=%i, stop=%i, strand=%s, frame=%s, start-type=%s, RBS-motif=%s, aa-hexdigest=%s, seq=[%s..%s]',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame'], cds['start_type'], cds['rbs_motif'], cds['aa_hexdigest'], seq[:10], seq[-10:]
+                    'edge CDS: contig=%s, start=%i, stop=%i, strand=%s, frame=%s, start-type=%s, RBS-motif=%s, aa-hexdigest=%s, aa=[%s..%s]',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame'], cds['start_type'], cds['rbs_motif'], cds['aa_hexdigest'], aa[:10], aa[-10:]
                 )
                 partial_cdss = partial_cdss[1:-1]
         for partial_cds in partial_cdss:
             cdss.append(partial_cds)
             log.info(
-                'truncated CDS: contig=%s, start=%i, stop=%i, strand=%s, frame=%s, truncated=%s, start-type=%s, RBS-motif=%s, aa-hexdigest=%s, seq=[%s..%s]',
-                partial_cds['contig'], partial_cds['start'], partial_cds['stop'], partial_cds['strand'], partial_cds['frame'], partial_cds['truncated'], partial_cds['start_type'], partial_cds['rbs_motif'], partial_cds['aa_hexdigest'], partial_cds['sequence'][:10], partial_cds['sequence'][-10:]
+                'truncated CDS: contig=%s, start=%i, stop=%i, strand=%s, frame=%s, truncated=%s, start-type=%s, RBS-motif=%s, aa-hexdigest=%s, aa=[%s..%s]',
+                partial_cds['contig'], partial_cds['start'], partial_cds['stop'], partial_cds['strand'], partial_cds['frame'], partial_cds['truncated'], partial_cds['start_type'], partial_cds['rbs_motif'], partial_cds['aa_hexdigest'], partial_cds['aa'][:10], partial_cds['aa'][-10:]
             )
     
 
@@ -248,7 +248,7 @@ def predict_pfam(cdss):
     fasta_path = cfg.tmp_path.joinpath('hypotheticals.faa')
     with fasta_path.open(mode='w') as fh:
         for cds in cdss:
-            fh.write(f">{cds['aa_hexdigest']}\n{cds['sequence']}\n")
+            fh.write(f">{cds['aa_hexdigest']}\n{cds['aa']}\n")
     
     output_path = cfg.tmp_path.joinpath('cds.pfam.hmm.tsv')
     cmd = [
@@ -308,7 +308,7 @@ def predict_pfam(cdss):
 
 def analyze_proteins(cdss):
     for cds in cdss:
-        seq = ProteinAnalysis(cds['sequence'])
+        seq = ProteinAnalysis(cds['aa'])
         seq_stats = OrderedDict()
         try:
             seq_stats['molecular_weight'] = seq.molecular_weight()

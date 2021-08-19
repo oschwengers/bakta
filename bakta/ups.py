@@ -37,13 +37,13 @@ def lookup(features):
         
         for (feature, future) in rec_futures:
             rec = future.result()
-            if(rec is not None and rec[DB_UPS_COL_LENGTH] == len(feature['sequence'])):
+            if(rec is not None and rec[DB_UPS_COL_LENGTH] == len(feature['aa'])):
                 ups = parse_annotation(rec)
                 feature['ups'] = ups
                 features_found.append(feature)
                 log.debug(
                     'lookup: contig=%s, start=%i, stop=%i, aa-length=%i, strand=%s, UniParc=%s, UniRef100=%s, NCBI NRP=%s',
-                    feature['contig'], feature['start'], feature['stop'], len(feature['sequence']), feature['strand'], ups.get(DB_UPS_COL_UNIPARC, ''), ups.get(DB_UPS_COL_UNIREF100, ''), ups.get(DB_UPS_COL_REFSEQ_NRP, '')
+                    feature['contig'], feature['start'], feature['stop'], len(feature['aa']), feature['strand'], ups.get(DB_UPS_COL_UNIPARC, ''), ups.get(DB_UPS_COL_UNIREF100, ''), ups.get(DB_UPS_COL_REFSEQ_NRP, '')
                 )
             else:
                 features_not_found.append(feature)

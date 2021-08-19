@@ -48,7 +48,7 @@ def lookup(features):
                 features_found.append(feature)
                 log.debug(
                     'lookup: contig=%s, start=%i, stop=%i, aa-length=%i, strand=%s, gene=%s, UniRef100=%s, UniRef90=%s',
-                    feature['contig'], feature['start'], feature['stop'], len(feature['sequence']), feature['strand'], ips.get(DB_IPS_COL_GENE, ''), ips.get(DB_IPS_COL_UNIREF100, ''), ips.get(DB_IPS_COL_UNIREF90, '')
+                    feature['contig'], feature['start'], feature['stop'], len(feature['aa']), feature['strand'], ips.get(DB_IPS_COL_GENE, ''), ips.get(DB_IPS_COL_UNIREF100, ''), ips.get(DB_IPS_COL_UNIREF90, '')
                 )
             else:
                 features_not_found.append(feature)

@@ -44,8 +44,8 @@ def extract(genome):
                             dna_start = len(seq) - frame - (aa_end + 1) * 3 + 1
                             dna_stop = len(seq) - frame - aa_start * 3
                         nt = str(seq[dna_start - 1:dna_stop])
-                        sequence = aa_seq[aa_start:aa_end]
-                        (aa_digest, aa_hexdigest) = bu.calc_aa_hash(sequence)
+                        aa = aa_seq[aa_start:aa_end]
+                        (aa_digest, aa_hexdigest) = bu.calc_aa_hash(aa)
 
                         sorf = OrderedDict()
                         sorf['type'] = bc.FEATURE_SORF
@@ -57,15 +57,15 @@ def extract(genome):
                         sorf['product'] = None
                         sorf['frame'] = frame + 1
                         sorf['db_xrefs'] = [so.SO_SORF.id]
-                        sorf['sequence'] = sequence
+                        sorf['aa'] = aa
                         sorf['nt'] = nt
                         sorf['aa_digest'] = aa_digest
                         sorf['aa_hexdigest'] = aa_hexdigest
                         
                         orfs.append(sorf)
                         log.debug(
-                            'contig=%s, start=%i, stop=%i, strand=%s, frame=%i, length=%i, aa=%s, nt=[%s..%s]',
-                            contig['id'], sorf['start'], sorf['stop'], strand, frame, len(sequence), sequence, nt[:10], nt[-10:]
+                            'contig=%s, start=%i, stop=%i, strand=%s, frame=%i, aa-length=%i, aa=%s, nt=[%s..%s]',
+                            contig['id'], sorf['start'], sorf['stop'], strand, frame, len(aa), aa, nt[:10], nt[-10:]
                         )
                     aa_start = aa_seq.find('M', aa_start + 1)
                     if(aa_start > aa_end):
@@ -272,7 +272,7 @@ def search_pscs(sorfs):
     sorf_fasta_path = cfg.tmp_path.joinpath('sorf.faa')
     with sorf_fasta_path.open(mode='w') as fh:
         for sorf in sorfs:
-            fh.write(f">{sorf['aa_hexdigest']}\n{sorf['sequence']}\n")
+            fh.write(f">{sorf['aa_hexdigest']}\n{sorf['aa']}\n")
     diamond_output_path = cfg.tmp_path.joinpath('diamond.sorf.tsv')
     diamond_db_path = cfg.db_path.joinpath('sorf.dmnd')
     cmd = [
@@ -312,7 +312,7 @@ def search_pscs(sorfs):
                 align_gaps, query_start, query_end, subject_start, subject_end,
                 evalue, bitscore) = line.split('\t')
             sorf = sorf_by_aa_digest[sorf_hash]
-            query_cov = int(alignment_length) / len(sorf['sequence'])
+            query_cov = int(alignment_length) / len(sorf['aa'])
             identity = float(identity) / 100
             if(query_cov >= bc.MIN_SORF_COVERAGE and identity >= bc.MIN_SORF_IDENTITY):
                 sorf['psc'] = {
@@ -322,7 +322,7 @@ def search_pscs(sorfs):
                 }
                 log.info(
                     'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, UniRef90=%s',
-                    sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], len(sorf['sequence']), query_cov, identity, cluster_id
+                    sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], len(sorf['aa']), query_cov, identity, cluster_id
                 )
 
     pscs_found = []

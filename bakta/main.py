@@ -261,7 +261,7 @@ def main():
             cds_fasta_path = cfg.tmp_path.joinpath('cds.unidentified.faa')
             with cds_fasta_path.open(mode='w') as fh:
                 for cds in cdss_not_found:
-                    fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['sequence']}\n")
+                    fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['aa']}\n")
             log.debug('search CDS PSC')
             cdss_psc, cdss_not_found = psc.search(cdss_not_found, cds_fasta_path)
             print(f'\tfound PSCs: {len(cdss_psc)}')
@@ -275,7 +275,7 @@ def main():
         cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
         with cds_fasta_path.open(mode='w') as fh:
             for cds in cdss:
-                fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['sequence']}\n")
+                fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['aa']}\n")
         log.debug('conduct expert system: amrfinder')
         expert_amr_found = exp_amr.search(cdss, cds_fasta_path)
         print(f'\t\tamrfinder: {len(expert_amr_found)}')

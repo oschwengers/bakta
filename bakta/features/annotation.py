@@ -301,16 +301,16 @@ def detect_feature_overlaps(genome):
                             "overlap: sORF (%s/%s) [%i, %i] overlapping sORF (%s/%s) [%i, %i], %s, contig=%s, lower annotation score (%i/%i)",
                             sorf.get('gene', '-'), sorf.get('product', '-'), sorf['start'], sorf['stop'], overlap_sorf.get('gene', '-'), overlap_sorf.get('product', '-'), overlap_sorf['start'], overlap_sorf['stop'], overlap, sorf['contig'], score_sorf, score_overlap_sorf
                         )
-                    elif(score_sorf == score_overlap_sorf and len(sorf['sequence']) < len(overlap_sorf['sequence'])):  # equal annotation score but shorter sequence -> potential fragment or too short ORF prediction
+                    elif(score_sorf == score_overlap_sorf and len(sorf['aa']) < len(overlap_sorf['aa'])):  # equal annotation score but shorter sequence -> potential fragment or too short ORF prediction
                         overlap = f"[{max(sorf['start'], overlap_sorf['start'])},{min(sorf['stop'], overlap_sorf['stop'])}]"
                         sorf['discarded'] = {
                             'type': bc.DISCARD_TYPE_OVERLAP,
                             'feature_type': bc.FEATURE_SORF,
-                            'description': f"overlaps {bc.FEATURE_SORF} ({overlap_sorf.get('gene', '-')}/{overlap_sorf.get('product', '-')}) at {overlap} with equal score ({score_sorf}) but lower length ({len(sorf['sequence'])}/{len(overlap_sorf['sequence'])})"
+                            'description': f"overlaps {bc.FEATURE_SORF} ({overlap_sorf.get('gene', '-')}/{overlap_sorf.get('product', '-')}) at {overlap} with equal score ({score_sorf}) but lower length ({len(sorf['aa'])}/{len(overlap_sorf['aa'])})"
                         }
                         log.info(
                             "overlap: sORF (%s/%s) [%i, %i] overlapping sORF (%s/%s) [%i, %i], %s, contig=%s, equal annotation score (%i), lower length (%i/%i)",
-                            sorf.get('gene', '-'), sorf.get('product', '-'), sorf['start'], sorf['stop'], overlap_sorf.get('gene', '-'), overlap_sorf.get('product', '-'), overlap_sorf['start'], overlap_sorf['stop'], overlap, sorf['contig'], score_sorf, len(sorf['sequence']), len(overlap_sorf['sequence'])
+                            sorf.get('gene', '-'), sorf.get('product', '-'), sorf['start'], sorf['stop'], overlap_sorf.get('gene', '-'), overlap_sorf.get('product', '-'), overlap_sorf['start'], overlap_sorf['stop'], overlap, sorf['contig'], score_sorf, len(sorf['aa']), len(overlap_sorf['aa'])
                         )
 
 

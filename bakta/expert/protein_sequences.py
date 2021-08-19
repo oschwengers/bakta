@@ -48,7 +48,7 @@ def search(cdss, cds_fasta_path):
         for line in fh:
             (aa_identifier, model_id, model_length, alignment_length, identity, evalue, bitscore, model_title) = line.strip().split('\t')
             cds = cds_by_hexdigest[aa_identifier]
-            query_cov = int(alignment_length) / len(cds['sequence'])
+            query_cov = int(alignment_length) / len(cds['aa'])
             model_cov = int(alignment_length) / int(model_length)
             identity = float(identity) / 100
             evalue = float(evalue)

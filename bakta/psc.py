@@ -63,7 +63,7 @@ def search(cdss, cds_fasta_path):
                 align_gaps, query_start, query_end, subject_start, subject_end,
                 evalue, bitscore) = line.split('\t')
             cds = cds_by_hexdigest[aa_identifier]
-            query_cov = int(alignment_length) / len(cds['sequence'])
+            query_cov = int(alignment_length) / len(cds['aa'])
             identity = float(identity) / 100
             if(query_cov >= bc.MIN_PSC_COVERAGE and identity >= bc.MIN_PSCC_IDENTITY):
                 cds['psc'] = {
@@ -74,7 +74,7 @@ def search(cdss, cds_fasta_path):
                 }
                 log.debug(
                     'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, UniRef90=%s',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['sequence']), query_cov, identity, cluster_id
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, identity, cluster_id
                 )
 
     pscs_found = []

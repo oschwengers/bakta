@@ -73,7 +73,7 @@ def write_faa(features, faa_path):
     with faa_path.open('wt') as fh:
         for feat in features:
             if(feat['type'] == bc.FEATURE_CDS or feat['type'] == bc.FEATURE_SORF):
-                fh.write(f">{feat['locus']} {feat['product']}\n{feat['sequence']}\n")
+                fh.write(f">{feat['locus']} {feat['product']}\n{feat['aa']}\n")
 
 
 def write_ffn(features, ffn_path):

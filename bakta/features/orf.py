@@ -13,7 +13,7 @@ def detect_spurious(orfs):
     orf_fasta_path = cfg.tmp_path.joinpath('spurious.faa')
     with orf_fasta_path.open(mode='w') as fh:
         for orf in orfs:
-            fh.write(f">{orf['aa_hexdigest']}\n{orf['sequence']}\n")
+            fh.write(f">{orf['aa_hexdigest']}\n{orf['aa']}\n")
     
     output_path = cfg.tmp_path.joinpath('cds.spurious.hmm.tsv')
     cmd = [

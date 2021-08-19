@@ -108,7 +108,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 insdc_feature_type = bc.INSDC_FEATURE_ORIGIN_TRANSFER
                 qualifiers['inference'] = 'similar to DNA sequence'
             elif(feature['type'] == bc.FEATURE_CDS) or (feature['type'] == bc.FEATURE_SORF):
-                qualifiers['translation'] = feature['sequence']
+                qualifiers['translation'] = feature['aa']
                 qualifiers['codon_start'] = 1
                 qualifiers['transl_table'] = cfg.translation_table
                 insdc_feature_type = bc.INSDC_FEATURE_CDS

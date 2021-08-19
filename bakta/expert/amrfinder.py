@@ -49,7 +49,7 @@ def search(cdss, cds_fasta_path):
                 (aa_identifier, gene, product, scope, element_type, element_subtype, clazz, subclass, method, target_length, reference_sequence_length,
                 cov_ref_seq, ident_ref_seq, alignment_length, accession_closest_seq, name_closest_seq, hmm_id, hmm_description) = line.split('\t')
                 cds = cds_by_hexdigest[aa_identifier]
-                query_cov = int(alignment_length) / len(cds['sequence'])
+                query_cov = int(alignment_length) / len(cds['aa'])
                 model_cov = float(cov_ref_seq) / 100
                 identity = float(ident_ref_seq) / 100
                 expert_hit = {
