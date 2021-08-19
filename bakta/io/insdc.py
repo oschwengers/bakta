@@ -194,7 +194,10 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
             if('edge' in feature):
                 fl_1 = FeatureLocation(start, contig['length'], strand=strand)
                 fl_2 = FeatureLocation(0, stop, strand=strand)
-                feature_location = CompoundLocation([fl_1, fl_2])
+                if(feature['strand'] == bc.STRAND_REVERSE):
+                    feature_location = CompoundLocation([fl_2, fl_1])
+                else:
+                    feature_location = CompoundLocation([fl_1, fl_2])
             else:
                 if('truncated' in feature):
                     if(feature['truncated'] == bc.FEATURE_END_5_PRIME):
