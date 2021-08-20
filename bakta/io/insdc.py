@@ -120,7 +120,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 if('ups' in feature):  # prevent RefSeq identifiers in INSDC compliant mode
                     if('ncbi_nrp_id' in feature['ups']):
                         if(cfg.compliant):
-                            qualifiers['note'] = feature['ups']['ncbi_nrp_id']
+                            qualifiers['note'].append(feature['ups']['ncbi_nrp_id'])
                         else:
                             qualifiers['protein_id'] = feature['ups']['ncbi_nrp_id']
                 if('ips' in feature):
