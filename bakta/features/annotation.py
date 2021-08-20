@@ -13,7 +13,7 @@ log = logging.getLogger('ANNOTATION')
 RE_CONTIG = re.compile(r'\s+contig\s*', flags=re.IGNORECASE)
 RE_HOMOLOG = re.compile(r'\shomolog(?: (\d+))?', flags=re.IGNORECASE)
 RE_PUTATIVE = re.compile(r'(potential|possible|probable|predicted)', flags=re.IGNORECASE)
-RE_MULTIWHITESPACE = re.compile(r'\s+')
+
 RE_NODE = re.compile(r'NODE_', flags=re.IGNORECASE)
 RE_POTENTIAL_CONTIG_NAME = re.compile(r'(genome|shotgun)', flags=re.IGNORECASE)
 RE_NO_LETTERS = re.compile(r'[^A-Za-z]')
@@ -395,8 +395,8 @@ def revise_cds_product(feature):
         log.info('fix product: replace putative synonyms. new=%s, old=%s', product, old_product)
 
     old_product = product
-    if(RE_MULTIWHITESPACE.search(product)):  # squeeze multiple whitespaces
-        product = RE_MULTIWHITESPACE.sub(' ', product)
+    if(bc.RE_MULTIWHITESPACE.search(product)):  # squeeze multiple whitespaces
+        product = bc.RE_MULTIWHITESPACE.sub(' ', product)
         log.info('fix product: squeeze multiple whitespaces. new=%s, old=%s', product, old_product)
 
     if(

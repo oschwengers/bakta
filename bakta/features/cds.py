@@ -1,5 +1,4 @@
 import logging
-import re
 import subprocess as sp
 
 from collections import OrderedDict
@@ -280,7 +279,7 @@ def predict_pfam(cdss):
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
-                cols = re.split(r'\s+', line.strip())
+                cols = bc.RE_MULTIWHITESPACE.split(line.strip())
                 aa_hexdigest = cols[0]
                 cds = orf_by_aa_digest[aa_hexdigest]
 

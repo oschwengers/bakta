@@ -1,5 +1,4 @@
 import logging
-import re
 import subprocess as sp
 
 from collections import OrderedDict
@@ -51,9 +50,11 @@ def predict_r_rnas(genome, contigs_path):
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
-                (subject, accession, contig_id, contig_acc, mdl, mdl_from, mdl_to,
+                (
+                    subject, accession, contig_id, contig_acc, mdl, mdl_from, mdl_to,
                     start, stop, strand, trunc, passed, gc, bias, score, evalue,
-                    inc, description) = re.split(r'\s+', line.strip(), maxsplit=17)
+                    inc, description
+                ) = bc.RE_MULTIWHITESPACE.split(line.strip(), maxsplit=17)
 
                 if(strand == '-'):
                     (start, stop) = (stop, start)
