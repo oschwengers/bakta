@@ -399,6 +399,11 @@ def revise_cds_product(feature):
         product = RE_MULTIWHITESPACE.sub(' ', product)
         log.info('fix product: squeeze multiple whitespaces. new=%s, old=%s', product, old_product)
 
+    old_product = product
+    product = product.strip()  # trim leading/trailing whitespaces
+    if(product != old_product):
+        log.info('fix product: trim leading/trailing whitespace. new=%s, old=%s', product, old_product)
+
     if(
         RE_NODE.search(product) or  # potential contig name (SPAdes)
         RE_POTENTIAL_CONTIG_NAME.search(product) or  # potential contig name (SPAdes)
