@@ -381,10 +381,14 @@ def revise_cds_product(feature):
     if(re.search(r'\s+', product)):  # squeeze multiple whitespaces
         product = re.sub(r'\s+', ' ', product)
         log.info('fix product: squeeze multiple whitespaces. new=%s, old=%s', product, old_product)
-
-    if(re.fullmatch(r'[^A-Za-z]', product)):  # no letters -> set to Hypothetical
+    
+    if(
+        re.search(r'NODE_', product, flags=re.IGNORECASE) or  # potential contig name (SPAdes)
+        re.search(r'(genome|shotgun)', product, flags=re.IGNORECASE) or  # potential contig name (SPAdes)
+        re.fullmatch(r'[^A-Za-z]', product)  # no letters -> set to Hypothetical
+        ):  # remove suspect products and mark as hypothetical
         product = bc.HYPOTHETICAL_PROTEIN
         feature['hypothetical'] = True
-        log.info('fix product: remove product containing non-letters only. new=%s, old=%s', product, old_product)
+        log.info('remove product: mark proteins with suspect products as hypothetical. old=%s', old_product)
     
     feature['product'] = product
