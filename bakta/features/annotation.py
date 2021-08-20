@@ -352,8 +352,8 @@ def revise_cds_product(feature):
     product = feature['product']
 
     old_product = product
-    if(product[-1] == '.'):  # remove trailing period
-        product = product[0:-1]
+    if('.' in product):  # remove periods
+        product = product.replace('.', '')
         log.info('fix product: replace trailing period. new=%s, old=%s', product, old_product)
     
     old_product = product
