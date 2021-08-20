@@ -20,7 +20,7 @@ def test_bakta_mock_skipped_features(tmpdir):
 @pytest.mark.slow
 def test_bakta_plasmid(tmpdir):
     # full test on plasmid
-    proc = run(['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--prefix', 'test', 'test/data/NC_002127.1.fna'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--prefix', 'test', '--complete', 'test/data/NC_002127.1.fna'])
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)
@@ -51,8 +51,8 @@ def test_bakta_plasmid(tmpdir):
 
 @pytest.mark.slow
 def test_bakta_genome(tmpdir):
-    # full test on genome in compliant mode
-    proc = run(['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--prefix', 'test', '--compliant', 'test/data/GCF_000008865.2.fna.gz'])
+    # full test on complete genome in compliant mode
+    proc = run(['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--prefix', 'test', '--complete', '--compliant', 'test/data/GCF_000008865.2.fna.gz'])
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)
@@ -63,7 +63,7 @@ def test_bakta_genome(tmpdir):
         
     output_path = tmpdir_path.joinpath('test.tsv')
     feature_count, feature_counts = count_features(output_path)
-    assert feature_count == 5552
+    assert feature_count == 5550
     feature_counts_expected = {
         'tRNA': 107,
         'tmRNA': 1,
@@ -71,11 +71,11 @@ def test_bakta_genome(tmpdir):
         'ncRNA': 57,
         'ncRNA-region': 1,
         'crispr': 1,
-        'sorf': 2,
+        'sorf': 1,
         'oriV': 0,
         'oriC': 0,
         'oriT': 0,
-        'cds': 5376
+        'cds': 5375
     }
     for type in feature_counts:
         assert feature_counts[type] == feature_counts_expected[type]
