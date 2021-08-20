@@ -1,12 +1,13 @@
-
 import logging
 import subprocess as sp
+
 from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
 import bakta.utils as bu
+
 
 log = logging.getLogger('CRISPR')
 
@@ -57,7 +58,7 @@ def predict_crispr(genome, contigs_path):
                             (array_id, contig, position, length, copies, repeat_length, spacer_length, repeat_consensus) = cols
                         else:
                             (array_id, contig, position, length, copies, repeat_length, spacer_length, distance, repeat_consensus) = cols
-                        
+
                         crispr = OrderedDict()
                         crispr['type'] = bc.FEATURE_CRISPR
                         crispr['contig'] = contig_id
@@ -73,7 +74,7 @@ def predict_crispr(genome, contigs_path):
 
                         nt = bu.extract_feature_sequence(crispr, contigs[contig_id])  # extract nt sequences
                         crispr['nt'] = nt
-                        
+
                         crispr_arrays.append(crispr)
                         log.info(
                             'contig=%s, start=%i, stop=%i, spacer-length=%i, repeat-length=%i, # repeats=%i, repeat-consensus=%s, nt=[%s..%s]',

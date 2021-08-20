@@ -1,22 +1,22 @@
-
 import logging
 import re
+
 from collections import OrderedDict
 
 import bakta.constants as bc
 
-log = logging.getLogger('GAP')
 
-re_assembly_gap = re.compile(r'N{1,}', flags=0)
+log = logging.getLogger('GAP')
+RE_ASSEMBLY_GAP = re.compile(r'N{1,}', flags=0)
 
 
 def detect_assembly_gaps(genome):
     gaps = []
     for contig in genome['contigs']:
-        m = re_assembly_gap.search(contig['sequence'])
+        m = RE_ASSEMBLY_GAP.search(contig['sequence'])
         while m:
             start, end = m.span()
-            
+
             gap = OrderedDict()
             gap['type'] = bc.FEATURE_GAP
             gap['contig'] = contig['id']
@@ -24,11 +24,11 @@ def detect_assembly_gaps(genome):
             gap['stop'] = end
             gap['strand'] = bc.STRAND_NA
             gap['length'] = end - start
-            
+
             gaps.append(gap)
             log.info(
                 'contig=%s, start=%i, stop=%i, length=%s',
                 gap['contig'], gap['start'], gap['stop'], gap['length']
             )
-            m = re_assembly_gap.search(contig['sequence'], end + 1)
+            m = RE_ASSEMBLY_GAP.search(contig['sequence'], end + 1)
     return gaps

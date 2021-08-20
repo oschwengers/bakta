@@ -1,5 +1,5 @@
-
 import argparse
+import collections
 import csv
 import hashlib
 import logging
@@ -8,7 +8,6 @@ import os
 import sys
 import subprocess as sp
 import re
-import collections
 
 from Bio.Seq import Seq
 
@@ -23,7 +22,8 @@ log = logging.getLogger('UTILS')
 def print_version(self):
     return f'v{self.major}.{self.minor}.{self.patch}'
 
-Version = collections.namedtuple('Version', ['major', 'minor', 'patch'], defaults=[0, 0]) # named tuple for version checking, defaults are zero for missing minor/patch
+
+Version = collections.namedtuple('Version', ['major', 'minor', 'patch'], defaults=[0, 0])  # named tuple for version checking, defaults are zero for missing minor/patch
 Version.__str__ = print_version
 
 
@@ -32,15 +32,15 @@ VERSION_MAX_DIGIT = 1000000000000
 VERSION_REGEX = re.compile(r'(\d+)\.(\d+)(?:\.(\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
 
 # List of dependencies: tuples for: min version, max version, tool name & command line parameter, dependency check exclusion options
-DEPENDENCY_TRNASCAN = (Version(2,0,6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('tRNAscan-SE', '-h'), ['--skip-trna'])
-DEPENDENCY_ARAGORN = (Version(1,2,38), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('aragorn', '-h'), ['skip-tmrna'])
-DEPENDENCY_CMSCAN = (Version(1,1,2), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('cmscan', '-h'), ['--skip-rrna', '--skip-ncrna', '--skip-ncrna-region'])
-DEPENDENCY_PILERCR = (Version(1,6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('pilercr', '-options'), ['--skip-crispr'])
-DEPENDENCY_PRODIGAL = (Version(2,6,3), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('prodigal', '-v'), ['--skip-cds'])
-DEPENDENCY_HMMSEARCH = (Version(3,3,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('hmmsearch', '-h'), ['--skip-cds', '--skip-sorf'])
-DEPENDENCY_DIAMOND = (Version(2,0,10), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('diamond', 'help'), ['--skip-cds', '--skip-sorf'])
-DEPENDENCY_BLASTN = (Version(2,7,1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('blastn', '-version'), ['--skip-ori'])
-DEPENDENCY_AMRFINDERPLUS = (Version(3,10), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('amrfinder', '--version'), ['--skip-cds'])
+DEPENDENCY_TRNASCAN = (Version(2, 0, 6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('tRNAscan-SE', '-h'), ['--skip-trna'])
+DEPENDENCY_ARAGORN = (Version(1, 2, 38), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('aragorn', '-h'), ['skip-tmrna'])
+DEPENDENCY_CMSCAN = (Version(1, 1, 2), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('cmscan', '-h'), ['--skip-rrna', '--skip-ncrna', '--skip-ncrna-region'])
+DEPENDENCY_PILERCR = (Version(1, 6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('pilercr', '-options'), ['--skip-crispr'])
+DEPENDENCY_PRODIGAL = (Version(2, 6, 3), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('prodigal', '-v'), ['--skip-cds'])
+DEPENDENCY_HMMSEARCH = (Version(3, 3, 1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('hmmsearch', '-h'), ['--skip-cds', '--skip-sorf'])
+DEPENDENCY_DIAMOND = (Version(2, 0, 10), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('diamond', 'help'), ['--skip-cds', '--skip-sorf'])
+DEPENDENCY_BLASTN = (Version(2, 7, 1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('blastn', '-version'), ['--skip-ori'])
+DEPENDENCY_AMRFINDERPLUS = (Version(3, 10), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('amrfinder', '--version'), ['--skip-cds'])
 
 
 INSDC_ID_REGEX = re.compile(r'[^A-Za-z\d_.:*#-]')  # https://www.ncbi.nlm.nih.gov/WebSub/html/help/fasta.html
@@ -72,7 +72,7 @@ def parse_arguments():
     arg_group_organism.add_argument('--species', action='store', default=None, help='Species name')
     arg_group_organism.add_argument('--strain', action='store', default=None, help='Strain name')
     arg_group_organism.add_argument('--plasmid', action='store', default=None, help='Plasmid name')
-    
+
     arg_group_annotation = parser.add_argument_group('Annotation')
     arg_group_annotation.add_argument('--complete', action='store_true', help='All sequences are complete replicons (chromosome/plasmid[s])')
     arg_group_annotation.add_argument('--prodigal-tf', action='store', default=None, dest='prodigal_tf', help='Path to existing Prodigal training file to use for CDS prediction')
@@ -106,41 +106,39 @@ def parse_arguments():
 
 
 def read_tool_output(dependency):
-        """Method for reading tool version with regex. Input: regex expression, tool command. Retursn: version number."""
-        version_regex = dependency[2]
-        command = dependency[3]
-        skip_options = dependency[4]
-        try:
-            tool_output = str(sp.check_output(command, stderr=sp.STDOUT)) # stderr must be added in case the tool output is not piped into stdout
-        except FileNotFoundError:
-            log.error('dependency not found! tool=%s', command[0])
-            sys.exit(f"ERROR: {command[0]} not found or not executable! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
-        except sp.CalledProcessError:
-            log.error('dependency check failed! tool=%s', command[0])
-            sys.exit(f"ERROR: {command[0]} could not be executed! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
-        version_match = re.search(version_regex, tool_output)
-        
-        try:
-            if version_match is None:
-                log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', version_regex, command)
-                sys.exit('ERROR: Could not detect/read %s version!', command[0])
-
-            major = version_match.group(1)
-            minor = version_match.group(2)
-            patch = version_match.group(3)
-            if major is None:
-                log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', version_regex, command)
-                sys.exit('ERROR: Could not detect/read %s version!', command[0])
-            elif minor is None:
-                version_output = Version(int(major))
-            elif patch is None:
-                version_output = Version(int(major), int(minor))
-            else:
-                version_output = Version(int(major), int(minor), int(patch))
-            return version_output
-        except:
+    """Method for reading tool version with regex. Input: regex expression, tool command. Retursn: version number."""
+    version_regex = dependency[2]
+    command = dependency[3]
+    skip_options = dependency[4]
+    try:
+        tool_output = str(sp.check_output(command, stderr=sp.STDOUT))  # stderr must be added in case the tool output is not piped into stdout
+    except FileNotFoundError:
+        log.error('dependency not found! tool=%s', command[0])
+        sys.exit(f"ERROR: {command[0]} not found or not executable! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
+    except sp.CalledProcessError:
+        log.error('dependency check failed! tool=%s', command[0])
+        sys.exit(f"ERROR: {command[0]} could not be executed! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
+    version_match = version_regex.search(tool_output)
+    try:
+        if version_match is None:
             log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', version_regex, command)
             sys.exit('ERROR: Could not detect/read %s version!', command[0])
+        major = version_match.group(1)
+        minor = version_match.group(2)
+        patch = version_match.group(3)
+        if major is None:
+            log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', version_regex, command)
+            sys.exit('ERROR: Could not detect/read %s version!', command[0])
+        elif minor is None:
+            version_output = Version(int(major))
+        elif patch is None:
+            version_output = Version(int(major), int(minor))
+        else:
+            version_output = Version(int(major), int(minor), int(patch))
+        return version_output
+    except:
+        log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', version_regex, command)
+        sys.exit('ERROR: Could not detect/read %s version!', command[0])
 
 
 def check_version(tool, min, max):
@@ -169,10 +167,9 @@ def check_version(tool, min, max):
 
 def test_dependency(dependency):
     """Test the proper installation of the required 3rd party executable."""
-
     version = read_tool_output(dependency)
     check_result = check_version(version, dependency[0], dependency[1])
-    if (check_result == False):
+    if (not check_result):
         log.error('wrong dependency version for %s: installed=%s, minimum=%s', dependency[3][0], version, dependency[0])
         sys.exit(f'ERROR: Wrong {dependency[3][0]} version installed. Please, either install {dependency[3][0]} version {dependency[0]} or use {dependency[4]}!')
     else:
@@ -181,19 +178,18 @@ def test_dependency(dependency):
 
 def test_dependencies():
     """Test the proper installation of all required 3rd party executables."""
-
     if(not cfg.skip_trna):
         test_dependency(DEPENDENCY_TRNASCAN)
-    
+
     if(not cfg.skip_tmrna):
         test_dependency(DEPENDENCY_ARAGORN)
-    
+
     if(not cfg.skip_rrna or not cfg.skip_ncrna or not cfg.skip_ncrna_region):
         test_dependency(DEPENDENCY_CMSCAN)
-    
+
     if(not cfg.skip_crispr):
         test_dependency(DEPENDENCY_PILERCR)
-    
+
     if(not cfg.skip_cds):
         test_dependency(DEPENDENCY_PRODIGAL)
         test_dependency(DEPENDENCY_AMRFINDERPLUS)
@@ -209,13 +205,12 @@ def test_dependencies():
             ], capture_output=True)
         if('No valid AMRFinder database found' in process.stderr.decode()):
             log.error('AMRFinderPlus database not installed')
-            sys.exit(f"ERROR: AMRFinderPlus database not installed! Please, install AMRFinderPlus's internal database by executing: 'amrfinder_update --database <database-path>/amrfinderplus-db'. This must be done only once.")
+            sys.exit("ERROR: AMRFinderPlus database not installed! Please, install AMRFinderPlus's internal database by executing: 'amrfinder_update --database <database-path>/amrfinderplus-db'. This must be done only once.")
 
-    
     if(not cfg.skip_cds or not cfg.skip_sorf):
         test_dependency(DEPENDENCY_HMMSEARCH)
         test_dependency(DEPENDENCY_DIAMOND)
-    
+
     if(not cfg.skip_ori):
         test_dependency(DEPENDENCY_BLASTN)
 
@@ -231,7 +226,7 @@ def create_locus_tag_prefix(contigs):
     while i < 6:
         c = hexdigest[i]
         if(c >= '0' and c <= '9'):
-            c = chr(ord('F') + int(c) + 1) 
+            c = chr(ord('F') + int(c) + 1)
         locus_prefix_chars.append(c)
         i += 1
     locus_prefix = ''.join(locus_prefix_chars)
@@ -266,11 +261,11 @@ def calc_genome_stats(genome, features):
     gc_ratio = gc_sum / (genome_size - n_sum)
     genome['gc'] = gc_ratio
     log.info('GC=%0.3f', gc_ratio)
-    
+
     n_ratio = n_sum / genome_size
     genome['n_ratio'] = n_ratio
     log.info('N=%0.3f', n_ratio)
-    
+
     n50 = 0
     contig_length_sum = 0
     for contig in sorted(genome['contigs'], key=lambda x: x['length'], reverse=True):
@@ -293,7 +288,7 @@ def calc_genome_stats(genome, features):
     coding_ratio = coding_nts / (genome_size - n_sum)
     genome['coding_ratio'] = coding_ratio
     log.info('coding-ratio=%0.3f', coding_ratio)
-    
+
     return {
         'gc': gc_ratio,
         'n_ratio': n_ratio,
@@ -353,7 +348,7 @@ def qc_contigs(contigs, replicons):
     contig_counter = 1
     contig_prefix = cfg.locus if cfg.locus else 'contig'
     organism_definition = f"[organism={cfg.taxon}]" if cfg.taxon else None
-    
+
     complete_genome = True
     plasmid_number = 1
     for contig in contigs:
@@ -376,7 +371,7 @@ def qc_contigs(contigs, replicons):
             elif('plasmid' in contig['description'].lower()):
                 contig['type'] = bc.REPLICON_PLASMID
                 log.debug('qc: detected plasmid replicon type via description: id=%s, description=%s', contig['id'], contig['description'])
-            
+
             if(not cfg.keep_contig_headers):
                 contig['orig_id'] = contig['id']
                 contig['id'] = contig_id_generated
@@ -391,9 +386,10 @@ def qc_contigs(contigs, replicons):
                     if(contig['topology'] != bc.REPLICON_CONTIG):
                         contig_desc.append(f"[topology={contig['topology']}]")
                     if(contig['type'] == bc.REPLICON_CHROMOSOME):
-                        contig_desc.append(f"[location=chromosome]")
+                        contig_desc.append('[location=chromosome]')
                 contig_desc.append(f'[gcode={cfg.translation_table}]')
                 contig['description'] = ' '.join(contig_desc)
+
             if(cfg.complete):
                 contig['complete'] = True
                 contig['topology'] = bc.TOPOLOGY_CIRCULAR
@@ -401,11 +397,11 @@ def qc_contigs(contigs, replicons):
                     contig['type'] = bc.REPLICON_CHROMOSOME
                 elif(contig['length'] < bc.REPLICON_LENGTH_THRESHOLD_PLASMID):
                     contig['type'] = bc.REPLICON_PLASMID
-            
             valid_contigs.append(contig)
+
             if(len(contigs) == 1 and contig['type'] == bc.REPLICON_PLASMID and cfg.plasmid is not None):
                 contig['name'] = cfg.plasmid
-            
+
             if(replicons):  # use user provided replicon table
                 contig_id = contig['orig_id'] if 'orig_id' in contig else contig['id']
                 replicon = replicons.get(contig_id, None)
@@ -429,7 +425,7 @@ def qc_contigs(contigs, replicons):
             if(contig['complete'] and contig['type'] == bc.REPLICON_PLASMID and not contig.get('name', None)):
                 contig['name'] = f'unnamed{plasmid_number}'
                 plasmid_number += 1
-            
+
             if(contig['type'] == bc.REPLICON_CONTIG):
                 complete_genome = False
 
@@ -437,12 +433,11 @@ def qc_contigs(contigs, replicons):
                 if(len(contig['id']) > 25):  # max 25 characters
                     log.error('INSDC compliance: contig id larger than 25! contig-id=%s', contig['id'])
                     sys.exit(f"ERROR: INSDC compliance failed! Contig ID ({contig['id']}) larger than 25 characers!")
-                unvalid_char_match = re.search(INSDC_ID_REGEX, contig['id'])
+                unvalid_char_match = INSDC_ID_REGEX.search(contig['id'])
                 if(unvalid_char_match is not None):  # invalid characters
                     log.error('INSDC compliance: contig id contains invalid characters! contig-id=%s', contig['id'])
                     sys.exit(f"ERROR: INSDC compliance failed! Contig ID ({contig['id']}) contains invalid characters!")
 
-            
             log.info(
                 "qc: revised sequence: id=%s, orig-id=%s, type=%s, complete=%s, topology=%s, name=%s, description='%s', orig-description='%s'",
                 contig['id'], contig.get('orig_id', ''), contig['type'], contig['complete'], contig['topology'], contig.get('name', ''), contig['description'], contig.get('orig_description', '')
@@ -451,13 +446,10 @@ def qc_contigs(contigs, replicons):
 
 
 def extract_feature_sequence(feature, contig):
-    
     if(feature.get('edge', False)):
         seq = contig['sequence'][feature['start']-1:] + contig['sequence'][:feature['stop']]
     else:
         seq = contig['sequence'][feature['start']-1:feature['stop']]
-    
     if(feature['strand'] == bc.STRAND_REVERSE):
         seq = str(Seq(seq).reverse_complement())
-    
     return seq

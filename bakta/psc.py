@@ -1,11 +1,12 @@
-
 import logging
-from concurrent.futures import ThreadPoolExecutor
 import subprocess as sp
 import sqlite3
 
+from concurrent.futures import ThreadPoolExecutor
+
 import bakta.config as cfg
 import bakta.constants as bc
+
 
 ############################################################################
 # PSC DB columns
@@ -18,6 +19,7 @@ DB_PSC_COL_COG_ID = 'cog_id'
 DB_PSC_COL_COG_CAT = 'cog_category'
 DB_PSC_COL_EC = 'ec_ids'
 DB_PSC_COL_GO = 'go_ids'
+
 
 log = logging.getLogger('PSC')
 
@@ -103,7 +105,7 @@ def lookup(features):
                         uniref90_id = feature['psc'].get(DB_PSC_COL_UNIREF90, None)
                     elif('ips' in feature):
                         uniref90_id = feature['ips'].get(DB_PSC_COL_UNIREF90, None)
-                    
+
                     if(uniref90_id is not None):
                         if(bc.DB_PREFIX_UNIREF_90 in uniref90_id):
                             uniref90_id = uniref90_id[9:]  # remove 'UniRef90_' prefix
@@ -147,7 +149,7 @@ def parse_annotation(rec):
         'SO:0001217',
         f'{bc.DB_XREF_UNIPROTKB}:{psc[DB_PSC_COL_UNIREF90]}'
     ]
-    
+
     # add non-empty PSC annotations and attach database prefixes to identifiers
     if(rec[DB_PSC_COL_GENE]):
         psc[DB_PSC_COL_GENE] = rec[DB_PSC_COL_GENE]
@@ -179,6 +181,6 @@ def parse_annotation(rec):
                 db_xrefs.append(go_id)
         if(len(go_ids) != 0):
             psc[DB_PSC_COL_GO] = go_ids
-    
+
     psc['db_xrefs'] = db_xrefs
     return psc

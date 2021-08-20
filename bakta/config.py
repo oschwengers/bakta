@@ -1,12 +1,14 @@
-
 import logging
 import multiprocessing as mp
 import os
 import sys
 import tempfile
+
 from pathlib import Path
 
+
 log = logging.getLogger('CONFIG')
+
 
 # runtime configurations
 env = os.environ.copy()
@@ -203,7 +205,7 @@ def setup(args):
     if(compliant):
         min_contig_length = 200
         log.info('compliant mode! min_contig_length=%s', min_contig_length)
-    
+
     # workflow configurations
     global skip_trna, skip_tmrna, skip_rrna, skip_ncrna, skip_ncrna_region, skip_crispr, skip_cds, skip_sorf, skip_gap, skip_ori
     skip_trna = args.skip_trna

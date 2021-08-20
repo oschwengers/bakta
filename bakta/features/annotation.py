@@ -6,7 +6,17 @@ import bakta.config as cfg
 import bakta.constants as bc
 import bakta.io.insdc as insdc
 
+
 log = logging.getLogger('ANNOTATION')
+
+
+RE_CONTIG = re.compile(r'\s+contig\s*', flags=re.IGNORECASE)
+RE_HOMOLOG = re.compile(r'\shomolog(?: (\d+))?', flags=re.IGNORECASE)
+RE_PUTATIVE = re.compile(r'(potential|possible|probable|predicted)', flags=re.IGNORECASE)
+RE_MULTIWHITESPACE = re.compile(r'\s+')
+RE_NODE = re.compile(r'NODE_', flags=re.IGNORECASE)
+RE_POTENTIAL_CONTIG_NAME = re.compile(r'(genome|shotgun)', flags=re.IGNORECASE)
+RE_NO_LETTERS = re.compile(r'[^A-Za-z]')
 
 
 def combine_annotation(feature):
@@ -62,10 +72,10 @@ def combine_annotation(feature):
                     for expert_db_xref in expert_db_xrefs:
                         db_xrefs.add(expert_db_xref)
                 rank = expert_rank
-    
+
     if(gene):
         feature['gene'] = gene
-    
+
     if(product):
         feature['product'] = product
         revise_cds_product(feature)
@@ -74,14 +84,14 @@ def combine_annotation(feature):
     else:
         feature['product'] = bc.HYPOTHETICAL_PROTEIN
         feature['hypothetical'] = True
-    
+
     if(gene and feature.get('hypothetical', False)):
         feature['gene'] = None
         log.info(
             'remove gene symbol of hypothetical protein: contig=%s, start=%i, stop=%i, strand=%s, gene=%s',
             feature['contig'], feature['start'], feature['stop'], feature['strand'], gene
         )
-    
+
     feature['db_xrefs'] = sorted(list(db_xrefs))
 
 
@@ -119,7 +129,7 @@ def detect_feature_overlaps(genome):
     for sorf in genome['features'].get(bc.FEATURE_SORF, []):
         sorfs = contig_sorfs[sorf['contig']]
         sorfs.append(sorf)
-    
+
     for contig in genome['contigs']:  # find feature overlaps contig-wise to increase the performance
         log.debug('filter features on contig: %s', contig['id'])
 
@@ -139,7 +149,7 @@ def detect_feature_overlaps(genome):
                         "overlap: tRNA (%s) [%i, %i] overlapping with tmRNA (%s) [%i, %i] at %s on contig=%s",
                         tRNA['product'], tRNA['start'], tRNA['stop'], tmRNA['product'], tmRNA['start'], tmRNA['stop'], overlap, tRNA['contig']
                     )
-        
+
         # mark ncRNA-regions overlapping with ncRNA-regions
         for ncRNA_region in contig_ncrna_regions[contig['id']]:
             for ncRNA_region_overlap in contig_ncrna_regions[contig['id']]:
@@ -159,7 +169,7 @@ def detect_feature_overlaps(genome):
                             "overlap: ncRNA-region (%s) [%i, %i] overlapping with ncRNA-region (%s) [%i, %i] at %s on contig=%s, lower bitscore (%f/%f)",
                             ncRNA_region['product'], ncRNA_region['start'], ncRNA_region['stop'], ncRNA_region_overlap['product'], ncRNA_region_overlap['start'], ncRNA_region_overlap['stop'], overlap, ncRNA_region['contig'], ncRNA_region['score'], ncRNA_region_overlap['score']
                         )
-        
+
         # mark CDS overlapping with tRNAs, tmRNAs, rRNAs, CRISPRs
         for cds in contig_cdss[contig['id']]:
             # tmRNA overlaps
@@ -222,7 +232,7 @@ def detect_feature_overlaps(genome):
                         "overlap: CDS (%s/%s) [%i, %i] overlapping CRISPR [%i, %i], %s, contig=%s",
                         cds.get('gene', '-'), cds.get('product', '-'), cds['start'], cds['stop'], crispr['start'], crispr['stop'], overlap, cds['contig']
                     )
-        
+
         # remove sORF overlapping with tRNAs, tmRNAs, rRNAs, CRISPRs, inframe CDSs, shorter inframe sORFs
         for sorf in contig_sorfs[contig['id']]:
             # tmRNA overlaps
@@ -286,7 +296,7 @@ def detect_feature_overlaps(genome):
                         sorf.get('gene', '-'), sorf.get('product', '-'), sorf['start'], sorf['stop'], crispr['start'], crispr['stop'], overlap, sorf['contig']
                     )
             # CDS overlaps (skipped as most overlaps are filtered in sORF detection)
-            
+
             # sORF overlaps
             for overlap_sorf in contig_sorfs[contig['id']]:
                 if(sorf['stop'] < overlap_sorf['start'] or sorf['start'] > overlap_sorf['stop']):
@@ -327,7 +337,7 @@ def calc_sorf_annotation_score(sorf):
 
     if('ups' in sorf):
         score += 1
-    
+
     ips = sorf.get('ips', None)
     if(ips):
         score += 1
@@ -337,7 +347,7 @@ def calc_sorf_annotation_score(sorf):
         ips_product = ips.get('product', None)
         if(ips_product):
             score += 1
-    
+
     psc = sorf.get('psc', None)
     if(psc):
         score += 1
@@ -362,40 +372,40 @@ def revise_cds_product(feature):
     if('.' in product):  # remove periods
         product = product.replace('.', '')
         log.info('fix product: replace trailing period. new=%s, old=%s', product, old_product)
-    
+
     old_product = product
     if('=' in product):  # remove equal chars
         product = product.replace('=', '')
         log.info('fix product: remove = character. new=%s, old=%s', product, old_product)
-    
+
     old_product = product
-    if(re.search(r'\s+contig\s*', product, flags=re.IGNORECASE)):
+    if(RE_CONTIG.search(product)):
         product = bc.HYPOTHETICAL_PROTEIN
         feature['hypothetical'] = True
         log.info('fix product: remove product containing "contig". new=%s, old=%s', product, old_product)
-    
+
     old_product = product
-    if(re.search(r'\shomolog(?: (\d+))?', product, flags=re.IGNORECASE)):  # replace Homologs
-        product = re.sub(r'\shomolog(?: (\d+))?', '-like protein', product, flags=re.IGNORECASE)
+    if(RE_HOMOLOG.search(product)):  # replace Homologs
+        product = RE_HOMOLOG.sub('-like protein', product)
         log.info('fix product: replace Homolog. new=%s, old=%s', product, old_product)
 
     old_product = product
-    if(re.search(r'(potential|possible|probable|predicted)', product, flags=re.IGNORECASE)):  # replace putative synonyms)
-        product = re.sub(r'(potential|possible|probable|predicted)', 'putative', product, flags=re.IGNORECASE)
+    if(RE_PUTATIVE.search(product)):  # replace putative synonyms)
+        product = RE_PUTATIVE.sub('putative', product)
         log.info('fix product: replace putative synonyms. new=%s, old=%s', product, old_product)
-    
+
     old_product = product
-    if(re.search(r'\s+', product)):  # squeeze multiple whitespaces
-        product = re.sub(r'\s+', ' ', product)
+    if(RE_MULTIWHITESPACE.search(product)):  # squeeze multiple whitespaces
+        product = RE_MULTIWHITESPACE.sub(' ', product)
         log.info('fix product: squeeze multiple whitespaces. new=%s, old=%s', product, old_product)
-    
+
     if(
-        re.search(r'NODE_', product, flags=re.IGNORECASE) or  # potential contig name (SPAdes)
-        re.search(r'(genome|shotgun)', product, flags=re.IGNORECASE) or  # potential contig name (SPAdes)
-        re.fullmatch(r'[^A-Za-z]', product)  # no letters -> set to Hypothetical
+        RE_NODE.search(product) or  # potential contig name (SPAdes)
+        RE_POTENTIAL_CONTIG_NAME.search(product) or  # potential contig name (SPAdes)
+        RE_NO_LETTERS.fullmatch(product)  # no letters -> set to Hypothetical
         ):  # remove suspect products and mark as hypothetical
         product = bc.HYPOTHETICAL_PROTEIN
         feature['hypothetical'] = True
         log.info('remove product: mark proteins with suspect products as hypothetical. old=%s', old_product)
-    
+
     feature['product'] = product

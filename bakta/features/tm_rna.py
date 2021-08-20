@@ -1,14 +1,13 @@
-
 import logging
 import subprocess as sp
-from collections import OrderedDict
 
-from Bio.Seq import Seq
+from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
 import bakta.utils as bu
+
 
 log = logging.getLogger('TM_RNA')
 
@@ -29,7 +28,7 @@ def predict_tm_rnas(genome, contigs_path):
         cmd.append('-c')  # complete circular sequence(s)
     else:
         cmd.append('-l')  # linear sequence(s)
-    
+
     log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
@@ -47,7 +46,7 @@ def predict_tm_rnas(genome, contigs_path):
     tmrnas = []
     contigs = {c['id']: c for c in genome['contigs']}
     with txt_output_path.open() as fh:
-        contig = None
+        contig_id = None
         for line in fh:
             line = line.strip()
             cols = line.split()
@@ -62,7 +61,7 @@ def predict_tm_rnas(genome, contigs_path):
                 (start, stop) = location[1:-1].split(',')
                 start = int(start)
                 stop = int(stop)
-                
+
                 tmrna = OrderedDict()
                 tmrna['type'] = bc.FEATURE_TM_RNA
                 tmrna['contig'] = contig_id
@@ -78,7 +77,7 @@ def predict_tm_rnas(genome, contigs_path):
 
                 if(start > stop):
                     tmrna['edge'] = True  # mark tmRNA as edge feature
-                
+
                 tmrnas.append(tmrna)
                 log.info(
                     'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s]',

@@ -1,10 +1,12 @@
 import argparse
-import logging
 import hashlib
-from xopen import xopen
+import logging
 import sqlite3
+
 from pathlib import Path
+
 from lxml import etree as et
+from xopen import xopen
 
 
 parser = argparse.ArgumentParser(
@@ -66,7 +68,6 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA journal_mode = OFF')
     conn.execute('PRAGMA threads = 2;')
     conn.commit()
-
     conn.row_factory = sqlite3.Row
     with xopen(str(xml_path), mode="rb") as fh:
         ups_entries = []
@@ -89,12 +90,12 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     log_ups.debug('no hash hit: SwissProt-id=%s, hash=%s', acc, seq_hash_hexdigest)
                     continue
                 assert rec_ups['length'] == len(seq), f"Detected SwissProt / UPS length collision! hash={seq_hash_hexdigest}, SwissProt-id={acc}, UniParc-id={rec_ups['uniparc_id']}, SwissProt-length={len(seq)}, db-length={rec_ups['length']}"
-                
+
                 if(rec_ups['uniref100_id'] is None):
                     log_ups.debug('no UniRef100-id: SwissProt-id=%s, hash=%s', acc, seq_hash_hexdigest)
                     continue
                 uniref100_id = rec_ups['uniref100_id']
-                
+
                 rec_ips = conn.execute('SELECT * FROM ips WHERE uniref100_id=?', (uniref100_id,)).fetchone()
                 if(rec_ips is None):
                     log_ups.debug('no UniRef100 hit: SwissProt-id=%s, hash=%s', acc, seq_hash_hexdigest)

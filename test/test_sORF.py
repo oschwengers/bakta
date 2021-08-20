@@ -1,6 +1,7 @@
 import pytest
 
 import bakta.config as cfg
+
 from bakta.features import s_orf as bu
 
 

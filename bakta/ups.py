@@ -1,10 +1,11 @@
-
 import logging
-from concurrent.futures import ThreadPoolExecutor
 import sqlite3
+
+from concurrent.futures import ThreadPoolExecutor
 
 import bakta.config as cfg
 import bakta.constants as bc
+
 
 ############################################################################
 # UPS DB columns
@@ -14,6 +15,7 @@ DB_UPS_COL_LENGTH = 'length'
 DB_UPS_COL_UNIPARC = 'uniparc_id'
 DB_UPS_COL_REFSEQ_NRP = 'ncbi_nrp_id'
 DB_UPS_COL_UNIREF100 = 'uniref100_id'
+
 
 log = logging.getLogger('UPS')
 
@@ -34,7 +36,7 @@ def lookup(features):
                         rec_futures.append((feature, future))
                     else:
                         features_not_found.append(feature)
-        
+
         for (feature, future) in rec_futures:
             rec = future.result()
             if(rec is not None and rec[DB_UPS_COL_LENGTH] == len(feature['aa'])):
@@ -77,6 +79,6 @@ def parse_annotation(rec):
     if(rec[DB_UPS_COL_UNIREF100]):
         ups[DB_UPS_COL_UNIREF100] = bc.DB_PREFIX_UNIREF_100 + rec[DB_UPS_COL_UNIREF100]
         db_xrefs.append(f'{bc.DB_XREF_UNIPROTKB}:{ups[DB_UPS_COL_UNIREF100]}')
-    
+
     ups['db_xrefs'] = db_xrefs
     return ups

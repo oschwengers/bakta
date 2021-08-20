@@ -1,6 +1,7 @@
 import argparse
 import logging
 import re
+
 from pathlib import Path
 
 from Bio import SeqIO
@@ -11,6 +12,7 @@ VFDB_RANK = 75
 VFDB_MIN_IDENTITY = 90
 VFDB_MIN_QUERY_COV = 90
 VFDB_MIN_MODEL_COV = 90
+
 
 parser = argparse.ArgumentParser(
     description='Import VFDB into aa seq expert system.'

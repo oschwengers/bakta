@@ -123,7 +123,7 @@ def test_replicons_ok(tmpdir):
     # test replicons file arguments
 
     # OK: replicons as CSV
-    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test','--replicons', 'test/data/replicons.csv'] + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--replicons', 'test/data/replicons.csv'] + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)
@@ -131,7 +131,7 @@ def test_replicons_ok(tmpdir):
         assert Path.exists(tmpdir_path.joinpath(file))
 
     # OK: replicons as TSV
-    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test','--replicons', 'test/data/replicons.tsv'] + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--replicons', 'test/data/replicons.tsv'] + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)

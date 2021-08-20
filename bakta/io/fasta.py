@@ -1,4 +1,3 @@
-
 import logging
 import re
 
@@ -69,7 +68,7 @@ def wrap_sequence(sequence):
 def write_faa(features, faa_path):
     """Write translated CDS sequences to Fasta file."""
     log.info('write translated CDS/sORF: path=%s', faa_path)
-    
+
     with faa_path.open('wt') as fh:
         for feat in features:
             if(feat['type'] == bc.FEATURE_CDS or feat['type'] == bc.FEATURE_SORF):
@@ -79,7 +78,7 @@ def write_faa(features, faa_path):
 def write_ffn(features, ffn_path):
     """Write translated CDS sequences to Fasta file."""
     log.info('write feature nucleotide sequences: path=%s', ffn_path)
-    
+
     with ffn_path.open('wt') as fh:
         for feat in features:
             if('locus' in feat):

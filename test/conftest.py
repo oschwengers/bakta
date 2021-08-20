@@ -3,6 +3,7 @@ from _pytest.mark import Mark
 
 global FILES, SKIP_PARAMETERS
 
+
 FILES = [
     'test.log',
     'test.json',

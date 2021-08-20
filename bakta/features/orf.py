@@ -1,9 +1,11 @@
 import logging
 import subprocess as sp
+
 from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
+
 
 log = logging.getLogger('ORF')
 
@@ -14,7 +16,7 @@ def detect_spurious(orfs):
     with orf_fasta_path.open(mode='w') as fh:
         for orf in orfs:
             fh.write(f">{orf['aa_hexdigest']}\n{orf['aa']}\n")
-    
+
     output_path = cfg.tmp_path.joinpath('cds.spurious.hmm.tsv')
     cmd = [
         'hmmsearch',
@@ -59,7 +61,7 @@ def detect_spurious(orfs):
                     discard['description'] = f'(partial) homology to spurious sequence HMM (AntiFam:{subject_id})'
                     discard['score'] = bitscore
                     discard['evalue'] = evalue
-                    
+
                     orf['discarded'] = discard
                     discarded_orfs.append(orf)
                     log.info(

@@ -1,7 +1,7 @@
-import pytest
-
 from pathlib import Path
 from subprocess import run
+
+import pytest
 
 from .conftest import FILES, SKIP_PARAMETERS
 
@@ -60,7 +60,7 @@ def test_bakta_genome(tmpdir):
         output_path = tmpdir_path.joinpath(file)
         assert Path.exists(output_path)
         assert output_path.stat().st_size > 0
-        
+
     output_path = tmpdir_path.joinpath('test.tsv')
     feature_count, feature_counts = count_features(output_path)
     assert feature_count == 5550
@@ -82,7 +82,7 @@ def test_bakta_genome(tmpdir):
 
 
 def count_features(file_path):
-    with open (file_path, 'r') as fh:
+    with open(file_path, 'r') as fh:
         feature_count = 0
         feature_counts = {
             'tRNA': 0,

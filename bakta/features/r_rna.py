@@ -1,13 +1,14 @@
-
 import logging
 import re
 import subprocess as sp
+
 from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
 import bakta.utils as bu
+
 
 log = logging.getLogger('R_RNA')
 
@@ -52,8 +53,8 @@ def predict_r_rnas(genome, contigs_path):
             if(line[0] != '#'):
                 (subject, accession, contig_id, contig_acc, mdl, mdl_from, mdl_to,
                     start, stop, strand, trunc, passed, gc, bias, score, evalue,
-                    inc, description) = re.split('\s+', line.strip(), maxsplit=17)
-                
+                    inc, description) = re.split(r'\s+', line.strip(), maxsplit=17)
+
                 if(strand == '-'):
                     (start, stop) = (stop, start)
                 (start, stop) = (int(start), int(stop))
@@ -86,11 +87,11 @@ def predict_r_rnas(genome, contigs_path):
                         accession, contig_id, start, stop, strand, length, truncated, score, evalue
                     )
                     continue
-                
+
                 coverage = length / consensus_length
                 if(coverage < 0.8):
                     truncated = bc.FEATURE_END_UNKNOWN
-                
+
                 if(coverage < 0.3):
                     log.debug(
                         'discard low coverage: contig=%s, rRNA=%s, start=%i, stop=%i, strand=%s, length=%i, coverage=%0.3f, truncated=%s, score=%1.1f, evalue=%1.1e',
@@ -113,10 +114,10 @@ def predict_r_rnas(genome, contigs_path):
                         rrna['product'] = f"(5' truncated) {rrna_tag} ribosomal RNA"
                     elif(truncated == bc.FEATURE_END_3_PRIME):
                         rrna['product'] = f"(3' truncated) {rrna_tag} ribosomal RNA"
-                    
+
                     if(truncated):
                         rrna['truncated'] = truncated
-                    
+
                     rrna['coverage'] = coverage
                     rrna['score'] = score
                     rrna['evalue'] = evalue

@@ -2,7 +2,6 @@ import logging
 import subprocess as sp
 
 import bakta.config as cfg
-import bakta.constants as bc
 
 
 log = logging.getLogger('EXPERT_AA_SEQ')
@@ -83,4 +82,4 @@ def search(cdss, cds_fasta_path):
                 cds_found.add(aa_identifier)
 
     log.info('found=%i', len(cds_found))
-    return cds_found 
+    return cds_found

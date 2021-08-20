@@ -1,18 +1,18 @@
-
 import logging
-from concurrent.futures import ThreadPoolExecutor
-import subprocess as sp
 import sqlite3
+
+from concurrent.futures import ThreadPoolExecutor
 
 import bakta.config as cfg
 import bakta.constants as bc
-import bakta
+
 
 ############################################################################
 # PSCC DB columns
 ############################################################################
 DB_PSCC_COL_UNIREF50 = 'uniref50_id'
 DB_PSCC_COL_PRODUCT = 'product'
+
 
 log = logging.getLogger('PSCC')
 
@@ -70,9 +70,7 @@ def parse_annotation(rec):
             f'{bc.DB_XREF_UNIPROTKB}:{uniref_full_id}'
         ]
     }
-    
     # add non-empty PSCC annotations and attach database prefixes to identifiers
     if(rec[DB_PSCC_COL_PRODUCT]):
         pscc[DB_PSCC_COL_PRODUCT] = rec[DB_PSCC_COL_PRODUCT]
-    
     return pscc

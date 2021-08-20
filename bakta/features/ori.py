@@ -1,11 +1,12 @@
-
 import logging
 import subprocess as sp
+
 from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.utils as bu
+
 
 log = logging.getLogger('ORI')
 
@@ -67,7 +68,7 @@ def predict_oris(genome, contigs_path, ori_type):
                     'raw hit: type=%s, contig=%s, start=%i, stop=%i, strand=%s, coverage=%f, identity=%f',
                     ori_type, hit['contig'], hit['contig_start'], hit['contig_stop'], hit['strand'], hit['coverage'], hit['identity']
                 )
-    
+
     # combine overlapping hits (simple 1D array peak detection)
     oris = []
     for contig in genome['contigs']:
@@ -95,10 +96,10 @@ def predict_oris(genome, contigs_path, ori_type):
                         (refined_start, refined_stop) = refine_ori_region(region_hits, ori)
                         ori['start'] = refined_start
                         ori['stop'] = refined_stop
-                        
+
                         nt = bu.extract_feature_sequence(ori, contig)  # extract nt sequences
                         ori['nt'] = nt
-                        
+
                         log.info(
                             'type=%s, contig=%s, start=%i, stop=%i, nt=[%s..%s]',
                             ori_type, ori['contig'], ori['start'], ori['stop'], nt[:10], nt[-10:]
@@ -108,7 +109,6 @@ def predict_oris(genome, contigs_path, ori_type):
                 else:
                     if(start == -1):  # new start
                         start = i
-    
     log.info('predicted=%i', len(oris))
     return oris
 

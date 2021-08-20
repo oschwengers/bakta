@@ -3,9 +3,10 @@ import logging
 import bakta
 import bakta.config as cfg
 import bakta.constants as bc
-import bakta.io.insdc as insdc
 import bakta.io.fasta as fasta
+import bakta.io.insdc as insdc
 import bakta.so as so
+
 
 log = logging.getLogger('GFF')
 
@@ -20,10 +21,10 @@ def write_gff3(genome, features_by_contig, gff3_path):
 
         if(genome['taxon']):  # write organism info
             fh.write(f"# organism {genome['taxon']}\n")
-        
+
         fh.write(f'# annotated with Bakta (v{bakta.__version__}): https://github.com/oschwengers/bakta\n')
         fh.write(f"# database (v{cfg.db_info['major']}.{cfg.db_info['minor']}): https://doi.org/10.5281/zenodo.4247252\n")
-        
+
         feature_id_counter = 1
         for contig in genome['contigs']:  # write features
             fh.write(f"##sequence-region {contig['id']} 1 {contig['length']}\n")  # sequence region
@@ -39,7 +40,6 @@ def write_gff3(genome, features_by_contig, gff3_path):
             fh.write(f"{contig['id']}\tBakta\tregion\t1\t{str(contig['length'])}\t.\t+\t.\t{annotations}\n")
 
             for feat in features_by_contig[contig['id']]:
-
                 start = feat['start']
                 stop = feat['stop']
                 if('edge' in feat):
@@ -279,7 +279,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
         for contig in genome['contigs']:  # write sequences
             fh.write(f">{contig['id']}\n")
             fh.write(fasta.wrap_sequence(contig['sequence']))
-    
+
     return
 
 

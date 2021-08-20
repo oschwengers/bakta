@@ -1,5 +1,6 @@
 import logging
 import re
+
 from datetime import date, datetime
 
 from Bio import SeqIO
@@ -10,7 +11,9 @@ import bakta
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
-from bakta.constants import FEATURE_CDS
+
+# from bakta.constants import FEATURE_CDS
+
 
 log = logging.getLogger('INSDC')
 
@@ -25,7 +28,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
             f"Annotated with Bakta (v{bakta.__version__}): https://github.com/oschwengers/bakta\n",
             f"Database (v{cfg.db_info['major']}.{cfg.db_info['minor']}): https://doi.org/10.5281/zenodo.4247252\n",
             '\n',
-            f"##Genome Annotation Summary:##\n",
+            '##Genome Annotation Summary:##\n',
             f"{'Annotation Date':<30} :: {datetime.now().strftime('%m/%d/%Y, %H:%M:%S')}\n",
             f"{'Annotation Pipeline':<30} :: Bakta\n",
             f"{'Annotation Software version':<30} ::  v{bakta.__version__}\n",
@@ -63,7 +66,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
             description = genome['taxon']
         if(genome['strain']):
             source_qualifiers['strain'] = genome['strain']
-        
+
         if(contig['type'] == bc.REPLICON_PLASMID):
             source_qualifiers['plasmid'] = contig['name'] if contig.get('name', None) else 'unnamed'
             description = f"{description} plasmid {contig.get('name', 'unnamed')}"
@@ -74,12 +77,12 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
             description = f'{description} chromosome, complete genome' if contig['complete'] else f"{description} chromosome {contig['id']}, whole genome shotgun sequence"
         else:
             description += f" {contig['id']}, whole genome shotgun sequence"
-        
+
         if(len(description) > 0 and description[0] == ' '):  # discard potential leading whitespace
             description = description[1:]
 
         contig_rec = SeqIO.SeqRecord(id=contig['id'], name=contig['id'], description=description, annotations=contig_annotations, seq=Seq(contig['sequence']))
-        
+
         source = SeqFeature(FeatureLocation(0, contig['length'], strand=+1), type='source', qualifiers=source_qualifiers)
         seq_feature_list = [source]
 
@@ -95,7 +98,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 qualifiers['product'] = feature['product']
             if('locus' in feature):
                 qualifiers['locus_tag'] = feature['locus']
-            
+
             if(feature['type'] == bc.FEATURE_GAP):
                 insdc_feature_type = bc.INSDC_FEATURE_GAP
                 qualifiers['estimated_length'] = feature['length']
@@ -180,7 +183,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 insdc_feature_type = bc.INSDC_FEATURE_REPEAT_REGION
                 qualifiers['note'] = feature['product']
                 qualifiers.pop('product', None)
-            
+
             strand = None
             if(feature['strand'] == bc.STRAND_FORWARD):
                 strand = 1
@@ -188,7 +191,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 strand = -1
             elif(feature['strand'] == bc.STRAND_UNKNOWN):
                 strand = 0
-            
+
             start = feature['start'] - 1
             stop = feature['stop']
             if('edge' in feature):
@@ -280,12 +283,12 @@ def revise_product_insdc(feature):
     if(product.count('(') != product.count(')')):  # remove unbalanced parentheses
         product = product.replace('(', '').replace(')', '')  # ToDo: find and replace only legend parentheses
         log.info('fix product: remove unbalanced parantheses. new=%s, old=%s', product, old_product)
-    
+
     old_product = product
     if(product.count('[') != product.count(']')):  # remove unbalanced brackets
         product = product.replace('[', '').replace(']', '')  # ToDo: find and replace only legend bracket
         log.info('fix product: remove unbalanced brackets. new=%s, old=%s', product, old_product)
-    
+
     feature['product'] = product
 
 

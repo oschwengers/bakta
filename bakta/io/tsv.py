@@ -1,9 +1,9 @@
-
 import logging
 
 import bakta
 import bakta.config as cfg
 import bakta.constants as bc
+
 
 log = logging.getLogger('TSV')
 
@@ -11,7 +11,7 @@ log = logging.getLogger('TSV')
 def write_tsv(contigs, features_by_contig, tsv_path):
     """Export features in TSV format."""
     log.info('write tsv: path=%s', tsv_path)
-    
+
     with tsv_path.open('wt') as fh:
         fh.write(f'#Annotated with Bakta (v{bakta.__version__}): https://github.com/oschwengers/bakta\n')
         fh.write(f"#Database (v{cfg.db_info['major']}.{cfg.db_info['minor']}): https://doi.org/10.5281/zenodo.4247252\n")
@@ -21,7 +21,7 @@ def write_tsv(contigs, features_by_contig, tsv_path):
                 feat_type = feat['type']
                 if(feat['type'] == bc.FEATURE_GAP):
                     feat_type = bc.INSDC_FEATURE_ASSEMBLY_GAP if feat['length'] >= 100 else bc.INSDC_FEATURE_GAP
-                
+
                 gene = feat['gene'] if feat.get('gene', None) else ''
                 fh.write('\t'.join([feat['contig'], feat_type, str(feat['start']), str(feat['stop']), feat['strand'], feat.get('locus', ''), gene, feat.get('product', ''), ', '.join(sorted(feat.get('db_xrefs', [])))]))
                 fh.write('\n')
@@ -31,7 +31,7 @@ def write_tsv(contigs, features_by_contig, tsv_path):
 def write_hypothetical_tsv(hypotheticals, tsv_path):
     """Export hypothetical information in TSV format."""
     log.info('write hypothetical tsv: path=%s', tsv_path)
-    
+
     with tsv_path.open('wt') as fh:
         fh.write(f'#Annotated with Bakta v{bakta.__version__}, https://github.com/oschwengers/bakta\n')
         fh.write(f"#Database v{cfg.db_info['major']}.{cfg.db_info['minor']}, https://doi.org/10.5281/zenodo.4247252\n")

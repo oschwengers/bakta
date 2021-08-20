@@ -1,8 +1,8 @@
 import atexit
 import logging
 import os
-import sys
 import shutil
+import sys
 import platform as pf
 
 from datetime import datetime
@@ -11,7 +11,6 @@ from pathlib import Path
 import bakta
 import bakta.constants as bc
 import bakta.config as cfg
-from bakta.constants import FEATURE_CDS
 import bakta.io.fasta as fasta
 import bakta.io.json as json
 import bakta.io.tsv as tsv
@@ -40,9 +39,7 @@ import bakta.pscc as pscc
 
 
 def main():
-
-    # parse arguments
-    args = bu.parse_arguments()
+    args = bu.parse_arguments()  # parse arguments
 
     ############################################################################
     # Setup logging
@@ -161,7 +158,7 @@ def main():
     }
     if(cfg.plasmid):
         genome['plasmid'] = cfg.plasmid
-    
+
     ############################################################################
     # tRNA prediction
     ############################################################################
@@ -234,7 +231,7 @@ def main():
     # - lookup UPS matches
     # - lookup IPS matches
     # - search PSC for unannotated CDSs
-    # - conduct expert systems analysis 
+    # - conduct expert systems analysis
     # - lookup & combine annotations
     # - analyze hypotheticals
     ############################################################################
@@ -245,18 +242,18 @@ def main():
         log.debug('predict CDS')
         cdss = feat_cds.predict(genome, contigs_path)
         print(f"\tpredicted: {len(cdss)} ")
-       
+
         log.debug('detect spurious CDS')
         discarded_cdss = orf.detect_spurious(cdss) if len(cdss) > 0 else []
         print(f'\tdiscarded spurious: {len(discarded_cdss)}')
         cdss = [cds for cds in cdss if 'discarded' not in cds]
-        
+
         log.debug('lookup CDS UPS/IPS')
         cdss_ups, cdss_not_found = ups.lookup(cdss)
         cdss_ips, tmp = ips.lookup(cdss_ups)
         cdss_not_found.extend(tmp)
         print(f'\tdetected IPSs: {len(cdss_ips)}')
-        
+
         if(len(cdss_not_found) > 0):
             cds_fasta_path = cfg.tmp_path.joinpath('cds.unidentified.faa')
             with cds_fasta_path.open(mode='w') as fh:
@@ -270,8 +267,7 @@ def main():
         psc.lookup(cdss)  # lookup PSC info
         pscc.lookup(cdss)  # lookup PSCC info
 
-        # conduct expert systems annotation
-        print('\tconduct expert systems...')
+        print('\tconduct expert systems...')  # conduct expert systems annotation
         cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
         with cds_fasta_path.open(mode='w') as fh:
             for cds in cdss:
@@ -282,12 +278,12 @@ def main():
         log.debug('conduct expert system: aa seqs')
         expert_aa_found = exp_aa_seq.search(cdss, cds_fasta_path)
         print(f'\t\tprotein sequences: {len(expert_aa_found)}')
-        
+
         print('\tcombine annotations and mark hypotheticals...')
         log.debug('combine CDS annotations')
         for cds in cdss:
             anno.combine_annotation(cds)  # combine IPS & PSC annotations and mark hypotheticals
-        
+
         log.debug('analyze hypotheticals')
         hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
         if(len(hypotheticals) > 0):
@@ -298,7 +294,7 @@ def main():
             print('\tcalculated proteins statistics')
 
         genome['features'][bc.FEATURE_CDS] = cdss
-    
+
     ############################################################################
     # sORF prediction
     # - in-mem sORF extraction
@@ -349,7 +345,7 @@ def main():
             anno.combine_annotation(feat)  # combine IPS and PSC annotations
         genome['features'][bc.FEATURE_SORF] = sorfs_filtered
         print(f'\tfiltered sORFs: {len(sorfs_filtered)}')
-    
+
     ############################################################################
     # gap annotation
     # - in-mem gap detection
@@ -363,7 +359,7 @@ def main():
         assembly_gaps = gaps.detect_assembly_gaps(genome)
         genome['features'][bc.FEATURE_GAP] = assembly_gaps
         print(f'\tfound: {len(assembly_gaps)}')
-    
+
     ############################################################################
     # oriC/T prediction
     ############################################################################
@@ -471,24 +467,24 @@ def main():
     print('\nwrite JSON output...')
     json_path = cfg.output_path.joinpath(f'{cfg.prefix}.json')
     json.write_json(genome, features, json_path)
-    
+
     print('write TSV output...')
     tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.tsv')
     tsv.write_tsv(genome['contigs'], features_by_contig, tsv_path)
-    
+
     print('write GFF3 output...')
     gff3_path = cfg.output_path.joinpath(f'{cfg.prefix}.gff3')
     gff.write_gff3(genome, features_by_contig, gff3_path)
-    
+
     print('write INSDC (GenBank/EMBL) output...')
     genbank_path = cfg.output_path.joinpath(f'{cfg.prefix}.gbff')
     embl_path = cfg.output_path.joinpath(f'{cfg.prefix}.embl')
     insdc.write_insdc(genome, features, genbank_path, embl_path)
-    
+
     print('write genome sequences...')
     fna_path = cfg.output_path.joinpath(f'{cfg.prefix}.fna')
     fasta.export_contigs(genome['contigs'], fna_path, description=True, wrap=True)
-    
+
     print('write feature nucleotide sequences...')
     ffn_path = cfg.output_path.joinpath(f'{cfg.prefix}.ffn')
     fasta.write_ffn(features, ffn_path)
@@ -496,7 +492,7 @@ def main():
     print('write translated CDS sequences...')
     faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.faa')
     fasta.write_faa(features, faa_path)
-    
+
     if(cfg.skip_cds is False):
         hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
         print('write hypothetical TSV output...')
@@ -509,8 +505,7 @@ def main():
 
 
 def cleanup(log, tmp_path):
-    # remove tmp dir
-    shutil.rmtree(str(tmp_path))
+    shutil.rmtree(str(tmp_path))  # remove tmp dir
     log.info('removed tmp dir: %s', tmp_path)
 
 

@@ -1,6 +1,6 @@
-
 import logging
 import subprocess as sp
+
 from collections import OrderedDict
 
 from Bio import SeqIO
@@ -9,6 +9,7 @@ import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
 import bakta.utils as bu
+
 
 log = logging.getLogger('T_RNA')
 
@@ -77,7 +78,6 @@ def predict_t_rnas(genome, contigs_path):
             if(start > stop):  # reverse
                 start, stop = stop, start
                 strand = bc.STRAND_REVERSE
-            
             contig_id = contig_id.strip()  # bugfix for extra single whitespace in tRNAscan-SE output
 
             trna = OrderedDict()
@@ -93,11 +93,11 @@ def predict_t_rnas(genome, contigs_path):
                 trna['product'] = f'tRNA-{trna_type}'
                 trna['amino_acid'] = trna_type
                 trna['anti_codon'] = anti_codon.lower()
-            
+
             if('pseudo' in note):
                 trna['product'] = f"(pseudo) {trna['product']}"
                 trna['pseudo'] = True
-            
+
             trna['score'] = float(score)
 
             nt = bu.extract_feature_sequence(trna, contigs[contig_id])  # extract nt sequences

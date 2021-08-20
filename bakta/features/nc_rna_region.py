@@ -1,12 +1,13 @@
-
 import logging
 import re
 import subprocess as sp
+
 from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
+
 
 log = logging.getLogger('NC_RNA_REGION')
 
@@ -60,8 +61,8 @@ def predict_nc_rna_regions(genome, contigs_path):
             if(line[0] != '#'):
                 (subject, accession, contig_id, contig_acc, mdl, mdl_from, mdl_to,
                     start, stop, strand, trunc, passed, gc, bias, score, evalue,
-                    inc, description) = re.split('\s+', line.strip(), maxsplit=17)
-                
+                    inc, description) = re.split(r'\s+', line.strip(), maxsplit=17)
+
                 if(strand == '-'):
                     (start, stop) = (stop, start)
                 (start, stop) = (int(start), int(stop))
@@ -74,7 +75,7 @@ def predict_nc_rna_regions(genome, contigs_path):
                     truncated = bc.FEATURE_END_3_PRIME
                 else:
                     truncated = None
-                
+
                 if(evalue > 1E-4):
                     log.debug(
                         'discard low E value: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
@@ -85,7 +86,7 @@ def predict_nc_rna_regions(genome, contigs_path):
                     db_xrefs = [rfam_id]
                     if(rfam_id in rfam2go):
                         db_xrefs += rfam2go[rfam_id]
-                    
+
                     ncrna_region = OrderedDict()
                     ncrna_region['type'] = bc.FEATURE_NC_RNA_REGION
                     ncrna_region['class'] = determine_class(description)
@@ -103,15 +104,15 @@ def predict_nc_rna_regions(genome, contigs_path):
                         ncrna_region['product'] = f"(5' truncated) {description}"
                     elif(truncated == bc.FEATURE_END_3_PRIME):
                         ncrna_region['product'] = f"(3' truncated) {description}"
-                    
+
                     if(ncrna_region['class'] is not None):
                         db_xrefs.append(ncrna_region['class'].id)
                     else:
                         db_xrefs.append(so.SO_REGULATORY_REGION.id)
-                    
+
                     if(truncated):
                         ncrna_region['truncated'] = truncated
-                    
+
                     ncrna_region['score'] = score
                     ncrna_region['evalue'] = evalue
                     ncrna_region['db_xrefs'] = db_xrefs

@@ -1,12 +1,12 @@
-
 import argparse
 import logging
-from xopen import xopen
 import sqlite3
-from lxml import etree as et
+
 from pathlib import Path
 
 from Bio import SeqIO
+from lxml import etree as et
+from xopen import xopen
 
 
 parser = argparse.ArgumentParser(
@@ -91,10 +91,10 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, xopen(s
         rep_member_dbref = rep_member.find('./{*}dbReference')
         rep_member_organism = rep_member_dbref.find('./{*}property[@type="source organism"]')  # source organism
         rep_member_organism = rep_member_organism.get('value') if rep_member_organism is not None else ''
-        
+
         rep_member_tax_id = rep_member_dbref.find('./{*}property[@type="NCBI taxonomy"]')
         rep_member_tax_id = rep_member_tax_id.get('value') if rep_member_tax_id is not None else 1
-        
+
         if(is_taxon_child(common_tax_id, '2', taxonomy) or is_taxon_child(rep_member_tax_id, '2', taxonomy) or 'phage' in rep_member_organism.lower()):
             uniref50_id = elem.attrib['id'][9:]
             product = elem.find('./{*}representativeMember/{*}dbReference/{*}property[@type="protein name"]')
@@ -128,7 +128,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, xopen(s
     conn.execute('PRAGMA journal_mode = OFF')
     conn.execute('PRAGMA threads = 2;')
     conn.commit()
-    
+
     i = 0
     for event, elem in et.iterparse(fh_xml, tag='{*}entry'):
         common_tax_id = elem.find('./{*}property[@type="common taxon ID"]')
@@ -137,23 +137,23 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, xopen(s
         rep_member_dbref = rep_member.find('./{*}dbReference')
         rep_member_organism = rep_member_dbref.find('./{*}property[@type="source organism"]')  # source organism
         rep_member_organism = rep_member_organism.get('value') if rep_member_organism is not None else ''
-        
+
         rep_member_tax_id = rep_member_dbref.find('./{*}property[@type="NCBI taxonomy"]')
         rep_member_tax_id = rep_member_tax_id.get('value') if rep_member_tax_id is not None else 1
-        
+
         if(is_taxon_child(common_tax_id, '2', taxonomy) or is_taxon_child(rep_member_tax_id, '2', taxonomy) or 'phage' in rep_member_organism.lower()):
             uniref90_id = elem.attrib['id'][9:]  # remove 'UniRef90_' prefix
-            
+
             product = rep_member_dbref.find('./{*}property[@type="protein name"]')
             if(product is not None):
                 product = product.get('value')
                 if(product.lower() in DISCARDED_PRODUCTS):
                     product = None
-            
+
             uniref50_id = rep_member_dbref.find('./{*}property[@type="UniRef50 ID"]')
             if(uniref50_id is not None):
                 uniref50_id = uniref50_id.get('value')[9:]  # remove 'UniRef50_' prefix
-            
+
             # lookup seed sequence
             is_seed = rep_member_dbref.find('./{*}property[@type="isSeed"]')
             if(is_seed is not None):  # representative is seed sequence
@@ -197,7 +197,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, xopen(s
                             else:
                                 print(f'detected additional seed type! UniRef90-id={uniref90_id}, seed-type={seed_db_type}, seed-id={seed_db_id}')
                             break
-                    member_dbref.clear()    
+                    member_dbref.clear()
         i += 1
         if((i % 1_000_000) == 0):
             conn.commit()

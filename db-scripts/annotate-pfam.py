@@ -2,6 +2,7 @@ import argparse
 import logging
 import re
 import sqlite3
+
 from pathlib import Path
 
 
@@ -54,7 +55,7 @@ best_hits = {}
 with hmm_result_path.open() as fh:
     for line in fh:
         if(line[0] != '#'):
-            cols = re.split('\s+', line.strip(), maxsplit=18)
+            cols = re.split(r'\s+', line.strip(), maxsplit=18)
             psc_id = cols[0]
             psc_ids.add(psc_id)
             pfam_acc = cols[3]

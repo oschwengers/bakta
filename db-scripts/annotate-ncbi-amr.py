@@ -2,6 +2,7 @@ import argparse
 import logging
 import re
 import sqlite3
+
 from pathlib import Path
 
 
@@ -98,7 +99,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     with hmms_path.open() as fh:
         for line in fh:
             (
-                family_id, parent_family_id, gene_symbol, hmm_id, hmm_tc1, hmm_tc2, 
+                family_id, parent_family_id, gene_symbol, hmm_id, hmm_tc1, hmm_tc2,
                 blastrule_complete_ident, blastrule_complete_wp_coverage, blastrule_complete_br_coverage, blastrule_partial_ident, blastrule_partial_wp_coverage, blastrule_partial_br_coverage,
                 reportable, family_type, family_subtype, family_class, family_subclass, product_name
             ) = line.split('\t')

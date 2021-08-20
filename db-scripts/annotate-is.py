@@ -1,6 +1,7 @@
 import argparse
 import logging
 import sqlite3
+
 from pathlib import Path
 
 
@@ -85,7 +86,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     conn.execute('UPDATE psc SET gene=?, product=? WHERE uniref90_id=?', (gene, product, uniref90_id))
                     log_psc.info('UPDATE psc SET gene=%s, product=%s WHERE uniref90_id=%s', gene, product, uniref90_id)
                     psc_updated += 1
-            psc_processed +=1
+            psc_processed += 1
             if((psc_processed % 10000) == 0):
                 conn.commit()
                 print(f'\t... {psc_processed}')

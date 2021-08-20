@@ -3,8 +3,10 @@ import argparse
 import logging
 import hashlib
 import sqlite3
-from Bio import SeqIO
+
 from pathlib import Path
+
+from Bio import SeqIO
 
 
 parser = argparse.ArgumentParser(

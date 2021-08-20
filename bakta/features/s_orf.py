@@ -1,9 +1,9 @@
-
+import concurrent.futures as cf
 import logging
 import math
 import subprocess as sp
+
 from collections import OrderedDict
-import concurrent.futures as cf
 
 from Bio.Seq import Seq
 
@@ -12,6 +12,7 @@ import bakta.constants as bc
 import bakta.utils as bu
 import bakta.psc as psc
 import bakta.so as so
+
 
 log = logging.getLogger('S_ORF')
 
@@ -42,7 +43,7 @@ def extract(genome):
                         dna_start = aa_start * 3 + frame + 1
                         dna_stop = aa_end * 3 + 2 + frame + 1
                         nt = str(seq[dna_start - 1:dna_stop])
-                        
+
                         sorf = OrderedDict()
                         sorf['type'] = bc.FEATURE_SORF
                         sorf['contig'] = contig['id']
@@ -57,7 +58,7 @@ def extract(genome):
                         sorf['nt'] = nt
                         sorf['aa_digest'] = aa_digest
                         sorf['aa_hexdigest'] = aa_hexdigest
-                        
+
                         orfs.append(sorf)
                         log.debug(
                             'contig=%s, start=%i, stop=%i, strand=%s, frame=%i, aa-length=%i, aa=%s, nt=[%s..%s]',
@@ -140,7 +141,7 @@ def overlap_filter(genome, orfs_raw):
         for f in futures:
             for sorf_key in [sk for sk in f.result() if sk is not None]:
                 discarded_sorf_keys.add(sorf_key)
-    
+
     valid_sorfs = []
     discarded_sorfs = []
     for sorfs in sorfs_per_contig.values():
@@ -200,7 +201,7 @@ def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_cr
                         # out-frame sorf partially overlapping CDS downstream
                         # ToDo: add max overlap threshold
                         continue
-                    
+
         # filter rRNA overlapping ORFs
         for r_rna in contig_r_rnas:
             # log.debug('filter short ORFs by rRNA: %s[%i->%i]', r_rna['strand'], r_rna['start'], r_rna['stop'])
@@ -236,7 +237,7 @@ def annotation_filter(sorfs):
     for sorf in sorfs:
         gene = None
         product = None
-        
+
         ips = sorf.get('ips', None)
         if(ips is not None):
             tmp = ips.get('gene', '')
@@ -245,7 +246,7 @@ def annotation_filter(sorfs):
             tmp = ips.get('product', '')
             if(tmp != ''):
                 product = tmp
-        
+
         psc = sorf.get('psc', None)
         if(psc is not None):
             tmp = psc.get('gene', '')
@@ -259,9 +260,9 @@ def annotation_filter(sorfs):
             sorf['hypothetical'] = True
         else:
             valid_sorfs.append(sorf)
-    
+
     return valid_sorfs
-    
+
 
 def search_pscs(sorfs):
     """Conduct homology search of sORFs against sORF db."""

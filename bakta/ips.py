@@ -1,10 +1,11 @@
-
 import logging
-from concurrent.futures import ThreadPoolExecutor
 import sqlite3
+
+from concurrent.futures import ThreadPoolExecutor
 
 import bakta.config as cfg
 import bakta.constants as bc
+
 
 ############################################################################
 # IPS DB columns
@@ -15,6 +16,7 @@ DB_IPS_COL_GENE = 'gene'
 DB_IPS_COL_PRODUCT = 'product'
 DB_IPS_COL_EC = 'ec_ids'
 DB_IPS_COL_GO = 'go_ids'
+
 
 log = logging.getLogger('IPS')
 
@@ -39,7 +41,7 @@ def lookup(features):
                             features_not_found.append(feature)
                     else:
                         features_not_found.append(feature)
-        
+
         for (feature, future) in rec_futures:
             rec = future.result()
             if(rec is not None):
@@ -103,6 +105,6 @@ def parse_annotation(rec):
                 db_xrefs.append(go_id)
         if(len(go_ids) != 0):
             ips[DB_IPS_COL_GO] = go_ids
-    
+
     ips['db_xrefs'] = db_xrefs
     return ips

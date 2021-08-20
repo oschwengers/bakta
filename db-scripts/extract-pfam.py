@@ -1,6 +1,8 @@
 import argparse
 import logging
+
 from pathlib import Path
+
 from xopen import xopen
 
 

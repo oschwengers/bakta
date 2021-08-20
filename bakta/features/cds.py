@@ -1,7 +1,7 @@
-
 import logging
 import re
 import subprocess as sp
+
 from collections import OrderedDict
 
 from Bio import SeqIO
@@ -9,9 +9,10 @@ from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.io.fasta as fasta
 import bakta.utils as bu
 import bakta.so as so
-import bakta.io.fasta as fasta
+
 
 log = logging.getLogger('CDS')
 
@@ -47,7 +48,7 @@ def predict(genome, sequences_path):
         cds = parse_prodigal_output(genome, sequences, gff_contigs_path, proteins_contigs_path)
         log.info('contig cds: predicted=%i', len(cds))
         cdss.extend(cds)
-    
+
     # execute prodigal for complete replicons (chromosomes/plasmids)
     replicons_path = cfg.tmp_path.joinpath('replicons.fasta')
     replicons = [c for c in genome['contigs'] if c['complete']]
@@ -61,7 +62,7 @@ def predict(genome, sequences_path):
         cds = parse_prodigal_output(genome, sequences, gff_replicons_path, proteins_replicons_path)
         log.info('replicon cds: predicted=%i', len(cds))
         cdss.extend(cds)
-    
+
     log.info('predicted=%i', len(cdss))
     return cdss
 
@@ -134,12 +135,12 @@ def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
                 cds['start_type'] = gff_annotations['start_type']
                 cds['rbs_motif'] = gff_annotations['rbs_motif']
                 cds['db_xrefs'] = [so.SO_CDS.id]
-                
+
                 if(cds['strand'] == bc.STRAND_FORWARD):
                     cds['frame'] = (cds['start'] - 1) % 3 + 1
                 else:
                     cds['frame'] = (sequences[cds['contig']]['length'] - cds['stop']) % 3 + 1
-                
+
                 if(gff_annotations['partial'] == '10'):
                     cds['truncated'] = bc.FEATURE_END_5_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_3_PRIME
                     partial_cdss_per_record[f"{cds['contig']}_{contig_orf_id}"] = cds
@@ -150,7 +151,7 @@ def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
                     partial_cdss_per_contig[cds['contig']].append(cds)
                 else:
                     cdss[f"{cds['contig']}_{contig_orf_id}"] = cds
-                
+
                 log.info(
                     'contig=%s, start=%i, stop=%i, strand=%s, frame=%s, truncated=%s, start-type=%s, RBS-motif=%s',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame'], cds.get('truncated', 'no'), cds['start_type'], cds['rbs_motif']
@@ -202,7 +203,7 @@ def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
 
                 cds['edge'] = True  # mark CDS as edge feature
                 cds.pop('truncated')
-                
+
                 cds['aa'] = aa
                 cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
                 cdss.append(cds)
@@ -217,7 +218,6 @@ def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
                 'truncated CDS: contig=%s, start=%i, stop=%i, strand=%s, frame=%s, truncated=%s, start-type=%s, RBS-motif=%s, aa-hexdigest=%s, aa=[%s..%s]',
                 partial_cds['contig'], partial_cds['start'], partial_cds['stop'], partial_cds['strand'], partial_cds['frame'], partial_cds['truncated'], partial_cds['start_type'], partial_cds['rbs_motif'], partial_cds['aa_hexdigest'], partial_cds['aa'][:10], partial_cds['aa'][-10:]
             )
-    
 
     contigs = {c['id']: c for c in genome['contigs']}
     for cds in cdss:  # extract nt sequences
@@ -249,7 +249,7 @@ def predict_pfam(cdss):
     with fasta_path.open(mode='w') as fh:
         for cds in cdss:
             fh.write(f">{cds['aa_hexdigest']}\n{cds['aa']}\n")
-    
+
     output_path = cfg.tmp_path.joinpath('cds.pfam.hmm.tsv')
     cmd = [
         'hmmsearch',
@@ -280,16 +280,16 @@ def predict_pfam(cdss):
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
-                cols = re.split('\s+', line.strip())
+                cols = re.split(r'\s+', line.strip())
                 aa_hexdigest = cols[0]
                 cds = orf_by_aa_digest[aa_hexdigest]
-                
+
                 pfam = OrderedDict()
                 pfam['id'] = cols[3]
                 pfam['name'] = cols[2]
                 pfam['evalue'] = float(cols[4])
                 pfam['score'] = float(cols[5])
-                
+
                 if('pfams' not in cds):
                     cds['pfams'] = []
                 cds['pfams'].append(pfam)

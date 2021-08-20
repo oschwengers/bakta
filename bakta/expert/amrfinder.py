@@ -12,12 +12,12 @@ def search(cdss, cds_fasta_path):
     amrfinder_output_path = cfg.tmp_path.joinpath('amrfinder.tsv')
     amrfinderplus_db_path = cfg.db_path.joinpath('amrfinderplus-db')
     amrfinderplus_db_latest_path = amrfinderplus_db_path.joinpath('latest')
-    
+
     amrfinderplus_tmp_path = cfg.tmp_path.joinpath('amrfinderplus')
     amrfinderplus_tmp_path.mkdir()
     env = cfg.env.copy()
     env['TMPDIR'] = str(amrfinderplus_tmp_path)
-    
+
     cmd = [
         'amrfinder',
         '--database', str(amrfinderplus_db_latest_path),
@@ -46,8 +46,10 @@ def search(cdss, cds_fasta_path):
     with amrfinder_output_path.open() as fh:
         for line in fh:
             if(line[:7] != 'Protein'):
-                (aa_identifier, gene, product, scope, element_type, element_subtype, clazz, subclass, method, target_length, reference_sequence_length,
-                cov_ref_seq, ident_ref_seq, alignment_length, accession_closest_seq, name_closest_seq, hmm_id, hmm_description) = line.split('\t')
+                (
+                    aa_identifier, gene, product, scope, element_type, element_subtype, clazz, subclass, method, target_length, reference_sequence_length,
+                    cov_ref_seq, ident_ref_seq, alignment_length, accession_closest_seq, name_closest_seq, hmm_id, hmm_description
+                ) = line.split('\t')
                 cds = cds_by_hexdigest[aa_identifier]
                 query_cov = int(alignment_length) / len(cds['aa'])
                 model_cov = float(cov_ref_seq) / 100

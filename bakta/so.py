@@ -1,6 +1,8 @@
 from collections import namedtuple
 
+
 SO = namedtuple('SO', ['name', 'id'])
+
 
 SO_REPLICON = SO('replicon', 'SO:0001235')
 SO_REPLICON_CHROMOSOME = SO('chromosome', 'SO:0000340')
