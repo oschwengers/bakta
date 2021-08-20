@@ -16,4 +16,4 @@ dependencies:
   - hmmer>=3.3.1
   - diamond>=2.0.11
   - blast>=2.7.1
-  - ncbi-amrfinderplus>=3.10.1
+  - ncbi-amrfinderplus>=3.10.14
