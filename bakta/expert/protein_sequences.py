@@ -64,8 +64,8 @@ def search(cdss, cds_fasta_path):
                     'rank': rank,
                     'gene': gene if gene != '' else None,
                     'product': product,
-                    'query-cov': query_cov,
-                    'model-cov': model_cov,
+                    'query_cov': query_cov,
+                    'model_cov': model_cov,
                     'identity': identity,
                     'evalue': evalue,
                     'bitscore': bitscore
@@ -75,7 +75,7 @@ def search(cdss, cds_fasta_path):
                     expert_hit['db_xrefs'] = dbxrefs
                 if('expert' not in cds):
                     cds['expert'] = {}
-                cds['expert']['aa-seq'] = expert_hit
+                cds['expert']['aa_seq'] = expert_hit
                 log.debug(
                     'hit: contig=%s, start=%i, stop=%i, strand=%s, system=%s, rank=%i, query-cov=%0.3f, model-cov=%0.3f, identity=%0.3f, gene=%s, product=%s, evalue=%1.1e, bitscore=%f',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], expert_system, rank, query_cov, model_cov, identity, gene, product, evalue, bitscore

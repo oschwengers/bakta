@@ -68,7 +68,7 @@ def search(cdss, cds_fasta_path):
             if(query_cov >= bc.MIN_PSC_COVERAGE and identity >= bc.MIN_PSCC_IDENTITY):
                 cds['psc'] = {
                     DB_PSC_COL_UNIREF90: cluster_id,
-                    'query-cov': query_cov,
+                    'query_cov': query_cov,
                     'identity': identity,
                     'valid': identity >= bc.MIN_PSC_IDENTITY
                 }

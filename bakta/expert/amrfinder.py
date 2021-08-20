@@ -57,8 +57,8 @@ def search(cdss, cds_fasta_path):
                     'rank': 95,
                     'gene': gene if gene != '' else None,
                     'product': product,
-                    'query-cov': query_cov,
-                    'model-cov': model_cov,
+                    'query_cov': query_cov,
+                    'model_cov': model_cov,
                     'identity': identity
                 }
                 if('expert' not in cds):
