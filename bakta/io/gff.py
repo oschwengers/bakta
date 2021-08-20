@@ -50,7 +50,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'ID': feat['locus'],
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
-                        'product': encode_attribute(feat['product']),
+                        'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
                     if(feat.get('gene', None)):  # add gene annotation if available
@@ -81,7 +81,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
                         'gene': feat['gene'],
-                        'product': encode_attribute(feat['product']),
+                        'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
                     if(cfg.compliant):
@@ -104,7 +104,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
                         'gene': feat['gene'],
-                        'product': encode_attribute(feat['product']),
+                        'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
                     if(cfg.compliant):
@@ -133,7 +133,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
                         'gene': feat['gene'],
-                        'product': encode_attribute(feat['product']),
+                        'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
                     if(cfg.compliant):
@@ -158,7 +158,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     annotations = {
                         'ID': feature_id_counter,
                         'Name': feat['product'],
-                        'product': encode_attribute(feat['product']),
+                        'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
                     if(cfg.compliant):
@@ -172,7 +172,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'ID': feat['locus'],
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
-                        'product': encode_attribute(feat['product'])
+                        'product': feat['product']
                     }
                     if(cfg.compliant):
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
@@ -183,7 +183,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'ID': feat['locus'],
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
-                        'product': encode_attribute(feat['product']),
+                        'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
                     if(feat.get('gene', None)):  # add gene annotation if available
@@ -212,7 +212,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'ID': feat['locus'],
                         'Name': feat['product'],
                         'locus_tag': feat['locus'],
-                        'product': encode_attribute(feat['product']),
+                        'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
                     if(feat.get('gene', None)):  # add gene annotation if available
