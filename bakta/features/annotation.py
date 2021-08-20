@@ -371,7 +371,7 @@ def revise_cds_product(feature):
     old_product = product
     if('.' in product):  # remove periods
         product = product.replace('.', '')
-        log.info('fix product: replace trailing period. new=%s, old=%s', product, old_product)
+        log.info('fix product: replace periods. new=%s, old=%s', product, old_product)
 
     old_product = product
     if('=' in product):  # remove equal chars
