@@ -37,16 +37,12 @@ def extract(genome):
                 while aa_start > -1 and aa_end > -1:
                     orf_length = aa_end - aa_start
                     if(orf_length >= bc.MIN_SORF_LENGTH and orf_length < bc.MAX_SORF_LENGTH):  # get all CDS starts (M)
-                        if(strand == bc.STRAND_FORWARD):
-                            dna_start = aa_start * 3 + frame + 1  # +1: 0 based idx to 1 based
-                            dna_stop = aa_end * 3 + 2 + frame + 1
-                        else:
-                            dna_start = len(seq) - frame - (aa_end + 1) * 3 + 1
-                            dna_stop = len(seq) - frame - aa_start * 3
-                        nt = str(seq[dna_start - 1:dna_stop])
                         aa = aa_seq[aa_start:aa_end]
                         (aa_digest, aa_hexdigest) = bu.calc_aa_hash(aa)
-
+                        dna_start = aa_start * 3 + frame + 1
+                        dna_stop = aa_end * 3 + 2 + frame + 1
+                        nt = str(seq[dna_start - 1:dna_stop])
+                        
                         sorf = OrderedDict()
                         sorf['type'] = bc.FEATURE_SORF
                         sorf['contig'] = contig['id']
