@@ -75,6 +75,13 @@ def combine_annotation(feature):
         feature['product'] = bc.HYPOTHETICAL_PROTEIN
         feature['hypothetical'] = True
     
+    if(gene and feature.get('hypothetical', False)):
+        feature['gene'] = None
+        log.info(
+            'remove gene symbol of hypothetical protein: contig=%s, start=%i, stop=%i, strand=%s, gene=%s',
+            feature['contig'], feature['start'], feature['stop'], feature['strand'], gene
+        )
+    
     feature['db_xrefs'] = sorted(list(db_xrefs))
 
 
