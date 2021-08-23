@@ -174,10 +174,15 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'locus_tag': feat['locus'],
                         'product': feat['product']
                     }
+                    feat_type = so.SO_CRISPR.name
                     if(cfg.compliant):
+                        feat_type = bc.INSDC_FEATURE_REPEAT_REGION
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
+                        annotations[bc.INSDC_FEATURE_REPEAT_FAMILY] = 'CRISPR'
+                        annotations[bc.INSDC_FEATURE_REPEAT_TYPE] = 'direct'
+                        annotations[bc.INSDC_FEATURE_REPEAT_UNIT_SEQ] = feat['repeat_consensus']
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\tPILER-CR\t{so.SO_CRISPR.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{feat['contig']}\tPILER-CR\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_CDS):
                     annotations = {
                         'ID': feat['locus'],
