@@ -14,7 +14,7 @@ authors:
     given-names: Alexander
     orcid: https://orcid.org/0000-0002-7086-2568
 title: "Bakta: Rapid & standardized annotation of bacterial genomes & plasmids"
-version: 1.0.4
+version: 1.1
 keywords: 
   - bioinformatics
   - "genome-annotation"
