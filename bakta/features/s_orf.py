@@ -269,7 +269,7 @@ def search_pscs(sorfs):
     sorf_fasta_path = cfg.tmp_path.joinpath('sorf.faa')
     with sorf_fasta_path.open(mode='w') as fh:
         for sorf in sorfs:
-            fh.write(f">{sorf['aa_hexdigest']}\n{sorf['aa']}\n")
+            fh.write(f">{sorf['aa_hexdigest']}-{sorf['contig']}-{sorf['start']}\n{sorf['aa']}\n")
     diamond_output_path = cfg.tmp_path.joinpath('diamond.sorf.tsv')
     diamond_db_path = cfg.db_path.joinpath('sorf.dmnd')
     cmd = [
@@ -302,7 +302,7 @@ def search_pscs(sorfs):
         log.warning('sORF failed! diamond-error-code=%d', proc.returncode)
         raise Exception(f'diamond error! error code: {proc.returncode}')
 
-    sorf_by_aa_digest = {sorf['aa_hexdigest']: sorf for sorf in sorfs}
+    sorf_by_aa_digest = {f"{sorf['aa_hexdigest']}-{sorf['contig']}-{sorf['start']}": sorf for sorf in sorfs}
     with diamond_output_path.open() as fh:
         for line in fh:
             (sorf_hash, cluster_id, identity, alignment_length, align_mismatches,
