@@ -238,7 +238,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                                 annotations['ec_number'] = note
                         annotations['Note'] = [note for note in annotations['Note'] if bc.DB_XREF_EC not in note]
                         gene_annotations = encode_annotations(gene_annotations)
-                        fh.write(f"{feat['contig']}\tProdigal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
+                        fh.write(f"{feat['contig']}\tBakta\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tBakta\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_GAP):
