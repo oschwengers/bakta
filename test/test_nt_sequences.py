@@ -54,4 +54,3 @@ def test_bakta_sorf_nt_sequence(tmpdir):
 
     for feat in results['features']:
         assert feat['nt'] == sorf
-

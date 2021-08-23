@@ -63,7 +63,7 @@ def test_bakta_genome(tmpdir):
 
     output_path = tmpdir_path.joinpath('test.tsv')
     feature_count, feature_counts = count_features(output_path)
-    assert feature_count == 5550
+    assert feature_count == 5551
     feature_counts_expected = {
         'tRNA': 107,
         'tmRNA': 1,
@@ -71,7 +71,7 @@ def test_bakta_genome(tmpdir):
         'ncRNA': 57,
         'ncRNA-region': 1,
         'crispr': 1,
-        'sorf': 1,
+        'sorf': 2,
         'oriV': 0,
         'oriC': 0,
         'oriT': 0,
