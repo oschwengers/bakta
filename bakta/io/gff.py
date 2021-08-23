@@ -275,10 +275,11 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tBLAST+\t{so.SO_ORIT.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
 
-        fh.write('##FASTA\n')
-        for contig in genome['contigs']:  # write sequences
-            fh.write(f">{contig['id']}\n")
-            fh.write(fasta.wrap_sequence(contig['sequence']))
+        if(not cfg.compliant):
+            fh.write('##FASTA\n')
+            for contig in genome['contigs']:  # write sequences
+                fh.write(f">{contig['id']}\n")
+                fh.write(fasta.wrap_sequence(contig['sequence']))
 
     return
 
