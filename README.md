@@ -19,6 +19,7 @@ Bakta is a tool for the rapid & standardized annotation of bacterial genomes & p
 - [Usage](#usage)
 - [Annotation Workflow](#annotation-workflow)
 - [Database](#database)
+- [Genome Submission](#genome-submission)
 - [Citation](#citation)
 - [FAQ](#faq)
 - [Issues & Feature Requests](#issues-and-feature-requests)
@@ -48,7 +49,7 @@ To provide high quality annotations for certain proteins of higher interest, *e.
 Bakta annotates ncRNA cis-regulatory regions, oriC/oriV/oriT and assembly gaps as well as standard feature types: tRNA, tmRNA, rRNA, ncRNA genes, CRISPR, CDS.
 
 - **GFF3 & INSDC conform annotations**
-Bakta writes GFF3 and INSDC-compliant (Genbank & EMBL) annotation files ready for submission (checked via [GenomeTools GFF3Validator](http://genometools.org/cgi-bin/gff3validator.cgi) and [ENA Webin-CLI](https://github.com/enasequence/webin-cli) for GFF3 and EMBL file formats, respectively for representative genomes of all ESKAPE species).
+Bakta writes GFF3 and INSDC-compliant (Genbank & EMBL) annotation files ready for submission (checked via [GenomeTools GFF3Validator](http://genometools.org/cgi-bin/gff3validator.cgi), [table2asn_GFF](https://www.ncbi.nlm.nih.gov/genbank/genomes_gff/#run) and [ENA Webin-CLI](https://github.com/enasequence/webin-cli) for GFF3 and EMBL file formats, respectively for representative genomes of all ESKAPE species).
 
 - **Reasoning**
 By annotating bacterial genomes in a standardized, taxon-independent, high-throughput and local manner, Bakta aims at a well-balanced tradeoff between fully-featured but computationally demanding pipelines like [PGAP](https://github.com/ncbi/pgap) and rapid highly-customizable offline tools like [Prokka](https://github.com/tseemann/prokka). Indeed, Bakta is heavily inspired by Prokka (kudos to [Torsten Seemann](https://github.com/tseemann)) and many command line options are compatible for the sake of interoperability and user convenience. Hence, if Bakta does not fit your needs, please try Prokka.
@@ -303,7 +304,7 @@ positional arguments:
 Input / Output:
   --db DB, -d DB        Database path (default = <bakta_path>/db). Can also be provided as BAKTA_DB environment variable.
   --min-contig-length MIN_CONTIG_LENGTH, -m MIN_CONTIG_LENGTH
-                        Minimum contig size (default = 1)
+                        Minimum contig size (default = 1; 200 in compliant mode)
   --prefix PREFIX, -p PREFIX
                         Prefix for output files
   --output OUTPUT, -o OUTPUT
@@ -467,6 +468,70 @@ Rfam covariance models:
 To provide FAIR annotations, the database releases are SemVer versioned (w/o patch level), *i.e.* `<major>.<minor>`. For each version we provide a comprehensive log file tracking all imported sequences as well as annotations thereof. The db schema is represented by the `<major>` digit and automatically checked at runtime by Bakta in order to ensure compatibility. Content updates are tracked by the `<minor>` digit.
 
 All database releases (latest 3.0, 28 Gb zipped, 53 Gb unzipped) are hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
+
+## Genome Submission
+
+Most genomes annotated with Bakta should be ready-to-submid to INSDC member databases GenBank and ENA. As a first step, please register your BioProject (e.g. PRJNA123456) and your locus_tag prefix (*e.g.* ESAKAI).
+
+```bash
+# annotate your genome in `--compliant` mode:
+$ bakta --db <db-path> -v --genus Escherichia --species "coli O157:H7" --strain Sakai --complete --compliant --locus-tag ESAKAI test/data/GCF_000008865.2.fna.gz
+```
+
+### GenBank
+
+Genomes are submitted to GenBank via Fasta (`.fna`) and SQN files. Therefore, `.sqn` files can be created via `.gff3` files and NCBI's new [table2asn_GFF](https://www.ncbi.nlm.nih.gov/genbank/genomes_gff) tool.
+Please have all additional files (template.txt) prepared:
+
+```bash
+# download table2asn_GFF for Linux
+$ wget https://ftp.ncbi.nih.gov/toolbox/ncbi_tools/converters/by_program/table2asn_GFF/linux64.table2asn_GFF.gz
+$ gunzip linux64.table2asn_GFF.gz
+
+# or MacOS
+$ https://ftp.ncbi.nih.gov/toolbox/ncbi_tools/converters/by_program/table2asn_GFF/mac.table2asn_GFF.gz
+$ gunzip mac.table2asn_GFF.gz
+$ chmod 755 linux64.table2asn_GFF.gz mac.table2asn_GFF.gz
+
+# create the SQN file:
+# linux64.table2asn_GFF -M n -J -c w -t <TEMPLATE> -V vbt -l paired-ends -i <FASTA> -f <GFF3> -o <OUTPUT> -Z
+$ linux64.table2asn_GFF -M n -J -c w -t template.txt -V vbt -l paired-ends -i GCF_000008865.2.fna -f GCF_000008865.2.gff3 -o GCF_000008865.2.sqn -Z
+```
+
+### ENA
+
+Genomes are submitted to ENA as EMBL (`.embl`) files via EBI's [Webin-CLI](https://ena-docs.readthedocs.io/en/latest/submit/general-guide/webin-cli.html) tool.
+Please have all additional files (manifest.tsv, chrom-list.tsv) prepared as described [here](https://ena-docs.readthedocs.io/en/latest/submit/fileprep/assembly.html#flat-file).
+
+```bash
+# download ENA Webin-CLI
+$ wget https://github.com/enasequence/webin-cli/releases/download/v4.0.0/webin-cli-4.0.0.jar
+
+$ gzip -k GCF_000008865.2.embl
+$gzip -k chrom-list.tsv
+$ java -jar webin-cli-4.0.0.jar -submit -userName=<EMAIL> -password <PWD> -context genome -manifest manifest.tsv
+```
+
+Exemplarey manifest.tsv and chrom-list.tsv files might look like:
+
+```bash
+$ cat chrom-list.tsv
+STUDY    PRJEB44484
+SAMPLE    ERS6291240
+ASSEMBLYNAME    GCF
+ASSEMBLY_TYPE    isolate
+COVERAGE    100
+PROGRAM    SPAdes
+PLATFORM    Illumina
+MOLECULETYPE    genomic DNA
+FLATFILE    GCF_000008865.2.embl.gz
+CHROMOSOME_LIST    chrom-list.tsv.gz
+
+$ cat chrom-list.tsv
+contig_1    contig_1    circular-chromosome
+contig_2    contig_2    circular-plasmid
+contig_3    contig_3    circular-plasmid
+```
 
 ## Citation
 
