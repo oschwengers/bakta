@@ -148,8 +148,6 @@ def setup(args):
         genus = genus.capitalize()
     log.info('genus=%s', genus)
     species = args.species
-    if(species):
-        species = species.lower()
     log.info('species=%s', species)
     strain = args.strain
     log.info('strain=%s', strain)
