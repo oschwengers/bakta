@@ -154,7 +154,8 @@ def main():
     group_runtime.add_argument('--version', '-V', action='version', version=f'%(prog)s {bakta.__version__}')
 
     subparsers = parser.add_subparsers(dest='subcommand', help='sub-command help')
-    subparsers.add_parser('list', help='List available database versions')  # add list sub-command options
+    parser_list = subparsers.add_parser('list', help='List available database versions')  # add list sub-command options
+    parser_list.add_argument('--all', action='store_true', help='Show all versions including incompatible')
 
     parser_download = subparsers.add_parser('download', help='Download a database')  # add download sub-command options
     parser_download.add_argument('--output', '-o', action='store', default=Path.cwd(), help='output directory (default = current working directory)')
@@ -166,7 +167,11 @@ def main():
 
     args = parser.parse_args()
     if(args.subcommand == 'list'):
+        print(f'Required database schema version: {bakta.__db_schema_version__}\n')
         versions = fetch_db_versions()
+        if(not args.all):
+            versions = [v for v in versions if v['major'] == bakta.__db_schema_version__]
+
         print('Available DB versions:')
         for v in sorted(versions, key=lambda v: (v['major'], v['minor'])):
             print(f"{v['major']}.{v['minor']}\t{v['date']}\t{v['doi']}")
