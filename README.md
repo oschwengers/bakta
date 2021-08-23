@@ -494,7 +494,6 @@ $ gunzip mac.table2asn_GFF.gz
 $ chmod 755 linux64.table2asn_GFF.gz mac.table2asn_GFF.gz
 
 # create the SQN file:
-# linux64.table2asn_GFF -M n -J -c w -t <TEMPLATE> -V vbt -l paired-ends -i <FASTA> -f <GFF3> -o <OUTPUT> -Z
 $ linux64.table2asn_GFF -M n -J -c w -t template.txt -V vbt -l paired-ends -i GCF_000008865.2.fna -f GCF_000008865.2.gff3 -o GCF_000008865.2.sqn -Z
 ```
 
