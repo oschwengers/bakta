@@ -507,7 +507,7 @@ Please have all additional files (manifest.tsv, chrom-list.tsv) prepared as desc
 $ wget https://github.com/enasequence/webin-cli/releases/download/v4.0.0/webin-cli-4.0.0.jar
 
 $ gzip -k GCF_000008865.2.embl
-$gzip -k chrom-list.tsv
+$ gzip -k chrom-list.tsv
 $ java -jar webin-cli-4.0.0.jar -submit -userName=<EMAIL> -password <PWD> -context genome -manifest manifest.tsv
 ```
 
