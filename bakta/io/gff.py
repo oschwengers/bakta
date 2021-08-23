@@ -206,7 +206,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         for note in annotations['Note']:
                             if(bc.DB_XREF_EC in note):
-                                annotations['ec_number'] = note
+                                annotations['ec_number'] = note.replace('EC:', '')
                         annotations['Note'] = [note for note in annotations['Note'] if bc.DB_XREF_EC not in note]
                         gene_annotations = encode_annotations(gene_annotations)
                         fh.write(f"{feat['contig']}\tProdigal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
@@ -235,7 +235,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         for note in annotations['Note']:
                             if(bc.DB_XREF_EC in note):
-                                annotations['ec_number'] = note
+                                annotations['ec_number'] = note.replace('EC:', '')
                         annotations['Note'] = [note for note in annotations['Note'] if bc.DB_XREF_EC not in note]
                         gene_annotations = encode_annotations(gene_annotations)
                         fh.write(f"{feat['contig']}\tBakta\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")

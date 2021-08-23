@@ -135,7 +135,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 if(cfg.compliant):
                     for note in qualifiers['note']:  # move EC numbers from note to EC_number
                         if(bc.DB_XREF_EC in note):
-                            qualifiers['EC_number'] = note
+                            qualifiers['EC_number'] = note.replace('EC:', '')
                     qualifiers['note'] = [note for note in qualifiers['note'] if bc.DB_XREF_EC not in note]
             elif(feature['type'] == bc.FEATURE_T_RNA):
                 # TODO: Position anticodon
