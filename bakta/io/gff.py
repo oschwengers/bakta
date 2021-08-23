@@ -273,7 +273,8 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'product': 'oriT'
                     }
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\tBLAST+\t{so.SO_ORIT.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    feat_type = bc.INSDC_FEATURE_ORIGIN_TRANSFER if cfg.compliant else so.SO_ORIT.name
+                    fh.write(f"{feat['contig']}\tBLAST+\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
 
         if(not cfg.compliant):
             fh.write('##FASTA\n')
