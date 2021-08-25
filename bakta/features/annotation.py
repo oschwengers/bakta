@@ -10,13 +10,19 @@ import bakta.io.insdc as insdc
 log = logging.getLogger('ANNOTATION')
 
 
-RE_CONTIG = re.compile(r'\s+contig\s*', flags=re.IGNORECASE)
-RE_HOMOLOG = re.compile(r'\shomolog(?: (\d+))?', flags=re.IGNORECASE)
-RE_PUTATIVE = re.compile(r'(potential|possible|probable|predicted)', flags=re.IGNORECASE)
 RE_MULTIWHITESPACE = re.compile(r'\s{2,}')
-RE_NODE = re.compile(r'NODE_', flags=re.IGNORECASE)
-RE_POTENTIAL_CONTIG_NAME = re.compile(r'(genome|shotgun)', flags=re.IGNORECASE)
-RE_NO_LETTERS = re.compile(r'[^A-Za-z]')
+
+RE_PROTEIN_CONTIG = re.compile(r'\s+contig\s*', flags=re.IGNORECASE)
+RE_PROTEIN_HOMOLOG = re.compile(r'\shomolog(?: (\d+))?', flags=re.IGNORECASE)
+RE_PROTEIN_PUTATIVE = re.compile(r'(potential|possible|probable|predicted)', flags=re.IGNORECASE)
+RE_PROTEIN_NODE = re.compile(r'NODE_', flags=re.IGNORECASE)
+RE_PROTEIN_POTENTIAL_CONTIG_NAME = re.compile(r'(genome|shotgun)', flags=re.IGNORECASE)
+RE_PROTEIN_NO_LETTERS = re.compile(r'[^A-Za-z]')
+RE_PROTEIN_SYMBOL = re.compile(r'[A-Z][a-z]{2}[A-Z][0-9]?')
+
+RE_GENE_CAPITALIZED = re.compile(r'^[A-Z].+', flags=re.DOTALL)
+RE_GENE_SUSPECT_CHARS = re.compile(r'[\?]', flags=re.DOTALL)
+RE_GENE_SYMBOL = re.compile(r'[a-z]{3}[A-Z][?:0-9]+')
 
 
 def combine_annotation(feature):
@@ -73,8 +79,9 @@ def combine_annotation(feature):
                         db_xrefs.add(expert_db_xref)
                 rank = expert_rank
 
+    feature['gene'] = gene
     if(gene):
-        feature['gene'] = gene
+        revise_cds_gene_symbol(feature)
 
     if(product):
         feature['product'] = product
@@ -364,6 +371,69 @@ def calc_sorf_annotation_score(sorf):
     return score
 
 
+def revise_cds_gene_symbol(feature):
+    raw_gene = feature.get('gene', '')
+
+    raw_genes = raw_gene.replace('/', ',').split(',')  # replace slashes and split raw genes
+
+    revised_genes = []
+    for gene in raw_genes:
+        old_gene = gene
+        if(RE_GENE_SUSPECT_CHARS.search(gene)):  # check for suspect characters -> remove gene symbol
+            log.info('fix gene: remove gene symbol containing suspect chars. old=%s', old_gene)
+            continue
+
+        old_gene = gene
+        if('gene' in gene):  # remove gene literal
+            gene = gene.replace('gene', '')
+            log.info('fix gene: remove gene literal. new=%s, old=%s', gene, old_gene)
+
+        old_gene = gene
+        if(gene[-1] == '-'):  # remove orphan hyphen
+            gene = gene[:-1]
+            log.info('fix gene: remove orphan hypen. new=%s, old=%s', gene, old_gene)
+        
+        old_gene = gene
+        if(RE_MULTIWHITESPACE.search(gene)):  # squeeze multiple whitespaces
+            gene = RE_MULTIWHITESPACE.sub(' ', gene)
+            log.info('fix gene: squeeze multiple whitespaces. new=%s, old=%s', gene, old_gene)
+
+        old_gene = gene
+        gene = gene.strip()  # trim leading/trailing whitespaces
+        if(gene != old_gene):
+            log.info('fix gene: trim leading/trailing whitespace. new=%s, old=%s', gene, old_gene)
+
+        old_gene = gene
+        if(RE_GENE_CAPITALIZED.fullmatch(gene)):  # TODO lowercase first character
+            gene = gene[0].lower() + gene[1:]
+            log.info('fix gene: lowercase first char. new=%s, old=%s', gene, old_gene)
+
+        if(len(gene) >= 3):
+            if(len(gene) <= 12):
+                revised_genes.append(gene)
+            else:
+                old_gene = gene
+                for part in gene.split(' '):  # try to extract valid gene symbols
+                    m = RE_GENE_SYMBOL.fullmatch(part)
+                    if(m):
+                        symbol = m[0]
+                        revised_genes.append(symbol)
+                        log.info('fix gene: extract symbol from protein name. new=%s, old=%s', symbol, old_gene)
+                    else:
+                        m = RE_PROTEIN_SYMBOL.fullmatch(part)  # extract protein names
+                        if(m):
+                            symbol = m[0]
+                            symbol = symbol[0].lower() + symbol[1:]
+                            revised_genes.append()                        
+
+    if(len(revised_genes) == 0):
+        feature['gene'] =  None
+    elif(len(revised_genes) == 1):
+        feature['gene'] = revised_genes[0]
+    else:
+        feature['gene'] = ','.join(revised_genes)
+
+
 def revise_cds_product(feature):
     """Revise product name for INSDC compliant submissions"""
     product = feature['product']
@@ -379,19 +449,19 @@ def revise_cds_product(feature):
         log.info('fix product: remove = character. new=%s, old=%s', product, old_product)
 
     old_product = product
-    if(RE_CONTIG.search(product)):
+    if(RE_PROTEIN_CONTIG.search(product)):
         product = bc.HYPOTHETICAL_PROTEIN
         feature['hypothetical'] = True
         log.info('fix product: remove product containing "contig". new=%s, old=%s', product, old_product)
 
     old_product = product
-    if(RE_HOMOLOG.search(product)):  # replace Homologs
-        product = RE_HOMOLOG.sub('-like protein', product)
+    if(RE_PROTEIN_HOMOLOG.search(product)):  # replace Homologs
+        product = RE_PROTEIN_HOMOLOG.sub('-like protein', product)
         log.info('fix product: replace Homolog. new=%s, old=%s', product, old_product)
 
     old_product = product
-    if(RE_PUTATIVE.search(product)):  # replace putative synonyms)
-        product = RE_PUTATIVE.sub('putative', product)
+    if(RE_PROTEIN_PUTATIVE.search(product)):  # replace putative synonyms)
+        product = RE_PROTEIN_PUTATIVE.sub('putative', product)
         log.info('fix product: replace putative synonyms. new=%s, old=%s', product, old_product)
 
     old_product = product
@@ -405,9 +475,9 @@ def revise_cds_product(feature):
         log.info('fix product: trim leading/trailing whitespace. new=%s, old=%s', product, old_product)
 
     if(
-        RE_NODE.search(product) or  # potential contig name (SPAdes)
-        RE_POTENTIAL_CONTIG_NAME.search(product) or  # potential contig name (SPAdes)
-        RE_NO_LETTERS.fullmatch(product)  # no letters -> set to Hypothetical
+        RE_PROTEIN_NODE.search(product) or  # potential contig name (SPAdes)
+        RE_PROTEIN_POTENTIAL_CONTIG_NAME.search(product) or  # potential contig name (SPAdes)
+        RE_PROTEIN_NO_LETTERS.fullmatch(product)  # no letters -> set to Hypothetical
         ):  # remove suspect products and mark as hypothetical
         product = bc.HYPOTHETICAL_PROTEIN
         feature['hypothetical'] = True
