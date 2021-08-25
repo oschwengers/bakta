@@ -132,7 +132,7 @@ def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
                 cds['gene'] = None
                 cds['product'] = None
                 cds['start_type'] = gff_annotations['start_type']
-                cds['rbs_motif'] = gff_annotations['rbs_motif']
+                cds['rbs_motif'] = gff_annotations['rbs_motif'] if gff_annotations['rbs_motif'] != 'None' else None
                 cds['db_xrefs'] = [so.SO_CDS.id]
 
                 if(cds['strand'] == bc.STRAND_FORWARD):
