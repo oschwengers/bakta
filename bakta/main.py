@@ -243,55 +243,57 @@ def main():
         cdss = feat_cds.predict(genome, contigs_path)
         print(f"\tpredicted: {len(cdss)} ")
 
-        log.debug('detect spurious CDS')
-        discarded_cdss = orf.detect_spurious(cdss) if len(cdss) > 0 else []
-        print(f'\tdiscarded spurious: {len(discarded_cdss)}')
-        cdss = [cds for cds in cdss if 'discarded' not in cds]
+        if(len(cdss) > 0):
+            log.debug('detect spurious CDS')
+            discarded_cdss = orf.detect_spurious(cdss) if len(cdss) > 0 else []
+            print(f'\tdiscarded spurious: {len(discarded_cdss)}')
+            cdss = [cds for cds in cdss if 'discarded' not in cds]
 
-        log.debug('lookup CDS UPS/IPS')
-        cdss_ups, cdss_not_found = ups.lookup(cdss)
-        cdss_ips, tmp = ips.lookup(cdss_ups)
-        cdss_not_found.extend(tmp)
-        print(f'\tdetected IPSs: {len(cdss_ips)}')
-
-        if(len(cdss_not_found) > 0):
-            cds_fasta_path = cfg.tmp_path.joinpath('cds.unidentified.faa')
+        if(len(cdss) > 0):
+            log.debug('lookup CDS UPS/IPS')
+            cdss_ups, cdss_not_found = ups.lookup(cdss)
+            cdss_ips, tmp = ips.lookup(cdss_ups)
+            cdss_not_found.extend(tmp)
+            print(f'\tdetected IPSs: {len(cdss_ips)}')
+    
+            if(len(cdss_not_found) > 0):
+                cds_fasta_path = cfg.tmp_path.joinpath('cds.unidentified.faa')
+                with cds_fasta_path.open(mode='w') as fh:
+                    for cds in cdss_not_found:
+                        fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['aa']}\n")
+                log.debug('search CDS PSC')
+                cdss_psc, cdss_not_found = psc.search(cdss_not_found, cds_fasta_path)
+                print(f'\tfound PSCs: {len(cdss_psc)}')
+            print('\tlookup annotations...')
+            log.debug('lookup CDS PSCs')
+            psc.lookup(cdss)  # lookup PSC info
+            pscc.lookup(cdss)  # lookup PSCC info
+    
+            print('\tconduct expert systems...')  # conduct expert systems annotation
+            cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
             with cds_fasta_path.open(mode='w') as fh:
-                for cds in cdss_not_found:
+                for cds in cdss:
                     fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['aa']}\n")
-            log.debug('search CDS PSC')
-            cdss_psc, cdss_not_found = psc.search(cdss_not_found, cds_fasta_path)
-            print(f'\tfound PSCs: {len(cdss_psc)}')
-        print('\tlookup annotations...')
-        log.debug('lookup CDS PSCs')
-        psc.lookup(cdss)  # lookup PSC info
-        pscc.lookup(cdss)  # lookup PSCC info
-
-        print('\tconduct expert systems...')  # conduct expert systems annotation
-        cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
-        with cds_fasta_path.open(mode='w') as fh:
+            log.debug('conduct expert system: amrfinder')
+            expert_amr_found = exp_amr.search(cdss, cds_fasta_path)
+            print(f'\t\tamrfinder: {len(expert_amr_found)}')
+            log.debug('conduct expert system: aa seqs')
+            expert_aa_found = exp_aa_seq.search(cdss, cds_fasta_path)
+            print(f'\t\tprotein sequences: {len(expert_aa_found)}')
+    
+            print('\tcombine annotations and mark hypotheticals...')
+            log.debug('combine CDS annotations')
             for cds in cdss:
-                fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['aa']}\n")
-        log.debug('conduct expert system: amrfinder')
-        expert_amr_found = exp_amr.search(cdss, cds_fasta_path)
-        print(f'\t\tamrfinder: {len(expert_amr_found)}')
-        log.debug('conduct expert system: aa seqs')
-        expert_aa_found = exp_aa_seq.search(cdss, cds_fasta_path)
-        print(f'\t\tprotein sequences: {len(expert_aa_found)}')
-
-        print('\tcombine annotations and mark hypotheticals...')
-        log.debug('combine CDS annotations')
-        for cds in cdss:
-            anno.combine_annotation(cds)  # combine IPS & PSC annotations and mark hypotheticals
-
-        log.debug('analyze hypotheticals')
-        hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
-        if(len(hypotheticals) > 0):
-            print(f'\tanalyze hypothetical proteins: {len(hypotheticals)}')
-            pfam_hits = feat_cds.predict_pfam(hypotheticals)
-            print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
-            feat_cds.analyze_proteins(hypotheticals)
-            print('\tcalculated proteins statistics')
+                anno.combine_annotation(cds)  # combine IPS & PSC annotations and mark hypotheticals
+    
+            log.debug('analyze hypotheticals')
+            hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
+            if(len(hypotheticals) > 0):
+                print(f'\tanalyze hypothetical proteins: {len(hypotheticals)}')
+                pfam_hits = feat_cds.predict_pfam(hypotheticals)
+                print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
+                feat_cds.analyze_proteins(hypotheticals)
+                print('\tcalculated proteins statistics')
 
         genome['features'][bc.FEATURE_CDS] = cdss
 
