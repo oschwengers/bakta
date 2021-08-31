@@ -406,7 +406,7 @@ def revise_cds_gene_symbol(feature):
             log.info('fix gene: trim leading/trailing whitespace. new=%s, old=%s', gene, old_gene)
 
         old_gene = gene
-        if(RE_GENE_CAPITALIZED.fullmatch(gene)):  # TODO lowercase first character
+        if(RE_GENE_CAPITALIZED.fullmatch(gene)):
             gene = gene[0].lower() + gene[1:]
             log.info('fix gene: lowercase first char. new=%s, old=%s', gene, old_gene)
 
