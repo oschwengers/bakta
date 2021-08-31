@@ -17,6 +17,7 @@ RE_PROTEIN_HOMOLOG = re.compile(r'\shomolog(?: (\d+))?', flags=re.IGNORECASE)
 RE_PROTEIN_PUTATIVE = re.compile(r'(potential|possible|probable|predicted)', flags=re.IGNORECASE)
 RE_PROTEIN_NODE = re.compile(r'NODE_', flags=re.IGNORECASE)
 RE_PROTEIN_POTENTIAL_CONTIG_NAME = re.compile(r'(genome|shotgun)', flags=re.IGNORECASE)
+RE_PROTEIN_DOMAIN_CONTAINING = re.compile(r'domain-containing protein', flags=re.IGNORECASE)
 RE_PROTEIN_NO_LETTERS = re.compile(r'[^A-Za-z]')
 RE_PROTEIN_SYMBOL = re.compile(r'[A-Z][a-z]{2}[A-Z][0-9]?')
 
@@ -447,6 +448,11 @@ def revise_cds_product(feature):
     if('=' in product):  # remove equal chars
         product = product.replace('=', '')
         log.info('fix product: remove = character. new=%s, old=%s', product, old_product)
+
+    old_product = product
+    if(RE_PROTEIN_DOMAIN_CONTAINING.search(product)):  # replace underscores in domain names
+        product = product.replace('_', '-')
+        log.info('fix product: replace underscores. new=%s, old=%s', product, old_product)
 
     old_product = product
     if(RE_PROTEIN_CONTIG.search(product)):
