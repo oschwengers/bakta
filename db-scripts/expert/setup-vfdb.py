@@ -44,8 +44,8 @@ with proteins_path.open() as fh_in, expert_sequences_path.open('a') as fh_out:
             print(f"pattern is none: {record.description}")
             continue
         vfdb_id = m.group(1)
-        gene = m.group(2)
-        product = m.group(3)
+        gene = m.group(2).strip()
+        product = m.group(3).strip()
         vfdb_category_id = m.group(5)
         seq = str(record.seq).upper()
         dbxrefs = [

@@ -35,9 +35,9 @@ with blastrule_tsv_path.open(encoding='windows-1252') as fh:
         (rule_acc, rule_type, product, gbk_acc, refseq_accs, id_threshold, subject_cov_threshold, query_cov_threshold, gene, pm_acc, ec, about) = line.split('\t')
         if(rule_type in ['BlastRuleEquivalog', 'BlastRuleException', 'BlastRuleIS', 'BlastRuleExact']):
             br = {
-                'id': rule_acc,
-                'gene': gene,
-                'product': product,
+                'id': rule_acc.strip(),
+                'gene': gene.strip(),
+                'product': product.strip(),
                 'refseq_accs': refseq_accs.split(','),
                 'identity': float(id_threshold),
                 'query_cov': float(query_cov_threshold),
