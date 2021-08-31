@@ -19,7 +19,7 @@ RE_PROTEIN_NODE = re.compile(r'NODE_', flags=re.IGNORECASE)
 RE_PROTEIN_POTENTIAL_CONTIG_NAME = re.compile(r'(genome|shotgun)', flags=re.IGNORECASE)
 RE_PROTEIN_DOMAIN_CONTAINING = re.compile(r'domain-containing protein', flags=re.IGNORECASE)
 RE_PROTEIN_NO_LETTERS = re.compile(r'[^A-Za-z]')
-RE_PROTEIN_SUSPECT_CHARS = re.compile(r'[.@=?]')
+RE_PROTEIN_SUSPECT_CHARS = re.compile(r'[.@=?%]')
 RE_PROTEIN_SYMBOL = re.compile(r'[A-Z][a-z]{2}[A-Z][0-9]?')
 
 RE_GENE_CAPITALIZED = re.compile(r'^[A-Z].+', flags=re.DOTALL)
@@ -443,7 +443,7 @@ def revise_cds_product(feature):
     old_product = product
     product = RE_PROTEIN_SUSPECT_CHARS.sub('', product)  # replace Homologs
     if(product != old_product):
-        log.info('fix product: replace invalid characters (.@=?). new=%s, old=%s', product, old_product)
+        log.info('fix product: replace invalid characters (.@=?%). new=%s, old=%s', product, old_product)
 
     old_product = product
     product = RE_MULTIWHITESPACE.sub(' ', product)  # squeeze multiple whitespaces
@@ -469,6 +469,9 @@ def revise_cds_product(feature):
     if(RE_PROTEIN_DOMAIN_CONTAINING.search(product)):  # replace underscores in domain names
         product = product.replace('_', '-')
         log.info('fix product: replace underscores. new=%s, old=%s', product, old_product)
+
+    old_product = product
+
 
     if(
         RE_PROTEIN_CONTIG.search(product) or  # protein containing 'contig'
