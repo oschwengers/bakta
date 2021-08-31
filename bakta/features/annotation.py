@@ -443,9 +443,14 @@ def revise_cds_product(feature):
     product = feature['product']
 
     old_product = product
-    product = RE_PROTEIN_SUSPECT_CHARS.sub('', product)  # replace Homologs
+    product = RE_PROTEIN_SUSPECT_CHARS.sub('', product)  # remove suspect characters
     if(product != old_product):
         log.info('fix product: replace invalid characters (.@=?%). new=%s, old=%s', product, old_product)
+
+    old_product = product
+    product = product.replace('FOG:', '')  # remove FOG ids
+    if(product != old_product):
+        log.info('fix product: replace FOG ids. new=%s, old=%s', product, old_product)
 
     old_product = product
     product = RE_MULTIWHITESPACE.sub(' ', product)  # squeeze multiple whitespaces
