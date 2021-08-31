@@ -19,6 +19,7 @@ RE_PROTEIN_NODE = re.compile(r'NODE_', flags=re.IGNORECASE)
 RE_PROTEIN_POTENTIAL_CONTIG_NAME = re.compile(r'(genome|shotgun)', flags=re.IGNORECASE)
 RE_PROTEIN_DOMAIN_CONTAINING = re.compile(r'domain-containing protein', flags=re.IGNORECASE)
 RE_PROTEIN_NO_LETTERS = re.compile(r'[^A-Za-z]')
+RE_PROTEIN_INVALID_CHARACTERS = re.compile(r'[.@=?]')
 RE_PROTEIN_SYMBOL = re.compile(r'[A-Z][a-z]{2}[A-Z][0-9]?')
 
 RE_GENE_CAPITALIZED = re.compile(r'^[A-Z].+', flags=re.DOTALL)
@@ -440,14 +441,9 @@ def revise_cds_product(feature):
     product = feature['product']
 
     old_product = product
-    if('.' in product):  # remove periods
-        product = product.replace('.', '')
-        log.info('fix product: replace periods. new=%s, old=%s', product, old_product)
-
-    old_product = product
-    if('=' in product):  # remove equal chars
-        product = product.replace('=', '')
-        log.info('fix product: remove = character. new=%s, old=%s', product, old_product)
+    if(RE_PROTEIN_INVALID_CHARACTERS.search(product)):  # replace Homologs
+        product = RE_PROTEIN_INVALID_CHARACTERS.sub('', product)
+        log.info('fix product: replace invalid characters (.@=?). new=%s, old=%s', product, old_product)
 
     old_product = product
     if(RE_PROTEIN_DOMAIN_CONTAINING.search(product)):  # replace underscores in domain names
