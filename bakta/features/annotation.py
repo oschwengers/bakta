@@ -19,7 +19,7 @@ RE_PROTEIN_NODE = re.compile(r'NODE_', flags=re.IGNORECASE)
 RE_PROTEIN_POTENTIAL_CONTIG_NAME = re.compile(r'(genome|shotgun)', flags=re.IGNORECASE)
 RE_PROTEIN_DOMAIN_CONTAINING = re.compile(r'domain-containing protein', flags=re.IGNORECASE)
 RE_PROTEIN_NO_LETTERS = re.compile(r'[^A-Za-z]')
-RE_PROTEIN_INVALID_CHARACTERS = re.compile(r'[.@=?]')
+RE_PROTEIN_SUSPECT_CHARS = re.compile(r'[.@=?]')
 RE_PROTEIN_SYMBOL = re.compile(r'[A-Z][a-z]{2}[A-Z][0-9]?')
 
 RE_GENE_CAPITALIZED = re.compile(r'^[A-Z].+', flags=re.DOTALL)
@@ -441,34 +441,13 @@ def revise_cds_product(feature):
     product = feature['product']
 
     old_product = product
-    if(RE_PROTEIN_INVALID_CHARACTERS.search(product)):  # replace Homologs
-        product = RE_PROTEIN_INVALID_CHARACTERS.sub('', product)
+    product = RE_PROTEIN_SUSPECT_CHARS.sub('', product)  # replace Homologs
+    if(product != old_product):
         log.info('fix product: replace invalid characters (.@=?). new=%s, old=%s', product, old_product)
 
     old_product = product
-    if(RE_PROTEIN_DOMAIN_CONTAINING.search(product)):  # replace underscores in domain names
-        product = product.replace('_', '-')
-        log.info('fix product: replace underscores. new=%s, old=%s', product, old_product)
-
-    old_product = product
-    if(RE_PROTEIN_CONTIG.search(product)):
-        product = bc.HYPOTHETICAL_PROTEIN
-        feature['hypothetical'] = True
-        log.info('fix product: remove product containing "contig". new=%s, old=%s', product, old_product)
-
-    old_product = product
-    if(RE_PROTEIN_HOMOLOG.search(product)):  # replace Homologs
-        product = RE_PROTEIN_HOMOLOG.sub('-like protein', product)
-        log.info('fix product: replace Homolog. new=%s, old=%s', product, old_product)
-
-    old_product = product
-    if(RE_PROTEIN_PUTATIVE.search(product)):  # replace putative synonyms)
-        product = RE_PROTEIN_PUTATIVE.sub('putative', product)
-        log.info('fix product: replace putative synonyms. new=%s, old=%s', product, old_product)
-
-    old_product = product
-    if(RE_MULTIWHITESPACE.search(product)):  # squeeze multiple whitespaces
-        product = RE_MULTIWHITESPACE.sub(' ', product)
+    product = RE_MULTIWHITESPACE.sub(' ', product)  # squeeze multiple whitespaces
+    if(product != old_product):
         log.info('fix product: squeeze multiple whitespaces. new=%s, old=%s', product, old_product)
 
     old_product = product
@@ -476,7 +455,23 @@ def revise_cds_product(feature):
     if(product != old_product):
         log.info('fix product: trim leading/trailing whitespace. new=%s, old=%s', product, old_product)
 
+    old_product = product
+    product = RE_PROTEIN_HOMOLOG.sub('-like protein', product)  # replace Homologs
+    if(product != old_product):
+        log.info('fix product: replace Homolog. new=%s, old=%s', product, old_product)
+
+    old_product = product
+    product = RE_PROTEIN_PUTATIVE.sub('putative', product)  # replace putative synonyms)
+    if(product != old_product):
+        log.info('fix product: replace putative synonyms. new=%s, old=%s', product, old_product)
+
+    old_product = product
+    if(RE_PROTEIN_DOMAIN_CONTAINING.search(product)):  # replace underscores in domain names
+        product = product.replace('_', '-')
+        log.info('fix product: replace underscores. new=%s, old=%s', product, old_product)
+
     if(
+        RE_PROTEIN_CONTIG.search(product) or  # protein containing 'contig'
         RE_PROTEIN_NODE.search(product) or  # potential contig name (SPAdes)
         RE_PROTEIN_POTENTIAL_CONTIG_NAME.search(product) or  # potential contig name (SPAdes)
         RE_PROTEIN_NO_LETTERS.fullmatch(product)  # no letters -> set to Hypothetical
