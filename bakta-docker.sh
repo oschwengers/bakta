@@ -22,18 +22,13 @@ fi
 # run bakta docker
 # decisions:
 # all parameters are passed through, except genome, db and output
-# they are replaced with their absolute paths and are mounted to fixed
-# positions in the container
-#
-# genome -> /bakta/<genome-name>
-# output -> /bakta/output
-# db -> /bakta/db
+# they are replaced with their absolute paths and are mounted to
+# the container
 
 DB=
 OUTPUT=
 GENOME=$(realpath ${args[$argcount-1]})
-GENOME_FILENAME=$(basename $GENOME)
-args[$((argcount-1))]=/bakta/$GENOME_FILENAME
+args[$((argcount-1))]=$GENOME
 
 for i in `seq 0 $((argcount-1))`; do
     VAL=${args[i]}
@@ -41,12 +36,12 @@ for i in `seq 0 $((argcount-1))`; do
     if [[ "$VAL" == "--db" || "$VAL" == "-d" ]]; then
         DB=${args[j]}
         DB=$(realpath $DB)
-        args[j]=/bakta/db
+        args[j]=$DB
     fi
     if [[ "$VAL" == "--output" || "$VAL" == "-o" ]]; then
         OUTPUT=${args[j]}
         OUTPUT=$(realpath $OUTPUT)
-        args[j]=/bakta/output
+        args[j]=$OUTPUT
     fi
 done;
 
@@ -71,9 +66,9 @@ echo "******************************"
 CMD=$(cat <<-END
     sudo docker run -it --rm \
     --user $USER:$GROUP
-    -v $DB:/bakta/db:ro \
-    -v $OUTPUT:/bakta/output:rw \
-    -v $GENOME:/bakta/$GENOME_FILENAME:ro \
+    -v $DB:$DB:ro \
+    -v $OUTPUT:$OUTPUT:rw \
+    -v $GENOME:$GENOME:ro \
     $DOCKER_IMAGE ${args[@]}
 END
 )
