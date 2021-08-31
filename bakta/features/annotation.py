@@ -20,6 +20,8 @@ RE_PROTEIN_POTENTIAL_CONTIG_NAME = re.compile(r'(genome|shotgun)', flags=re.IGNO
 RE_PROTEIN_DOMAIN_CONTAINING = re.compile(r'domain-containing protein', flags=re.IGNORECASE)
 RE_PROTEIN_NO_LETTERS = re.compile(r'[^A-Za-z]')
 RE_PROTEIN_SUSPECT_CHARS = re.compile(r'[.@=?%]')
+RE_DOMAIN_OF_UNKNOWN_FUCTION = re.compile(f'(DUF\d{3,4})', flags=re.IGNORECASE)
+RE_UNCHARACTERIZED_PROTEIN_FAMILY = re.compile(f'(UPF\d{3,4})', flags=re.IGNORECASE)
 RE_PROTEIN_SYMBOL = re.compile(r'[A-Z][a-z]{2}[A-Z][0-9]?')
 
 RE_GENE_CAPITALIZED = re.compile(r'^[A-Z].+', flags=re.DOTALL)
@@ -454,6 +456,22 @@ def revise_cds_product(feature):
     product = product.strip()  # trim leading/trailing whitespaces
     if(product != old_product):
         log.info('fix product: trim leading/trailing whitespace. new=%s, old=%s', product, old_product)
+
+    old_product = product
+    dufs = []  # replace DUF-containing products
+    for m in RE_DOMAIN_OF_UNKNOWN_FUCTION.finditer(product):
+        dufs.append(m.group(1).upper())
+    if(len(dufs) >= 1):
+        product = f"{' '.join(dufs)}-containing protein"
+        log.info('fix product: revise DUF. new=%s, old=%s', product, old_product)
+    
+    old_product = product
+    upfs = []  # replace UPF-containing products
+    for m in RE_UNCHARACTERIZED_PROTEIN_FAMILY.finditer(product):
+        upfs.append(m.group(1).upper())
+    if(len(upfs) >= 1):
+        product = f"{' '.join(upfs)}-containing protein"
+        log.info('fix product: revise UPF. new=%s, old=%s', product, old_product)
 
     old_product = product
     product = RE_PROTEIN_HOMOLOG.sub('-like protein', product)  # replace Homologs
