@@ -23,6 +23,7 @@ RE_PROTEIN_SUSPECT_CHARS = re.compile(r'[.@=?%]')
 RE_PROTEIN_PERIOD_SEPARATOR = re.compile(r'([a-zA-Z0-9]+)\.([a-zA-Z0-9]+)')
 RE_DOMAIN_OF_UNKNOWN_FUCTION = re.compile(f'(DUF\d{3,4})', flags=re.IGNORECASE)
 RE_UNCHARACTERIZED_PROTEIN_FAMILY = re.compile(f'(UPF\d{3,4})', flags=re.IGNORECASE)
+RE_PROTEIN_WEIGHT = re.compile(r' [0-9]+(?:\.[0-9]+)? k?da ', flags=re.IGNORECASE)
 RE_PROTEIN_SYMBOL = re.compile(r'[A-Z][a-z]{2}[A-Z][0-9]?')
 
 RE_GENE_CAPITALIZED = re.compile(r'^[A-Z].+', flags=re.DOTALL)
@@ -442,6 +443,11 @@ def revise_cds_gene_symbol(feature):
 def revise_cds_product(feature):
     """Revise product name for INSDC compliant submissions"""
     product = feature['product']
+    
+    old_product = product
+    product = RE_PROTEIN_WEIGHT.sub(' ', product)  # remove protein weight in (k)Da
+    if(product != old_product):
+        log.info('fix product: remove protein weight in (k)Da. new=%s, old=%s', product, old_product)
 
     old_product = product
     product = re.sub(RE_PROTEIN_PERIOD_SEPARATOR, r'\1-\2', product)  # replace separator periods
