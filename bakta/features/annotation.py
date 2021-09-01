@@ -28,7 +28,7 @@ RE_PROTEIN_SYMBOL = re.compile(r'[A-Z][a-z]{2}[A-Z][0-9]?')
 
 RE_GENE_CAPITALIZED = re.compile(r'^[A-Z].+', flags=re.DOTALL)
 RE_GENE_SUSPECT_CHARS = re.compile(r'[\?]', flags=re.DOTALL)
-RE_GENE_SYMBOL = re.compile(r'[a-z]{3}[A-Z][?:0-9]+')
+RE_GENE_SYMBOL = re.compile(r'[a-z]{3}[A-Z][0-9]?')
 
 
 def combine_annotation(feature):
@@ -430,7 +430,8 @@ def revise_cds_gene_symbol(feature):
                         if(m):
                             symbol = m[0]
                             symbol = symbol[0].lower() + symbol[1:]
-                            revised_genes.append()                        
+                            revised_genes.append()
+                            log.info('fix gene: extract symbol from protein name. new=%s, old=%s', symbol, old_gene)
 
     if(len(revised_genes) == 0):
         feature['gene'] =  None
