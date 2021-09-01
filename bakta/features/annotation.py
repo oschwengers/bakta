@@ -502,9 +502,10 @@ def revise_cds_product(feature):
         log.info('fix product: replace putative synonyms. new=%s, old=%s', product, old_product)
 
     old_product = product
-    if(RE_PROTEIN_DOMAIN_CONTAINING.search(product)):  # replace underscores in domain names
+    if(RE_PROTEIN_DOMAIN_CONTAINING.search(product)):  # replace domain name underscores in domain names
         product = product.replace('_', '-')
-        log.info('fix product: replace underscores. new=%s, old=%s', product, old_product)
+        if(product != old_product):
+            log.info('fix product: replace domain name underscores. new=%s, old=%s', product, old_product)
 
     old_product = product
 
