@@ -400,14 +400,9 @@ def revise_cds_gene_symbol(feature):
             log.info('fix gene: remove orphan hypen. new=%s, old=%s', gene, old_gene)
         
         old_gene = gene
-        gene = RE_MULTIWHITESPACE.sub(' ', gene)  # squeeze multiple whitespaces
+        gene = RE_MULTIWHITESPACE.sub(' ', gene).strip()  # revise whitespaces
         if(gene != old_gene):
-            log.info('fix gene: squeeze multiple whitespaces. new=%s, old=%s', gene, old_gene)
-
-        old_gene = gene
-        gene = gene.strip()  # trim leading/trailing whitespaces
-        if(gene != old_gene):
-            log.info('fix gene: trim leading/trailing whitespace. new=%s, old=%s', gene, old_gene)
+            log.info('fix gene: revise whitespaces. new=%s, old=%s', gene, old_gene)
 
         old_gene = gene
         if(RE_GENE_CAPITALIZED.fullmatch(gene)):
@@ -491,14 +486,9 @@ def revise_cds_product(feature):
         log.info('fix product: replace Homolog. new=%s, old=%s', product, old_product)
 
     old_product = product
-    product = RE_MULTIWHITESPACE.sub(' ', product)  # squeeze multiple whitespaces
+    product = RE_MULTIWHITESPACE.sub(' ', product).strip()  # revise whitespaces
     if(product != old_product):
-        log.info('fix product: squeeze multiple whitespaces. new=%s, old=%s', product, old_product)
-
-    old_product = product
-    product = product.strip()  # trim leading/trailing whitespaces
-    if(product != old_product):
-        log.info('fix product: trim leading/trailing whitespace. new=%s, old=%s', product, old_product)
+        log.info('fix product: revise whitespaces. new=%s, old=%s', product, old_product)
 
     old_product = product
     product = RE_PROTEIN_PUTATIVE.sub('putative', product)  # replace putative synonyms)
