@@ -470,13 +470,14 @@ def revise_cds_product(feature):
             log.info('fix product: revise DUF. new=%s, old=%s', product, old_product)
     
     old_product = product
-    upfs = []  # replace UPF-containing products
-    for m in RE_UNCHARACTERIZED_PROTEIN_FAMILY.finditer(product):
-        upfs.append(m.group(1).upper())
-    if(len(upfs) >= 1):
-        product = f"{' '.join(upfs)} domain{'s' if len(upfs) > 1 else ''}-containing protein"
-        if(product != old_product):
-            log.info('fix product: revise UPF. new=%s, old=%s', product, old_product)
+    if('conserved' in product.lower()):  # replace conserved UPF proteins
+        upfs = []
+        for m in RE_UNCHARACTERIZED_PROTEIN_FAMILY.finditer(product):
+            upfs.append(m.group(1).upper())
+        if(len(upfs) >= 1):
+            product = f"{' '.join(upfs)} protein"
+            if(product != old_product):
+                log.info('fix product: revise UPF. new=%s, old=%s', product, old_product)
 
     old_product = product
     product = RE_PROTEIN_HOMOLOG.sub('-like protein', product)  # replace Homologs
