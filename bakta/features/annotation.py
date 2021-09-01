@@ -20,6 +20,7 @@ RE_PROTEIN_POTENTIAL_CONTIG_NAME = re.compile(r'(genome|shotgun)', flags=re.IGNO
 RE_PROTEIN_DOMAIN_CONTAINING = re.compile(r'domain-containing protein', flags=re.IGNORECASE)
 RE_PROTEIN_NO_LETTERS = re.compile(r'[^A-Za-z]')
 RE_PROTEIN_SUSPECT_CHARS = re.compile(r'[.@=?%]')
+RE_PROTEIN_PERIOD_SEPARATOR = re.compile(r'([a-zA-Z0-9]+)\.([a-zA-Z0-9]+)')
 RE_DOMAIN_OF_UNKNOWN_FUCTION = re.compile(f'(DUF\d{3,4})', flags=re.IGNORECASE)
 RE_UNCHARACTERIZED_PROTEIN_FAMILY = re.compile(f'(UPF\d{3,4})', flags=re.IGNORECASE)
 RE_PROTEIN_SYMBOL = re.compile(r'[A-Z][a-z]{2}[A-Z][0-9]?')
@@ -441,6 +442,11 @@ def revise_cds_gene_symbol(feature):
 def revise_cds_product(feature):
     """Revise product name for INSDC compliant submissions"""
     product = feature['product']
+
+    old_product = product
+    product = re.sub(RE_PROTEIN_PERIOD_SEPARATOR, r'\1-\2', product)  # replace separator periods
+    if(product != old_product):
+        log.info('fix product: replace separator periods. new=%s, old=%s', product, old_product)
 
     old_product = product
     product = RE_PROTEIN_SUSPECT_CHARS.sub('', product)  # remove suspect characters
