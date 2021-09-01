@@ -390,8 +390,8 @@ def revise_cds_gene_symbol(feature):
             continue
 
         old_gene = gene
-        if('gene' in gene):  # remove gene literal
-            gene = gene.replace('gene', '')
+        gene = gene.replace('gene', '')
+        if(gene != old_gene):  # remove gene literal
             log.info('fix gene: remove gene literal. new=%s, old=%s', gene, old_gene)
 
         old_gene = gene
@@ -400,8 +400,8 @@ def revise_cds_gene_symbol(feature):
             log.info('fix gene: remove orphan hypen. new=%s, old=%s', gene, old_gene)
         
         old_gene = gene
-        if(RE_MULTIWHITESPACE.search(gene)):  # squeeze multiple whitespaces
-            gene = RE_MULTIWHITESPACE.sub(' ', gene)
+        gene = RE_MULTIWHITESPACE.sub(' ', gene)  # squeeze multiple whitespaces
+        if(gene != old_gene):
             log.info('fix gene: squeeze multiple whitespaces. new=%s, old=%s', gene, old_gene)
 
         old_gene = gene
