@@ -466,16 +466,6 @@ def revise_cds_product(feature):
         log.info('fix product: replace FOG ids. new=%s, old=%s', product, old_product)
 
     old_product = product
-    product = RE_MULTIWHITESPACE.sub(' ', product)  # squeeze multiple whitespaces
-    if(product != old_product):
-        log.info('fix product: squeeze multiple whitespaces. new=%s, old=%s', product, old_product)
-
-    old_product = product
-    product = product.strip()  # trim leading/trailing whitespaces
-    if(product != old_product):
-        log.info('fix product: trim leading/trailing whitespace. new=%s, old=%s', product, old_product)
-
-    old_product = product
     dufs = []  # replace DUF-containing products
     for m in RE_DOMAIN_OF_UNKNOWN_FUCTION.finditer(product):
         dufs.append(m.group(1).upper())
@@ -494,7 +484,19 @@ def revise_cds_product(feature):
     old_product = product
     product = RE_PROTEIN_HOMOLOG.sub('-like protein', product)  # replace Homologs
     if(product != old_product):
+        if(product.count('protein') == 2):
+            product = product.replace('protein', '', 1)  # remove former protein term if existing
         log.info('fix product: replace Homolog. new=%s, old=%s', product, old_product)
+
+    old_product = product
+    product = RE_MULTIWHITESPACE.sub(' ', product)  # squeeze multiple whitespaces
+    if(product != old_product):
+        log.info('fix product: squeeze multiple whitespaces. new=%s, old=%s', product, old_product)
+
+    old_product = product
+    product = product.strip()  # trim leading/trailing whitespaces
+    if(product != old_product):
+        log.info('fix product: trim leading/trailing whitespace. new=%s, old=%s', product, old_product)
 
     old_product = product
     product = RE_PROTEIN_PUTATIVE.sub('putative', product)  # replace putative synonyms)
