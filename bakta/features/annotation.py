@@ -480,7 +480,7 @@ def revise_cds_product(feature):
     for m in RE_DOMAIN_OF_UNKNOWN_FUCTION.finditer(product):
         dufs.append(m.group(1).upper())
     if(len(dufs) >= 1):
-        product = f"{' '.join(dufs)}-containing protein"
+        product = f"{' '.join(dufs)} domain{'s' if len(dufs) > 1 else ''}-containing protein"
         log.info('fix product: revise DUF. new=%s, old=%s', product, old_product)
     
     old_product = product
@@ -488,7 +488,7 @@ def revise_cds_product(feature):
     for m in RE_UNCHARACTERIZED_PROTEIN_FAMILY.finditer(product):
         upfs.append(m.group(1).upper())
     if(len(upfs) >= 1):
-        product = f"{' '.join(upfs)}-containing protein"
+        product = f"{' '.join(upfs)} domain{'s' if len(upfs) > 1 else ''}-containing protein"
         log.info('fix product: revise UPF. new=%s, old=%s', product, old_product)
 
     old_product = product
