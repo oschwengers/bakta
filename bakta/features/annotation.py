@@ -21,8 +21,8 @@ RE_PROTEIN_DOMAIN_CONTAINING = re.compile(r'domain-containing protein', flags=re
 RE_PROTEIN_NO_LETTERS = re.compile(r'[^A-Za-z]')
 RE_PROTEIN_SUSPECT_CHARS = re.compile(r'[.@=?%]')
 RE_PROTEIN_PERIOD_SEPARATOR = re.compile(r'([a-zA-Z0-9]+)\.([a-zA-Z0-9]+)')
-RE_DOMAIN_OF_UNKNOWN_FUCTION = re.compile(f'(DUF\d{3,4})', flags=re.IGNORECASE)
-RE_UNCHARACTERIZED_PROTEIN_FAMILY = re.compile(f'(UPF\d{3,4})', flags=re.IGNORECASE)
+RE_DOMAIN_OF_UNKNOWN_FUCTION = re.compile(r'(DUF\d{3,4})', flags=re.IGNORECASE)
+RE_UNCHARACTERIZED_PROTEIN_FAMILY = re.compile(r'(UPF\d{3,4})', flags=re.IGNORECASE)
 RE_PROTEIN_WEIGHT = re.compile(r' [0-9]+(?:\.[0-9]+)? k?da ', flags=re.IGNORECASE)
 RE_PROTEIN_SYMBOL = re.compile(r'[A-Z][a-z]{2}[A-Z][0-9]?')
 
