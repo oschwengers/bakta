@@ -262,8 +262,9 @@ def main():
                     for cds in cdss_not_found:
                         fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['aa']}\n")
                 log.debug('search CDS PSC')
-                cdss_psc, cdss_not_found = psc.search(cdss_not_found, cds_fasta_path)
+                cdss_psc, cdss_pscc, cdss_not_found = psc.search(cdss_not_found, cds_fasta_path)
                 print(f'\tfound PSCs: {len(cdss_psc)}')
+                print(f'\tfound PSCCs: {len(cdss_pscc)}')
             print('\tlookup annotations...')
             log.debug('lookup CDS PSCs')
             psc.lookup(cdss)  # lookup PSC info

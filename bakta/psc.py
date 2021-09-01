@@ -80,14 +80,18 @@ def search(cdss, cds_fasta_path):
                 )
 
     pscs_found = []
-    pscs_not_found = []
+    psccs_found = []
+    cds_not_found = []
     for cds in cdss:
-        if('psc' in cds and cds['psc']['valid']):
-            pscs_found.append(cds)
+        if('psc' in cds):
+            if(cds['psc']['valid']):
+                pscs_found.append(cds)
+            else:
+                psccs_found.append(cds)
         else:
-            pscs_not_found.append(cds)
-    log.info('found=%i', len(pscs_found))
-    return pscs_found, pscs_not_found
+            cds_not_found.append(cds)
+    log.info('found: PSC=%i, PSCC=%i', len(pscs_found), len(psccs_found))
+    return pscs_found, psccs_found, cds_not_found
 
 
 def lookup(features):
