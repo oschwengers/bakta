@@ -535,7 +535,7 @@ contig_3    contig_3    circular-plasmid
 ## Citation
 
 A manuscript is in preparation. To temporarily cite our work, please transitionally refer to:
-> Schwengers et al. (2021). Bakta: Rapid & standardized annotation of bacterial genomes & plasmids. GitHub: https://github.com/oschwengers/bakta
+> Schwengers O., Jelonek L., Dieckmann M., Beyvers S., Blom J., Goesmann A. (2021). Bakta: Rapid & standardized annotation of bacterial genomes via alignment-free sequence identification. bioRxiv 2021.09.02.458689; doi: https://doi.org/10.1101/2021.09.02.458689
 
 Bakta is standing on the shoulder of giants taking advantage of many publicly available databases. If you find any of those used within Bakta useful, please credit these primary sources, as well:
 

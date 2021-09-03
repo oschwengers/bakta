@@ -138,4 +138,6 @@ DISCARD_TYPE_SPURIOUS = 'spurious'
 DISCARD_TYPE_OVERLAP = 'overlap'
 
 DB_VERSIONS_URL = 'https://raw.githubusercontent.com/oschwengers/bakta/master/db-versions.json'
-CITATION = 'Schwengers et al. (2021)\nBakta: comprehensive and rapid annotation of bacterial genomes.\nGitHub https://github.com/oschwengers/bakta'
+CITATION = '''Schwengers O., Jelonek L., Dieckmann M., Beyvers S., Blom J., Goesmann A. (2021).
+Bakta: Rapid & standardized annotation of bacterial genomes via alignment-free sequence identification.
+bioRxiv 2021.09.02.458689; doi: https://doi.org/10.1101/2021.09.02.458689'''
