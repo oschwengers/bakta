@@ -189,7 +189,7 @@ $ bakta --db <db-path> --verbose --output results/ --prefix ecoli123 --locus-tag
 
 Bakta accepts bacterial genomes and plasmids (complete / draft assemblies) in (zipped) fasta format. For a full description of how further genome information can be provided and workflow customizations can be set, please have a look at the [Usage](#usage) section.
 
-Replicon meta data table:
+#### Replicon meta data table
 
 To fine-tune the very details of each sequence in the input fasta file, Bakta accepts a replicon meta data table provided in `csv`/`tsv` file format: `--replicons <file.tsv>`. Thus, complete replicons within partially completed draft assemblies can be marked & handled as such, *e.g.* detection & annotation of features spanning sequence edges.
 
@@ -197,7 +197,7 @@ Table format:
 
 original sequence id  |  new sequence id  |  type  |  topology  |  name
 ----|----------------|----------------|----------------|----------------
-`old id` | [`new id` / `<empty>`] | [`chromosome` / `plasmid` / `contig` / `<empty>`] | [`circular` / `linear` / `<empty>`] | [`name` / `<empty>`]
+`old id` | `new id`, `<empty>` | `chromosome`, `plasmid`, `contig`, `<empty>` | `circular`, `linear`, `<empty>` | `name`, `<empty>`
 
 For each input sequence recognized via the `original locus id` a `new locus id`, the replicon `type` and the `topology` as well a `name` can be explicitly set.
 
@@ -224,6 +224,33 @@ NODE_2 | p1 | `plasmid` | `c` | `pXYZ1`
 NODE_3 | p2 | `p`  |  `c` | `pXYZ2`
 NODE_4 | special-contig-name-xyz |  `-` | -
 NODE_5 | `` |  `-` | -
+
+#### User provided protein sequences
+
+Bakta accepts user provided Fasta files of trusted protein sequences via `--proteins`. Within this Fasta file, each reference sequence can be provided in either short or long format:
+
+```bash
+# short:
+>id gene~~~product~~~dbxrefs
+MAQ...
+
+# long:
+>id min_identity~~~min_query_cov~~~min_subject_cov~~~gene~~~product~~~dbxrefs
+MAQ...
+```
+
+Allowed values:
+
+field  |  value(s)  |  example
+----|----------------|----------------
+min_identity | `int`, `float` | 80, 90.3
+min_query_cov | `int`, `float` | 80, 90.3
+min_subject_cov | `int`, `float` | 80, 90.3
+gene | `<empty>`, `string` | msp
+product | `string` | my special protein
+dbxrefs | `<empty>`, `db:id`, `,` separated list  | `VFDB:VF0511`
+
+Protein sequences provided in short format are searched with default thresholds of 90%, 80% and 80% for minimal identity, query and subject coverage, respectively.
 
 ### Output
 
@@ -291,9 +318,13 @@ Exemplary annotation result files for several genomes (mostly ESKAPE species) ar
 Usage:
 
 ```bash
-usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH] [--prefix PREFIX] [--output OUTPUT] [--genus GENUS] [--species SPECIES] [--strain STRAIN] [--plasmid PLASMID] [--complete] [--prodigal-tf PRODIGAL_TF] [--translation-table {11,4}] [--gram {+,-,?}] [--locus LOCUS]
-             [--locus-tag LOCUS_TAG] [--keep-contig-headers] [--replicons REPLICONS] [--compliant] [--skip-trna] [--skip-tmrna] [--skip-rrna] [--skip-ncrna] [--skip-ncrna-region] [--skip-crispr] [--skip-cds] [--skip-sorf] [--skip-gap] [--skip-ori] [--help] [--verbose] [--threads THREADS]
-             [--tmp-dir TMP_DIR] [--version]
+usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH] [--prefix PREFIX] [--output OUTPUT]
+             [--genus GENUS] [--species SPECIES] [--strain STRAIN] [--plasmid PLASMID]
+             [--complete] [--prodigal-tf PRODIGAL_TF] [--translation-table {11,4}] [--gram {+,-,?}] [--locus LOCUS]
+             [--locus-tag LOCUS_TAG] [--keep-contig-headers] [--replicons REPLICONS] [--compliant] [--proteins PROTEINS]
+             [--skip-trna] [--skip-tmrna] [--skip-rrna] [--skip-ncrna] [--skip-ncrna-region]
+             [--skip-crispr] [--skip-cds] [--skip-sorf] [--skip-gap] [--skip-ori]
+             [--help] [--verbose] [--threads THREADS] [--tmp-dir TMP_DIR] [--version]
              <genome>
 
 Rapid & standardized annotation of bacterial genomes & plasmids.
@@ -331,6 +362,7 @@ Annotation:
   --replicons REPLICONS, -r REPLICONS
                         Replicon information table (tsv/csv)
   --compliant           Force Genbank/ENA/DDJB compliance
+  --proteins PROTEINS   Fasta file of trusted protein sequences for CDS annotation
 
 Workflow:
   --skip-trna           Skip tRNA detection & annotation
@@ -402,7 +434,8 @@ Conceptual terms:
 5. Assign protein sequences to UniRef90 or UniRef50 clusters if alignment hits meet an identity larger than 0.9 or 0.5, respectively
 6. Execution of expert systems:
   - AMR: AMRFinderPlus
-  - Alignments: NCBI BlastRules, VFDB
+  - Expert proteins: NCBI BlastRules, VFDB
+  - User proteins
 7. Combination of available IPS, PSC, PSCC and expert system information favouring more specific annotations and avoiding redundancy
 
 CDS without IPS or PSC hits as well as those without gene symbols or product descriptions different from `hypothetical` will be marked as `hypothetical`.
