@@ -139,6 +139,34 @@ def test_replicons_ok(tmpdir):
         assert Path.exists(tmpdir_path.joinpath(file))
 
 
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--proteins']),  # not provided
+        (['--proteins', '']),  # empty
+        (['--proteins', 'foo'])  # not existing
+    ]
+)
+def test_proteins_failiing(parameters, tmpdir):
+    # test proteins file arguments
+
+    # missing path
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
+    assert proc.returncode != 0
+
+
+@pytest.mark.slow
+def test_proteins_ok(tmpdir):
+    # test proteins file arguments
+
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--proteins', 'test/data/user-proteins.faa'] + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
+    assert proc.returncode == 0
+
+    tmpdir_path = Path(tmpdir)
+    for file in FILES:
+        assert Path.exists(tmpdir_path.joinpath(file))
+
+
 def test_output_failing():
     # test database arguments
     cmd_line = ['bin/bakta', '--output', '/', 'test/data/draft-w-plasmids.fna']
