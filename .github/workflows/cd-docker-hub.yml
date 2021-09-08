@@ -1,4 +1,4 @@
-name: CD Docker image
+name: CD Docker Hub
 on:
   release:
     types: [published]
