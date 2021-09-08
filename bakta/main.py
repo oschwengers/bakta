@@ -257,12 +257,12 @@ def main():
             print(f'\tdetected IPSs: {len(cdss_ips)}')
     
             if(len(cdss_not_found) > 0):
-                cds_fasta_path = cfg.tmp_path.joinpath('cds.unidentified.faa')
-                with cds_fasta_path.open(mode='w') as fh:
+                cds_aa_path = cfg.tmp_path.joinpath('cds.unidentified.faa')
+                with cds_aa_path.open(mode='w') as fh:
                     for cds in cdss_not_found:
                         fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['aa']}\n")
                 log.debug('search CDS PSC')
-                cdss_psc, cdss_pscc, cdss_not_found = psc.search(cdss_not_found, cds_fasta_path)
+                cdss_psc, cdss_pscc, cdss_not_found = psc.search(cdss_not_found, cds_aa_path)
                 print(f'\tfound PSCs: {len(cdss_psc)}')
                 print(f'\tfound PSCCs: {len(cdss_pscc)}')
             print('\tlookup annotations...')
@@ -271,16 +271,24 @@ def main():
             pscc.lookup(cdss)  # lookup PSCC info
     
             print('\tconduct expert systems...')  # conduct expert systems annotation
-            cds_fasta_path = cfg.tmp_path.joinpath('cds.faa')
-            with cds_fasta_path.open(mode='w') as fh:
+            cds_aa_path = cfg.tmp_path.joinpath('cds.faa')
+            with cds_aa_path.open(mode='w') as fh:
                 for cds in cdss:
                     fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['aa']}\n")
             log.debug('conduct expert system: amrfinder')
-            expert_amr_found = exp_amr.search(cdss, cds_fasta_path)
+            expert_amr_found = exp_amr.search(cdss, cds_aa_path)
             print(f'\t\tamrfinder: {len(expert_amr_found)}')
             log.debug('conduct expert system: aa seqs')
-            expert_aa_found = exp_aa_seq.search(cdss, cds_fasta_path)
+            diamond_db_path = cfg.db_path.joinpath('expert-protein-sequences.dmnd')
+            expert_aa_found = exp_aa_seq.search(cdss, cds_aa_path, 'expert_proteins', diamond_db_path)
             print(f'\t\tprotein sequences: {len(expert_aa_found)}')
+
+            if(cfg.user_proteins):
+                log.debug('conduct expert system: user aa seqs')
+                user_aa_path = cfg.tmp_path.joinpath('user-proteins.faa')
+                exp_aa_seq.write_user_protein_sequences(user_aa_path)
+                user_aa_found = exp_aa_seq.search(cdss, cds_aa_path, 'user_proteins', user_aa_path)
+                print(f'\t\tuser protein sequences: {len(user_aa_found)}')
     
             print('\tcombine annotations and mark hypotheticals...')
             log.debug('combine CDS annotations')

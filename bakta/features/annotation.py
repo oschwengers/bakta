@@ -73,12 +73,8 @@ def combine_annotation(feature):
         for expert_system, expert_hit in expert.items():
             expert_rank = expert_hit['rank']
             if(expert_rank > rank):
-                expert_gene = expert_hit.get('gene', None)
-                if(expert_gene):
-                    gene = expert_gene
-                expert_product = expert_hit.get('product', None)
-                if(expert_product):
-                    product = expert_product
+                gene = expert_hit.get('gene', None)
+                product = expert_hit.get('product', None)
                 expert_db_xrefs = expert_hit.get('db_xrefs', None)
                 if(expert_db_xrefs):
                     for expert_db_xref in expert_db_xrefs:
