@@ -53,7 +53,7 @@ def predict(genome, sequences_path):
     replicons = [c for c in genome['contigs'] if c['complete']]
     if(len(replicons) > 0):
         fasta.export_contigs(replicons, replicons_path)
-        log.debug('export replicons: # contigs=%i, path=%s', len(replicons), replicons_path)
+        log.debug('export replicons: # sequences=%i, path=%s', len(replicons), replicons_path)
         proteins_replicons_path = cfg.tmp_path.joinpath('prodigal.proteins.replicons.faa')
         gff_replicons_path = cfg.tmp_path.joinpath('prodigal.replicons.gff')
         log.info('run prodigal: type=replicons, # sequences=%i', len(replicons))
