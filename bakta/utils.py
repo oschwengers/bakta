@@ -215,7 +215,7 @@ def test_dependencies():
         test_dependency(DEPENDENCY_BLASTN)
 
 
-def create_locus_tag_prefix(contigs):
+def create_locus_tag_prefix(contigs, length=6):
     """Create either genus/species or sequence MD5 hex based locus tag prefix."""
     hash = hashlib.md5()
     for contig in contigs:
@@ -223,14 +223,14 @@ def create_locus_tag_prefix(contigs):
     hexdigest = hash.hexdigest().upper()
     locus_prefix_chars = []
     i = 0
-    while i < 6:
+    while i < length:
         c = hexdigest[i]
         if(c >= '0' and c <= '9'):
             c = chr(ord('F') + int(c) + 1)
         locus_prefix_chars.append(c)
         i += 1
     locus_prefix = ''.join(locus_prefix_chars)
-    log.info('generated locus-tag: prefix=%s, MD5=%s', locus_prefix, hexdigest)
+    log.info('generated sequence tag prefix: prefix=%s, length=%i, MD5=%s', locus_prefix, length, hexdigest)
     return locus_prefix
 
 

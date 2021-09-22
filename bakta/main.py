@@ -399,6 +399,8 @@ def main():
     print('select features and create locus tags...')
     log.debug('start feature selection and creation of locus tags')
     features_by_contig = {k['id']: [] for k in genome['contigs']}
+    feature_id = 1
+    feature_id_prefix = bu.create_locus_tag_prefix(contigs, length=10)
     for feature_type in [
             bc.FEATURE_T_RNA,
             bc.FEATURE_TM_RNA,
@@ -416,6 +418,8 @@ def main():
         feature_list = genome['features'].get(feature_type, [])
         for feature in feature_list:
             if('discarded' not in feature):
+                feature['id'] = f'{feature_id_prefix}_{feature_id}'
+                feature_id += 1
                 contig_features = features_by_contig.get(feature['contig'])
                 contig_features.append(feature)
     features = []
