@@ -55,7 +55,6 @@ def search(cdss, cds_fasta_path):
                 model_cov = float(cov_ref_seq) / 100
                 identity = float(ident_ref_seq) / 100
                 expert_hit = {
-                    'system': 'amrfinder',
                     'rank': 95,
                     'gene': gene if gene != '' else None,
                     'product': product,

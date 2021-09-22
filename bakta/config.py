@@ -41,6 +41,7 @@ locus_tag = None
 gram = None
 replicons = None
 compliant = None
+user_proteins = None
 
 # workflow configuration
 skip_trna = None
@@ -159,7 +160,7 @@ def setup(args):
         taxon = None
 
     # annotation configurations
-    global complete, prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, gram, replicons, compliant
+    global complete, prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, gram, replicons, compliant, user_proteins
     complete = args.complete
     log.info('complete=%s', complete)
     prodigal_tf = args.prodigal_tf
@@ -203,6 +204,19 @@ def setup(args):
     if(compliant):
         min_contig_length = 200
         log.info('compliant mode! min_contig_length=%s', min_contig_length)
+    user_proteins = args.proteins
+    if(user_proteins is not None):
+        try:
+            if(user_proteins == ''):
+                raise ValueError('File path argument must be non-empty')
+            user_proteins_path = Path(args.proteins).resolve()
+            check_readability('user proteins', user_proteins_path)
+            check_content_size('user proteins', user_proteins_path)
+            user_proteins = user_proteins_path
+        except:
+            log.error('provided user proteins file not valid! path=%s', user_proteins)
+            sys.exit(f'ERROR: User proteins file ({user_proteins}) not valid!')
+    log.info('user-proteins=%s', user_proteins)
 
     # workflow configurations
     global skip_trna, skip_tmrna, skip_rrna, skip_ncrna, skip_ncrna_region, skip_crispr, skip_cds, skip_sorf, skip_gap, skip_ori
