@@ -249,8 +249,8 @@ def write_gff3(genome, features_by_contig, gff3_path):
                 elif(feat['type'] == bc.FEATURE_ORIC):
                     annotations = {
                         'ID': feat['id'],
-                        'Name': 'oriC',
-                        'product': 'oriC'
+                        'Name': feat['product'],
+                        'product': feat['product'],
                     }
                     annotations = encode_annotations(annotations)
                     feat_type = bc.INSDC_FEATURE_ORIGIN_REPLICATION if cfg.compliant else so.SO_ORIC.name
@@ -258,8 +258,8 @@ def write_gff3(genome, features_by_contig, gff3_path):
                 elif(feat['type'] == bc.FEATURE_ORIV):
                     annotations = {
                         'ID': feat['id'],
-                        'Name': 'oriV',
-                        'product': 'oriV'
+                        'Name': feat['product'],
+                        'product': feat['product'],
                     }
                     annotations = encode_annotations(annotations)
                     feat_type = bc.INSDC_FEATURE_ORIGIN_REPLICATION if cfg.compliant else so.SO_ORIC.name
@@ -267,8 +267,8 @@ def write_gff3(genome, features_by_contig, gff3_path):
                 elif(feat['type'] == bc.FEATURE_ORIT):
                     annotations = {
                         'ID': feat['id'],
-                        'Name': 'oriT',
-                        'product': 'oriT'
+                        'Name': feat['product'],
+                        'product': feat['product'],
                     }
                     annotations = encode_annotations(annotations)
                     feat_type = bc.INSDC_FEATURE_ORIGIN_TRANSFER if cfg.compliant else so.SO_ORIT.name

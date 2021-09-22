@@ -97,6 +97,11 @@ def predict_oris(genome, contigs_path, ori_type):
                         ori['start'] = refined_start
                         ori['stop'] = refined_stop
 
+                        if(ori_type == bc.FEATURE_ORIT):
+                            ori['product'] = 'origin of transfer'
+                        else:
+                            ori['product'] = 'origin of replication'
+
                         nt = bu.extract_feature_sequence(ori, contig)  # extract nt sequences
                         ori['nt'] = nt
 
