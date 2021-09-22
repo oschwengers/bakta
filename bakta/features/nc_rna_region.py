@@ -6,6 +6,7 @@ from collections import OrderedDict
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
+import bakta.utils as bu
 
 
 log = logging.getLogger('NC_RNA_REGION')
@@ -55,6 +56,7 @@ def predict_nc_rna_regions(genome, contigs_path):
                 rfam2go[rfam] = [go]
 
     ncrnas = []
+    contigs = {c['id']: c for c in genome['contigs']}
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
@@ -115,6 +117,9 @@ def predict_nc_rna_regions(genome, contigs_path):
                     ncrna_region['score'] = score
                     ncrna_region['evalue'] = evalue
                     ncrna_region['db_xrefs'] = db_xrefs
+
+                    nt = bu.extract_feature_sequence(ncrna_region, contigs[contig_id])  # extract nt sequences
+                    ncrna_region['nt'] = nt
 
                     ncrnas.append(ncrna_region)
                     log.info(
