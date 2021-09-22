@@ -161,19 +161,19 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
+                    feature_id_counter += 1
                     if(cfg.compliant):
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         annotations[bc.INSDC_FEATURE_REGULATORY_CLASS] = insdc.select_regulatory_class(feat)
-                    feature_id_counter += 1
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tInfernal\t{so.SO_REGULATORY_REGION.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_CRISPR):
                     annotations = {
-                        'ID': feat['locus'],
+                        'ID': feature_id_counter,
                         'Name': feat['product'],
-                        'locus_tag': feat['locus'],
                         'product': feat['product']
                     }
+                    feature_id_counter += 1
                     feat_type = so.SO_CRISPR.name
                     if(cfg.compliant):
                         feat_type = bc.INSDC_FEATURE_REPEAT_REGION
@@ -252,31 +252,31 @@ def write_gff3(genome, features_by_contig, gff3_path):
                     fh.write(f"{feat['contig']}\tBakta\t{so.SO_GAP.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_ORIC):
                     annotations = {
-                        'ID': feat['locus'],
+                        'ID': feature_id_counter,
                         'Name': 'oriC',
-                        'locus_tag': feat['locus'],
                         'product': 'oriC'
                     }
+                    feature_id_counter += 1
                     annotations = encode_annotations(annotations)
                     feat_type = bc.INSDC_FEATURE_ORIGIN_REPLICATION if cfg.compliant else so.SO_ORIC.name
                     fh.write(f"{feat['contig']}\tBLAST+\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_ORIV):
                     annotations = {
-                        'ID': feat['locus'],
+                        'ID': feature_id_counter,
                         'Name': 'oriV',
-                        'locus_tag': feat['locus'],
                         'product': 'oriV'
                     }
+                    feature_id_counter += 1
                     annotations = encode_annotations(annotations)
                     feat_type = bc.INSDC_FEATURE_ORIGIN_REPLICATION if cfg.compliant else so.SO_ORIC.name
                     fh.write(f"{feat['contig']}\tBLAST+\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_ORIT):
                     annotations = {
-                        'ID': feat['locus'],
+                        'ID': feature_id_counter,
                         'Name': 'oriT',
-                        'locus_tag': feat['locus'],
                         'product': 'oriT'
                     }
+                    feature_id_counter += 1
                     annotations = encode_annotations(annotations)
                     feat_type = bc.INSDC_FEATURE_ORIGIN_TRANSFER if cfg.compliant else so.SO_ORIT.name
                     fh.write(f"{feat['contig']}\tBLAST+\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")

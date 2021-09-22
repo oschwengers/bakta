@@ -432,7 +432,7 @@ def main():
     log.info('locus tag prefix=%s', locus_tag_prefix)
     for feature in features:
         locus_tag = f'{locus_tag_prefix}_{locus_tag_nr:05}'
-        if(feature['type'] not in [bc.FEATURE_NC_RNA_REGION, bc.FEATURE_GAP]):
+        if(feature['type'] in [bc.FEATURE_T_RNA, bc.FEATURE_TM_RNA, bc.FEATURE_R_RNA, bc.FEATURE_NC_RNA, bc.FEATURE_CDS, bc.FEATURE_SORF]):
             feature['locus'] = locus_tag
             locus_tag_nr += 5
 
