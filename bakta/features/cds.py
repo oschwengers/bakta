@@ -326,3 +326,51 @@ def analyze_proteins(cdss):
             )
             seq_stats['isoelectric_point'] = None
         cds['seq_stats'] = seq_stats
+
+
+def revise_special_cases(cdss):
+    """
+    Revise rare but known special cases as for istance supposedly truncated dnaA genes on rotated chromosome starts
+    which often appear on re-annotated genomes.
+    """
+    
+    # look for supposedly truncated dnaA genes on rotated chromosome starts: start=1, strand=+
+    dnaA = None
+    for cds in cdss:
+        if(
+            cds['start'] == 1 and 
+            cds['strand'] == bc.STRAND_FORWARD and 
+            cds['start_type'] == 'Edge' and 
+            cds['rbs_motif'] is None and
+            ('dnaa' in cds['product'].lower().split() or cds['gene'] == 'dnaA')):
+            dnaA = cds
+            break
+    if(dnaA is not None):
+        dnaA.pop('truncated')
+        gene = dnaA.get('gene', None)
+        gene = gene if gene is not None else '-'
+        log.info(
+            'revise supposedly truncated dnaA gene on rotated chromosome start: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s], aa=[%s..%s]',
+            dnaA['contig'], dnaA['start'], dnaA['stop'], dnaA['strand'], gene, dnaA['product'], dnaA['nt'][:10], dnaA['nt'][-10:], dnaA['aa'][:10], dnaA['aa'][-10:]
+        )
+    
+    # look for supposedly truncated repA genes on rotated plasmid starts: start=1, strand=+
+    repA = None
+    for cds in cdss:
+        if(
+            cds['start'] == 1 and 
+            cds['strand'] == bc.STRAND_FORWARD and 
+            cds['start_type'] == 'Edge' and 
+            cds['rbs_motif'] is None and
+            ('repa' in cds['product'].lower().split() or cds['gene'] == 'repA')):
+            repA = cds
+            break
+    if(repA is not None):
+        repA.pop('truncated')
+        gene = repA.get('gene', None)
+        gene = gene if gene is not None else '-'
+        log.info(
+            'revise supposedly truncated repA gene on rotated plasmid start: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s], aa=[%s..%s]',
+            repA['contig'], repA['start'], repA['stop'], repA['strand'], gene, repA['product'], repA['nt'][:10], repA['nt'][-10:], repA['aa'][:10], repA['aa'][-10:]
+        )
+    

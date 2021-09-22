@@ -295,6 +295,9 @@ def main():
                 print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
                 feat_cds.analyze_proteins(hypotheticals)
                 print('\tcalculated proteins statistics')
+            
+            print('\trevise special cases...')
+            feat_cds.revise_special_cases(cdss)
 
         genome['features'][bc.FEATURE_CDS] = cdss
 
