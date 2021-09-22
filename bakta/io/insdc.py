@@ -116,21 +116,23 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 qualifiers['transl_table'] = cfg.translation_table
                 insdc_feature_type = bc.INSDC_FEATURE_CDS
                 inference = []
-                inference.append('ab initio prediction:Prodigal:2.6' if feature['type'] == bc.FEATURE_CDS else 'ab initio prediction:Bakta')
-                if('ups' in feature):  # prevent RefSeq identifiers in INSDC compliant mode
-                    if('ncbi_nrp_id' in feature['ups']):
-                        if(cfg.compliant):
-                            qualifiers['note'].append(feature['ups']['ncbi_nrp_id'])
-                        else:
-                            qualifiers['protein_id'] = feature['ups']['ncbi_nrp_id']
-                if('ips' in feature):
-                    if('uniref100_id' in feature['ips']):
-                        ips_subject_id = feature['ips']['uniref100_id']
-                        inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIPROTKB}:{ips_subject_id}')
-                if('psc' in feature):
-                    if('uniref90_id' in feature['psc']):
-                        psc_subject_id = feature['psc']['uniref90_id']
-                        inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIPROTKB}:{psc_subject_id}')
+                inference.append('ab initio prediction:Prodigal:2.6' if feature['type'] == bc.FEATURE_CDS else 'ab initio prediction:Bakta:1.1')
+                qualifiers['protein_id'] = f"gnl|Bakta|{feature['locus']}"
+                if('ncbi_nrp_id' in feature.get('ups', {})):
+                    nrp_id = feature['ups']['ncbi_nrp_id']
+                    inference.append(f'similar to AA sequence:{bc.DB_XREF_REFSEQ_NRP}:{nrp_id}')
+                elif('uniparc_id' in feature.get('ups', {})):
+                    uniparc_id = feature['ups']['uniparc_id']
+                    inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIPROTKB}:{uniparc_id}')
+                elif('uniref100_id' in feature.get('ips', {})):
+                    ips_subject_id = feature['ips']['uniref100_id']
+                    inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIPROTKB}:{ips_subject_id}')
+                elif('uniref90_id' in feature.get('psc', {}) and feature.get('psc', {}).get('valid', False)):
+                    psc_subject_id = feature['psc']['uniref90_id']
+                    inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIPROTKB}:{psc_subject_id}')
+                elif('uniref50_id' in feature.get('pscc', {})):
+                    pscc_subject_id = feature['psc']['uniref50_id']
+                    inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIPROTKB}:{pscc_subject_id}')
                 qualifiers['inference'] = inference
                 if(cfg.compliant):
                     for note in qualifiers['note']:  # move EC numbers from note to EC_number
