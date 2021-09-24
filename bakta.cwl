@@ -34,12 +34,122 @@ inputs:
     id: db
     inputBinding: {prefix: --db}
     type: Directory
+  - doc: Output directory (default = current working directory)
+    id: output
+    inputBinding: {prefix: --output}
+    type: Directory
+  - doc: Output files prefix
+    id: prefix
+    inputBinding: {prefix: --prefix}
+    type: string
+  - doc: Min contig length
+    id: min_contig_length
+    inputBinding: {prefix: --min-contig-length}
+    type: int
+  - doc: Genus
+    id: genus
+    inputBinding: {prefix: --genus}
+    type: string
+  - doc: Species
+    id: species
+    inputBinding: {prefix: --species}
+    type: string
+  - doc: Strain
+    id: strain
+    inputBinding: {prefix: --strain}
+    type: string
+  - doc: All sequences are complete replicons (chromosome/plasmid[s])
+    id: complete
+    inputBinding: {prefix: --complete}
+    type: boolean
+  - doc: Prodigal training file for CDS prediction
+    id: prodigal_tf_file
+    inputBinding: {prefix: --prodigal-tf}
+    type: File
+  - doc: Translation table: 11/4 (default = 11)
+    id: translation_table
+    inputBinding: {prefix: --translation-table}
+    type: int
+  - doc: Locus tag
+    id: locus_tag
+    inputBinding: {prefix: --locus-tag}
+    type: string
+  - doc: Keep original contig headers
+    id: keep_contig_headers
+    inputBinding: {prefix: --keep-contig-headers}
+    type: boolean
+  - doc: Replicon information table (tsv/csv)
+    id: replicons
+    inputBinding: {prefix: --replicons}
+    type: File
+  - doc: Force Genbank/ENA/DDJB compliance
+    id: compliant
+    inputBinding: {prefix: --compliant}
+    type: boolean
+  - doc: Fasta file of trusted protein sequences for CDS annotation
+    id: proteins
+    inputBinding: {prefix: --proteins}
+    type: File
+  - doc: Skip tRNA detection & annotation
+    id: skip_tRNA
+    inputBinding: {prefix: --skip-trna}
+    type: boolean
+  - doc: Skip tmRNA detection & annotation
+    id: skip_tmrna
+    inputBinding: {prefix: --skip-tmrna}
+    type: boolean
+  - doc: Skip rRNA detection & annotation
+    id: skip_rrna
+    inputBinding: {prefix: --skip-rrna}
+    type: boolean
+  - doc: Skip ncRNA detection & annotation
+    id: skip_ncrna
+    inputBinding: {prefix: --skip-ncrna}
+    type: boolean
+  - doc: Skip ncRNA region detection & annotation
+    id: skip_ncrna_region
+    inputBinding: {prefix: --skip-ncrna-region}
+    type: boolean
+  - doc: Skip CRISPR detection & annotation
+    id: skip_crispr
+    inputBinding: {prefix: --skip-crispr}
+    type: boolean
+  - doc: Skip CDS detection & annotation
+    id: skip_cds
+    inputBinding: {prefix: --skip-cds}
+    type: boolean
+  - doc: Skip sORF detection & annotation
+    id: skip_sorf
+    inputBinding: {prefix: --skip-sorf}
+    type: boolean
+  - doc: Skip gap detection & annotation
+    id: skip_gap
+    inputBinding: {prefix: --skip-gap}
+    type: boolean
+  - doc: Skip ori detection & annotation
+    id: skip_ori
+    inputBinding: {prefix: --skip-ori}
+    type: boolean
+  - doc: Directory for temporary files (default = system dependent auto detection)
+    id: tmp_dir
+    inputBinding: {prefix: --tmp-dir}
+    type: Directory
   - doc: Threads
     id: threads
     inputBinding: {prefix: --threads}
     type: int
 
 outputs:
+  - doc: Hypothetical CDS AA sequences as Fasta
+    id: hypo_sequences_cds
+    type: File
+    format: edam:format_1929
+    outputBinding: {glob: '*.hypotheticals.faa'}
+  - doc: Information on hypothetical CDS as TSV
+    id: hypo_annotation_tsv
+    type: File
+    format: edam:format_1929
+    outputBinding: {glob: '*.hypotheticals.tsv'}
   - doc: Annotation as TSV
     id: annotation_tsv
     type: File
@@ -70,7 +180,12 @@ outputs:
     type: File
     format: edam:format_1929
     outputBinding: {glob: '*.fna'}
-  - doc: CDS as Fasta
+  - doc: Gene DNA sequences as Fasta
+    id: sequences_fna
+    type: File
+    format: edam:format_1929
+    outputBinding: {glob: '*.ffn'}
+  - doc: CDS AA sequences as Fasta
     id: sequences_cds
     type: File
     format: edam:format_1929
