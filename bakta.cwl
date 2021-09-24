@@ -54,7 +54,7 @@ outputs:
     id: annotation_gff3
     type: File
     format: edam:format_1929
-    outputBinding: {glob: '*.gff3}
+    outputBinding: {glob: '*.gff3'}
   - doc: Annotation as GenBank
     id: annotation_gbff
     type: File
