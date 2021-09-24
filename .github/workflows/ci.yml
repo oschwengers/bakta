@@ -18,8 +18,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: ["ubuntu-latest", "macos-latest"]
-        python-version: ["3.8"]
+        os: [ubuntu-latest, macos-latest]
+        python-version: [3.8]
     steps:
     - uses: actions/checkout@v2
     - uses: conda-incubator/setup-miniconda@v2

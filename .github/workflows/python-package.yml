@@ -1,4 +1,4 @@
-name: Pip
+name: CI (Pip)
 on:
   push:
     paths-ignore:
@@ -10,13 +10,11 @@ on:
       - 'README.md'
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-18.04, ubuntu-20.04, macos-latest]
         python-version: [3.8, 3.9]
-
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
