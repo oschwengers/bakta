@@ -1,4 +1,4 @@
-name: Lint (Flake8)
+name: CI (Lint/Flake8)
 on:
   push:
     paths-ignore:
