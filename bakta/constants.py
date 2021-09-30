@@ -29,6 +29,8 @@ HYPOTHETICAL_PROTEIN = 'hypothetical protein'  # hypothetical protein product de
 # DB identifiers
 ############################################################################
 DB_XREF_UNIPROTKB = 'UniProtKB/TrEMBL'
+DB_XREF_UNIPARC = 'UniParc'
+DB_XREF_UNIREF = 'UniRef'
 DB_XREF_REFSEQ_NRP = 'RefSeq'
 DB_XREF_EC = 'EC'
 DB_XREF_COG = 'COG'

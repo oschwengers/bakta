@@ -121,18 +121,18 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 if('ncbi_nrp_id' in feature.get('ups', {})):
                     nrp_id = feature['ups']['ncbi_nrp_id']
                     inference.append(f'similar to AA sequence:{bc.DB_XREF_REFSEQ_NRP}:{nrp_id}')
-                elif('uniparc_id' in feature.get('ups', {})):
-                    uniparc_id = feature['ups']['uniparc_id']
-                    inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIPROTKB}:{uniparc_id}')
                 elif('uniref100_id' in feature.get('ips', {})):
                     ips_subject_id = feature['ips']['uniref100_id']
-                    inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIPROTKB}:{ips_subject_id}')
+                    inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIREF}:{ips_subject_id}')
+                elif('uniparc_id' in feature.get('ups', {})):
+                    uniparc_id = feature['ups']['uniparc_id']
+                    inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIPARC}:{uniparc_id}')
                 elif('uniref90_id' in feature.get('psc', {}) and feature.get('psc', {}).get('valid', False)):
                     psc_subject_id = feature['psc']['uniref90_id']
-                    inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIPROTKB}:{psc_subject_id}')
+                    inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIREF}:{psc_subject_id}')
                 elif('uniref50_id' in feature.get('pscc', {})):
                     pscc_subject_id = feature['psc']['uniref50_id']
-                    inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIPROTKB}:{pscc_subject_id}')
+                    inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIREF}:{pscc_subject_id}')
                 qualifiers['inference'] = inference
                 if(cfg.compliant):
                     for note in qualifiers['note']:  # move EC numbers from note to EC_number
@@ -296,7 +296,7 @@ def revise_product_insdc(feature):
 
 def revise_dbxref_insdc(dbxrefs):
     """Remove INSDC non-compliant DbXrefs."""
-    insdc_valid_dbxrefs = [bc.DB_XREF_UNIPROTKB, bc.DB_XREF_GO, bc.DB_XREF_IS, bc.DB_XREF_PFAM, bc.DB_XREF_RFAM]
+    insdc_valid_dbxrefs = [bc.DB_XREF_UNIPROTKB, bc.DB_XREF_GO, bc.DB_XREF_PFAM, bc.DB_XREF_RFAM]
     valid_dbxrefs = []
     invalid_dbxrefs = []
     for dbxref in dbxrefs:

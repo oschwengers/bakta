@@ -67,7 +67,7 @@ def parse_annotation(rec):
         DB_PSCC_COL_UNIREF50: uniref_full_id,  # must not be NULL/None
         'db_xrefs': [
             'SO:0001217',
-            f'{bc.DB_XREF_UNIPROTKB}:{uniref_full_id}'
+            f'{bc.DB_XREF_UNIREF}:{uniref_full_id}'
         ]
     }
     # add non-empty PSCC annotations and attach database prefixes to identifiers

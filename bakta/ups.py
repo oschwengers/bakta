@@ -72,13 +72,13 @@ def parse_annotation(rec):
     # add non-empty PSC annotations and attach database prefixes to identifiers
     if(rec[DB_UPS_COL_UNIPARC]):
         ups[DB_UPS_COL_UNIPARC] = bc.DB_PREFIX_UNIPARC + rec[DB_UPS_COL_UNIPARC]
-        db_xrefs.append(f'{bc.DB_XREF_UNIPROTKB}:{ups[DB_UPS_COL_UNIPARC]}')
+        db_xrefs.append(f'{bc.DB_XREF_UNIPARC}:{ups[DB_UPS_COL_UNIPARC]}')
     if(rec[DB_UPS_COL_REFSEQ_NRP]):
         ups[DB_UPS_COL_REFSEQ_NRP] = bc.DB_PREFIX_REFSEQ_NRP + rec[DB_UPS_COL_REFSEQ_NRP]
         db_xrefs.append(f'{bc.DB_XREF_REFSEQ_NRP}:{ups[DB_UPS_COL_REFSEQ_NRP]}')
     if(rec[DB_UPS_COL_UNIREF100]):
         ups[DB_UPS_COL_UNIREF100] = bc.DB_PREFIX_UNIREF_100 + rec[DB_UPS_COL_UNIREF100]
-        db_xrefs.append(f'{bc.DB_XREF_UNIPROTKB}:{ups[DB_UPS_COL_UNIREF100]}')
+        db_xrefs.append(f'{bc.DB_XREF_UNIREF}:{ups[DB_UPS_COL_UNIREF100]}')
 
     ups['db_xrefs'] = db_xrefs
     return ups

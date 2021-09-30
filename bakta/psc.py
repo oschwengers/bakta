@@ -151,7 +151,7 @@ def parse_annotation(rec):
     }
     db_xrefs = [
         'SO:0001217',
-        f'{bc.DB_XREF_UNIPROTKB}:{psc[DB_PSC_COL_UNIREF90]}'
+        f'{bc.DB_XREF_UNIREF}:{psc[DB_PSC_COL_UNIREF90]}'
     ]
 
     # add non-empty PSC annotations and attach database prefixes to identifiers
@@ -169,7 +169,7 @@ def parse_annotation(rec):
             psc[DB_PSC_COL_EC] = ecs
     if(rec[DB_PSC_COL_UNIREF50]):
         psc[DB_PSC_COL_UNIREF50] = bc.DB_PREFIX_UNIREF_50 + rec[DB_PSC_COL_UNIREF50]
-        db_xrefs.append(f'{bc.DB_XREF_UNIPROTKB}:{psc[DB_PSC_COL_UNIREF50]}')
+        db_xrefs.append(f'{bc.DB_XREF_UNIREF}:{psc[DB_PSC_COL_UNIREF50]}')
     if(rec[DB_PSC_COL_COG_ID]):
         psc[DB_PSC_COL_COG_ID] = bc.DB_PREFIX_COG + rec[DB_PSC_COL_COG_ID]
         db_xrefs.append(f'{bc.DB_XREF_COG}:{psc[DB_PSC_COL_COG_ID]}')
