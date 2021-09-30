@@ -249,12 +249,12 @@ def predict_pfam(cdss):
         for cds in cdss:
             fh.write(f">{cds['aa_hexdigest']}\n{cds['aa']}\n")
 
-    output_path = cfg.tmp_path.joinpath('cds.pfam.hmm.tsv')
+    output_path = cfg.tmp_path.joinpath('cds.hypotheticals.pfam.hmm.tsv')
     cmd = [
         'hmmsearch',
         '--noali',
         '--cut_ga',  # use gathering cutoff
-        '--tblout', str(output_path),
+        '--domtblout', str(output_path),
         '--cpu', str(cfg.threads if cfg.threads <= 4 else 4),
         str(cfg.db_path.joinpath('pfam')),
         str(fasta_path)
@@ -283,11 +283,24 @@ def predict_pfam(cdss):
                 aa_hexdigest = cols[0]
                 cds = orf_by_aa_digest[aa_hexdigest]
 
+                domain_length = int(cols[5])
+                domain_start = int(cols[15])
+                domain_stop = int(cols[16])
+                domain_cov = (domain_stop - domain_start + 1) / domain_length
+                aa_start = int(cols[19])
+                aa_stop = int(cols[20])
+                aa_cov = (aa_stop - aa_start + 1) / len(cds['aa'])
+
                 pfam = OrderedDict()
-                pfam['id'] = cols[3]
-                pfam['name'] = cols[2]
-                pfam['evalue'] = float(cols[4])
-                pfam['score'] = float(cols[5])
+                pfam['id'] = cols[4]
+                pfam['name'] = cols[3]
+                pfam['length'] = domain_length
+                pfam['aa_cov'] = aa_cov
+                pfam['hmm_cov'] = domain_cov
+                pfam['evalue'] = float(cols[6])
+                pfam['score'] = float(cols[7])
+                pfam['start'] = aa_start
+                pfam['stop'] = aa_stop
 
                 if('pfams' not in cds):
                     cds['pfams'] = []
@@ -298,8 +311,8 @@ def predict_pfam(cdss):
                 pfam_hits.append(cds)
                 cds_pfams_hits[aa_hexdigest] = cds
                 log.info(
-                    'pfam detected: contig=%s, start=%i, stop=%i, strand=%s, pfam-id=%s, evalue=%1.1e, bitscore=%f, name=%s',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], pfam['id'], pfam['evalue'], pfam['score'], pfam['name']
+                    'pfam detected: contig=%s, start=%i, stop=%i, strand=%s, pfam-id=%s, length=%i, aa-start=%i, aa-stop=%i, aa-cov=%1.1f, hmm-cov=%1.1f, evalue=%1.1e, bitscore=%1.1f, name=%s',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], pfam['id'], pfam['length'], pfam['start'], pfam['stop'], pfam['aa_cov'], pfam['hmm_cov'], pfam['evalue'], pfam['score'], pfam['name']
                 )
     log.info('predicted-pfams=%i, CDS-w/-pfams=%i', len(pfam_hits), len(cds_pfams_hits))
     return cds_pfams_hits.values()
