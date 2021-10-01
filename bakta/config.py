@@ -60,6 +60,8 @@ def setup(args):
     """Test environment and build a runtime configuration."""
     # runtime configurations
     global env, threads, verbose
+    env['BLAST_USAGE_REPORT'] = 'false'  # prevent BLAST from contacting NCBI
+
     threads = args.threads
     if(threads <= 0):
         log.error("wrong argument for 'threads' parameter! threads=%i", threads)
