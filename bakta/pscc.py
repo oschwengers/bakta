@@ -22,7 +22,7 @@ def lookup(features):
     no_pscc_lookups = 0
     try:
         rec_futures = []
-        with sqlite3.connect(f"file:{cfg.db_path.joinpath('bakta.db')}?mode=ro", uri=True, check_same_thread=False) as conn:
+        with sqlite3.connect(f"file:{cfg.db_path.joinpath('bakta.db')}?mode=ro&nolock=1&cache=shared", uri=True, check_same_thread=False) as conn:
             conn.execute('PRAGMA omit_readlock;')
             conn.row_factory = sqlite3.Row
             with ThreadPoolExecutor(max_workers=max(10, cfg.threads)) as tpe:  # use min 10 threads for IO bound non-CPU lookups
