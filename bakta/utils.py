@@ -352,6 +352,7 @@ def qc_contigs(contigs, replicons):
 
     complete_genome = True
     plasmid_number = 1
+    contig_ids = set()
     for contig in contigs:
         if(contig['length'] >= cfg.min_contig_length):
             contig_id_generated = f'{contig_prefix}_{contig_counter}'
@@ -373,7 +374,13 @@ def qc_contigs(contigs, replicons):
                 contig['type'] = bc.REPLICON_PLASMID
                 log.debug('qc: detected plasmid replicon type via description: id=%s, description=%s', contig['id'], contig['description'])
 
-            if(not cfg.keep_contig_headers):
+            if(cfg.keep_contig_headers):
+                if(contig['id'] in contig_ids):
+                    log.error('Fasta import: duplicated contig id! contig-id=%s', contig['id'])
+                    sys.exit(f"ERROR: Detected duplicated contig id! Contig ID ({contig['id']}) occures multiple times!")
+                else:
+                    contig_ids.add(contig['id'])
+            else:
                 contig['orig_id'] = contig['id']
                 contig['id'] = contig_id_generated
                 contig['orig_description'] = contig['description']
