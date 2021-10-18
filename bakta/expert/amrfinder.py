@@ -64,7 +64,7 @@ def search(cdss, cds_fasta_path):
                     expert_hit['model_cov'] = model_cov
                     identity = float(ident_ref_seq) / 100
                     expert_hit['identity'] = identity
-                    expert_hit['db_xrefs'] = [f'${bc.DB_XREF_NCBI_PROTEIN}:${accession_closest_seq}']
+                    expert_hit['db_xrefs'] = [f'{bc.DB_XREF_NCBI_PROTEIN}:{accession_closest_seq}']
                 else:
                     identity = 0
                     model_cov = 0
