@@ -8,9 +8,10 @@ assignees: ''
 ---
 
 **Describe the bug**
-To help users and fix any bugs and issues a concise description if beneficial and often necessary.
+To fix any bugs and issues and also to help other users who might face the same issues, a concise description is beneficial and often necessary.
 
 Therefore, please provide us with at least the following information:
-- what exactly happened
-- provide the detailed logs (execute Bakta via --verbose)
-- what installation of Bakta did you use: `BioConda`, `Pip`
+
+- Which commandos have been executed and what exactly happened
+- Detailed logs (execute Bakta with `--verbose`)
+- How did you install Bakta: `BioConda`, `Pip`
