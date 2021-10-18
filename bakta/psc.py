@@ -130,7 +130,7 @@ def lookup(features):
                     feature['contig'], feature['start'], feature['stop'], feature['strand'], psc.get(DB_PSC_COL_UNIREF90, ''), psc.get(DB_PSC_COL_EC, ''), psc.get(DB_PSC_COL_GENE, ''), psc.get(DB_PSC_COL_PRODUCT, '')
                 )
             else:
-                log.debug('lookup failed! uniref90_id=%s', uniref90_id)
+                log.debug('lookup: ID not found! uniref90_id=%s', uniref90_id)
     except Exception as ex:
         log.exception('Could not read PSCs from db!', ex)
         raise Exception('SQL error!', ex)
