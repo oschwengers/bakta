@@ -101,13 +101,13 @@ Bacta requires the following 3rd party executables which must be installed & exe
 
 - tRNAscan-SE (2.0.6) <https://doi.org/10.1101/614032> <http://lowelab.ucsc.edu/tRNAscan-SE>
 - Aragorn (1.2.38) <http://dx.doi.org/10.1093/nar/gkh152> <http://130.235.244.92/ARAGORN>
-- INFERNAL (1.1.2) <https://dx.doi.org/10.1093%2Fbioinformatics%2Fbtt509> <http://eddylab.org/infernal>
+- INFERNAL (1.1.4) <https://dx.doi.org/10.1093%2Fbioinformatics%2Fbtt509> <http://eddylab.org/infernal>
 - PILER-CR (1.06) <https://doi.org/10.1186/1471-2105-8-18> <http://www.drive5.com/pilercr>
 - Prodigal (2.6.3) <https://dx.doi.org/10.1186%2F1471-2105-11-119> <https://github.com/hyattpd/Prodigal>
 - Hmmer (3.3.1) <https://doi.org/10.1093/nar/gkt263> <http://hmmer.org>
-- Diamond (2.0.6) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
+- Diamond (2.0.11) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
 - Blast+ (2.7.1) <https://www.ncbi.nlm.nih.gov/pubmed/2231712> <https://blast.ncbi.nlm.nih.gov>
-- AMRFinderPlus (3.10.1) <https://github.com/ncbi/amr>
+- AMRFinderPlus (3.10.16) <https://github.com/ncbi/amr>
 
 On Ubuntu/Debian/Mint you can install these via:
 
