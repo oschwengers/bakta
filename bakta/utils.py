@@ -40,7 +40,7 @@ DEPENDENCY_PRODIGAL = (Version(2, 6, 3), Version(VERSION_MAX_DIGIT, VERSION_MAX_
 DEPENDENCY_HMMSEARCH = (Version(3, 3, 1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('hmmsearch', '-h'), ['--skip-cds', '--skip-sorf'])
 DEPENDENCY_DIAMOND = (Version(2, 0, 10), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('diamond', 'help'), ['--skip-cds', '--skip-sorf'])
 DEPENDENCY_BLASTN = (Version(2, 7, 1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('blastn', '-version'), ['--skip-ori'])
-DEPENDENCY_AMRFINDERPLUS = (Version(3, 10), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('amrfinder', '--version'), ['--skip-cds'])
+DEPENDENCY_AMRFINDERPLUS = (Version(3, 10, 16), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('amrfinder', '--version'), ['--skip-cds'])
 
 
 INSDC_ID_REGEX = re.compile(r'[^A-Za-z\d_.:*#-]')  # https://www.ncbi.nlm.nih.gov/WebSub/html/help/fasta.html
