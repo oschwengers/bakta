@@ -2,6 +2,7 @@ import logging
 import subprocess as sp
 
 import bakta.config as cfg
+import bakta.constants as bc
 
 
 log = logging.getLogger('EXPERT-AMRFINDER')
@@ -51,23 +52,28 @@ def search(cdss, cds_fasta_path):
                     cov_ref_seq, ident_ref_seq, alignment_length, accession_closest_seq, name_closest_seq, hmm_id, hmm_description
                 ) = line.split('\t')
                 cds = cds_by_hexdigest[aa_identifier]
-                query_cov = int(alignment_length) / len(cds['aa'])
-                model_cov = float(cov_ref_seq) / 100
-                identity = float(ident_ref_seq) / 100
                 expert_hit = {
                     'rank': 95,
                     'gene': gene if gene != '' else None,
                     'product': product,
-                    'query_cov': query_cov,
-                    'model_cov': model_cov,
-                    'identity': identity
+                    'method': method
                 }
+                if(method.lower() != 'hmm'):
+                    expert_hit['query_cov'] = int(alignment_length) / len(cds['aa'])
+                    model_cov = float(cov_ref_seq) / 100
+                    expert_hit['model_cov'] = model_cov
+                    identity = float(ident_ref_seq) / 100
+                    expert_hit['identity'] = identity
+                else:
+                    identity = 0
+                    model_cov = 0
+
                 if('expert' not in cds):
                     cds['expert'] = {}
                 cds['expert']['amrfinder'] = expert_hit
                 log.debug(
-                    'hit: gene=%s, product=%s, target-cov=%0.3f, identity=%0.3f, contig=%s, start=%i, stop=%i, strand=%s',
-                    gene, product, model_cov, identity, cds['contig'], cds['start'], cds['stop'], cds['strand']
+                    'hit: gene=%s, product=%s, method=%s, target-cov=%0.3f, identity=%0.3f, contig=%s, start=%i, stop=%i, strand=%s',
+                    gene, product, method, model_cov, identity, cds['contig'], cds['start'], cds['stop'], cds['strand']
                 )
                 cds_found.add(aa_identifier)
 
