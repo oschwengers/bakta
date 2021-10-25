@@ -570,28 +570,43 @@ contig_3    contig_3    circular-plasmid
 A manuscript is in preparation. To temporarily cite our work, please transitionally refer to:
 > Schwengers O., Jelonek L., Dieckmann M., Beyvers S., Blom J., Goesmann A. (2021). Bakta: Rapid & standardized annotation of bacterial genomes via alignment-free sequence identification. bioRxiv 2021.09.02.458689; doi: https://doi.org/10.1101/2021.09.02.458689
 
-Bakta is standing on the shoulder of giants taking advantage of many publicly available databases. If you find any of those used within Bakta useful, please credit these primary sources, as well:
+Bakta is *standing upon the shoulder of giants* taking advantage of many great software tools and databases. If you find any of these particularly useful, please cite any of these primary sources, as well.
 
-- UniProt: <https://doi.org/10.1093/nar/gky1049>
-- RefSeq: <https://doi.org/10.1093/nar/gkx1068>
+### Tools
+
+- tRNAscan-SE 2.0 <10.1093/nar/gkab688>
+- Aragorn <10.1093/nar/gkh152>
+- Infernal <10.1093/bioinformatics/btt509>
+- PilerCR <10.1186/1471-2105-8-18>
+- Prodigal <10.1186/1471-2105-11-119>
+- Diamond <10.1038/s41592-021-01101-x>
+- BLAST+ <10.1186/1471-2105-10-421>
+- HMMER <10.1371/journal.pcbi.1002195>
+- AMRFinderPlus <10.1038/s41598-021-91456-0>
+
+### Databases
+
 - Rfam: <https://doi.org/10.1002/cpbi.51>
-- AMRFinder: <https://doi.org/10.1128/AAC.00483-19>
-- ISFinder: <https://doi.org/10.1093/nar/gkj014>
-- AntiFam: <https://doi.org/10.1093/database/bas003>
 - Mob-suite: <https://doi.org/10.1099/mgen.0.000206>
 - DoriC: <https://doi.org/10.1093/nar/gky1014>
+- AntiFam: <https://doi.org/10.1093/database/bas003>
+- UniProt: <https://doi.org/10.1093/nar/gky1049>
+- RefSeq: <https://doi.org/10.1093/nar/gkx1068>
 - COG: <https://doi.org/10.1093/bib/bbx117>
+- AMRFinder: <https://doi.org/10.1128/AAC.00483-19>
+- ISFinder: <https://doi.org/10.1093/nar/gkj014>
+- Pfam: <https://doi.org/10.1093/nar/gky995>
 - VFDB: <https://doi.org/10.1093/nar/gky1080>
 
 ## FAQ
 
-* __AMRFinder fails__
+- __AMRFinder fails__
 If AMRFinder constantly crashes even on fresh setups and Bakta's database was downloaded manually, then AMRFinder needs to setup its own internal database. This is required only once: `amrfinder_update --force_update --database <bakta-db>/amrfinderplus-db`. You could also try Bakta's internal database download logic automatically taking care of this: `bakta_db download --output <bakta-db>`
 
-* __Nice, but I'm mising XYZ...__
+-__Nice, but I'm mising XYZ...__
 Bakta is quite new and we're keen to constantly improve it and further expand its feature set. In case there's anything missing, please do not hesitate to open an issue and ask for it!
 
-* __Bakta is running too long without CPU load... why?__
+- __Bakta is running too long without CPU load... why?__
 Bakta takes advantage of an SQLite DB which results in high storage IO loads. If this DB is stored on a remote / network volume, the lookup of IPS/PSC annotations might take a long time. In these cases, please, consider moving the DB to a local volume or hard drive.
 
 ## Issues and Feature Requests
