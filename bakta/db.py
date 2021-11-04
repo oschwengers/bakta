@@ -242,7 +242,7 @@ def main():
             for db_file_path in db_path.iterdir():
                 db_file_path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
         except:
-            sys.exit(f'ERROR: cannot set read(|execute) permissions on new database! path={db_path}, owner={db_path.owner()}, group={db_path.group()}, permissions={oct(db_path.stat().st_mode )[-3:]}')
+            sys.exit(f'ERROR: cannot set read|execute permissions on new database! path={db_path}, owner={db_path.owner()}, group={db_path.group()}, permissions={oct(db_path.stat().st_mode )[-3:]}')
 
         print('update AMRFinderPlus database...')
         update_amrfinderplus_db(db_path)
