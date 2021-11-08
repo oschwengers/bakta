@@ -140,7 +140,6 @@ TOPOLOGY_LINEAR = 'linear'
 DISCARD_TYPE_SPURIOUS = 'spurious'
 DISCARD_TYPE_OVERLAP = 'overlap'
 
-DB_VERSIONS_URL = 'https://raw.githubusercontent.com/oschwengers/bakta/master/db-versions.json'
-CITATION = '''Schwengers O., Jelonek L., Dieckmann M., Beyvers S., Blom J., Goesmann A. (2021).
-Bakta: Rapid & standardized annotation of bacterial genomes via alignment-free sequence identification.
-bioRxiv 2021.09.02.458689; doi: https://doi.org/10.1101/2021.09.02.458689'''
+CITATION = '''Schwengers O., Jelonek L., Dieckmann M. A., Beyvers S., Blom J., Goesmann A. (2021).
+Bakta: rapid and standardized annotation of bacterial genomes via alignment-free sequence identification.
+Microbial Genomics, 7(11). https://doi.org/10.1099/mgen.0.000685'''

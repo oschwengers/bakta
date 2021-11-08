@@ -6,8 +6,8 @@ authors:
     given-names: Oliver
     orcid: https://orcid.org/0000-0003-4216-2721
 title: "Rapid & standardized annotation of bacterial genomes & plasmids."
-version: 1.1.1
-date-released: 2021-09-01
+version: 1.2.2
+date-released: 2021-10-18
 keywords: 
   - bioinformatics
   - "genome-annotation"
@@ -28,7 +28,7 @@ preferred-citation:
       orcid: https://orcid.org/0000-0002-9973-0374
     -
       family-names: Dieckmann
-      given-names: Marius
+      given-names: Marius Alfred
       orcid: https://orcid.org/0000-0001-5130-546X
     -
       family-names: Sebastian
@@ -42,8 +42,8 @@ preferred-citation:
       family-names: Goesmann
       given-names: Alexander
       orcid: https://orcid.org/0000-0002-7086-2568
-  journal: "bioRxiv"
-  title: "Bakta: Rapid & standardized annotation of bacterial genomes via alignment-free sequence identification"
+  journal: "Microbial Genomics"
+  title: "Bakta: rapid & standardized annotation of bacterial genomes via alignment-free sequence identification"
   year: 2021
-  month: 9
-  doi: 10.1101/2021.09.02.458689
+  month: 11
+  doi: 10.1099/mgen.0.000685
