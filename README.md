@@ -21,6 +21,7 @@ Bakta is a tool for the rapid & standardized annotation of bacterial genomes and
 - [Annotation Workflow](#annotation-workflow)
 - [Database](#database)
 - [Genome Submission](#genome-submission)
+- [Web version](#web-version)
 - [Citation](#citation)
 - [FAQ](#faq)
 - [Issues & Feature Requests](#issues-and-feature-requests)
@@ -31,7 +32,7 @@ Bakta is a tool for the rapid & standardized annotation of bacterial genomes and
 Bakta provides a large and taxonomy-independent database comprising the entire UniProt's [UniRef90/UniRef50](https://www.uniprot.org/uniref/) protein sequence cluster universe addressing the annotation of increasing numbers of sequenced new species.
 
 - **Protein sequence identification**
-Bakta exactly identifies known identical protein sequences (`IPS`) from RefSeq and UniProt allowing the fine-grained annotation of gene alleles (`AMR`) or closely related but distinct protein families. This is achieved via an alignment-free sequence identification (`AFSI`) approach using full-length `MD5` protein sequence hash digests.
+Bakta exactly identifies known identical protein sequences (**IPS**) from RefSeq and UniProt allowing the fine-grained annotation of gene alleles (`AMR`) or closely related but distinct protein families. This is achieved via an alignment-free sequence identification (**AFSI**) approach using full-length `MD5` protein sequence hash digests.
 
 - **Fast**
 This AFSI approach substantially accellerates the annotation process by avoiding computationally expensive homology searches for identified genes. Thus, Bakta can annotate a typical bacterial genome in 10 &plusmn;5 min on a laptop, plasmids in a couple of seconds/minutes.
@@ -62,8 +63,7 @@ By annotating bacterial genomes in a standardized, taxonomy-independent, high-th
 
 ## Installation
 
-Bakta can be installed via BioConda, Docker, Singularity and Pip.
-However, we encourage to use [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) or [Docker](https://www.docker.com/get-started)/[Singularity](https://sylabs.io/singularity) to automatically install all required 3rd party dependencies.
+Bakta can be installed via BioConda, Docker, Singularity and Pip. However, we encourage to use [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html) or [Docker](https://www.docker.com/get-started)/[Singularity](https://sylabs.io/singularity) to automatically install all required 3rd party dependencies.
 
 In all cases a mandatory [database](#database-download) must be downloaded.
 
@@ -114,14 +114,6 @@ Bacta requires the following 3rd party executables which must be installed & exe
 - Diamond (2.0.11) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
 - Blast+ (2.7.1) <https://www.ncbi.nlm.nih.gov/pubmed/2231712> <https://blast.ncbi.nlm.nih.gov>
 - AMRFinderPlus (3.10.16) <https://github.com/ncbi/amr>
-
-On Ubuntu/Debian/Mint you can install these via:
-
-```bash
-$ sudo apt install trnascan-se aragorn infernal pilercr prodigal hmmer diamond-aligner ncbi-blast+
-```
-
-Tested with Ubuntu 20.04 - some older distributions might provide outdated versions, *e.g.* trnascan-se in Ubuntu 18.04. In these cases dependencies must be installed manually.
 
 ### Database download
 
@@ -193,7 +185,7 @@ $ bakta --db <db-path> --verbose --output results/ --prefix ecoli123 --locus-tag
 
 ### Input
 
-Bakta accepts bacterial genomes and plasmids (complete / draft assemblies) in (zipped) fasta format. For a full description of how further genome information can be provided and workflow customizations can be set, please have a look at the [Usage](#usage) section.
+Bakta accepts bacterial genomes and plasmids (complete / draft assemblies) in (zipped) fasta format. For a full description of how further genome information can be provided and workflow customizations can be set, please have a look at the [Usage](#usage) section or this [manual](https://bakta.readthedocs.io/).
 
 #### Replicon meta data table
 
@@ -571,12 +563,20 @@ contig_2    contig_2    circular-plasmid
 contig_3    contig_3    circular-plasmid
 ```
 
+## Web version
+
+For further convenience, we developed an accompanying web application available at https://bakta.computational.bio.
+
+This interactive web application provides an interactive genome browsers, aggregated feature counts and a searchable data table with detailed information on each predicted feature as well as dbxref-linked records to public databases.
+
+Of note, this web application can also be used to visualize offline annotation results conducted by using the command line version. Therefore, the web application provides an offline viewer accepting JSON result files which are parsed and visualized locally within the browser without sending any data to the server.
+
 ## Citation
 
 If you use Bakta in your research, please cite this paper:
 > Schwengers O., Jelonek L., Dieckmann M. A., Beyvers S., Blom J., Goesmann A. (2021). Bakta: rapid and standardized annotation of bacterial genomes via alignment-free sequence identification. Microbial Genomics, 7(11). https://doi.org/10.1099/mgen.0.000685
 
-Bakta is *standing upon the shoulder of giants* taking advantage of many great software tools and databases. If you find any of these particularly useful, please cite any of these primary sources, as well.
+Bakta is *standing on the shoulder of giants* taking advantage of many great software tools and databases. If you find any of these particularly useful, please cite these primary sources, as well.
 
 ### Tools
 
