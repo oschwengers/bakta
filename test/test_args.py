@@ -13,6 +13,7 @@ from .conftest import FILES, SKIP_PARAMETERS
         ([]),  # not provided
         (['']),  # empty
         (['foo.fasta']),  # not existing
+        (['fo o.fasta']),  # not existing (whitespace)
         (['test/data/invalid.fasta'])  # invalid fasta DNA alphabet
     ]
 )
@@ -72,6 +73,34 @@ def test_database_ok(tmpdir):
     assert proc.returncode == 0
 
 
+def test_output_failing():
+    # test database arguments
+    cmd_line = ['bin/bakta', '--output', '/', 'test/data/draft-w-plasmids.fna']
+    proc = run(cmd_line)
+    assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--tmp-dir'])  # not provided
+    ]
+)
+def test_tmp_dir_failiing(parameters, tmpdir):
+    # test tmp dir arguments
+    cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna']
+    proc = run(cmd_line)
+    assert proc.returncode != 0
+
+
+def test_tmp_dir_ok(tmpdir):
+    # test tmp dir arguments
+
+    # parameter OK
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--tmp-dir', ''] + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
+    assert proc.returncode == 0
+
+
 @pytest.mark.parametrize(
     'parameters',
     [
@@ -82,8 +111,6 @@ def test_database_ok(tmpdir):
 )
 def test_prodigal_tf_failiing(parameters, tmpdir):
     # test prodigal training file arguments
-
-    # missing path
     cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna']
     proc = run(cmd_line)
     assert proc.returncode != 0
@@ -112,8 +139,6 @@ def test_prodigal_tf_ok(tmpdir):
 )
 def test_replicons_failiing(parameters, tmpdir):
     # test replicons file arguments
-
-    # missing path
     proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
     assert proc.returncode != 0
 
@@ -149,8 +174,6 @@ def test_replicons_ok(tmpdir):
 )
 def test_proteins_failiing(parameters, tmpdir):
     # test proteins file arguments
-
-    # missing path
     proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
     assert proc.returncode != 0
 
@@ -167,9 +190,87 @@ def test_proteins_ok(tmpdir):
         assert Path.exists(tmpdir_path.joinpath(file))
 
 
-def test_output_failing():
-    # test database arguments
-    cmd_line = ['bin/bakta', '--output', '/', 'test/data/draft-w-plasmids.fna']
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--locus']),  # not provided
+        (['--locus', '']),  # empty
+        (['--locus', 'fo o'])  # containing whitespace
+    ]
+)
+def test_locus_failiing(parameters, tmpdir):
+    # test locus prefix arguments
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
+    assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--locus-tag']),  # not provided
+        (['--locus-tag', '']),  # empty
+        (['--locus-tag', 'fo o'])  # containing whitespace
+    ]
+)
+def test_locustag_failiing(parameters, tmpdir):
+    # test locus-tag prefix arguments
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
+    assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--genus']),  # not provided
+        (['--genus', ''])  # empty
+    ]
+)
+def test_genus_failiing(parameters, tmpdir):
+    # test genus prefix arguments
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
+    assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--species']),  # not provided
+        (['--species', ''])  # empty
+    ]
+)
+def test_genus_failiing(parameters, tmpdir):
+    # test genus prefix arguments
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
+    assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--strain']),  # not provided
+        (['--strain', ''])  # empty
+    ]
+)
+def test_genus_failiing(parameters, tmpdir):
+    # test genus prefix arguments
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
+    assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--gram']),  # not provided
+        (['--gram', '']),  # empty
+        (['--gram', 'foo']),  # wrong string
+        (['--gram', '-1']),  # number
+        (['--gram', '0']),  # number
+        (['--gram', '1.1']),  # number
+    ]
+)
+def test_threads_failing(parameters, tmpdir):
+    # test gram arguments
+    cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna']
     proc = run(cmd_line)
     assert proc.returncode != 0
 
@@ -202,6 +303,24 @@ def test_threads_failing(parameters, tmpdir):
         (['--min-contig-length', '-1']),  # smaller than zero
         (['--min-contig-length', '0']),  # zero
         (['--min-contig-length', '1.1']),  # float
+    ]
+)
+def test_min_contig_length_failing(parameters, tmpdir):
+    # test min-contig-length arguments
+    cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna']
+    proc = run(cmd_line)
+    assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--translation-table']),  # not provided
+        (['--translation-table', '']),  # empty
+        (['--translation-table', 'foo']),  # string
+        (['--translation-table', '-1']),  # smaller than zero
+        (['--translation-table', '0']),  # zero
+        (['--translation-table', '1.1']),  # float
     ]
 )
 def test_min_contig_length_failing(parameters, tmpdir):
