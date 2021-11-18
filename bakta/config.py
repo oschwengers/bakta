@@ -112,7 +112,7 @@ def setup(args):
             log.error('unvalid database path: type=base-dir, path=%s', db_tmp_path)
             sys.exit('ERROR: database neither provided nor auto-detected!\nPlease, download the mandatory db and provide it via either the --db parameter, a BAKTA_DB environment variable or copy it into the Bakta base directory.\nFor further information please read the readme.md')
 
-    if(args.tmp_dir):
+    if(args.tmp_dir is not None):
         tmp_path = Path(args.tmp_dir)
         if(not tmp_path.exists()):
             log.debug('dedicated temp dir does not exist! tmp-dir=%s', tmp_path)
@@ -183,8 +183,22 @@ def setup(args):
     gram = args.gram
     log.info('gram=%s', gram)
     locus = args.locus
+    if(locus is not None):
+        if(locus == ''):
+            log.error("Empty 'locus' parameter! locus=%s", locus)
+            sys.exit(f"ERROR: empty 'locus' parameter!")
+        if(' ' in locus):
+            log.error("Whitespace character in 'locus' parameter! locus=%s", locus)
+            sys.exit(f"ERROR: whitespace character ({locus}) in 'locus' parameter!")
     log.info('locus=%s', locus)
     locus_tag = args.locus_tag
+    if(locus_tag is not None):
+        if(locus_tag == ''):
+            log.error("Empty 'locus-tag' parameter! locus=%s", locus_tag)
+            sys.exit(f"ERROR: empty 'locus-tag' parameter!")
+        if(' ' in locus_tag):
+            log.error("Whitespace character in 'locus-tag' parameter! locus-tag=%s", locus_tag)
+            sys.exit(f"ERROR: whitespace character ({locus_tag}) in 'locus-tag' parameter!")
     log.info('locus-tag=%s', locus_tag)
     keep_contig_headers = args.keep_contig_headers
     log.info('keep_contig_headers=%s', keep_contig_headers)
@@ -217,7 +231,7 @@ def setup(args):
             user_proteins = user_proteins_path
         except:
             log.error('provided user proteins file not valid! path=%s', user_proteins)
-            sys.exit(f'ERROR: User proteins file ({user_proteins}) not valid!')
+            sys.exit(f'ERROR: user proteins file ({user_proteins}) not valid!')
     log.info('user-proteins=%s', user_proteins)
 
     # workflow configurations
