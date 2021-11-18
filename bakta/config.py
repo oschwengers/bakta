@@ -173,8 +173,7 @@ def setup(args):
     log.info('strain=%s', strain)
     plasmid = args.plasmid
     log.info('plasmid=%s', plasmid)
-    taxon = f'{genus} {species} {strain}'
-    taxon = ' '.join(taxon.replace('None', '').split())
+    taxon = ' '.join([t for t in [genus, species, strain] if t is not None])
     if(taxon == ''):
         taxon = None
 
