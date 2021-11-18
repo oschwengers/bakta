@@ -238,8 +238,8 @@ def test_genus_failiing(parameters, tmpdir):
         (['--species', ''])  # empty
     ]
 )
-def test_genus_failiing(parameters, tmpdir):
-    # test genus prefix arguments
+def test_species_failiing(parameters, tmpdir):
+    # test species prefix arguments
     proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
     assert proc.returncode != 0
 
@@ -251,8 +251,8 @@ def test_genus_failiing(parameters, tmpdir):
         (['--strain', ''])  # empty
     ]
 )
-def test_genus_failiing(parameters, tmpdir):
-    # test genus prefix arguments
+def test_strain_failiing(parameters, tmpdir):
+    # test strain prefix arguments
     proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
     assert proc.returncode != 0
 
