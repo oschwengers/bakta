@@ -195,6 +195,8 @@ def test_proteins_ok(tmpdir):
     [
         (['--locus']),  # not provided
         (['--locus', '']),  # empty
+        (['--locus', ' ']),  # whitespace only
+        (['--locus', '  ']),  # whitespaces only
         (['--locus', 'fo o'])  # containing whitespace
     ]
 )
@@ -209,6 +211,8 @@ def test_locus_failiing(parameters, tmpdir):
     [
         (['--locus-tag']),  # not provided
         (['--locus-tag', '']),  # empty
+        (['--locus-tag', ' ']),  # whitespace only
+        (['--locus-tag', '  ']),  # whitespaces only
         (['--locus-tag', 'fo o'])  # containing whitespace
     ]
 )
