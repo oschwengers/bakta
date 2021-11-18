@@ -222,7 +222,9 @@ def test_locustag_failiing(parameters, tmpdir):
     'parameters',
     [
         (['--genus']),  # not provided
-        (['--genus', ''])  # empty
+        (['--genus', '']),  # empty
+        (['--genus', ' ']),  # whitespace only
+        (['--genus', '  '])  # whitespaces only
     ]
 )
 def test_genus_failiing(parameters, tmpdir):
@@ -235,7 +237,9 @@ def test_genus_failiing(parameters, tmpdir):
     'parameters',
     [
         (['--species']),  # not provided
-        (['--species', ''])  # empty
+        (['--species', '']),  # empty
+        (['--species', ' ']),  # whitespace only
+        (['--species', '  '])  # whitespaces only
     ]
 )
 def test_species_failiing(parameters, tmpdir):
@@ -248,7 +252,9 @@ def test_species_failiing(parameters, tmpdir):
     'parameters',
     [
         (['--strain']),  # not provided
-        (['--strain', ''])  # empty
+        (['--strain', '']),  # empty
+        (['--strain', ' ']),  # whitespace only
+        (['--strain', '  '])  # whitespaces only
     ]
 )
 def test_strain_failiing(parameters, tmpdir):
