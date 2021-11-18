@@ -147,12 +147,26 @@ def setup(args):
     # organism configurations
     global genus, species, strain, plasmid, taxon
     genus = args.genus
-    if(genus):
-        genus = genus.capitalize()
+    if(genus is not None):
+        if(genus == ''):
+            log.error("Empty 'genus' parameter! genus=%s", genus)
+            sys.exit(f"ERROR: empty 'genus' parameter!")
+        else:
+            genus = genus.capitalize()
     log.info('genus=%s', genus)
     species = args.species
+    if(species is not None):
+        if(species == ''):
+            log.error("Empty 'species' parameter! species=%s", species)
+            sys.exit(f"ERROR: empty 'species' parameter!")
+        else:
+            species = species.lower()
     log.info('species=%s', species)
     strain = args.strain
+    if(strain is not None):
+        if(strain == ''):
+            log.error("Empty 'strain' parameter! strain=%s", species)
+            sys.exit(f"ERROR: empty 'strain' parameter!")
     log.info('strain=%s', strain)
     plasmid = args.plasmid
     log.info('plasmid=%s', plasmid)
