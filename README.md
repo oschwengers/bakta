@@ -609,7 +609,7 @@ Bakta is *standing on the shoulder of giants* taking advantage of many great sof
 - __AMRFinder fails__
 If AMRFinder constantly crashes even on fresh setups and Bakta's database was downloaded manually, then AMRFinder needs to setup its own internal database. This is required only once: `amrfinder_update --force_update --database <bakta-db>/amrfinderplus-db`. You could also try Bakta's internal database download logic automatically taking care of this: `bakta_db download --output <bakta-db>`
 
--__Nice, but I'm mising XYZ...__
+- __Nice, but I'm mising XYZ...__
 Bakta is quite new and we're keen to constantly improve it and further expand its feature set. In case there's anything missing, please do not hesitate to open an issue and ask for it!
 
 - __Bakta is running too long without CPU load... why?__
