@@ -43,9 +43,6 @@ DEPENDENCY_BLASTN = (Version(2, 7, 1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DI
 DEPENDENCY_AMRFINDERPLUS = (Version(3, 10, 16), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('amrfinder', '--version'), ['--skip-cds'])
 
 
-INSDC_ID_REGEX = re.compile(r'[^A-Za-z\d_.:*#-]')  # https://www.ncbi.nlm.nih.gov/WebSub/html/help/fasta.html
-
-
 def init_parser():
     parser = argparse.ArgumentParser(
         prog='bakta',
@@ -441,8 +438,7 @@ def qc_contigs(contigs, replicons):
                 if(len(contig['id']) > 25):  # max 25 characters
                     log.error('INSDC compliance: contig id larger than 25! contig-id=%s', contig['id'])
                     sys.exit(f"ERROR: INSDC compliance failed! Contig ID ({contig['id']}) larger than 25 characers!")
-                unvalid_char_match = INSDC_ID_REGEX.search(contig['id'])
-                if(unvalid_char_match is not None):  # invalid characters
+                if(bc.RE_INSDC_ID.fullmatch(contig['id']) is None):  # invalid characters
                     log.error('INSDC compliance: contig id contains invalid characters! contig-id=%s', contig['id'])
                     sys.exit(f"ERROR: INSDC compliance failed! Contig ID ({contig['id']}) contains invalid characters!")
 

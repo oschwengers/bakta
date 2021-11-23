@@ -208,6 +208,9 @@ def setup(args):
         if(' ' in locus):
             log.error("Whitespace character in 'locus' parameter! locus=%s", locus)
             sys.exit(f"ERROR: whitespace character ({locus}) in 'locus' parameter!")
+        if(bc.RE_INSDC_ID_PREFIX.fullmatch(locus) is None):
+            log.error("Invalid 'locus' parameter! locus=%s", locus)
+            sys.exit(f"ERROR: invalid 'locus' parameter ({locus})!\nLocus prefixes must contain between 1 and 20 alphanumeric and '-_' characters.")
     log.info('locus=%s', locus)
     locus_tag = args.locus_tag
     if(locus_tag is not None):
