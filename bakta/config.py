@@ -6,6 +6,8 @@ import tempfile
 
 from pathlib import Path
 
+import bakta.constants as bc
+
 
 log = logging.getLogger('CONFIG')
 
@@ -215,6 +217,9 @@ def setup(args):
         if(' ' in locus_tag):
             log.error("Whitespace character in 'locus-tag' parameter! locus-tag=%s", locus_tag)
             sys.exit(f"ERROR: whitespace character ({locus_tag}) in 'locus-tag' parameter!")
+        if(bc.RE_INSDC_LOCUSTAG_PREFIX.fullmatch(locus_tag) is None):
+            log.error("Invalid 'locus-tag' parameter! locus-tag=%s", locus_tag)
+            sys.exit(f"ERROR: invalid 'locus-tag' parameter ({locus_tag})!\nLocus tag prefixes must contain between 3 and 12 alphanumeric characters and start with a letter.")
     log.info('locus-tag=%s', locus_tag)
     keep_contig_headers = args.keep_contig_headers
     log.info('keep_contig_headers=%s', keep_contig_headers)
