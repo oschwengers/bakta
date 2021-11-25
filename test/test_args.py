@@ -19,7 +19,7 @@ from .conftest import FILES, SKIP_PARAMETERS
 )
 def test_genome_failing(parameters, tmpdir):
     # test genome arguments
-    cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters
+    cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS
     proc = run(cmd_line)
     assert proc.returncode != 0
 
@@ -36,7 +36,7 @@ def test_genome_failing(parameters, tmpdir):
 def test_database_failing_parameter(parameters, tmpdir):
     # test database arguments
 
-    cmd_line = ['bin/bakta', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna']
+    cmd_line = ['bin/bakta', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna']
     proc = run(cmd_line)
     assert proc.returncode != 0
 
@@ -88,7 +88,7 @@ def test_output_failing():
 )
 def test_tmp_dir_failiing(parameters, tmpdir):
     # test tmp dir arguments
-    cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna']
+    cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna']
     proc = run(cmd_line)
     assert proc.returncode != 0
 
@@ -111,7 +111,7 @@ def test_tmp_dir_ok(tmpdir):
 )
 def test_prodigal_tf_failiing(parameters, tmpdir):
     # test prodigal training file arguments
-    cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna']
+    cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna']
     proc = run(cmd_line)
     assert proc.returncode != 0
 
@@ -139,7 +139,7 @@ def test_prodigal_tf_ok(tmpdir):
 )
 def test_replicons_failiing(parameters, tmpdir):
     # test replicons file arguments
-    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
     assert proc.returncode != 0
 
 
@@ -174,7 +174,7 @@ def test_replicons_ok(tmpdir):
 )
 def test_proteins_failiing(parameters, tmpdir):
     # test proteins file arguments
-    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
     assert proc.returncode != 0
 
 
@@ -197,13 +197,29 @@ def test_proteins_ok(tmpdir):
         (['--locus', '']),  # empty
         (['--locus', ' ']),  # whitespace only
         (['--locus', '  ']),  # whitespaces only
-        (['--locus', 'fo o'])  # containing whitespace
+        (['--locus', 'fo o']),  # containing whitespace
+        (['--locus', 'ABCDEFGHIJKLMNOPQRSTU'])  # more than 20 characters
     ]
 )
 def test_locus_failiing(parameters, tmpdir):
     # test locus prefix arguments
-    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
     assert proc.returncode != 0
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--locus', 'ABC']),
+        (['--locus', 'ABCDEFGHIJKLMNOPQRST']),
+        (['--locus', 'A123_.:*#-'])
+    ]
+)
+def test_locus_ok(parameters, tmpdir):
+    # test locus prefix arguments
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
+    assert proc.returncode == 0
 
 
 @pytest.mark.parametrize(
@@ -213,13 +229,41 @@ def test_locus_failiing(parameters, tmpdir):
         (['--locus-tag', '']),  # empty
         (['--locus-tag', ' ']),  # whitespace only
         (['--locus-tag', '  ']),  # whitespaces only
-        (['--locus-tag', 'fo o'])  # containing whitespace
+        (['--locus-tag', 'fo o']),  # containing whitespace
+        (['--locus-tag', '123ABC']),  # first character is not a letter
+        (['--locus-tag', 'abc']),  # lower case letters
+        (['--locus-tag', 'AB']),  # less than 3 characters
+        (['--locus-tag', 'ABCDEFGHIJKLM']),  # more than 12 characters
+        (['--locus-tag', 'ABC_']),  # wrong characters
+        (['--locus-tag', 'ABC-']),  # wrong characters
+        (['--locus-tag', 'ABC!']),  # wrong characters
+        (['--locus-tag', 'ABC?']),  # wrong characters
+        (['--locus-tag', 'ABC*']),  # wrong characters
+        (['--locus-tag', 'ABC.']),  # wrong characters
+        (['--locus-tag', 'ABC,']),  # wrong characters
+        (['--locus-tag', 'ABC;'])  # wrong characters
     ]
 )
 def test_locustag_failiing(parameters, tmpdir):
     # test locus-tag prefix arguments
-    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
     assert proc.returncode != 0
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--locus-tag', 'ABC']),
+        (['--locus-tag', 'ABCDEFGHIJKL']),
+        (['--locus-tag', 'A12']),
+        (['--locus-tag', 'A23456789012'])
+    ]
+)
+def test_locustag_ok(parameters, tmpdir):
+    # test locus-tag prefix arguments
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
+    assert proc.returncode == 0
 
 
 @pytest.mark.parametrize(
@@ -233,7 +277,7 @@ def test_locustag_failiing(parameters, tmpdir):
 )
 def test_genus_failiing(parameters, tmpdir):
     # test genus prefix arguments
-    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
     assert proc.returncode != 0
 
 
@@ -248,7 +292,7 @@ def test_genus_failiing(parameters, tmpdir):
 )
 def test_species_failiing(parameters, tmpdir):
     # test species prefix arguments
-    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
     assert proc.returncode != 0
 
 
@@ -263,7 +307,7 @@ def test_species_failiing(parameters, tmpdir):
 )
 def test_strain_failiing(parameters, tmpdir):
     # test strain prefix arguments
-    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + ['test/data/NC_002127.1.fna'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
     assert proc.returncode != 0
 
 
