@@ -14,7 +14,8 @@ from .conftest import FILES, SKIP_PARAMETERS
         (['']),  # empty
         (['foo.fasta']),  # not existing
         (['fo o.fasta']),  # not existing (whitespace)
-        (['test/data/invalid.fasta'])  # invalid fasta DNA alphabet
+        (['test/data/invalid.fasta']),  # invalid fasta DNA alphabet
+        (['test/data/NC_002127.1.fna', 'foo']),  # additional argument
     ]
 )
 def test_genome_failing(parameters, tmpdir):
