@@ -7,9 +7,18 @@ from .conftest import FILES, SKIP_PARAMETERS
 
 
 @pytest.mark.slow
-def test_bakta_mock_skipped_features(tmpdir):
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['test/data/NC_002127.1.fna']),  # Linux/Unix format
+        (['test/data/NC_002127.1.fna.gz']),  # Linux/Unix format
+        (['test/data/NC_002127.1-win.fna']),  # Windows format (\r\n)
+        (['test/data/NC_002127.1-win.fna.gz'])  # Windows format (\r\n)
+    ]
+)
+def test_bakta_mock_skipped_features(parameters, tmpdir):
     # fast test skipping all feature detections
-    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--proteins', 'test/data/user-proteins.faa', '--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1'] + SKIP_PARAMETERS + ['test/data/NC_002127.1.fna'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--proteins', 'test/data/user-proteins.faa', '--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1'] + SKIP_PARAMETERS + parameters)
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)
@@ -18,9 +27,18 @@ def test_bakta_mock_skipped_features(tmpdir):
 
 
 @pytest.mark.slow
-def test_bakta_plasmid(tmpdir):
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['test/data/NC_002127.1.fna']),  # Linux/Unix format
+        (['test/data/NC_002127.1.fna.gz']),  # Linux/Unix format
+        (['test/data/NC_002127.1-win.fna']),  # Windows format (\r\n)
+        (['test/data/NC_002127.1-win.fna.gz'])  # Windows format (\r\n)
+    ]
+)
+def test_bakta_plasmid(parameters, tmpdir):
     # full test on plasmid
-    proc = run(['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--complete', '--proteins', 'test/data/user-proteins.faa', '--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1', 'test/data/NC_002127.1.fna'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--complete', '--proteins', 'test/data/user-proteins.faa', '--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1'] + parameters)
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)
