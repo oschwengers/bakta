@@ -17,7 +17,7 @@ hints:
   SoftwareRequirement:
     packages:
       bakta:
-      version: [ "1.2.3" ]
+      version: [ "1.2.4" ]
 
 requirements:
   ResourceRequirement:
