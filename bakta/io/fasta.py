@@ -34,8 +34,8 @@ def import_contigs(contigs_path):
                 'topology': bc.TOPOLOGY_LINEAR
             }
             log.info(
-                'imported: id=%s, length=%i, complete=%s, topology=%s, description=%s',
-                contig['id'], contig['length'], contig['complete'], contig['topology'], contig['description']
+                'imported: id=%s, length=%i, description=%s',
+                contig['id'], contig['length'], contig['description']
             )
             contigs.append(contig)
     return contigs
