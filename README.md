@@ -189,7 +189,7 @@ Bakta accepts bacterial genomes and plasmids (complete / draft assemblies) in (z
 
 #### Replicon meta data table
 
-To fine-tune the very details of each sequence in the input fasta file, Bakta accepts a replicon meta data table provided in `csv`/`tsv` file format: `--replicons <file.tsv>`. Thus, complete replicons within partially completed draft assemblies can be marked & handled as such, *e.g.* detection & annotation of features spanning sequence edges.
+To fine-tune the very details of each sequence in the input fasta file, Bakta accepts a replicon meta data table provided in `csv` or `tsv` file format: `--replicons <file.tsv>`. Thus, complete replicons within partially completed draft assemblies can be marked & handled as such, *e.g.* detection & annotation of features spanning sequence edges.
 
 Table format:
 
