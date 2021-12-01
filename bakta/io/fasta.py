@@ -26,7 +26,7 @@ def import_contigs(contigs_path):
                 raise ValueError(f'Fasta sequence contains invalid DNA characters! id={record.id}')
             contig = {
                 'id': record.id,
-                'description': record.description,
+                'description': record.description.split(' ', maxsplit=1)[1] if ' ' in record.description else '',
                 'sequence': seq,
                 'length': len(seq),
                 'complete': False,
