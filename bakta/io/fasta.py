@@ -22,7 +22,7 @@ def import_contigs(contigs_path):
         for record in SeqIO.parse(fh, 'fasta'):
             seq = str(record.seq).upper()
             if(FASTA_DNA_SEQUENCE_PATTERN.fullmatch(seq) is None):
-                log.error('import: Fasta sequence contains invalid DNA characters! id=%s')
+                log.error('import: Fasta sequence contains invalid DNA characters! id=%s', record.id)
                 raise ValueError(f'Fasta sequence contains invalid DNA characters! id={record.id}')
             contig = {
                 'id': record.id,
