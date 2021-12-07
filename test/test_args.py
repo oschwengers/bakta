@@ -20,9 +20,22 @@ from .conftest import FILES, SKIP_PARAMETERS
 )
 def test_genome_failing(parameters, tmpdir):
     # test genome arguments
-    cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + parameters + SKIP_PARAMETERS
+    cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + SKIP_PARAMETERS + parameters
     proc = run(cmd_line)
     assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['test/data/valid.fasta']),  # valid fasta DNA alphabet
+    ]
+)
+def test_genome_ok(parameters, tmpdir):
+    # test genome arguments
+    cmd_line = ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + SKIP_PARAMETERS + parameters
+    proc = run(cmd_line)
+    assert proc.returncode == 0
 
 
 @pytest.mark.parametrize(
