@@ -21,6 +21,10 @@ def import_contigs(contigs_path):
     with xopen(str(contigs_path), threads=0) as fh:
         for record in SeqIO.parse(fh, 'fasta'):
             seq = str(record.seq).upper()
+            if('-' in seq):
+                dash_count = seq.count('-')
+                seq = seq.replace('-', '')
+                log.info('discarded alignment gaps (dashes): id=%s, occurences=%i', record.id, dash_count)
             if(FASTA_DNA_SEQUENCE_PATTERN.fullmatch(seq) is None):
                 log.error('import: Fasta sequence contains invalid DNA characters! id=%s', record.id)
                 raise ValueError(f'Fasta sequence contains invalid DNA characters! id={record.id}')
