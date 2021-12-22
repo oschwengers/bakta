@@ -473,7 +473,7 @@ def main():
     print(f"\tCDSs: {len(cdss)}, hypotheticals: {len([cds for cds in cdss if 'hypothetical' in cds])}")
     print(f"\tsORFs: {len([f for f in features if f['type'] == bc.FEATURE_SORF])}")
     print(f"\tgaps: {len([f for f in features if f['type'] == bc.FEATURE_GAP])}")
-    print(f"\toriCs/oriVs: {len([f for f in features if f['type'] == bc.FEATURE_ORIC])}")
+    print(f"\toriCs/oriVs: {len([f for f in features if (f['type'] == bc.FEATURE_ORIC or f['type'] == bc.FEATURE_ORIV)])}")
     print(f"\toriTs: {len([f for f in features if f['type'] == bc.FEATURE_ORIT])}")
 
     ############################################################################
