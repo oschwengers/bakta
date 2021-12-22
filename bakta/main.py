@@ -521,6 +521,29 @@ def main():
         faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.faa')
         fasta.write_faa(hypotheticals, faa_path)
 
+    print('write genome and annotation statistics...')
+    statistics_path = cfg.output_path.joinpath(f'{cfg.prefix}.txt')
+    with statistics_path.open('w') as fh_out:
+        fh_out.write('Sequence(s):\n')
+        fh_out.write(f"Length: {genome['size']:,}\n")
+        fh_out.write(f"Contigs/replicons: {len(genome['contigs'])}\n")
+        fh_out.write(f"GC: {100 * genome_stats['gc']:.1f}\n")
+        fh_out.write(f"N50: {genome_stats['n50']:,}\n")
+        fh_out.write(f"N ratio: {100 * genome_stats['n_ratio']:.1f}\n")
+        fh_out.write(f"coding density: {100 * genome_stats['coding_ratio']:.1f}\n")
+        fh_out.write('\nAnnotation:\n')
+        fh_out.write(f"tRNAs: {len([f for f in features if f['type'] == bc.FEATURE_T_RNA])}\n")
+        fh_out.write(f"tmRNAs: {len([f for f in features if f['type'] == bc.FEATURE_TM_RNA])}\n")
+        fh_out.write(f"rRNAs: {len([f for f in features if f['type'] == bc.FEATURE_R_RNA])}\n")
+        fh_out.write(f"ncRNAs: {len([f for f in features if f['type'] == bc.FEATURE_NC_RNA])}\n")
+        fh_out.write(f"ncRNA regions: {len([f for f in features if f['type'] == bc.FEATURE_NC_RNA_REGION])}\n")
+        fh_out.write(f"CRISPR arrays: {len([f for f in features if f['type'] == bc.FEATURE_CRISPR])}\n")
+        fh_out.write(f"CDSs: {len(cdss)}, hypotheticals: {len([cds for cds in cdss if 'hypothetical' in cds])}\n")
+        fh_out.write(f"sORFs: {len([f for f in features if f['type'] == bc.FEATURE_SORF])}\n")
+        fh_out.write(f"gaps: {len([f for f in features if f['type'] == bc.FEATURE_GAP])}\n")
+        fh_out.write(f"oriCs: {len([f for f in features if f['type'] == bc.FEATURE_ORIC])}\n")
+        fh_out.write(f"oriVs: {len([f for f in features if f['type'] == bc.FEATURE_ORIV])}\n")
+        fh_out.write(f"oriTs: {len([f for f in features if f['type'] == bc.FEATURE_ORIT])}\n")
 
 def cleanup(log, tmp_path):
     shutil.rmtree(str(tmp_path))  # remove tmp dir

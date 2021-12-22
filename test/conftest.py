@@ -6,6 +6,7 @@ global FILES, SKIP_PARAMETERS
 
 FILES = [
     'test.log',
+    'test.txt',
     'test.json',
     'test.tsv',
     'test.gff3',
