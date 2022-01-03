@@ -14,6 +14,7 @@ from .conftest import FILES, SKIP_PARAMETERS
         (['']),  # empty
         (['foo.fasta']),  # not existing
         (['fo o.fasta']),  # not existing (whitespace)
+        (['test/data/empty']),  # empty file
         (['test/data/invalid.fasta']),  # invalid fasta DNA alphabet
         (['test/data/NC_002127.1.fna', 'foo']),  # additional argument
     ]
@@ -45,6 +46,7 @@ def test_genome_ok(parameters, tmpdir):
         (['--db']),  # missing path
         (['--db', '', ]),  # empty
         (['--db', 'test/foo']),  # not existing
+        (['--db', 'test/data/empty'])  # empty file
     ]
 )
 def test_database_failing_parameter(parameters, tmpdir):
@@ -60,7 +62,8 @@ def test_database_failing_parameter(parameters, tmpdir):
     [
         ('foo', ''),  # not provided
         ('BAKTA_DB', ''),  # missing path
-        ('BAKTA_DB', 'test/foo')  # not existing path
+        ('BAKTA_DB', 'test/foo'),  # not existing path
+        ('BAKTA_DB', 'test/data/empty')  # empty file
     ]
 )
 def test_database_failing_environment(env_key, env_value, tmpdir):
@@ -120,7 +123,8 @@ def test_tmp_dir_ok(tmpdir):
     [
         (['--prodigal-tf']),  # not provided
         (['--prodigal-tf', '']),  # empty
-        (['--prodigal-tf', 'foo'])  # not existing
+        (['--prodigal-tf', 'foo']),  # not existing
+        (['--prodigal-tf', 'test/data/empty'])  # empty file
     ]
 )
 def test_prodigal_tf_failiing(parameters, tmpdir):
@@ -148,7 +152,8 @@ def test_prodigal_tf_ok(tmpdir):
     [
         (['--replicons']),  # not provided
         (['--replicons', '']),  # empty
-        (['--replicons', 'foo'])  # not existing
+        (['--replicons', 'foo']),  # not existing
+        (['--replicons', 'test/data/empty'])  # empty file
     ]
 )
 def test_replicons_failiing(parameters, tmpdir):
@@ -183,7 +188,8 @@ def test_replicons_ok(tmpdir):
     [
         (['--proteins']),  # not provided
         (['--proteins', '']),  # empty
-        (['--proteins', 'foo'])  # not existing
+        (['--proteins', 'foo']),  # not existing
+        (['--proteins', 'test/data/empty'])  # empty file
     ]
 )
 def test_proteins_failiing(parameters, tmpdir):
