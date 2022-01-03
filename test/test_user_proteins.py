@@ -87,7 +87,7 @@ aa_wrong_9 = {
 
 
 @pytest.mark.parametrize(
-    "aa",
+    "parameters",
     [
         (aa_wrong_1),
         (aa_wrong_2),
@@ -100,10 +100,10 @@ aa_wrong_9 = {
         (aa_wrong_9)
     ]
 )
-def test_wrong_user_proteins_io(tmpdir, aa):
+def test_wrong_user_proteins_io(tmpdir, parameters):
     tmpdir = Path(tmpdir)
     cfg.user_proteins = tmpdir.joinpath('user.faa')
-    write_tmp_faa(aa, cfg.user_proteins)
+    write_tmp_faa(parameters, cfg.user_proteins)
 
     user_proteins_path = tmpdir.joinpath('user-clean.faa')
     with pytest.raises(SystemExit) as pytest_wrapped_e:
@@ -112,7 +112,7 @@ def test_wrong_user_proteins_io(tmpdir, aa):
 
 
 @pytest.mark.parametrize(
-    "aa",
+    "parameters",
     [
         (aa_min),
         (aa_min_gene),
@@ -121,10 +121,10 @@ def test_wrong_user_proteins_io(tmpdir, aa):
         (aa_full)
     ]
 )
-def test_user_proteins_io(tmpdir, aa):
+def test_user_proteins_io(parameters, tmpdir):
     tmpdir = Path(tmpdir)
     cfg.user_proteins = tmpdir.joinpath('user.faa')
-    write_tmp_faa(aa, cfg.user_proteins)
+    write_tmp_faa(parameters, cfg.user_proteins)
 
     user_proteins_path = tmpdir.joinpath('user-clean.faa')
     exp_aa_seq.write_user_protein_sequences(user_proteins_path)
@@ -132,17 +132,22 @@ def test_user_proteins_io(tmpdir, aa):
 
 def write_tmp_faa(aa, aa_path):
     with aa_path.open('w') as fh:
-        fh.write(f">{aa['id']} {aa['description']}\n")
-        fh.write(aa['sequence'])
-        fh.write('\n')
+        fh.write(f">{aa['id']} {aa['description']}\n{aa['sequence']}\n")
 
 
 @pytest.mark.slow
-def test_user_proteins(tmpdir):
+@pytest.mark.parametrize(
+    "parameters",
+    [
+        'test/data/user-proteins.faa',
+        'test/data/user-proteins.gbff'
+    ]
+)
+def test_user_proteins(parameters, tmpdir):
     # fast test skipping all feature detections
     proc = run(
         [
-            'bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--proteins', 'test/data/user-proteins.faa',
+            'bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--proteins', parameters, '-v',
             '--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-sorf', '--skip-ori', '--skip-gap', 
             'test/data/NC_002127.1.fna'
         ]
@@ -156,8 +161,14 @@ def test_user_proteins(tmpdir):
     with results_path.open() as fh:
         results = json.load(fh)
     assert results is not None
+    
+    ec_annotated = 0
     user_prot_feats = []
     for feat in results['features']:
         if('expert' in feat and 'user_proteins' in feat['expert']):
             user_prot_feats.append(feat)
+        for db_xref in feat['db_xrefs']:
+            if('EC' in db_xref):
+                ec_annotated += 1
+    assert ec_annotated == 1
     assert len(user_prot_feats) == 1

@@ -1,0 +1,114 @@
+LOCUS       test_1                  3306 bp    DNA     circular BCT 03-JAN-2022
+DEFINITION  mock sequence, complete mock.
+KEYWORDS    .
+SOURCE      None
+  ORGANISM  .
+            .
+FEATURES             Location/Qualifiers
+     source          1..3306
+                     /mol_type="genomic DNA"
+     gene            1..1233
+                     /locus_tag="VFDB_test"
+                     /gene="yaxA"
+     CDS             1..1233
+                     /locus_tag="VFDB_test"
+                     /gene="yaxA"
+                     /product="cytotoxin YaxA"
+                     /EC_number="1.1.1.1"
+                     /EC_number="2.2.2.2"
+                     /translation="MTQTQLAIDNVLASAENTIQLNELPKVVLDFITGEQTSVARSGGI
+                     FTKEDLINLKLYVRKGLSLPTRQDEVEAYLGYKKIDVAGLEPKDIKLLFDEIHNHALNW
+                     NDVEQAVLQQSLDLDIAAKNIISTGNEIINLINQMPITLRVKTLLRDITDKQLENITYE
+                     SADHEVASALKDILDDMKGDINRHQTTTENVRKKVSDYRITLTGGELSSGDKVNGLEPQ
+                     VKTKYDLMEKSNMRKSIKELDEKIKEKKQRIEQLKKDYDKFVGLSFTGAIGGIIAMAIT
+                     SGIFGAKAENARKEKNALISEVAELESKVSSQRALQTALEALSLSFSDIGIRMVDAESA
+                     LNHLDFMWLSVLNQITESQIQFAMINNALRLTSFVNKFQQVITPWQSVGDSARQLVDIF
+                     DEAIKEYKKVYG"
+                     /codon_start=1
+                     /transl_table=11
+                     /protein_id="gnl|Bakta|VFDB_test"
+                     /inference="ab initio prediction:Prodigal:2.6"
+     regulatory      215..328
+                     /db_xref="RFAM:RF00506"
+                     /db_xref="SO:0000140"
+                     /inference="profile:Rfam:RF00506"
+                     /regulatory_class="attenuator"
+                     /note="Threonine operon leader"
+     gene            1001..1038
+                     /locus_tag="hypo-mock-test"
+                     /gene="mock1"
+     CDS             1001..1038
+                     /locus_tag="hypo-mock-test"
+                     /gene="mock1"
+                     /db_xref="USERDB:MOCK1"
+                     /EC_number="0.0.0.0"
+                     /product="mock hypothetical user protein 1"
+                     /translation="MAQNPFKALNINIDKIESALTQNGVTNYSSNVKNERETHISGTYK
+                     GIDFLIKLMPSGGNTTIGRASGQNNTYFDEIALIIKENCLYSDTKNFEYTIPKFSDDDR
+                     ANLFEFLSEEGITITEDNNNDPNCKHQYIMTTSNGDRVRAKIYKRGSIQFQGKYLQIAS
+                     LINDFMCSILNMKEIVEQKNKEFNVDIKKETIESELHSKLPKSIDKIHEDIKKQLSCSL
+                     IMKKIDVEMEDYSTYCFSALRAIEGFIYQILNDVCNPSSSKNLGEYFTENKPKYIIREI
+                     HQETINGEIAEVLCECYTYWHENRHGLFHMKPGIADTKTINKLESIAIIDTVCQLIDGG
+                     VARLKL"
+                     /codon_start=1
+                     /transl_table=11
+                     /protein_id="gnl|Bakta|hypo-mock-test"
+                     /inference="ab initio prediction:Prodigal:2.6"
+ORIGIN
+        1 ttcttctgcg agttcgtgca gcttctcaca catggtggcc tgctcgtcag catcgagtgc
+       61 gtccagtttt tcgagcagcg tcaggctctg gctttttatg aatcccgcca tgttgagtgc
+      121 agtttgctgc tgcttgttca tctttctgtt ttctccgttc tgtctgtcat ctgcgtcgtg
+      181 tgattatatc gcgcaccact tttcgaccgt cttaccgccg gtattctgcc gacggacatt
+      241 tcagtcagac aacactgtca ctgccaaaaa acagcagtgc tttgttggta attcgaactt
+      301 gcagacagga caggatgtgc aattgttata ccgcgcatac atgcacgcta ttacaattac
+      361 cctggtcagg gcttcgcccc gacaccccat gtcagatacg gagccatgtt ttatgacaaa
+      421 acgaagtgga agtaatacgc gcaggcgggc tatcagtcgc cctgttcgtc tgacggcaga
+      481 agaagaccag gaaatcagaa aaagggctgc tgaatgcggc aagaccgttt ctggtttttt
+      541 acgggcggca gctctcggta agaaagttaa ctcactgact gatgaccggg tgctgaaaga
+      601 agttatgcga ctgggggcgt tgcagaaaaa actctttatc gacggcaagc gtgtcgggga
+      661 cagagagtat gcggaggtgc tgatcgctat tacggagtat caccgtgccc tgttatccag
+      721 gcttatggca gattagcttc ccggagagaa actgtcgaaa acagacggta tgaacgccgt
+      781 aagcccccaa accgatcgcc attcactttc atgcatagct atgcagtgag ctgaaagcga
+      841 tcctgacgca tttttccggt ttaccccggg gaaaacatct ctttttgcgg tgtctgcgtc
+      901 agaatcgcgt tcagcgcgtt ttggcggtgc gcgtaatgag acgttatggt aaatgtcttc
+      961 tggcttgata ttatattgga atgccttttt tcaaagcaaa tgatgtggct ttggatagaa
+     1021 ggtttacgtt gatcttatca aagttttttt taaagaacga agccgagagc tcagataaat
+     1081 cattatattc atcagttttc gtaactttgt ttaatgtgta acttgaaaac ttctcgccat
+     1141 taaatgacgt atagacgtaa cgatcttttt ttccaccgtt aggaattatt aaatcaaaaa
+     1201 aaacatcacc cttgcttttc tttttcttca agtcggattc gatttttgag aaaaattcgc
+     1261 tcgggctata aatatcagta gcatagacaa taaataaagt tttatcttta ttttttattg
+     1321 cttctatttg atatttttta tcttttttca taatttcaac ctagctacgc caccatctat
+     1381 taattggcaa acggtatcga tgattgcgat tgattctaat ttgttaattg tcttcgtgtc
+     1441 agctattcct ggtttcatat gaaacaaacc atgcctgttc tcatgccagt aagtgtagca
+     1501 ttcacacaaa acttccgcta tttcaccatt tatagtttct tggtgtattt ctctgattat
+     1561 atatttgggt ttgttttcag tgaagtattc gccaaggttc tttgatgatg atggattgca
+     1621 aacatcatta agtatttgat atataaagcc ttctatggct cttaatgcag agaagcagta
+     1681 tgttgagtaa tcttccattt cgacatctat ttttttcatt attagcgagc atgatagctg
+     1741 ttttttgata tcttcatgga ttttatcgat gctttttggt agtttgctat gcaactcgga
+     1801 ctcaatagtt tcttttttta tgtcaacatt aaattcttta tttttttgtt cgacaatctc
+     1861 tttcatgttt agtattgagc acatgaaatc gttaatcaaa ctcgcgattt gaaggtattt
+     1921 tccttggaat tgaatagagc cgcgcttgta aatttttgcc ctgaccctgt caccattgct
+     1981 ggtggtcata atatattggt gtttacaatt aggatcgtta ttattatctt ctgttattgt
+     2041 tatcccctct tcagaaagaa attcaaatag atttgccctg tcatcatcac tgaattttgg
+     2101 aatggtgtat tcaaagttct ttgtgtctga atacaaacag ttttctttta taatcaaggc
+     2161 gatttcatca aagtaagtgt tattttgccc agacgctctt ccgatagtgg tatttccgcc
+     2221 tgatggcatt agttttatta agaagtctat tcctttatat gtgccagata tgtgagtttc
+     2281 tctttcgttt tttacattag aggaatagtt tgtgacgcca ttctgcgtca gagcagactc
+     2341 aatcttgtca atattgatat ttagtgcttt aaacgggttc tgtgccattg ggtcaatccg
+     2401 ttgttttttt tgaatatgta cagatcttgt ttttttgtca acggaatagc tgttcgttga
+     2461 cttgatagac cgattgattc atcatctcat aaataaagaa aaaccaccgc taccaacggt
+     2521 ggttttctca aggttcgctg agctaccaac tctttgaacc aaggtaactg gcttggagga
+     2581 gcgcagtcac caaaatctgt tctttcagtt tagccttaac aggtgcataa cttcaagaca
+     2641 aactcctcta aatcagttac caatggctgc tgccagtggc gataagtcgt gtcttaccgg
+     2701 gttggactca agacgatagt taccggataa ggcgcagcgg tcgggctgaa cggggggttc
+     2761 gtgcacacag cccagcttgg agcgaacgac ctacaccgaa ctgagatacc aacagcgtga
+     2821 gctatgagaa agcgccacgc ttcccgaagg gagaaaggcg gacaggtatc cggtaagtgg
+     2881 cagggtcgga acaggagagc gcacgaggga gcttccgggg ggaaacgcct ggtatcttta
+     2941 tagtcctgtc gggtttcgcc acctctggct tgagcgtcga tttttgtgat gctcgtcagg
+     3001 ggggcggagc ctatggaaaa acgcctgcgg tgctggcttc ttccggtgct ttgctttttg
+     3061 ctcacatgtt ctttccggct ttatcccctg attctgtgga taaccgtatt accgcctttg
+     3121 agtgagctga caccgctcgc cgcagtcgaa cgaccgagcg tagcgagtca gtgagcgagg
+     3181 aagcggaaga gcgccttatg tgacattttc tccttacgct ctgttgtgcc gttcggcatc
+     3241 ctgccctgag cgttatatct ctgtgctatt ttctacttca aagcgtgtct gtatgctgtt
+     3301 ctggag
+//
