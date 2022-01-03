@@ -3,6 +3,7 @@ import subprocess as sp
 import sys
 
 import bakta.config as cfg
+import bakta.constants as bc
 
 from Bio import SeqIO
 from xopen import xopen
@@ -89,54 +90,120 @@ def search(cdss, cds_fasta_path, expert_system, db_path):
 
 
 def write_user_protein_sequences(aa_fasta_path):
+    user_proteins = []
     try:
-        with xopen(str(cfg.user_proteins), threads=0) as fh_in, aa_fasta_path.open('w') as fh_out:
+        with xopen(str(cfg.user_proteins), threads=0) as fh_in:
             for record in SeqIO.parse(fh_in, 'fasta'):
-                seq = str(record.seq)
-                model_id = record.id
-                cols = record.description.split(' ', 1)[1].split('~~~')
-                min_id = 50
-                min_query_cov = 80
-                min_model_cov = 80
-                dbxrefs = []
-                gene = ''
-                if(len(cols) == 3):
-                    gene = cols[0]
-                    product = cols[1]
-                    if(cols[2] != ''):
-                        dbxrefs = cols[2].split(',')
-                elif(len(cols) == 6):
-                    min_id = float(cols[0])
-                    min_query_cov = float(cols[1])
-                    min_model_cov = float(cols[2])
-                    gene = cols[3]
-                    product = cols[4]
-                    if(cols[5] != ''):
-                        dbxrefs = cols[5].split(',')
-                else:
-                    log.error(
-                        'wrong description format in user aa! description=%s',
-                        record.description
-                    )        
-                    raise ValueError(f'Wrong description format! description={record.description}')
-                gene = gene.strip()
-                product = product.strip()
-                for dbxref in dbxrefs:
-                    if(':' not in dbxref):
-                        log.error(
-                            'wrong dbxref format in user aa! id=%s, min-id=%f, min-query-cov=%f, min-model-cov=%f, gene=%s, product=%s, dbxrefs=%s',
-                            model_id, min_id, min_query_cov, min_model_cov, gene, product, dbxrefs
-                        )        
-                        raise ValueError(f'Wrong dbxref format! dbxref={dbxref}')
-                if(product == ''):
-                    raise ValueError('Protein product must not be empty!')
+                user_proteins.append(parse_user_protein_sequences_fasta(record))
+    except Exception as e:
+        log.error('provided user proteins file Fasta format not valid!', exc_info=True)
+        sys.exit(f'ERROR: User proteins file Fasta format not valid!')
+    print(f'parsed Fasta user proteins: {len(user_proteins)}')
 
-                fh_out.write(f">{model_id} UserProteins~~~{100}~~~{min_id}~~~{min_query_cov}~~~{min_model_cov}~~~{gene}~~~{product}~~~{','.join(dbxrefs)}\n")
-                fh_out.write(f"{seq}\n")
+    # if(len(user_proteins) == 0):
+    try:
+        with xopen(str(cfg.user_proteins), threads=0) as fh_in:
+            for record in SeqIO.parse(fh_in, 'genbank'):
+                for feature in record.features:
+                    if(feature.type.lower() == 'cds'):
+                        user_proteins.append(parse_user_protein_sequences_genbank(feature))
+    except Exception as e:
+        log.error('provided user proteins file GenBank format not valid!', exc_info=True)
+        sys.exit(f'ERROR: User proteins file GenBank format not valid!')
+    print(f'parsed GenBank user proteins: {len(user_proteins)}')
+
+    # if(len(user_proteins) > 0):
+    try:
+        with aa_fasta_path.open('w') as fh_out:
+            for user_protein in user_proteins:
+                (model_id, min_id, min_query_cov, min_model_cov, gene, product, dbxrefs, seq) = user_protein
+                fh_out.write(f">{model_id} UserProteins~~~{100}~~~{min_id}~~~{min_query_cov}~~~{min_model_cov}~~~{gene}~~~{product}~~~{','.join(dbxrefs)}\n{seq}\n")
                 log.debug(
                     'imported user aa: id=%s, length=%i, min-id=%f, min-query-cov=%f, min-model-cov=%f, gene=%s, product=%s, dbxrefs=%s',
                     model_id, len(seq), min_id, min_query_cov, min_model_cov, gene, product, dbxrefs
                 )
     except Exception as e:
-        log.error('provided user proteins file format not valid!', exc_info=True)
-        sys.exit(f'ERROR: User proteins file format not valid!')
+        log.error('cannot write user protein file!', exc_info=True)
+        sys.exit(f'ERROR: Cannot write user protein file!')
+
+
+def parse_user_protein_sequences_fasta(record):
+    model_id = record.id
+    min_id = bc.MIN_PSC_IDENTITY * 100
+    min_query_cov = bc.MIN_PSC_COVERAGE * 100
+    min_model_cov = bc.MIN_PSC_COVERAGE * 100
+
+    cols = record.description.split(' ', 1)[1].split('~~~')
+    db_xrefs = []
+    gene = ''
+    if(len(cols) == 3):
+        gene = cols[0]
+        product = cols[1]
+        if(cols[2] != ''):
+            db_xrefs = cols[2].split(',')
+    elif(len(cols) == 6):
+        min_id = float(cols[0])
+        min_query_cov = float(cols[1])
+        min_model_cov = float(cols[2])
+        gene = cols[3]
+        product = cols[4]
+        if(cols[5] != ''):
+            db_xrefs = cols[5].split(',')
+    else:
+        log.error(
+            'wrong description format in Fasta user protein file! description=%s',
+            record.description
+        )
+        raise ValueError(f'Wrong description format in Fasta user protein file! description={record.description}')
+
+    gene = gene.strip()
+    product = product.strip()
+    if(product == ''):
+        log.error('missing product in Fasta user protein file!')
+        raise ValueError('Missing product in Fasta user protein file!')
+
+    for db_xref in db_xrefs:
+        if(':' not in db_xref):
+            log.error('wrong dbxref format in Fasta user protein file!')
+            raise ValueError(f'Wrong dbxref format in Fasta user protein file! dbxref={db_xref}')
+    seq = str(record.seq).upper()
+    return (model_id, min_id, min_query_cov, min_model_cov, gene, product, db_xrefs, seq)
+
+
+def parse_user_protein_sequences_genbank(feature):
+    min_id = bc.MIN_PSC_IDENTITY * 100
+    min_query_cov = bc.MIN_PSC_COVERAGE * 100
+    min_model_cov = bc.MIN_PSC_COVERAGE * 100
+
+    q = feature.qualifiers
+    model_ids = q.get('locus_tag', [])
+    model_id = model_ids[0] if len(model_ids) > 0 else None
+    if(model_id is None):
+        log.error('missing locus_tag in GenBank user protein file!')
+        raise ValueError('Missing locus_tag in GenBank user protein file!')
+
+    genes = q.get('gene', [])
+    gene = genes[0].strip() if len(genes) > 0 else ''
+    
+    products = q.get('product', [])
+    product = products[0].strip() if len(products) > 0 else None
+    if(product is None or product == ''):
+        log.error('missing product in GenBank user protein file!')
+        raise ValueError('Missing product in GenBank user protein file!')
+
+    db_xrefs = q.get('db_xref', [])
+    for db_xref in db_xrefs:
+        if(':' not in db_xref):
+            log.error('wrong dbxref format in Fasta user protein file!')
+            raise ValueError(f'Wrong dbxref format in Fasta user protein file! dbxref={db_xref}')
+    ecs = q.get('EC_number', [])
+    for ec in ecs:
+        db_xrefs.append(f'EC:{ec}')
+
+    seqs = q.get('translation', [])
+    seq = str(seqs[0]).upper() if len(seqs) > 0 else None
+    if(seq is None):
+        log.error('missing sequence translation in GenBank user protein file!')
+        raise ValueError('Missing sequence translation in GenBank user protein file!')
+
+    return (model_id, min_id, min_query_cov, min_model_cov, gene, product, db_xrefs, seq)

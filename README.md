@@ -225,7 +225,7 @@ NODE_5 | `` |  `-` | -
 
 #### User provided protein sequences
 
-Bakta accepts user provided Fasta files of trusted protein sequences via `--proteins`. Within this Fasta file, each reference sequence can be provided in either short or long format:
+Bakta accepts user provided trusted protein sequences via `--proteins` in either GenBank (CDS features) or Fasta format. Using the Fasta format, each reference sequence can be provided in a short or long format:
 
 ```bash
 # short:
@@ -248,7 +248,7 @@ gene | `<empty>`, `string` | msp
 product | `string` | my special protein
 dbxrefs | `<empty>`, `db:id`, `,` separated list  | `VFDB:VF0511`
 
-Protein sequences provided in short format are searched with default thresholds of 90%, 80% and 80% for minimal identity, query and subject coverage, respectively.
+Protein sequences provided in short Fasta or GenBank format are searched with default thresholds of 90%, 80% and 80% for minimal identity, query and subject coverage, respectively.
 
 ### Output
 
