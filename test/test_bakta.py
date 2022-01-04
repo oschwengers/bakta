@@ -18,7 +18,12 @@ from .conftest import FILES, SKIP_PARAMETERS
 )
 def test_bakta_mock_skipped_features(parameters, tmpdir):
     # fast test skipping all feature detections
-    proc = run(['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--proteins', 'test/data/user-proteins.faa', '--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1'] + SKIP_PARAMETERS + parameters)
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--proteins', 'test/data/user-proteins.faa'] +
+        ['--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1'] +
+        SKIP_PARAMETERS +
+        parameters
+    )
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)
@@ -38,7 +43,11 @@ def test_bakta_mock_skipped_features(parameters, tmpdir):
 )
 def test_bakta_plasmid(parameters, tmpdir):
     # full test on plasmid
-    proc = run(['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--complete', '--proteins', 'test/data/user-proteins.faa', '--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1'] + parameters)
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--complete', '--proteins', 'test/data/user-proteins.faa'] +
+        ['--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1'] +
+        parameters
+    )
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)
