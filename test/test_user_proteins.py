@@ -136,19 +136,6 @@ def write_tmp_faa(aa, aa_path):
 
 
 @pytest.mark.slow
-def test_user_proteins_empty(tmpdir):
-    # fast test skipping all feature detections
-    proc = run(
-        [
-            'bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--proteins', 'test/data/empty', '-v',
-            '--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-sorf', '--skip-ori', '--skip-gap', 
-            'test/data/NC_002127.1.fna'
-        ]
-    )
-    assert proc.returncode != 0
-
-
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "parameters",
     [
