@@ -116,7 +116,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 qualifiers['transl_table'] = cfg.translation_table
                 insdc_feature_type = bc.INSDC_FEATURE_CDS
                 inference = []
-                inference.append('ab initio prediction:Prodigal:2.6' if feature['type'] == bc.FEATURE_CDS else 'ab initio prediction:Bakta:1.1')
+                inference.append('ab initio prediction:Prodigal:2.6' if feature['type'] == bc.FEATURE_CDS else f"ab initio prediction:Bakta:{'.'.join(bakta.__version__.split('.')[0:2])}")
                 qualifiers['protein_id'] = f"gnl|Bakta|{feature['locus']}"
                 if('ncbi_nrp_id' in feature.get('ups', {})):
                     nrp_id = feature['ups']['ncbi_nrp_id']
