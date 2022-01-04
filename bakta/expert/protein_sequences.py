@@ -98,9 +98,7 @@ def write_user_protein_sequences(aa_fasta_path):
     except Exception as e:
         log.error('provided user proteins file Fasta format not valid!', exc_info=True)
         sys.exit(f'ERROR: User proteins file Fasta format not valid!')
-    print(f'parsed Fasta user proteins: {len(user_proteins)}')
 
-    # if(len(user_proteins) == 0):
     try:
         with xopen(str(cfg.user_proteins), threads=0) as fh_in:
             for record in SeqIO.parse(fh_in, 'genbank'):
@@ -110,21 +108,23 @@ def write_user_protein_sequences(aa_fasta_path):
     except Exception as e:
         log.error('provided user proteins file GenBank format not valid!', exc_info=True)
         sys.exit(f'ERROR: User proteins file GenBank format not valid!')
-    print(f'parsed GenBank user proteins: {len(user_proteins)}')
 
-    # if(len(user_proteins) > 0):
-    try:
-        with aa_fasta_path.open('w') as fh_out:
-            for user_protein in user_proteins:
-                (model_id, min_id, min_query_cov, min_model_cov, gene, product, dbxrefs, seq) = user_protein
-                fh_out.write(f">{model_id} UserProteins~~~{100}~~~{min_id}~~~{min_query_cov}~~~{min_model_cov}~~~{gene}~~~{product}~~~{','.join(dbxrefs)}\n{seq}\n")
-                log.debug(
-                    'imported user aa: id=%s, length=%i, min-id=%f, min-query-cov=%f, min-model-cov=%f, gene=%s, product=%s, dbxrefs=%s',
-                    model_id, len(seq), min_id, min_query_cov, min_model_cov, gene, product, dbxrefs
-                )
-    except Exception as e:
-        log.error('cannot write user protein file!', exc_info=True)
-        sys.exit(f'ERROR: Cannot write user protein file!')
+    if(len(user_proteins) > 0):
+        try:
+            with aa_fasta_path.open('w') as fh_out:
+                for user_protein in user_proteins:
+                    (model_id, min_id, min_query_cov, min_model_cov, gene, product, dbxrefs, seq) = user_protein
+                    fh_out.write(f">{model_id} UserProteins~~~{100}~~~{min_id}~~~{min_query_cov}~~~{min_model_cov}~~~{gene}~~~{product}~~~{','.join(dbxrefs)}\n{seq}\n")
+                    log.debug(
+                        'imported user aa: id=%s, length=%i, min-id=%f, min-query-cov=%f, min-model-cov=%f, gene=%s, product=%s, dbxrefs=%s',
+                        model_id, len(seq), min_id, min_query_cov, min_model_cov, gene, product, dbxrefs
+                    )
+        except Exception as e:
+            log.error('cannot write user protein file!', exc_info=True)
+            sys.exit(f'ERROR: Cannot write user protein file!')
+    else:
+        log.error('no user proteins detected!', exc_info=True)
+        sys.exit(f'ERROR: No user proteins detected in file!')
 
 
 def parse_user_protein_sequences_fasta(record):
