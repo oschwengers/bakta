@@ -525,10 +525,10 @@ def main():
     statistics_path = cfg.output_path.joinpath(f'{cfg.prefix}.txt')
     with statistics_path.open('w') as fh_out:
         fh_out.write('Sequence(s):\n')
-        fh_out.write(f"Length: {genome['size']:,}\n")
-        fh_out.write(f"Contigs/replicons: {len(genome['contigs'])}\n")
+        fh_out.write(f"Length: {genome['size']:}\n")
+        fh_out.write(f"Count: {len(genome['contigs'])}\n")
         fh_out.write(f"GC: {100 * genome_stats['gc']:.1f}\n")
-        fh_out.write(f"N50: {genome_stats['n50']:,}\n")
+        fh_out.write(f"N50: {genome_stats['n50']:}\n")
         fh_out.write(f"N ratio: {100 * genome_stats['n_ratio']:.1f}\n")
         fh_out.write(f"coding density: {100 * genome_stats['coding_ratio']:.1f}\n")
         fh_out.write('\nAnnotation:\n')
