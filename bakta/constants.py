@@ -73,6 +73,8 @@ FEATURE_GAP = 'gap'
 FEATURE_ORIC = 'oriC'
 FEATURE_ORIV = 'oriV'
 FEATURE_ORIT = 'oriT'
+FEATURE_IS = 'is'
+FEATURE_MITE = 'mite'
 
 ############################################################################
 # INSDC feature tags
@@ -80,7 +82,6 @@ FEATURE_ORIT = 'oriT'
 INSDC_FEATURE_T_RNA = 'tRNA'
 INSDC_FEATURE_TM_RNA = 'tmRNA'
 INSDC_FEATURE_R_RNA = 'rRNA'
-# rRNA size via /product
 INSDC_FEATURE_NC_RNA = 'ncRNA'
 INSDC_FEATURE_NC_RNA_CLASS = 'ncRNA_class'  # mandatory: /ncRNA_class="TYPE"
 INSDC_FEATURE_NC_RNA_CLASS_RNASEP = 'RNase_P_RNA'
@@ -107,6 +108,12 @@ INSDC_FEATURE_REGULATORY_CLASS_RESPONSE_ELEMENT = 'response_element'
 INSDC_FEATURE_REGULATORY_CLASS_RECODING_STIMULATORY_REGION = 'recoding_stimulatory_region'
 INSDC_FEATURE_REGULATORY_CLASS_RIBOSOME_BINDING_SITE = 'ribosome_binding_site'
 INSDC_FEATURE_REGULATORY_CLASS_OTHER = 'other'
+INSDC_FEATURE_MOBILE_ELEMENT = 'mobile_element'  # mandatory: /mobile_element_type="<mobile_element_type>[:<mobile_element_name>]"
+INSDC_FEATURE_MOBILE_ELEMENT_TYPE_ = 'MITE'
+INSDC_FEATURE_MOBILE_ELEMENT_TYPE_ = 'insertion sequence'
+INSDC_FEATURE_MOBILE_ELEMENT_TYPE_TRANSPOSON = 'transposon'
+INSDC_FEATURE_MOBILE_ELEMENT_TYPE_ = 'integron'
+INSDC_FEATURE_MOBILE_ELEMENT_TYPE_ = 'other'
 
 ############################################################################
 # Feature ends
