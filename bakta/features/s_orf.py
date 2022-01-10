@@ -164,6 +164,7 @@ def overlap_filter(genome, orfs_raw):
 def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_crispr_arrays):
     discarded_sorf_keys = []
     for sorf in sorf_chunk:
+        break_flag = False
         # filter CDS overlapping ORFs
         for cds in contig_cdss:
             # log.debug('filter short ORFs by CDS: %s%i[%i->%i]', cds['strand'], cds['frame'], cds['start'], cds['stop'])
@@ -174,18 +175,21 @@ def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_cr
                         continue
                     else:
                         discarded_sorf_keys.append(f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}")
+                        break_flag = True
+                        break
                 else:
-                    if(sorf['start'] < cds['start'] and sorf['stop'] > cds['start']):
-                        # out-of-frame sorf partially overlapping CDS upstream
-                        # ToDo: add max overlap threshold
-                        continue
-                    elif(sorf['start'] >= cds['start'] and sorf['stop'] <= cds['stop']):
+                    # if(sorf['start'] < cds['start'] and sorf['stop'] > cds['start']):  # ToDo: add max overlap threshold
+                    #     # out-of-frame sorf partially overlapping CDS upstream
+                    #     continue
+                    # elif(sorf['start'] >= cds['start'] and sorf['stop'] <= cds['stop']):
+                    if(sorf['start'] >= cds['start'] and sorf['stop'] <= cds['stop']):
                         # out-of-frame sorf completely overlapped by CDS
                         discarded_sorf_keys.append(f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}")
-                    elif(sorf['start'] < cds['stop'] and sorf['stop'] > cds['stop']):
-                        # out-of-frame sorf partially overlapping CDS downstream
-                        # ToDo: add max overlap threshold
-                        continue
+                        break_flag = True
+                        break
+                    # elif(sorf['start'] < cds['stop'] and sorf['stop'] > cds['stop']):  # ToDo: add max overlap threshold
+                    #     # out-of-frame sorf partially overlapping CDS downstream
+                    #     continue
             else:
                 if(sorf['frame'] == cds['frame']):
                     # fast/simple overlap detection for in frame orientation
@@ -193,19 +197,24 @@ def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_cr
                         continue
                     else:
                         discarded_sorf_keys.append(f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}")
+                        break_flag = True
+                        break
                 else:
                     # ToDo: add out-of-frame filters
-                    if(sorf['start'] < cds['start'] and sorf['stop'] > cds['start']):
-                        # out-frame sorf partially overlapping CDS upstream
-                        # ToDo: add max overlap threshold
-                        continue
-                    elif(sorf['start'] >= cds['start'] and sorf['stop'] <= cds['stop']):
+                    # if(sorf['start'] < cds['start'] and sorf['stop'] > cds['start']):  # ToDo: add max overlap threshold
+                    #     # out-frame sorf partially overlapping CDS upstream
+                    #     continue
+                    # elif(sorf['start'] >= cds['start'] and sorf['stop'] <= cds['stop']):
+                    if(sorf['start'] >= cds['start'] and sorf['stop'] <= cds['stop']):
                         # out-frame sorf completely overlapped by CDS
                         discarded_sorf_keys.append(f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}")
-                    elif(sorf['start'] < cds['stop'] and sorf['stop'] > cds['stop']):
-                        # out-frame sorf partially overlapping CDS downstream
-                        # ToDo: add max overlap threshold
-                        continue
+                        break_flag = True
+                        break
+                    # elif(sorf['start'] < cds['stop'] and sorf['stop'] > cds['stop']):  # ToDo: add max overlap threshold
+                    #     # out-frame sorf partially overlapping CDS downstream
+                    #     continue
+        if(break_flag):
+            continue
 
         # filter rRNA overlapping ORFs
         for r_rna in contig_r_rnas:
@@ -215,6 +224,10 @@ def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_cr
                 continue
             else:
                 discarded_sorf_keys.append(f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}")
+                break_flag = True
+                break
+        if(break_flag):
+            continue
 
         # filter tRNA overlapping ORFs
         # log.debug('filter short ORFs by tRNA: %s[%i->%i]', t_rna['strand'], t_rna['start'], t_rna['stop'])
@@ -224,6 +237,10 @@ def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_cr
                 continue
             else:
                 discarded_sorf_keys.append(f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}")
+                break_flag = True
+                break
+        if(break_flag):
+            continue
 
         # filter CRISPR array overlapping ORFs
         # log.debug('filter short ORFs by CRISPR: [%i->%i]', crispr['start'], crispr['stop'])
@@ -233,6 +250,11 @@ def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_cr
                 continue
             else:
                 discarded_sorf_keys.append(f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}")
+                break_flag = True
+                break
+        if(break_flag):
+            continue
+
     return discarded_sorf_keys
 
 
