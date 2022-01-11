@@ -106,10 +106,16 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 # TODO: Add fuzzy positions for oriC/oriV
                 insdc_feature_type = bc.INSDC_FEATURE_ORIGIN_REPLICATION
                 qualifiers['inference'] = 'similar to DNA sequence'
+                qualifiers['note'] = feature['product']
+                if('product' in qualifiers):
+                    del qualifiers['product']
             elif(feature['type'] == bc.FEATURE_ORIT):
                 # TODO: Add fuzzy positions for oriT
                 insdc_feature_type = bc.INSDC_FEATURE_ORIGIN_TRANSFER
                 qualifiers['inference'] = 'similar to DNA sequence'
+                qualifiers['note'] = feature['product']
+                if('product' in qualifiers):
+                    del qualifiers['product']
             elif(feature['type'] == bc.FEATURE_CDS) or (feature['type'] == bc.FEATURE_SORF):
                 qualifiers['translation'] = feature['aa']
                 qualifiers['codon_start'] = 1
