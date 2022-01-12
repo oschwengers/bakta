@@ -62,26 +62,27 @@ def predict_tm_rnas(genome, contigs_path):
                 start = int(start)
                 stop = int(stop)
 
-                tmrna = OrderedDict()
-                tmrna['type'] = bc.FEATURE_TM_RNA
-                tmrna['contig'] = contig_id
-                tmrna['start'] = start
-                tmrna['stop'] = stop
-                tmrna['strand'] = strand
-                tmrna['gene'] = 'ssrA'
-                tmrna['product'] = 'transfer-messenger RNA, SsrA'
-                tmrna['db_xrefs'] = [so.SO_TMRNA.id]
+                if(start > 0 and stop > 0):  # prevent edge tmRNA on linear sequences
+                    tmrna = OrderedDict()
+                    tmrna['type'] = bc.FEATURE_TM_RNA
+                    tmrna['contig'] = contig_id
+                    tmrna['start'] = start
+                    tmrna['stop'] = stop
+                    tmrna['strand'] = strand
+                    tmrna['gene'] = 'ssrA'
+                    tmrna['product'] = 'transfer-messenger RNA, SsrA'
+                    tmrna['db_xrefs'] = [so.SO_TMRNA.id]
 
-                nt = bu.extract_feature_sequence(tmrna, contigs[contig_id])  # extract nt sequences
-                tmrna['nt'] = nt
+                    nt = bu.extract_feature_sequence(tmrna, contigs[contig_id])  # extract nt sequences
+                    tmrna['nt'] = nt
 
-                if(start > stop):
-                    tmrna['edge'] = True  # mark tmRNA as edge feature
+                    if(start > stop):
+                        tmrna['edge'] = True  # mark tmRNA as edge feature
 
-                tmrnas.append(tmrna)
-                log.info(
-                    'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s]',
-                    tmrna['contig'], tmrna['start'], tmrna['stop'], tmrna['strand'], tmrna['gene'], tmrna['product'], nt[:10], nt[-10:]
-                )
+                    tmrnas.append(tmrna)
+                    log.info(
+                        'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s]',
+                        tmrna['contig'], tmrna['start'], tmrna['stop'], tmrna['strand'], tmrna['gene'], tmrna['product'], nt[:10], nt[-10:]
+                    )
     log.info('predicted=%i', len(tmrnas))
     return tmrnas
