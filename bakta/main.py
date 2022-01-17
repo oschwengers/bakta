@@ -27,6 +27,7 @@ import bakta.features.nc_rna_region as nc_rna_region
 import bakta.features.crispr as crispr
 import bakta.features.orf as orf
 import bakta.features.cds as feat_cds
+import bakta.features.signal_peptides as sig_peptides
 import bakta.features.s_orf as s_orf
 import bakta.features.gaps as gaps
 import bakta.features.ori as ori
@@ -289,6 +290,10 @@ def main():
                 exp_aa_seq.write_user_protein_sequences(user_aa_path)
                 user_aa_found = exp_aa_seq.search(cdss, cds_aa_path, 'user_proteins', user_aa_path)
                 print(f'\t\tuser protein sequences: {len(user_aa_found)}')
+            
+            if(cfg.gram != bc.GRAM_UNKNOWN):
+                sig_peptides_found = sig_peptides.search(cdss, cds_aa_path)
+                print(f"\tsignal peptides: {len(sig_peptides_found)}")
     
             print('\tcombine annotations and mark hypotheticals...')
             log.debug('combine CDS annotations')
@@ -359,6 +364,14 @@ def main():
             anno.combine_annotation(feat)  # combine IPS and PSC annotations
         genome['features'][bc.FEATURE_SORF] = sorfs_filtered
         print(f'\tfiltered sORFs: {len(sorfs_filtered)}')
+        
+        if(cfg.gram != bc.GRAM_UNKNOWN  and  len(sorfs_filtered) > 0):
+            sorf_aa_path = cfg.tmp_path.joinpath('sorfs.faa')
+            with sorf_aa_path.open(mode='wt') as fh:
+                for sorf in sorfs_filtered:
+                    fh.write(f">{sorf['aa_hexdigest']}-{sorf['contig']}-{sorf['start']}\n{sorf['aa']}\n")
+            sig_peptides_found = sig_peptides.search(sorfs_filtered, sorf_aa_path)
+            print(f"\tsignal peptides: {len(sig_peptides_found)}")
 
     ############################################################################
     # gap annotation

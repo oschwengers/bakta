@@ -209,6 +209,8 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         fh.write(f"{feat['contig']}\tProdigal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tProdigal\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
+                    if(bc.FEATURE_SIGNAL_PEPTIDE in feat):
+                        write_signal_peptide(fh, feat)
                 elif(feat['type'] is bc.FEATURE_SORF):
                     annotations = {
                         'ID': feat['locus'],
@@ -238,6 +240,8 @@ def write_gff3(genome, features_by_contig, gff3_path):
                         fh.write(f"{feat['contig']}\tBakta\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tBakta\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
+                    if(bc.FEATURE_SIGNAL_PEPTIDE in feat):
+                        write_signal_peptide(fh, feat)
                 elif(feat['type'] is bc.FEATURE_GAP):
                     annotations = {
                         'ID': feat['id'],
@@ -305,3 +309,16 @@ def encode_annotations(annotations):
         else:
             annotation_strings.append(f'{key}={encode_attribute(val)}')
     return ';'.join(annotation_strings)
+
+
+def write_signal_peptide(fh, feat):
+    sig_peptide = feat[bc.FEATURE_SIGNAL_PEPTIDE]
+    annotations = {
+        'ID': f"{feat['locus']}_sigpep",
+        'Name': 'signal peptide',
+        'product': 'signal peptide',
+        'score': sig_peptide['score'],
+        'Parent': feat['locus']
+    }
+    annotations = encode_annotations(annotations)
+    fh.write(f"{feat['contig']}\tDeepSig\t{so.SO_SIGNAL_PEPTIDE.name}\t{sig_peptide['start']}\t{sig_peptide['stop']}\t{sig_peptide['score']:.2f}\t{feat['strand']}\t.\t{annotations}\n")

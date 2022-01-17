@@ -99,6 +99,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
             if('locus' in feature):
                 qualifiers['locus_tag'] = feature['locus']
 
+            accompanying_features=[]
             if(feature['type'] == bc.FEATURE_GAP):
                 insdc_feature_type = bc.INSDC_FEATURE_GAP
                 qualifiers['estimated_length'] = feature['length']
@@ -145,6 +146,15 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                         if(bc.DB_XREF_EC in note):
                             qualifiers['EC_number'] = note.replace('EC:', '')
                     qualifiers['note'] = [note for note in qualifiers['note'] if bc.DB_XREF_EC not in note]
+                if(bc.FEATURE_SIGNAL_PEPTIDE in feature):
+                    sigpep_qualifiers = {}
+                    sigpep_qualifiers['locus_tag'] = feature['locus']
+                    sigpep_qualifiers['inference'] = 'ab initio prediction:DeepSig:1.2'
+                    sigpep = feature[bc.FEATURE_SIGNAL_PEPTIDE]
+                    sigpep_strand = 1 if feature['strand'] == bc.STRAND_FORWARD else -1 if feature['strand'] == bc.STRAND_REVERSE else 0
+                    sigpep_location = FeatureLocation(sigpep['start'] - 1, sigpep['stop'], strand = sigpep_strand)
+                    sigpep_feature = SeqFeature(sigpep_location, type=bc.INSDC_FEATURE_SIGNAL_PEPTIDE, qualifiers=sigpep_qualifiers)
+                    accompanying_features.append(sigpep_feature)
             elif(feature['type'] == bc.FEATURE_T_RNA):
                 if('amino_acid' in feature and 'anti_codon' in feature):
                     if('anti_codon_pos' in feature):
@@ -235,6 +245,8 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 seq_feature_list.append(gen_seqfeat)
             feat_seqfeat = SeqFeature(feature_location, type=insdc_feature_type, qualifiers=qualifiers)
             seq_feature_list.append(feat_seqfeat)
+            for acc_feature in accompanying_features:  # add accompanying features, e.g. signal peptides
+                seq_feature_list.append(acc_feature)
         contig_rec.features = seq_feature_list
         contig_list.append(contig_rec)
 
