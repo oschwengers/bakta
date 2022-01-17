@@ -44,7 +44,7 @@ def test_bakta_mock_skipped_features(parameters, tmpdir):
 def test_bakta_plasmid(parameters, tmpdir):
     # full test on plasmid
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--complete', '--proteins', 'test/data/user-proteins.faa'] +
+        ['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--complete', '--gram', '-', '--proteins', 'test/data/user-proteins.faa'] +
         ['--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1'] +
         parameters
     )
