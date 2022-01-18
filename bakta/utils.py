@@ -48,7 +48,7 @@ def init_parser():
     parser = argparse.ArgumentParser(
         prog='bakta',
         description='Rapid & standardized annotation of bacterial genomes & plasmids.',
-        epilog=f'Citation:\n{bc.CITATION}\n\nGitHub:\nhttps://github.com/oschwengers/bakta',
+        epilog=f'Version: {bakta.__version__}\nDOI: {bc.BAKTA_DOI}\nURL: github.com/oschwengers/bakta\n\nCitation:\n{bc.BAKTA_CITATION}',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         add_help=False
     )

@@ -5,18 +5,14 @@ from collections import OrderedDict
 
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.io.fasta as fasta
 
 
 log = logging.getLogger('ORF')
 
 
-def detect_spurious(orfs):
+def detect_spurious(orfs, orf_aa_path):
     """Detect spurious ORFs with AntiFam"""
-    orf_fasta_path = cfg.tmp_path.joinpath('spurious.faa')
-    with orf_fasta_path.open(mode='w') as fh:
-        for orf in orfs:
-            fh.write(f">{orf['aa_hexdigest']}\n{orf['aa']}\n")
-
     output_path = cfg.tmp_path.joinpath('cds.spurious.hmm.tsv')
     cmd = [
         'hmmsearch',
@@ -25,7 +21,7 @@ def detect_spurious(orfs):
         '--tblout', str(output_path),
         '--cpu', str(cfg.threads if cfg.threads <= 4 else 4),
         str(cfg.db_path.joinpath('antifam')),
-        str(orf_fasta_path)
+        str(orf_aa_path)
     ]
     log.debug('cmd=%s', cmd)
     proc = sp.run(
@@ -42,12 +38,12 @@ def detect_spurious(orfs):
         raise Exception(f'hmmsearch error! error code: {proc.returncode}')
 
     discarded_orfs = []
-    orf_by_aa_digest = {orf['aa_hexdigest']: orf for orf in orfs}
+    orf_by_aa_digest = get_orf_dictionary(orfs)
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
-                (aa_hexdigest, _, subject_name, subject_id, evalue, bitscore, _) = line.strip().split(maxsplit=6)
-                orf = orf_by_aa_digest[aa_hexdigest]
+                (aa_identifier, _, subject_name, subject_id, evalue, bitscore, _) = line.strip().split(maxsplit=6)
+                orf = orf_by_aa_digest[aa_identifier]
                 evalue = float(evalue)
                 bitscore = float(bitscore)
                 if(evalue > 1E-5):
@@ -70,3 +66,22 @@ def detect_spurious(orfs):
                     )
     log.info('discarded=%i', len(discarded_orfs))
     return discarded_orfs
+
+
+def get_orf_key(orf):
+    """Generate a standardized and unique ORF-like feature key for internal store/analyze/parse/retrieval cycles."""
+    return f"{orf['aa_hexdigest']}-{orf['contig']}-{orf['start']}-{orf['stop']}-{orf['strand']}"
+
+
+def get_orf_dictionary(orfs):
+    """create a standardized ORF-like feature dict for internal store/analyze/parse/retrieval cycles."""
+    return {get_orf_key(orf): orf for orf in orfs}
+
+
+def write_internal_faa(features, faa_path):
+    """Write aa sequences to internal temporary Fasta file."""
+    log.info('write internal aa seqs: # seqs=%i, path=%s', len(features), faa_path)
+    with faa_path.open(mode='wt') as fh:
+        for orf in features:
+            fh.write(f">{get_orf_key(orf)}\n{orf['aa']}\n")
+    

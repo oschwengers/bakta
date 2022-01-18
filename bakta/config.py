@@ -4,6 +4,7 @@ import os
 import sys
 import tempfile
 
+from datetime import datetime
 from pathlib import Path
 
 import bakta.constants as bc
@@ -56,6 +57,9 @@ skip_cds = None
 skip_sorf = None
 skip_gap = None
 skip_ori = None
+
+run_start = datetime.now()
+run_end = None
 
 
 def setup(args):

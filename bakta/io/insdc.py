@@ -25,8 +25,11 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
     for contig in genome['contigs']:
         contig_features = [feat for feat in features if feat['contig'] == contig['id']]
         comment = (
-            f"Annotated with Bakta (v{bakta.__version__}): https://github.com/oschwengers/bakta\n",
-            f"Database (v{cfg.db_info['major']}.{cfg.db_info['minor']}): https://doi.org/10.5281/zenodo.4247252\n",
+            'Annotated with Bakta',
+            f"Software: v{bakta.__version__}\n",
+            f"Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}\n",
+            f'DOI: {bc.BAKTA_DOI}\n',
+            f'URL: {bc.BAKTA_URL}\n',
             '\n',
             '##Genome Annotation Summary:##\n',
             f"{'Annotation Date':<30} :: {datetime.now().strftime('%m/%d/%Y, %H:%M:%S')}\n",

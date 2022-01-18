@@ -54,6 +54,11 @@ def write_json(genome, features, json_path):
     output['features'] = features
     output['sequences'] = genome['contigs']
 
+    run = OrderedDict()
+    run['start'] = cfg.run_start.strftime('%Y-%m-%d %H:%M:%S')
+    run['end'] = cfg.run_end.strftime('%Y-%m-%d %H:%M:%S')
+    output['run'] = run
+
     version = OrderedDict()
     version['bakta'] = bakta.__version__
     version['db'] = f"{cfg.db_info['major']}.{cfg.db_info['minor']}"

@@ -9,6 +9,7 @@ from Bio.Seq import Seq
 
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.features.orf as orf
 import bakta.utils as bu
 import bakta.psc as psc
 import bakta.so as so
@@ -19,7 +20,6 @@ log = logging.getLogger('S_ORF')
 
 def extract(genome):
     """Predict open reading frames in mem via BioPython."""
-
     orfs = []
     for contig in genome['contigs']:
         dna_seq = Seq(contig['sequence'])
@@ -78,16 +78,15 @@ def extract(genome):
 
 
 def get_feature_start(feature):
-    return feature['start'] if feature['strand'] == '+' else feature['stop']
+    return feature['start'] if feature['strand'] == bc.STRAND_FORWARD else feature['stop']
 
 
 def get_feature_stop(feature):
-    return feature['stop'] if feature['strand'] == '+' else feature['start']
+    return feature['stop'] if feature['strand'] == bc.STRAND_FORWARD else feature['start']
 
 
 def overlap_filter(genome, orfs_raw):
     """Filter in-mem ORFs by overlapping CDSs."""
-
     t_rnas_per_contig = {k['id']: [] for k in genome['contigs']}
     for t_rna in genome['features'].get(bc.FEATURE_T_RNA, []):
         t_rnas = t_rnas_per_contig[t_rna['contig']]
@@ -151,7 +150,7 @@ def overlap_filter(genome, orfs_raw):
     discarded_sorfs = []
     for sorfs in sorfs_per_contig.values():
         for sorf in sorfs:
-            key = f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}"
+            key = orf.get_orf_key(sorf)
             if(key in discarded_sorf_keys):
                 discarded_sorfs.append(sorf)
             else:
@@ -174,7 +173,7 @@ def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_cr
                     if(cds['stop'] < sorf['start'] or cds['start'] > sorf['stop']):
                         continue
                     else:
-                        discarded_sorf_keys.append(f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}")
+                        discarded_sorf_keys.append(orf.get_orf_key(sorf))
                         break_flag = True
                         break
                 else:
@@ -184,7 +183,7 @@ def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_cr
                     # elif(sorf['start'] >= cds['start'] and sorf['stop'] <= cds['stop']):
                     if(sorf['start'] >= cds['start'] and sorf['stop'] <= cds['stop']):
                         # out-of-frame sorf completely overlapped by CDS
-                        discarded_sorf_keys.append(f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}")
+                        discarded_sorf_keys.append(orf.get_orf_key(sorf))
                         break_flag = True
                         break
                     # elif(sorf['start'] < cds['stop'] and sorf['stop'] > cds['stop']):  # ToDo: add max overlap threshold
@@ -196,7 +195,7 @@ def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_cr
                     if(cds['stop'] < sorf['start'] or cds['start'] > sorf['stop']):
                         continue
                     else:
-                        discarded_sorf_keys.append(f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}")
+                        discarded_sorf_keys.append(orf.get_orf_key(sorf))
                         break_flag = True
                         break
                 else:
@@ -207,7 +206,7 @@ def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_cr
                     # elif(sorf['start'] >= cds['start'] and sorf['stop'] <= cds['stop']):
                     if(sorf['start'] >= cds['start'] and sorf['stop'] <= cds['stop']):
                         # out-frame sorf completely overlapped by CDS
-                        discarded_sorf_keys.append(f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}")
+                        discarded_sorf_keys.append(orf.get_orf_key(sorf))
                         break_flag = True
                         break
                     # elif(sorf['start'] < cds['stop'] and sorf['stop'] > cds['stop']):  # ToDo: add max overlap threshold
@@ -223,7 +222,7 @@ def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_cr
             if(sorf['stop'] < r_rna['start'] or sorf['start'] > r_rna['stop']):
                 continue
             else:
-                discarded_sorf_keys.append(f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}")
+                discarded_sorf_keys.append(orf.get_orf_key(sorf))
                 break_flag = True
                 break
         if(break_flag):
@@ -236,7 +235,7 @@ def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_cr
             if(sorf['stop'] < t_rna['start'] or sorf['start'] > t_rna['stop']):
                 continue
             else:
-                discarded_sorf_keys.append(f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}")
+                discarded_sorf_keys.append(orf.get_orf_key(sorf))
                 break_flag = True
                 break
         if(break_flag):
@@ -249,7 +248,7 @@ def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_cr
             if(sorf['stop'] < crispr['start'] or sorf['start'] > crispr['stop']):
                 continue
             else:
-                discarded_sorf_keys.append(f"{sorf['contig']}-{sorf['start']}-{sorf['stop']}-{sorf['strand']}-{sorf['aa_hexdigest']}")
+                discarded_sorf_keys.append(orf.get_orf_key(sorf))
                 break_flag = True
                 break
         if(break_flag):
@@ -293,17 +292,15 @@ def annotation_filter(sorfs):
 
 def search_pscs(sorfs):
     """Conduct homology search of sORFs against sORF db."""
-    sorf_fasta_path = cfg.tmp_path.joinpath('sorf.faa')
-    with sorf_fasta_path.open(mode='w') as fh:
-        for sorf in sorfs:
-            fh.write(f">{sorf['aa_hexdigest']}-{sorf['contig']}-{sorf['start']}\n{sorf['aa']}\n")
+    sorf_aa_path = cfg.tmp_path.joinpath('sorf.faa')
+    orf.write_internal_faa(sorfs, sorf_aa_path)
     diamond_output_path = cfg.tmp_path.joinpath('diamond.sorf.tsv')
     diamond_db_path = cfg.db_path.joinpath('sorf.dmnd')
     cmd = [
         'diamond',
         'blastp',
         '--db', str(diamond_db_path),
-        '--query', str(sorf_fasta_path),
+        '--query', str(sorf_aa_path),
         '--out', str(diamond_output_path),
         '--id', str(int(bc.MIN_SORF_IDENTITY * 100)),  # '90',
         '--query-cover', str(int(bc.MIN_SORF_COVERAGE * 100)),  # '90'
@@ -329,7 +326,7 @@ def search_pscs(sorfs):
         log.warning('sORF failed! diamond-error-code=%d', proc.returncode)
         raise Exception(f'diamond error! error code: {proc.returncode}')
 
-    sorf_by_aa_digest = {f"{sorf['aa_hexdigest']}-{sorf['contig']}-{sorf['start']}": sorf for sorf in sorfs}
+    sorf_by_aa_digest = orf.get_orf_dictionary(sorfs)
     with diamond_output_path.open() as fh:
         for line in fh:
             (sorf_hash, cluster_id, identity, alignment_length, align_mismatches,

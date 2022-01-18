@@ -1,5 +1,7 @@
 import atexit
+import argparse
 import logging
+from math import remainder
 import os
 import shutil
 import sys
@@ -67,7 +69,7 @@ def main():
     )
     log = logging.getLogger('MAIN')
     log.info('version=%s', bakta.__version__)
-    log.info('developer: Oliver Schwengers, https://github.com/oschwengers')
+    log.info('developer: Oliver Schwengers, github.com/oschwengers')
     log.info('command: %s', ' '.join(sys.argv))
     log.info('local time: %s', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     log.info('machine: type=%s, cores=%s', pf.processor(), os.cpu_count())
@@ -159,6 +161,7 @@ def main():
     }
     if(cfg.plasmid):
         genome['plasmid'] = cfg.plasmid
+    print('\nstart annotation...')
 
     ############################################################################
     # tRNA prediction
@@ -246,7 +249,9 @@ def main():
 
         if(len(cdss) > 0):
             log.debug('detect spurious CDS')
-            discarded_cdss = orf.detect_spurious(cdss) if len(cdss) > 0 else []
+            cds_aa_path = cfg.tmp_path.joinpath('cds.spurious.faa')
+            orf.write_internal_faa(cdss, cds_aa_path)
+            discarded_cdss = orf.detect_spurious(cdss, cds_aa_path)
             print(f'\tdiscarded spurious: {len(discarded_cdss)}')
             cdss = [cds for cds in cdss if 'discarded' not in cds]
 
@@ -256,26 +261,20 @@ def main():
             cdss_ips, tmp = ips.lookup(cdss_ups)
             cdss_not_found.extend(tmp)
             print(f'\tdetected IPSs: {len(cdss_ips)}')
-    
+
             if(len(cdss_not_found) > 0):
-                cds_aa_path = cfg.tmp_path.joinpath('cds.unidentified.faa')
-                with cds_aa_path.open(mode='w') as fh:
-                    for cds in cdss_not_found:
-                        fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['aa']}\n")
                 log.debug('search CDS PSC')
-                cdss_psc, cdss_pscc, cdss_not_found = psc.search(cdss_not_found, cds_aa_path)
+                cdss_psc, cdss_pscc, cdss_not_found = psc.search(cdss_not_found)
                 print(f'\tfound PSCs: {len(cdss_psc)}')
                 print(f'\tfound PSCCs: {len(cdss_pscc)}')
             print('\tlookup annotations...')
             log.debug('lookup CDS PSCs')
             psc.lookup(cdss)  # lookup PSC info
             pscc.lookup(cdss)  # lookup PSCC info
-    
+
             print('\tconduct expert systems...')  # conduct expert systems annotation
-            cds_aa_path = cfg.tmp_path.joinpath('cds.faa')
-            with cds_aa_path.open(mode='w') as fh:
-                for cds in cdss:
-                    fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['aa']}\n")
+            cds_aa_path = cfg.tmp_path.joinpath('cds.expert.faa')
+            orf.write_internal_faa(cdss, cds_aa_path)
             log.debug('conduct expert system: amrfinder')
             expert_amr_found = exp_amr.search(cdss, cds_aa_path)
             print(f'\t\tamrfinder: {len(expert_amr_found)}')
@@ -290,16 +289,16 @@ def main():
                 exp_aa_seq.write_user_protein_sequences(user_aa_path)
                 user_aa_found = exp_aa_seq.search(cdss, cds_aa_path, 'user_proteins', user_aa_path)
                 print(f'\t\tuser protein sequences: {len(user_aa_found)}')
-            
+
             if(cfg.gram != bc.GRAM_UNKNOWN):
                 sig_peptides_found = sig_peptides.search(cdss, cds_aa_path)
                 print(f"\tsignal peptides: {len(sig_peptides_found)}")
-    
+
             print('\tcombine annotations and mark hypotheticals...')
             log.debug('combine CDS annotations')
             for cds in cdss:
                 anno.combine_annotation(cds)  # combine IPS & PSC annotations and mark hypotheticals
-    
+
             log.debug('analyze hypotheticals')
             hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
             if(len(hypotheticals) > 0):
@@ -334,10 +333,13 @@ def main():
         sorfs, discarded_sorfs = s_orf.overlap_filter(genome, sorfs)
         print(f'\tdiscarded due to overlaps: {len(discarded_sorfs)}')
 
-        log.debug('detect spurious sORF')
-        discarded_sorfs = orf.detect_spurious(sorfs) if len(sorfs) > 0 else []
-        print(f'\tdiscarded spurious: {len(discarded_sorfs)}')
-        sorfs = [sorf for sorf in sorfs if 'discarded' not in sorf]
+        if(len(sorfs) > 0):
+            log.debug('detect spurious sORF')
+            sorf_aa_path = cfg.tmp_path.joinpath('sorf.spurious.faa')
+            orf.write_internal_faa(sorfs, sorf_aa_path)
+            discarded_sorfs = orf.detect_spurious(sorfs, sorf_aa_path)
+            print(f'\tdiscarded spurious: {len(discarded_sorfs)}')
+            sorfs = [sorf for sorf in sorfs if 'discarded' not in sorf]
 
         log.debug('lookup sORF UPS/IPS')
         sorf_upss, sorfs_not_found = ups.lookup(sorfs)
@@ -489,52 +491,61 @@ def main():
     print(f"\toriCs/oriVs: {len([f for f in features if (f['type'] == bc.FEATURE_ORIC or f['type'] == bc.FEATURE_ORIV)])}")
     print(f"\toriTs: {len([f for f in features if f['type'] == bc.FEATURE_ORIT])}")
 
+    cfg.run_end = datetime.now()
+    run_duration = (cfg.run_end - cfg.run_start).total_seconds()
+    genome['run'] = {
+        'start': cfg.run_start.strftime('%Y-%m-%d %H:%M:%S'),
+        'end': cfg.run_end.strftime('%Y-%m-%d %H:%M:%S'),
+        'duration': f'{(run_duration / 60):.2f} min'
+    }
+
     ############################################################################
     # Write output files
     # - write comprehensive annotation results as JSON
     # - write optional output files in GFF3/GenBank/EMBL formats
     # - remove temp directory
     ############################################################################
-    print('\nwrite JSON output...')
-    json_path = cfg.output_path.joinpath(f'{cfg.prefix}.json')
-    json.write_json(genome, features, json_path)
-
-    print('write TSV output...')
+    print(f'\nexport annotation results to: {cfg.output_path}')
+    print('\thuman readable TSV...')
     tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.tsv')
     tsv.write_tsv(genome['contigs'], features_by_contig, tsv_path)
 
-    print('write GFF3 output...')
+    print('\tGFF3...')
     gff3_path = cfg.output_path.joinpath(f'{cfg.prefix}.gff3')
     gff.write_gff3(genome, features_by_contig, gff3_path)
 
-    print('write INSDC (GenBank/EMBL) output...')
+    print('\tINSDC GenBank & EMBL...')
     genbank_path = cfg.output_path.joinpath(f'{cfg.prefix}.gbff')
     embl_path = cfg.output_path.joinpath(f'{cfg.prefix}.embl')
     insdc.write_insdc(genome, features, genbank_path, embl_path)
 
-    print('write genome sequences...')
+    print('\tgenome sequences...')
     fna_path = cfg.output_path.joinpath(f'{cfg.prefix}.fna')
     fasta.export_contigs(genome['contigs'], fna_path, description=True, wrap=True)
 
-    print('write feature nucleotide sequences...')
+    print('\tfeature nucleotide sequences...')
     ffn_path = cfg.output_path.joinpath(f'{cfg.prefix}.ffn')
     fasta.write_ffn(features, ffn_path)
 
-    print('write translated CDS sequences...')
+    print('\ttranslated CDS sequences...')
     faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.faa')
     fasta.write_faa(features, faa_path)
 
     if(cfg.skip_cds is False):
         hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
-        print('write hypothetical TSV output...')
+        print('\thypothetical TSV...')
         tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.tsv')
         tsv.write_hypothetical_tsv(hypotheticals, tsv_path)
 
-        print('write translated hypothetical CDS sequences...')
+        print('\ttranslated hypothetical CDS sequences...')
         faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.faa')
         fasta.write_faa(hypotheticals, faa_path)
 
-    print('write genome and annotation statistics...')
+    print('\tmachine readable JSON...')
+    json_path = cfg.output_path.joinpath(f'{cfg.prefix}.json')
+    json.write_json(genome, features, json_path)
+
+    print('\tgenome and annotation statistics...')
     statistics_path = cfg.output_path.joinpath(f'{cfg.prefix}.txt')
     with statistics_path.open('w') as fh_out:
         fh_out.write('Sequence(s):\n')
@@ -557,6 +568,14 @@ def main():
         fh_out.write(f"oriCs: {len([f for f in features if f['type'] == bc.FEATURE_ORIC])}\n")
         fh_out.write(f"oriVs: {len([f for f in features if f['type'] == bc.FEATURE_ORIV])}\n")
         fh_out.write(f"oriTs: {len([f for f in features if f['type'] == bc.FEATURE_ORIT])}\n")
+        fh_out.write('\nBakta:\n')
+        fh_out.write(f'Software: v{bakta.__version__}\n')
+        fh_out.write(f"Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}\n")
+        fh_out.write('DOI: 10.1099/mgen.0.000685\n')
+        fh_out.write('URL: github.com/oschwengers/bakta\n')
+
+    print(f'\nIf you use these results please cite Bakta: https://doi.org/{bc.BAKTA_DOI}')
+    print(f'Annotation successfully finished in {int(run_duration / 60):01}:{int(run_duration % 60):02} [mm:ss].')
 
 def cleanup(log, tmp_path):
     shutil.rmtree(str(tmp_path))  # remove tmp dir
