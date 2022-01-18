@@ -313,8 +313,6 @@ Exemplary annotation result files for several genomes (mostly ESKAPE species) ar
 
 ## Usage
 
-Usage:
-
 ```bash
 usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH] [--prefix PREFIX] [--output OUTPUT]
              [--genus GENUS] [--species SPECIES] [--strain STRAIN] [--plasmid PLASMID]
@@ -576,7 +574,7 @@ Of note, this web application can also be used to visualize offline annotation r
 If you use Bakta in your research, please cite this paper:
 > Schwengers O., Jelonek L., Dieckmann M. A., Beyvers S., Blom J., Goesmann A. (2021). Bakta: rapid and standardized annotation of bacterial genomes via alignment-free sequence identification. Microbial Genomics, 7(11). https://doi.org/10.1099/mgen.0.000685
 
-Bakta is *standing on the shoulder of giants* taking advantage of many great software tools and databases. If you find any of these particularly useful, please cite these primary sources, as well.
+Bakta is *standing on the shoulder of giants* taking advantage of many great software tools and databases. If you find any of these useful for your research, please cite these primary sources, as well.
 
 ### Tools
 
@@ -617,7 +615,7 @@ Bakta takes advantage of an SQLite DB which results in high storage IO loads. If
 
 ## Issues and Feature Requests
 
-Bakta is brand new and like in every software, expect some bugs lurking around. So, if you run into any issues with Bakta, we'd be happy to hear about it.
+Bakta is new and like in every software, expect some bugs lurking around. So, if you run into any issues with Bakta, we'd be happy to hear about it.
 Therefore, please, execute bakta in verbose mode (`-v`) and do not hesitate to file an issue including as much information as possible:
 
 - a detailed description of the issue
