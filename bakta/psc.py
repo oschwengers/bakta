@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.features.orf as orf
 
 
 ############################################################################
@@ -24,15 +25,17 @@ DB_PSC_COL_GO = 'go_ids'
 log = logging.getLogger('PSC')
 
 
-def search(cdss, cds_fasta_path):
+def search(cdss):
     """Conduct homology search of CDSs against PCS db."""
+    cds_aa_path = cfg.tmp_path.joinpath('cds.psc.faa')
+    orf.write_internal_faa(cdss, cds_aa_path)
     diamond_output_path = cfg.tmp_path.joinpath('diamond.cds.tsv')
     diamond_db_path = cfg.db_path.joinpath('psc.dmnd')
     cmd = [
         'diamond',
         'blastp',
         '--db', str(diamond_db_path),
-        '--query', str(cds_fasta_path),
+        '--query', str(cds_aa_path),
         '--out', str(diamond_output_path),
         '--id', str(int(bc.MIN_PSCC_IDENTITY * 100)),  # '50',
         '--query-cover', str(int(bc.MIN_PSC_COVERAGE * 100)),  # '80'
@@ -58,7 +61,7 @@ def search(cdss, cds_fasta_path):
         log.warning('PSC failed! diamond-error-code=%d', proc.returncode)
         raise Exception(f'diamond error! error code: {proc.returncode}')
 
-    cds_by_hexdigest = {f"{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}": cds for cds in cdss}
+    cds_by_hexdigest = orf.get_orf_dictionary(cdss)
     with diamond_output_path.open() as fh:
         for line in fh:
             (aa_identifier, cluster_id, identity, alignment_length, align_mismatches,

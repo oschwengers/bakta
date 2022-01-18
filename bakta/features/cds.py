@@ -8,6 +8,7 @@ from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.features.orf as orf
 import bakta.io.fasta as fasta
 import bakta.utils as bu
 import bakta.so as so
@@ -18,7 +19,6 @@ log = logging.getLogger('CDS')
 
 def predict(genome, sequences_path):
     """Predict open reading frames with Prodigal."""
-
     # create prodigal trainining file if not provided by the user
     prodigal_tf_path = cfg.prodigal_tf
     if(prodigal_tf_path is None):
@@ -111,8 +111,6 @@ def execute_prodigal(genome, contigs_path, traininng_file_path, proteins_path=No
 
 def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
     log.debug('parse-prodigal-output: gff-path=%s, proteins-path=%s', gff_path, proteins_path)
-    # parse orfs
-    # TODO: replace code by BioPython GFF3 parser
     cdss = {}
     partial_cdss_per_record = {}
     partial_cdss_per_contig = {k['id']: [] for k in genome['contigs']}
@@ -181,10 +179,8 @@ def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
         if(len(partial_cdss) >= 2):  # skip unpaired edge features
             first_partial_cds = partial_cdss[0]  # first partial CDS per contig
             last_partial_cds = partial_cdss[-1]  # last partial CDS per contig
-            # check if partial CDS are on same strand
-            # and have opposite truncated edges
-            # and firtst starts at 1
-            # and last ends at contig end (length)
+            # check if partial CDSs are on same strand and have opposite truncated edges
+            # and firtst starts at 1 and last ends at contig end (length)
             if(first_partial_cds['strand'] == last_partial_cds['strand']
                 and first_partial_cds['truncated'] != last_partial_cds['truncated']
                 and first_partial_cds['start'] == 1
@@ -245,10 +241,7 @@ def split_gff_annotation(annotation_string):
 def predict_pfam(cdss):
     """Detect Pfam-A entries"""
     fasta_path = cfg.tmp_path.joinpath('hypotheticals.faa')
-    with fasta_path.open(mode='w') as fh:
-        for cds in cdss:
-            fh.write(f">{cds['aa_hexdigest']}\n{cds['aa']}\n")
-
+    orf.write_internal_faa(cdss, fasta_path)
     output_path = cfg.tmp_path.joinpath('cds.hypotheticals.pfam.hmm.tsv')
     cmd = [
         'hmmsearch',
@@ -275,13 +268,13 @@ def predict_pfam(cdss):
 
     pfam_hits = []
     cds_pfams_hits = {}
-    orf_by_aa_digest = {cds['aa_hexdigest']: cds for cds in cdss}
+    orf_by_aa_digest = orf.get_orf_dictionary(cdss)
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
                 cols = bc.RE_MULTIWHITESPACE.split(line.strip())
-                aa_hexdigest = cols[0]
-                cds = orf_by_aa_digest[aa_hexdigest]
+                aa_identifier = cols[0]
+                cds = orf_by_aa_digest[aa_identifier]
 
                 domain_length = int(cols[5])
                 domain_start = int(cols[15])
@@ -309,7 +302,7 @@ def predict_pfam(cdss):
                     cds['dbxrefs'] = []
                 cds['dbxrefs'].append(f"PFAM:{pfam['id']}")
                 pfam_hits.append(cds)
-                cds_pfams_hits[aa_hexdigest] = cds
+                cds_pfams_hits[aa_identifier] = cds
                 log.info(
                     'pfam detected: contig=%s, start=%i, stop=%i, strand=%s, pfam-id=%s, length=%i, aa-start=%i, aa-stop=%i, aa-cov=%1.1f, hmm-cov=%1.1f, evalue=%1.1e, bitscore=%1.1f, name=%s',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], pfam['id'], pfam['length'], pfam['start'], pfam['stop'], pfam['aa_cov'], pfam['hmm_cov'], pfam['evalue'], pfam['score'], pfam['name']

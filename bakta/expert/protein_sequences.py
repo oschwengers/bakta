@@ -4,6 +4,7 @@ import sys
 
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.features.orf as orf
 
 from Bio import SeqIO
 from xopen import xopen
@@ -46,7 +47,7 @@ def search(cdss, cds_fasta_path, expert_system, db_path):
         raise Exception(f'diamond error! error code: {proc.returncode}')
 
     cds_found = set()
-    cds_by_hexdigest = {f"{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}": cds for cds in cdss}
+    cds_by_hexdigest = orf.get_orf_dictionary(cdss)
     with diamond_output_path.open() as fh:
         for line in fh:
             (aa_identifier, model_id, model_length, alignment_length, identity, evalue, bitscore, model_title) = line.strip().split('\t')

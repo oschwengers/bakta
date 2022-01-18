@@ -245,7 +245,9 @@ def main():
 
         if(len(cdss) > 0):
             log.debug('detect spurious CDS')
-            discarded_cdss = orf.detect_spurious(cdss) if len(cdss) > 0 else []
+            cds_aa_path = cfg.tmp_path.joinpath('cds.spurious.faa')
+            orf.write_internal_faa(cdss, cds_aa_path)
+            discarded_cdss = orf.detect_spurious(cdss, cds_aa_path)
             print(f'\tdiscarded spurious: {len(discarded_cdss)}')
             cdss = [cds for cds in cdss if 'discarded' not in cds]
 
@@ -257,12 +259,8 @@ def main():
             print(f'\tdetected IPSs: {len(cdss_ips)}')
     
             if(len(cdss_not_found) > 0):
-                cds_aa_path = cfg.tmp_path.joinpath('cds.unidentified.faa')
-                with cds_aa_path.open(mode='w') as fh:
-                    for cds in cdss_not_found:
-                        fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['aa']}\n")
                 log.debug('search CDS PSC')
-                cdss_psc, cdss_pscc, cdss_not_found = psc.search(cdss_not_found, cds_aa_path)
+                cdss_psc, cdss_pscc, cdss_not_found = psc.search(cdss_not_found)
                 print(f'\tfound PSCs: {len(cdss_psc)}')
                 print(f'\tfound PSCCs: {len(cdss_pscc)}')
             print('\tlookup annotations...')
@@ -271,10 +269,8 @@ def main():
             pscc.lookup(cdss)  # lookup PSCC info
     
             print('\tconduct expert systems...')  # conduct expert systems annotation
-            cds_aa_path = cfg.tmp_path.joinpath('cds.faa')
-            with cds_aa_path.open(mode='w') as fh:
-                for cds in cdss:
-                    fh.write(f">{cds['aa_hexdigest']}-{cds['contig']}-{cds['start']}\n{cds['aa']}\n")
+            cds_aa_path = cfg.tmp_path.joinpath('cds.expert.faa')
+            orf.write_internal_faa(cdss, cds_aa_path)
             log.debug('conduct expert system: amrfinder')
             expert_amr_found = exp_amr.search(cdss, cds_aa_path)
             print(f'\t\tamrfinder: {len(expert_amr_found)}')
@@ -329,10 +325,13 @@ def main():
         sorfs, discarded_sorfs = s_orf.overlap_filter(genome, sorfs)
         print(f'\tdiscarded due to overlaps: {len(discarded_sorfs)}')
 
-        log.debug('detect spurious sORF')
-        discarded_sorfs = orf.detect_spurious(sorfs) if len(sorfs) > 0 else []
-        print(f'\tdiscarded spurious: {len(discarded_sorfs)}')
-        sorfs = [sorf for sorf in sorfs if 'discarded' not in sorf]
+        if(len(sorfs) > 0):
+            log.debug('detect spurious sORF')
+            sorf_aa_path = cfg.tmp_path.joinpath('sorf.spurious.faa')
+            orf.write_internal_faa(sorfs, sorf_aa_path)
+            discarded_sorfs = orf.detect_spurious(sorfs, sorf_aa_path)
+            print(f'\tdiscarded spurious: {len(discarded_sorfs)}')
+            sorfs = [sorf for sorf in sorfs if 'discarded' not in sorf]
 
         log.debug('lookup sORF UPS/IPS')
         sorf_upss, sorfs_not_found = ups.lookup(sorfs)
