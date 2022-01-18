@@ -9,14 +9,14 @@ import bakta.config as cfg
 
 log = logging.getLogger('SIGNAL_PEPTIDES')
 
-def search(orfs, orf_fasta_path):
+def search(orfs, orf_aa_path):
     """Search for signal peptides with DeepSig."""
 
     deepsig_output_path = cfg.tmp_path.joinpath('deepsig.gff3')
     gram = 'gramn' if cfg.gram == '-' else 'gramp'
     cmd = [
         'deepsig',
-        '--fasta', str(orf_fasta_path),
+        '--fasta', str(orf_aa_path),
         '--organism', gram,
         '--outf', str(deepsig_output_path),
         '--outfmt', 'gff3',
