@@ -17,4 +17,3 @@ dependencies:
   - diamond>=2.0.11
   - blast>=2.7.1
   - ncbi-amrfinderplus>=3.10.16
-  - deepsig>=1.2.5
