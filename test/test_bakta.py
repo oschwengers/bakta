@@ -1,3 +1,5 @@
+import sys
+
 from pathlib import Path
 from subprocess import run
 
@@ -41,6 +43,7 @@ def test_bakta_mock_skipped_features(parameters, tmpdir):
         (['test/data/NC_002127.1-win.fna.gz'])  # Windows format (\r\n)
     ]
 )
+@pytest.mark.skipif(sys.platform=='darwin', reason=f'Skip on {sys.platform}')
 def test_bakta_plasmid(parameters, tmpdir):
     # full test on plasmid
     proc = run(
