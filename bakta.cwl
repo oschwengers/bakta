@@ -4,7 +4,7 @@ cwlVersion: v1.0
 class: CommandLineTool
 baseCommand: [bakta]
 id: bakta
-label: "Rapid & standardized annotation of bacterial genomes & plasmids."
+label: "Bakta: rapid & standardized annotation of bacterial genomes, MAGs & plasmids"
 
 doc: |
       The software and documentation can be found here:

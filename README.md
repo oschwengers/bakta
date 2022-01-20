@@ -7,7 +7,7 @@
 [![Conda](https://img.shields.io/conda/v/bioconda/bakta.svg)](https://bioconda.github.io/recipes/bakta/README.html)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
 
-# Bakta: Rapid & standardized annotation of bacterial genomes & plasmids
+# Bakta: rapid & standardized annotation of bacterial genomes, MAGs & plasmids
 
 Bakta is a tool for the rapid & standardized annotation of bacterial genomes and plasmids from both isolates and MAGs. It provides **dbxref**-rich and **sORF**-including annotations in machine-readable `JSON` & bioinformatics standard file formats for automatic downstream analysis.
 
@@ -323,7 +323,7 @@ usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH] [--prefix PREFIX]
              [--help] [--verbose] [--threads THREADS] [--tmp-dir TMP_DIR] [--version]
              <genome>
 
-Rapid & standardized annotation of bacterial genomes & plasmids.
+Rapid & standardized annotation of bacterial genomes, MAGs & plasmids
 
 positional arguments:
   <genome>              Genome sequences in (zipped) fasta format

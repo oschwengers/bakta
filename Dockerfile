@@ -4,7 +4,7 @@ LABEL org.opencontainers.image.authors="oliver.schwengers@computational.bio.uni-
 LABEL org.opencontainers.image.url='https://github.com/oschwengers/bakta'
 LABEL org.opencontainers.image.documentation='https://github.com/oschwengers/bakta/readme.md'
 LABEL org.opencontainers.image.title='Bakta'
-LABEL org.opencontainers.image.description='Rapid & comprehensive annotation of bacterial genomes & plasmids'
+LABEL org.opencontainers.image.description='Rapid & standardized annotation of bacterial genomes, MAGs & plasmids'
 
 RUN apk update && apk add wget tar bash \
     && wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
