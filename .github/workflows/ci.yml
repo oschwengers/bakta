@@ -33,6 +33,9 @@ jobs:
         auto-activate-base: false
         environment-file: environment.yml
         activate-environment: bakta
+    - name: Install DeepSig
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: conda install deepsig
     - name: Install PyTest
       run: conda install pytest
     - name: Conda info
