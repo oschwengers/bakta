@@ -29,7 +29,7 @@ Bakta is a tool for the rapid & standardized annotation of bacterial genomes and
 ## Description
 
 - **Comprehensive & taxonomy-independent database**
-Bakta provides a large and taxonomy-independent database comprising the entire UniProt's [UniRef90/UniRef50](https://www.uniprot.org/uniref/) protein sequence cluster universe addressing the annotation of increasing numbers of sequenced new species.
+Bakta provides a large and taxonomy-independent database using UniProt's entire [UniRef](https://www.uniprot.org/uniref/) protein sequence cluster universe. Thus, it achieves favourable annotations in terms of sensitivity and specificity along the broad continuum ranging from well-studied species to unknown genomes from MAGs.
 
 - **Protein sequence identification**
 Bakta exactly identifies known identical protein sequences (**IPS**) from RefSeq and UniProt allowing the fine-grained annotation of gene alleles (`AMR`) or closely related but distinct protein families. This is achieved via an alignment-free sequence identification (**AFSI**) approach using full-length `MD5` protein sequence hash digests.
