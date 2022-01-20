@@ -112,6 +112,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
                 qualifiers['inference'] = 'similar to DNA sequence'
                 qualifiers['note'] = feature['product']
                 if('product' in qualifiers):
+                    qualifiers['note'] = feature['product']
                     del qualifiers['product']
             elif(feature['type'] == bc.FEATURE_ORIT):
                 # TODO: Add fuzzy positions for oriT
