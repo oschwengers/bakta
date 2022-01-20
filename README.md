@@ -103,7 +103,7 @@ Installation instructions, get-started and guides: Singularity [docs](https://sy
 $ python3 -m pip install --user bakta
 ```
 
-Bacta requires the following 3rd party executables which must be installed & executable:
+Bacta requires the following 3rd party software tools which must be installed and executable to use the full set of features:
 
 - tRNAscan-SE (2.0.6) <https://doi.org/10.1101/614032> <http://lowelab.ucsc.edu/tRNAscan-SE>
 - Aragorn (1.2.38) <http://dx.doi.org/10.1093/nar/gkh152> <http://130.235.244.92/ARAGORN>
@@ -428,12 +428,13 @@ Conceptual terms:
 2. discard spurious CDS via AntiFam
 3. Detection of UPSs via MD5 digests and lookup of related IPS and PCS
 4. Sequence alignments of remainder via Diamond vs. PSC (query/subject coverage=0.8, identity=0.5)
-5. Assign protein sequences to UniRef90 or UniRef50 clusters if alignment hits meet an identity larger than 0.9 or 0.5, respectively
+5. Assignment to UniRef90 or UniRef50 clusters if alignment hits achieve identities larger than 0.9 or 0.5, respectively
 6. Execution of expert systems:
   - AMR: AMRFinderPlus
   - Expert proteins: NCBI BlastRules, VFDB
-  - User proteins
-7. Combination of available IPS, PSC, PSCC and expert system information favouring more specific annotations and avoiding redundancy
+  - User proteins (optionally via `--proteins <Fasta/GenBank>`)
+7. Prediction of signal peptides (optionally via `--gram <+/->`)
+8. Combination of IPS, PSC, PSCC and expert system information favouring more specific annotations and avoiding redundancy
 
 CDS without IPS or PSC hits as well as those without gene symbols or product descriptions different from `hypothetical` will be marked as `hypothetical`.
 
@@ -450,6 +451,7 @@ Such hypothetical CDS are further analyzed:
 4. Detection of UPS via MD5 hashes and lookup of related IPS
 5. Sequence alignments of remainder via Diamond vs. an sORF subset of PSCs (coverage=0.9, identity=0.9)
 6. Exclude sORF without sufficient annotation information
+7. Prediction of signal peptides (optionally via `--gram <+/->`)
 
 sORF not identified via IPS or PSC will be discarded. Additionally, all sORF without gene symbols or product descriptions different from `hypothetical` will be discarded.
 Due due to uncertain nature of sORF prediction, only those identified via IPS / PSC hits exhibiting proper gene symbols or product descriptions different from `hypothetical` will be included in the final annotation.
@@ -588,6 +590,7 @@ Bakta is *standing on the shoulder of giants* taking advantage of many great sof
 - BLAST+ <10.1186/1471-2105-10-421>
 - HMMER <10.1371/journal.pcbi.1002195>
 - AMRFinderPlus <10.1038/s41598-021-91456-0>
+- DeepSig <https://doi.org/10.1093/bioinformatics/btx818>
 
 ### Databases
 
@@ -609,7 +612,7 @@ Bakta is *standing on the shoulder of giants* taking advantage of many great sof
 If AMRFinder constantly crashes even on fresh setups and Bakta's database was downloaded manually, then AMRFinder needs to setup its own internal database. This is required only once: `amrfinder_update --force_update --database <bakta-db>/amrfinderplus-db`. You could also try Bakta's internal database download logic automatically taking care of this: `bakta_db download --output <bakta-db>`
 
 - __DeepSig not found in Conda environment__
-For the prediction of signal predictions, Bakta uses DeepSig that is currently not available for MacOS. Therefore, we decided to exclude DeepSig from Bakta's default Conda dependencies because otherwise it would not be installable on MacOS systems. On Linux systems you can install it in your Conda environment via `conda install -c conda-forge -c bioconda deepsig`
+For the prediction of signal predictions, Bakta uses DeepSig that is currently not available for MacOS. Therefore, we decided to exclude DeepSig from Bakta's default Conda dependencies because otherwise it would not be installable on MacOS systems. On Linux systems it can be installed via `conda install -c conda-forge -c bioconda deepsig`
 
 - __Nice, but I'm mising XYZ...__
 Bakta is quite new and we're keen to constantly improve it and further expand its feature set. In case there's anything missing, please do not hesitate to open an issue and ask for it!
