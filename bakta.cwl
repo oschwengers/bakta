@@ -74,6 +74,10 @@ inputs:
     id: locus_tag
     inputBinding: {prefix: --locus-tag}
     type: string
+  - doc: Gram type (default = ?)
+    id: gram
+    inputBinding: {prefix: --gram}
+    type: string
   - doc: Keep original contig headers
     id: keep_contig_headers
     inputBinding: {prefix: --keep-contig-headers}
