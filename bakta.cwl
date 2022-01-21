@@ -143,57 +143,57 @@ outputs:
   - doc: Hypothetical CDS AA sequences as Fasta
     id: hypo_sequences_cds
     type: File
-    format: edam:format_1929
+    format: edam:format_2200
     outputBinding: {glob: '*.hypotheticals.faa'}
   - doc: Information on hypothetical CDS as TSV
     id: hypo_annotation_tsv
     type: File
-    format: edam:format_1929
+    format: edam:format_3475
     outputBinding: {glob: '*.hypotheticals.tsv'}
   - doc: Annotation as TSV
     id: annotation_tsv
     type: File
-    format: edam:format_1929
+    format: edam:format_3475
     outputBinding: {glob: '*.tsv'}
-  - doc: Annotation statistics as txt
-    id: annotation_txt
+  - doc: Annotation summary as txt
+    id: summary_txt
     type: File
     format: edam:format_2330
     outputBinding: {glob: '*.txt'}
   - doc: Annotation as JSON
     id: annotation_json
     type: File
-    format: edam:format_1929
+    format: edam:format_3464
     outputBinding: {glob: '*.json'}
   - doc: Annotation as GFF3
     id: annotation_gff3
     type: File
-    format: edam:format_1929
+    format: edam:format_1939
     outputBinding: {glob: '*.gff3'}
   - doc: Annotation as GenBank
     id: annotation_gbff
     type: File
-    format: edam:format_1929
+    format: edam:format_1936
     outputBinding: {glob: '*.gbff'}
   - doc: Annotation as EMBL
     id: annotation_embl
     type: File
-    format: edam:format_1929
+    format: edam:format_1927
     outputBinding: {glob: '*.embl'}
   - doc: Genome Sequences as Fasta
     id: sequences_fna
     type: File
-    format: edam:format_1929
+    format: edam:format_2200
     outputBinding: {glob: '*.fna'}
   - doc: Gene DNA sequences as Fasta
     id: sequences_fna
     type: File
-    format: edam:format_1929
+    format: edam:format_2200
     outputBinding: {glob: '*.ffn'}
   - doc: CDS AA sequences as Fasta
     id: sequences_cds
     type: File
-    format: edam:format_1929
+    format: edam:format_2200
     outputBinding: {glob: '*.faa'}
 
 s:author:
