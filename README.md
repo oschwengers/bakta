@@ -255,7 +255,7 @@ Protein sequences provided in short Fasta or GenBank format are searched with de
 
 Annotation results are provided in standard bioinformatics file formats:
 
-- `<prefix>.tsv`: annotations as simple human readble tab separated values
+- `<prefix>.tsv`: annotations as simple human readble TSV
 - `<prefix>.gff3`: annotations & sequences in GFF3 format
 - `<prefix>.gbff`: annotations & sequences in (multi) GenBank format
 - `<prefix>.embl`: annotations & sequences in (multi) EMBL format
@@ -264,6 +264,7 @@ Annotation results are provided in standard bioinformatics file formats:
 - `<prefix>.faa`: CDS/sORF amino acid sequences as FASTA
 - `<prefix>.hypotheticals.tsv`: further information on hypothetical protein CDS as simple human readble tab separated values
 - `<prefix>.hypotheticals.faa`: hypothetical protein CDS amino acid sequences as FASTA
+- `<prefix>.txt`: summary as TXT
 
 The `<prefix>` can be set via `--prefix <prefix>`. If no prefix is set, Bakta uses the input file prefix.
 
