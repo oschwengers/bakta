@@ -464,7 +464,7 @@ def main():
             locus_tag_nr += 5
 
     ############################################################################
-    # Print statistics
+    # Print summary
     # - genome stats
     # - annotation stats
     ############################################################################
@@ -477,7 +477,7 @@ def main():
     print(f"\tN ratio: {100 * genome_stats['n_ratio']:.1f} %")
     print(f"\tcoding density: {100 * genome_stats['coding_ratio']:.1f} %")
 
-    print('\nannotation statistics:')
+    print('\nannotation summary:')
     print(f"\ttRNAs: {len([f for f in features if f['type'] == bc.FEATURE_T_RNA])}")
     print(f"\ttmRNAs: {len([f for f in features if f['type'] == bc.FEATURE_TM_RNA])}")
     print(f"\trRNAs: {len([f for f in features if f['type'] == bc.FEATURE_R_RNA])}")
@@ -547,9 +547,9 @@ def main():
     json_path = cfg.output_path.joinpath(f'{cfg.prefix}.json')
     json.write_json(genome, features, json_path)
 
-    print('\tgenome and annotation statistics...')
-    statistics_path = cfg.output_path.joinpath(f'{cfg.prefix}.txt')
-    with statistics_path.open('w') as fh_out:
+    print('\tgenome and annotation summary...')
+    summary_path = cfg.output_path.joinpath(f'{cfg.prefix}.txt')
+    with summary_path.open('w') as fh_out:
         fh_out.write('Sequence(s):\n')
         fh_out.write(f"Length: {genome['size']:}\n")
         fh_out.write(f"Count: {len(genome['contigs'])}\n")
