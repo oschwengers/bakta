@@ -155,6 +155,11 @@ outputs:
     type: File
     format: edam:format_1929
     outputBinding: {glob: '*.tsv'}
+  - doc: Annotation statistics as txt
+    id: annotation_txt
+    type: File
+    format: edam:format_2330
+    outputBinding: {glob: '*.txt'}
   - doc: Annotation as JSON
     id: annotation_json
     type: File
