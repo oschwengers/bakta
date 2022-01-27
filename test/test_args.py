@@ -295,19 +295,20 @@ def test_locus_ok(parameters, tmpdir):
         (['--locus-tag', '']),  # empty
         (['--locus-tag', ' ']),  # whitespace only
         (['--locus-tag', '  ']),  # whitespaces only
-        (['--locus-tag', 'fo o']),  # containing whitespace
-        (['--locus-tag', '123ABC']),  # first character is not a letter
-        (['--locus-tag', 'abc']),  # lower case letters
-        (['--locus-tag', 'AB']),  # less than 3 characters
-        (['--locus-tag', 'ABCDEFGHIJKLM']),  # more than 12 characters
-        (['--locus-tag', 'ABC_']),  # wrong characters
-        (['--locus-tag', 'ABC-']),  # wrong characters
+        (['--locus-tag', 'ABCDEFGHIJKLMNOPQRSTUVWXZ']),  # more than 24 characters
         (['--locus-tag', 'ABC!']),  # wrong characters
         (['--locus-tag', 'ABC?']),  # wrong characters
         (['--locus-tag', 'ABC*']),  # wrong characters
-        (['--locus-tag', 'ABC.']),  # wrong characters
         (['--locus-tag', 'ABC,']),  # wrong characters
-        (['--locus-tag', 'ABC;'])  # wrong characters
+        (['--locus-tag', 'ABC;']),  # wrong characters
+        (['--locus-tag', 'ABC:']),  # wrong characters
+        (['--locus-tag', 'ABC§']),  # wrong characters
+        (['--locus-tag', 'ABC$']),  # wrong characters
+        (['--locus-tag', 'ABC%']),  # wrong characters
+        (['--locus-tag', 'ABC&']),  # wrong characters
+        (['--locus-tag', 'ABC/']),  # wrong characters
+        (['--locus-tag', 'ABC=']),  # wrong characters
+        (['--locus-tag', 'ABC#'])  # wrong characters
     ]
 )
 def test_locustag_failiing(parameters, tmpdir):
@@ -325,16 +326,84 @@ def test_locustag_failiing(parameters, tmpdir):
 @pytest.mark.parametrize(
     'parameters',
     [
-        (['--locus-tag', 'ABC']),
-        (['--locus-tag', 'ABCDEFGHIJKL']),
+        (['--locus-tag', 'A']),
+        (['--locus-tag', '1']),
+        (['--locus-tag', 'ABCDEFGHIJKLMNOPQRSTUVWX']),
         (['--locus-tag', 'A12']),
-        (['--locus-tag', 'A23456789012'])
+        (['--locus-tag', 'ABC.']),
+        (['--locus-tag', 'ABC-']),
+        (['--locus-tag', 'ABC_']),
+        (['--locus-tag', 'GCF_014267685.1']),
+        (['--locus-tag', 'ASM25969v1']),
+        (['--locus-tag', 'DAESDI010000001.1'])
     ]
 )
 def test_locustag_ok(parameters, tmpdir):
     # test locus-tag prefix arguments
     proc = run(
         ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        parameters +
+        SKIP_PARAMETERS +
+        ['test/data/NC_002127.1.fna']
+    )
+    assert proc.returncode == 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--locus-tag']),  # not provided
+        (['--locus-tag', '']),  # empty
+        (['--locus-tag', ' ']),  # whitespace only
+        (['--locus-tag', '  ']),  # whitespaces only
+        (['--locus-tag', 'fo o']),  # containing whitespace
+        (['--locus-tag', '123ABC']),  # first character is not a letter
+        (['--locus-tag', 'abc']),  # lower case letters
+        (['--locus-tag', 'AB']),  # less than 3 characters
+        (['--locus-tag', 'ABCDEFGHIJKLM']),  # more than 12 characters
+        (['--locus-tag', 'ABC_']),  # wrong characters
+        (['--locus-tag', 'ABC-']),  # wrong characters
+        (['--locus-tag', 'ABC.']),  # wrong characters
+        (['--locus-tag', 'ABC!']),  # wrong characters
+        (['--locus-tag', 'ABC?']),  # wrong characters
+        (['--locus-tag', 'ABC*']),  # wrong characters
+        (['--locus-tag', 'ABC,']),  # wrong characters
+        (['--locus-tag', 'ABC;']),  # wrong characters
+        (['--locus-tag', 'ABC:']),  # wrong characters
+        (['--locus-tag', 'ABC§']),  # wrong characters
+        (['--locus-tag', 'ABC$']),  # wrong characters
+        (['--locus-tag', 'ABC%']),  # wrong characters
+        (['--locus-tag', 'ABC&']),  # wrong characters
+        (['--locus-tag', 'ABC/']),  # wrong characters
+        (['--locus-tag', 'ABC=']),  # wrong characters
+        (['--locus-tag', 'ABC#'])  # wrong characters
+    ]
+)
+def test_locustag_compliant_failiing(parameters, tmpdir):
+    # test locus-tag prefix arguments
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--compliant'] +
+        parameters +
+        SKIP_PARAMETERS +
+        ['test/data/NC_002127.1.fna']
+    )
+    assert proc.returncode != 0
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--locus-tag', 'ABC']),
+        (['--locus-tag', 'ABCDEFGHIJKL']),
+        (['--locus-tag', 'A12']),
+        (['--locus-tag', 'A23456789012'])
+    ]
+)
+def test_locustag_compliant_ok(parameters, tmpdir):
+    # test locus-tag prefix arguments
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--compliant'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']

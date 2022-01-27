@@ -204,6 +204,11 @@ def setup(args):
     log.info('translation_table=%s', translation_table)
     gram = args.gram
     log.info('gram=%s', gram)
+    compliant = args.compliant
+    log.info('compliant=%s', compliant)
+    if(compliant):
+        min_contig_length = 200
+        log.info('compliant mode! min_contig_length=%s', min_contig_length)
     locus = args.locus
     if(locus is not None):
         if(locus == ''):
@@ -214,7 +219,7 @@ def setup(args):
             sys.exit(f"ERROR: whitespace character ({locus}) in 'locus' parameter!")
         if(bc.RE_INSDC_ID_PREFIX.fullmatch(locus) is None):
             log.error("Invalid 'locus' parameter! locus=%s", locus)
-            sys.exit(f"ERROR: invalid 'locus' parameter ({locus})!\nLocus prefixes must contain between 1 and 20 alphanumeric and '-_' characters.")
+            sys.exit(f"ERROR: invalid 'locus' parameter ({locus})!\nLocus prefixes must contain between 1 and 20 alphanumeric or '-_' characters.")
     log.info('locus=%s', locus)
     locus_tag = args.locus_tag
     if(locus_tag is not None):
@@ -224,9 +229,14 @@ def setup(args):
         if(' ' in locus_tag):
             log.error("Whitespace character in 'locus-tag' parameter! locus-tag=%s", locus_tag)
             sys.exit(f"ERROR: whitespace character ({locus_tag}) in 'locus-tag' parameter!")
-        if(bc.RE_INSDC_LOCUSTAG_PREFIX.fullmatch(locus_tag) is None):
-            log.error("Invalid 'locus-tag' parameter! locus-tag=%s", locus_tag)
-            sys.exit(f"ERROR: invalid 'locus-tag' parameter ({locus_tag})!\nLocus tag prefixes must contain between 3 and 12 alphanumeric uppercase characters and start with a letter.")
+        if(compliant):
+            if(bc.RE_INSDC_LOCUSTAG_PREFIX.fullmatch(locus_tag) is None):
+                log.error("INSDC-incompliant 'locus-tag' parameter! locus-tag=%s", locus_tag)
+                sys.exit(f"ERROR: INSDC-incompliant 'locus-tag' parameter ({locus_tag})!\nINSDC Locus tag prefixes must contain between 3 and 12 alphanumeric uppercase characters and start with a letter.")
+        else:
+            if(bc.RE_LOCUSTAG_PREFIX.fullmatch(locus_tag) is None):
+                log.error("Invalid 'locus-tag' parameter! locus-tag=%s", locus_tag)
+                sys.exit(f"ERROR: invalid 'locus-tag' parameter ({locus_tag})!\nLocus tag prefixes must contain between 1 and 24 alphanumeric characters or '_.-' signs.")
     log.info('locus-tag=%s', locus_tag)
     keep_contig_headers = args.keep_contig_headers
     log.info('keep_contig_headers=%s', keep_contig_headers)
@@ -243,11 +253,6 @@ def setup(args):
             log.error('provided replicon file not valid! path=%s', replicons)
             sys.exit(f'ERROR: replicon table file ({replicons}) not valid!')
     log.info('replicon-table=%s', replicons)
-    compliant = args.compliant
-    log.info('compliant=%s', compliant)
-    if(compliant):
-        min_contig_length = 200
-        log.info('compliant mode! min_contig_length=%s', min_contig_length)
     user_proteins = args.proteins
     if(user_proteins is not None):
         try:

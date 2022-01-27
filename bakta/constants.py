@@ -7,6 +7,7 @@ import re
 RE_MULTIWHITESPACE = re.compile(r'\s+')
 RE_INSDC_ID_PREFIX = re.compile(r'[A-Za-z\d_.:*#-]{1,20}')  # https://www.ncbi.nlm.nih.gov/WebSub/html/help/fasta.html
 RE_INSDC_ID = re.compile(r'[A-Za-z\d_.:*#-]{1,25}')  # https://www.ncbi.nlm.nih.gov/WebSub/html/help/fasta.html
+RE_LOCUSTAG_PREFIX = re.compile(r'[A-Za-z\d_.-]{1,24}')  # https://ena-docs.readthedocs.io/en/latest/faq/locus_tags.html
 RE_INSDC_LOCUSTAG_PREFIX = re.compile(r'[A-Z][A-Z0-9]{2,11}')  # https://ena-docs.readthedocs.io/en/latest/faq/locus_tags.html
 
 ############################################################################
