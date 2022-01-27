@@ -9,3 +9,4 @@ RF03536	Cis-reg;	Tick-borne Flavivirus exoribonuclease-resistant RNA element
 RF03537	Cis-reg;	Tick-Born Flavivirus short stem-loop SL6
 RF03538	Cis-reg;	Tick-Borne Flavivirus 3' UTR cis-acting replication element (CRE)
 RF03545	Cis-reg;	Insect-specific Flavivirus 3' UTR cis-acting replication element (CRE)
+RF00375	Cis-reg;	HIV primer binding site (PBS)
