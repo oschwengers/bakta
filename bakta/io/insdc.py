@@ -93,7 +93,9 @@ def write_insdc(genome: dict, features:Sequence[dict], genbank_output_path: Path
 
         for feature in contig_features:
             insdc_feature_type = None
-            qualifiers = {}
+            qualifiers = {
+                'note': []
+            }
             if('db_xrefs' in feature):
                 if(cfg.compliant):
                     qualifiers['db_xref'], qualifiers['note'] = revise_dbxref_insdc(feature['db_xrefs'])
@@ -152,6 +154,13 @@ def write_insdc(genome: dict, features:Sequence[dict], genbank_output_path: Path
                         if(bc.DB_XREF_EC in note):
                             qualifiers['EC_number'] = note.replace('EC:', '')
                     qualifiers['note'] = [note for note in qualifiers['note'] if bc.DB_XREF_EC not in note]
+                if('exception' in feature):
+                    ex = feature['exception']
+                    pos = f"{ex['start']}..{ex['stop']}"
+                    if(feature['strand'] == bc.STRAND_REVERSE):
+                        pos = f"complement({pos})"
+                    qualifiers['transl_except']=f"(pos:{pos},aa:{ex['aa']})"
+                    qualifiers['note'].append(f"codon on position {ex['codon_position']} is a {ex['type']} codon")
                 if(bc.FEATURE_SIGNAL_PEPTIDE in feature):
                     sigpep_qualifiers = {}
                     sigpep_qualifiers['locus_tag'] = feature['locus']

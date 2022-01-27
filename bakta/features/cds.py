@@ -1,3 +1,4 @@
+import copy
 import logging
 import subprocess as sp
 
@@ -6,6 +7,7 @@ from pathlib import Path
 from typing import Dict, Sequence
 
 from Bio import SeqIO
+from Bio.Seq import Seq
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
 import bakta.config as cfg
@@ -336,7 +338,98 @@ def analyze_proteins(cdss: Sequence[dict]):
         cds['seq_stats'] = seq_stats
 
 
-def revise_special_cases(cdss: Sequence[dict]):
+def revise_translational_exceptions(genome: dict, cdss: Sequence[dict]):
+    """
+    Revise translational exceptions as for istance selenocystein proteins.
+    """
+    no_revised = 0
+    contigs = {c['id']: c for c in genome['contigs']}
+    # detect splitted orphan ORFs of selenocystein proteins that are subject to stop codon recoding.
+    cdss_per_contigs = {k['id']: [] for k in genome['contigs']}  # get CDS per contig
+    for cds in cdss:
+        cdss_per_contig = cdss_per_contigs[cds['contig']]
+        if('truncated' not in cds):  # exclude truncated CDS for now
+            cdss_per_contig.append(cds)
+    cds_pairs_per_contig = {k['id']: [] for k in genome['contigs']}  # extract inframe primate CDS neighbouring pairs
+    for id, cdss_per_contig in cdss_per_contigs.items():
+        cdss_per_contig = sorted(cdss_per_contig, key=lambda k: k['start'])
+        for i in range(1, len(cdss_per_contig)):
+            cds_a = cdss_per_contig[i-1]
+            cds_b = cdss_per_contig[i]
+            strand = cds_a['strand']
+            upstream_stop_codon = cds_a['nt'][-3:] if strand == bc.STRAND_FORWARD else cds_b['nt'][-3:]
+            downstream_rbs_motif = cds_b['rbs_motif'] if strand == bc.STRAND_FORWARD else cds_a['rbs_motif']
+            if(
+                cds_a['strand'] == cds_b['strand'] and  # up- and downstream ORFs on the same strand
+                cds_a['frame'] == cds_b['frame'] and  # up- and downstream ORFs on the same frame
+                upstream_stop_codon == 'TGA' and  # tRNAScan-SE 2.0 only predicts tRNA-Sec with UCA anticodons, therefore we can only detect TGA stop codons
+                downstream_rbs_motif is None and  # downstream ORF should not have a RBS
+                (cds_b['start'] - cds_a['stop']) < 100):  # up- and downstream ORFs in close proximity
+                cds_pairs = cds_pairs_per_contig[cds_a['contig']]
+                cds_pairs.append((cds_a, cds_b))
+
+    recoding_regions = [ncrna_region for ncrna_region in genome['features'][bc.FEATURE_NC_RNA_REGION] if ncrna_region['class'] == so.SO_CIS_REG_RECODING_STIMULATION_REGION]  #  Selenocysteine insertion sequences
+    for recoding_region in recoding_regions:
+        if('selenocysteine' in recoding_region.get('product', '').lower()):
+            cds_pairs = cds_pairs_per_contig[recoding_region['contig']]
+            for cds_a, cds_b in cds_pairs:  # find CDS pair around recoding region
+                strand = cds_a['strand']
+                if(
+                    strand == recoding_region['strand'] and  # everything is on the same strand
+                    cds_a['start'] < recoding_region['start'] and recoding_region['stop'] < cds_b['stop']):  # recoding region lies between up- and downstream ORFs
+                    log.debug(
+                        'selenocysteine recoding detected: contig=%s, strand=%s, CDS-A=[%i...%i] (%s..%s), recoding-ie=[%i..%i], CDS-B=[%i...%i] (%s..%s)',
+                        recoding_region['contig'], recoding_region['strand'], cds_a['start'], cds_a['stop'], cds_a['nt'][:10], cds_a['nt'][-10:], recoding_region['start'], recoding_region['stop'], cds_b['start'], cds_b['stop'], cds_b['nt'][:10], cds_b['nt'][-10:]
+                    )
+                    seleno_cds = copy.deepcopy(cds_a)
+                    seleno_cds['stop'] = cds_b['stop']
+                    seleno_cds['rbs_motif'] = cds_a['rbs_motif'] if strand == bc.STRAND_FORWARD else cds_b['rbs_motif']
+                    contig = contigs[seleno_cds['contig']]
+                    nt = bu.extract_feature_sequence(seleno_cds, contig)
+                    seleno_cds['nt'] = nt
+                    aa = str(Seq(nt).translate(table=cfg.translation_table, stop_symbol='*', to_stop=False, cds=False))
+                    
+                    # TODO: test on a large number of genomes and remove assertions upon successfull tests
+                    assert aa[0] == 'M', 'start with start (M)'
+                    assert aa[-1] == '*', 'ends with stop (*)'
+                    assert aa.count('*') == 2, 'contains 2 stops (*)'
+                    if(
+                        aa[0] == 'M' and  # starts with M
+                        aa[-1] == '*' and  # ends with stop *
+                        aa[1:-1].count('*') == 1  # contains exactly 1 additional stop (*) somewhere in between
+                        ):
+                        aa = aa.replace('*', 'U', 1)  # replace internal stop codon by U -> selenocysteine
+                        aa = aa[:-1]  # remove stop asterisk
+                        seleno_cds['aa'] = aa
+                        seleno_cds['aa_digest'], seleno_cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
+                        seleno_cds['exception'] = {
+                            'type': 'selenocysteine',
+                            'aa': 'Sec',
+                            'start': cds_a['stop'] - 2 if strand == bc.STRAND_FORWARD else cds_b['start'],
+                            'stop': cds_a['stop'] if strand == bc.STRAND_FORWARD else cds_b['start'] + 2,
+                            'codon_position': aa.find('U') + 1
+                        }                    
+                        cdss.append(seleno_cds)
+                        log.info(
+                            'selenocysteine CDS detected: contig=%s, start=%i, stop=%i, strand=%s, frame=%i, exception=[%i..%i], nt=[%s..%s], aa=[%s..%s], aa-hexdigest=%s',
+                            seleno_cds['contig'], seleno_cds['start'], seleno_cds['stop'], seleno_cds['strand'], seleno_cds['frame'], seleno_cds['exception']['start'], seleno_cds['exception']['stop'], nt[:10], nt[-10:], aa[:10], aa[-10:], seleno_cds['aa_hexdigest']
+                        )
+                        discard = {  # mark CDS a/b as discarded
+                            'type': bc.DISCARD_TYPE_RECODING,
+                            'description': f"selenocysteine recoding at ({seleno_cds['exception']['start']}..{seleno_cds['exception']['stop']})"
+                        }
+                        cds_a['discarded'] = discard
+                        cds_b['discarded'] = discard
+                        no_revised += 1
+                    else:
+                        log.warn(
+                            'spurious selenocysteine CDS detected: contig=%s, start=%i, stop=%i, strand=%s, frame=%i, nt=[%s], aa=[%s]',
+                            seleno_cds['contig'], seleno_cds['start'], seleno_cds['stop'], seleno_cds['strand'], seleno_cds['frame'], nt, aa
+                        )
+    return no_revised
+
+
+def revise_special_cases_annotated(cdss: Sequence[dict]):
     """
     Revise rare but known special cases as for istance supposedly truncated dnaA genes on rotated chromosome starts
     which often appear on re-annotated genomes.

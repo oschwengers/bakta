@@ -254,6 +254,12 @@ def main():
             discarded_cdss = orf.detect_spurious(cdss, cds_aa_path)
             print(f'\tdiscarded spurious: {len(discarded_cdss)}')
             cdss = [cds for cds in cdss if 'discarded' not in cds]
+        
+        if(len(cdss) > 0):
+            log.debug('revise translational exceptions')
+            no_revised = feat_cds.revise_translational_exceptions(genome, cdss)
+            print(f'\trevised translational exceptions: {no_revised}')
+            cdss = [cds for cds in cdss if 'discarded' not in cds]
 
         if(len(cdss) > 0):
             log.debug('lookup CDS UPS/IPS')
@@ -309,7 +315,7 @@ def main():
                 print('\tcalculated proteins statistics')
             
             print('\trevise special cases...')
-            feat_cds.revise_special_cases(cdss)
+            feat_cds.revise_special_cases_annotated(cdss)
 
         genome['features'][bc.FEATURE_CDS] = cdss
 
