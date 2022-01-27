@@ -343,6 +343,9 @@ def revise_translational_exceptions(genome: dict, cdss: Sequence[dict]):
     Revise translational exceptions as for istance selenocystein proteins.
     """
     no_revised = 0
+    if(bc.FEATURE_NC_RNA_REGION not in genome['features']):  # check if ncRNA regions have been detected, otherwise skip analysis and return
+        return no_revised
+
     contigs = {c['id']: c for c in genome['contigs']}
     # detect splitted orphan ORFs of selenocystein proteins that are subject to stop codon recoding.
     cdss_per_contigs = {k['id']: [] for k in genome['contigs']}  # get CDS per contig
