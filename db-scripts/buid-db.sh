@@ -9,7 +9,7 @@ printf "Create Bakta database\n"
 
 # download rRNA covariance models from Rfam
 printf "\n1/16: download rRNA covariance models from Rfam ...\n"
-wget ftp://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
+wget https://ftp.ebi.ac.uk/pub/databases/Rfam/CURRENT/Rfam.cm.gz
 pigz -d Rfam.cm.gz
 cmfetch Rfam.cm RF00001 >  rRNA
 cmfetch Rfam.cm RF00177 >> rRNA
@@ -52,7 +52,7 @@ rm rfam-regions.raw.txt rfam-regions.txt ncRNA-regions.blocklist ncRNA-regions R
 printf "\n4/16: download and extract spurious ORF HMMs from AntiFam ...\n"
 mkdir antifam-dir
 cd antifam-dir
-wget ftp://ftp.ebi.ac.uk/pub/databases/Pfam/AntiFam/current/Antifam.tar.gz
+wget https://ftp.ebi.ac.uk/pub/databases/Pfam/AntiFam/current/Antifam.tar.gz
 tar -xzf Antifam.tar.gz
 cd ..
 mv antifam-dir/AntiFam_Bacteria.hmm antifam
@@ -80,7 +80,7 @@ rm doric10.rar tubic* oric.plasmid.fna
 printf "\n6/16: download NCBI Taxonomy DB ...\n"
 mkdir taxonomy
 cd taxonomy
-wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz
+wget https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz
 tar -I pigz -xf taxdump.tar.gz
 cd ..
 mv taxonomy/nodes.dmp .
@@ -101,9 +101,9 @@ python3 ${BAKTA_DB_SCRIPTS}/init-db.py --db bakta.db
 # - build PSC Diamond db
 ############################################################################
 printf "\n8/14: download UniProt UniRef90 ...\n"
-wget ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref90/uniref90.xml.gz
-wget ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref50/uniref50.xml.gz
-wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/uniparc_active.fasta.gz
+wget https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref90/uniref90.xml.gz
+wget https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref50/uniref50.xml.gz
+wget https://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/uniparc_active.fasta.gz
 printf "\n8/14: read UniRef90 entries and build Protein Sequence Cluster sequence and information databases:\n"
 python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --uniref90 uniref90.xml.gz --uniref50 uniref50.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --psc psc.faa --sorf sorf.faa
 printf "\n8/14: build PSC Diamond db ...\n"
@@ -118,7 +118,7 @@ rm uniref90.xml.gz sorf.faa
 # - read, filter and transform UniRef100 entries and store to ips.db
 ############################################################################
 printf "\n9/14: download UniProt UniRef100 ...\n"
-wget ftp://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref100/uniref100.xml.gz
+wget https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref100/uniref100.xml.gz
 printf "\n9/14: read, filter and store UniRef100 entries ...:\n"
 python3 ${BAKTA_DB_SCRIPTS}/init-ups-ips.py --taxonomy nodes.dmp --uniref100 uniref100.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --ips ips.faa
 rm uniref100.xml.gz uniparc_active.fasta.gz
@@ -131,10 +131,10 @@ rm uniref100.xml.gz uniparc_active.fasta.gz
 # - annotate IPSs/PSCs with NCBI gene names (WP_* -> hash -> UniRef100 -> UniRef90 -> PSC)
 ############################################################################
 printf "\n10/16: download RefSeq nonredundant proteins and clusters ...\n"
-wget ftp://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_proteins.txt
-wget ftp://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_clusters.txt
+wget https://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_proteins.txt
+wget https://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_clusters.txt
 for i in {1..1396}; do
-    wget ftp://ftp.ncbi.nlm.nih.gov/refseq/release/bacteria/bacteria.nonredundant_protein.${i}.protein.faa.gz
+    wget https://ftp.ncbi.nlm.nih.gov/refseq/release/bacteria/bacteria.nonredundant_protein.${i}.protein.faa.gz
     pigz -dc bacteria.nonredundant_protein.${i}.protein.faa.gz | seqtk seq -CU >> refseq-bacteria-nrp.trimmed.faa
     rm bacteria.nonredundant_protein.${i}.protein.faa.gz
 done
@@ -150,11 +150,11 @@ rm refseq-bacteria-nrp.trimmed.faa PCLA_proteins.txt PCLA_clusters.txt
 # - annotate PSCs with COG info
 ############################################################################
 printf "\n11/16: download COG db ...\n"
-wget ftp://ftp.ncbi.nih.gov/pub/COG/COG2020/data/cog-20.def.tab  # COG IDs and functional class
-wget ftp://ftp.ncbi.nih.gov/pub/COG/COG2020/data/cog-20.cog.csv # Mapping GenBank IDs -> COG IDs
+wget https://ftp.ncbi.nih.gov/pub/COG/COG2020/data/cog-20.def.tab  # COG IDs and functional class
+wget https://ftp.ncbi.nih.gov/pub/COG/COG2020/data/cog-20.cog.csv # Mapping GenBank IDs -> COG IDs
 for i in $(seq -f "%04g" 1 5950)
 do
-    wget ftp://ftp.ncbi.nih.gov/pub/COG/COG2020/data/fasta/COG${i}.fa.gz
+    wget https://ftp.ncbi.nih.gov/pub/COG/COG2020/data/fasta/COG${i}.fa.gz
     pigz -dc COG${i}.fa.gz | seqtk seq -CU >> cog.faa
     rm COG${i}.fa.gz
 done
@@ -172,7 +172,7 @@ rm cognames2003-2015.tab cog2003-2015.csv prot2003-2015.fa.gz diamond.cog.tsv co
 # - annotate IPSs if IPS have no PSC UniRef90 identifier (seq -> hash -> UPS -> IPS)
 ############################################################################
 printf "\n12/16: download UniProt/SwissProt ...\n"
-wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
+wget https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
 printf "\n12/16: annotate IPSs and PSCs ...\n"
 python3 ${BAKTA_DB_SCRIPTS}/annotate-swissprot.py --taxonomy nodes.dmp --xml uniprot_sprot.xml.gz --db bakta.db
 rm uniprot_sprot.xml.gz
@@ -184,9 +184,9 @@ rm uniprot_sprot.xml.gz
 # - annotate IPSs with AMR info
 ############################################################################
 printf "\n13/16: download AMR gene WP_* annotations from NCBI Pathogen AMR db ...\n"
-wget ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/latest/ReferenceGeneCatalog.txt
-wget ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/latest/AMR.LIB
-wget ftp://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/latest/fam.tab
+wget https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/latest/ReferenceGeneCatalog.txt
+wget https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/latest/AMR.LIB
+wget https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/latest/fam.tab
 printf "\n13/16: annotate IPSs and PSCs...\n"
 mv AMR.LIB ncbifam-amr
 hmmpress ncbifam-amr
@@ -219,9 +219,9 @@ rm IS.faa is.transposase.faa is.dmnd diamond.is.ips.tsv diamond.is.psc.tsv
 # - annotate hypothetical PSC via Pfam families
 ############################################################################
 printf "\n15/16: download HMM models from Pfam ...\n"
-wget ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.dat.gz
+wget https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.dat.gz
 python3 ${BAKTA_DB_SCRIPTS}/extract-pfam.py --pfam Pfam-A.hmm.dat.gz --family pfam.families.tsv --non-family pfam.non-families.tsv
-wget ftp://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
+wget https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
 pigz -d Pfam-A.hmm.gz
 hmmfetch -o pfam-families -f Pfam-A.hmm pfam.families.tsv
 hmmpress pfam-families
