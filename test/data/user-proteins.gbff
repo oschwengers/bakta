@@ -54,6 +54,21 @@ FEATURES             Location/Qualifiers
                      /transl_table=11
                      /protein_id="gnl|Bakta|hypo-mock-test"
                      /inference="ab initio prediction:Prodigal:2.6"
+     gene            1001..1038
+                     /locus_tag="pseudo-mock-test"
+                     /gene="mock2"
+                     /pseudo
+     CDS             1001..1038
+                     /locus_tag="pseudo-mock-test"
+                     /gene="mock2"
+                     /db_xref="USERDB:MOCK2"
+                     /EC_number="0.0.0.0"
+                     /product="mock pseudo user protein 2"
+                     /pseudo
+                     /codon_start=1
+                     /transl_table=11
+                     /protein_id="gnl|Bakta|hypo-mock-test"
+                     /inference="ab initio prediction:Prodigal:2.6"
 ORIGIN
         1 ttcttctgcg agttcgtgca gcttctcaca catggtggcc tgctcgtcag catcgagtgc
        61 gtccagtttt tcgagcagcg tcaggctctg gctttttatg aatcccgcca tgttgagtgc
