@@ -10,7 +10,7 @@ def pathInput = Paths.get(params.in).toAbsolutePath().normalize()
 def pathDb = Paths.get(params.db).toAbsolutePath().normalize()
 def pathOutput = Paths.get(params.out).toAbsolutePath().normalize()
 
-print("run Diamond")
+print("run hmmsearch")
 print("query: ${pathInput}")
 print("DB: ${pathDb}")
 print("Output: ${pathOutput}")

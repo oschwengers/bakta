@@ -13,7 +13,7 @@ def pathInput = Paths.get(params.in).toAbsolutePath().normalize()
 def pathDb = Paths.get(params.db).toAbsolutePath().normalize()
 def pathOutput = Paths.get(params.out).toAbsolutePath().normalize()
 
-print("run Diamond")
+print("run diamond")
 print("query: ${pathInput}")
 print("DB: ${pathDb}")
 print("Output: ${pathOutput}")
@@ -27,7 +27,7 @@ process diamond {
     maxRetries 3
     cpus 8
     memory '32 GB'
-    conda 'diamond=2.0.11'
+    conda 'diamond=2.0.14'
 
     input:
     file('input.faa') from chAAs
