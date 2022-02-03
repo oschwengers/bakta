@@ -109,7 +109,7 @@ python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --uniref90 uniref90
 printf "\n8/14: build PSC Diamond db ...\n"
 diamond makedb --in psc.faa --db psc
 diamond makedb --in sorf.faa --db sorf
-rm uniref90.xml.gz sorf.faa
+rm uniref90.xml.gz
 
 
 ############################################################################
@@ -160,8 +160,10 @@ do
 done
 printf "\n11/16: annotate PSCs ...\n"
 diamond makedb --in cog.faa --db cog.dmnd
-nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db cog.dmnd --block 1000000 --id 90 --qcov 80 --scov 80 --out diamond.cog.tsv
-python3 ${BAKTA_DB_SCRIPTS}/annotate-cog.py --db bakta.db --alignments diamond.cog.tsv --cog-ids cog-20.def.tab --gi-cog-mapping cog-20.cog.csv
+nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db cog.dmnd --block 1000000 --id 90 --qcov 80 --scov 80 --out diamond.cog.psc.tsv
+python3 ${BAKTA_DB_SCRIPTS}/annotate-cog.py --db bakta.db --alignments diamond.cog.psc.tsv --cog-ids cog-20.def.tab --gi-cog-mapping cog-20.cog.csv
+nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in sorf.faa --db cog.dmnd --block 1000000 --id 90 --qcov 90 --scov 90 --out diamond.cog.sorf.tsv
+python3 ${BAKTA_DB_SCRIPTS}/annotate-cog.py --db bakta.db --alignments diamond.cog.sorf.tsv --cog-ids cog-20.def.tab --gi-cog-mapping cog-20.cog.csv
 rm cognames2003-2015.tab cog2003-2015.csv prot2003-2015.fa.gz diamond.cog.tsv cog.*
 
 
@@ -252,4 +254,4 @@ rm -r 4.2.2/ 4.2.2.tgz VFDB_setA_pro.fas expert-protein-sequences.faa
 ls -l bakta.db
 python3 ${BAKTA_DB_SCRIPTS}/optimize-db.py --db bakta.db
 ls -l bakta.db
-rm psc.faa node.dmp
+rm psc.faa sorf.faa node.dmp
