@@ -137,7 +137,7 @@ $ bakta_db download --output <output-path>
 Of course, the database can also be downloaded manually:
 
 ```bash
-$ wget https://zenodo.org/record/5215743/files/db.tar.gz
+$ wget https://zenodo.org/record/5961398/files/db.tar.gz
 $ tar -xzf db.tar.gz
 $ rm db.tar.gz
 $ amrfinder_update --force_update --database db/amrfinderplus-db/
@@ -467,19 +467,20 @@ Due due to uncertain nature of sORF prediction, only those identified via IPS / 
 The Bakta database comprises a set of AA & DNA sequence databases as well as HMM & covariance models.
 At its core Bakta utilizes a compact read-only SQLite db storing protein sequence digests, lengths, pre-assigned annotations and dbxrefs of UPS, IPS and PSC from:
 
-- **UPS**: UniParc / UniProtKB (214,847,897)
-- **IPS**: UniProt UniRef100 (199,630,327)
-- **PSC**: UniProt UniRef90 (90,580,050)
-- **PSCC**: UniProt UniRef50 (12,127,845)
+- **UPS**: UniParc / UniProtKB (213,429,161)
+- **IPS**: UniProt UniRef100 (198,494,206)
+- **PSC**: UniProt UniRef90 (91,455,850)
+- **PSCC**: UniProt UniRef50 (12,323,024)
 
 This allows the exact protein sequences identification via MD5 digests & sequence lengths as well as the rapid subsequent lookup of related information. Protein sequence digests are checked for hash collisions while the db creation process.
 IPS & PSC have been comprehensively pre-annotated integrating annotations & database *dbxrefs* from:
 
-- NCBI nonredundant proteins (IPS: 150,463,165)
-- NCBI COG db (PSC: 3,353,131)
-- SwissProt EC/GO terms (PSC: 335,256)
-- NCBI AMRFinderPlus (IPS: 6,255, PSC: 43,413)
-- ISFinder db (IPS: 27,841, PSC: 10,161)
+- NCBI nonredundant proteins (IPS: 153,166,049)
+- NCBI COG db (PSC: 3,383,871)
+- SwissProt EC/GO terms (PSC: 335,068)
+- NCBI AMRFinderPlus (IPS: 6,534, PSC: 48,931)
+- ISFinder db (IPS: 45,820, PSC: 10,351)
+- Pfam families (PSC: 3,917,555)
 
 To provide high quality annotations for distinct protein sequences of high importance (AMR, VF, *etc*) which cannot sufficiently be covered by the IPS/PSC approach, Bakta provides additional expert systems. For instance, AMR genes, are annotated via NCBI's AMRFinderPlus.
 An expandable alignment-based expert system supports the incorporation of high quality annotations from multiple sources. This currenlty comprises NCBI's BlastRules as well as VFDB and will be complemented with more expert annotation sources over time. Internally, this expert system is based on a Diamond DB comprising the following information in a standardized format:
@@ -496,11 +497,16 @@ An expandable alignment-based expert system supports the incorporation of high q
 Rfam covariance models:
 
 - ncRNA: 798
-- ncRNA cis-regulatory regions: 267
+- ncRNA cis-regulatory regions: 270
+
+ori sequences:
+
+- oriC/V: 10,878
+- oriT: 502
 
 To provide FAIR annotations, the database releases are SemVer versioned (w/o patch level), *i.e.* `<major>.<minor>`. For each version we provide a comprehensive log file tracking all imported sequences as well as annotations thereof. The db schema is represented by the `<major>` digit and automatically checked at runtime by Bakta in order to ensure compatibility. Content updates are tracked by the `<minor>` digit.
 
-All database releases (latest 3.0, 28 Gb zipped, 53 Gb unzipped) are hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
+All database releases (latest 3.1, 28 Gb zipped, 53 Gb unzipped) are hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5961398.svg)](https://doi.org/10.5281/zenodo.5961398)
 
 ## Genome Submission
 
