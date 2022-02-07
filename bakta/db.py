@@ -341,7 +341,10 @@ def main():
         try:
             db_old_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)  # set write permissions on old directory
             for db_old_file_path in db_old_path.iterdir():
-                db_old_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR)
+                if(db_old_file_path.is_dir()):
+                    db_old_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
+                else:    
+                    db_old_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR)
         except:
             sys.exit(f'ERROR: cannot set read|write|execute permissions on old database! path={db_old_path}, owner={db_old_path.owner()}, group={db_old_path.group()}, permissions={oct(db_old_path.stat().st_mode )[-3:]}')
         try:
