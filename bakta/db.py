@@ -123,7 +123,7 @@ def download(db_url, tarball_path):
                 with alive_bar(total=total_length) as bar:
                     for data in resp.iter_content(chunk_size=1024*1024):
                         fh_out.write(data)
-                        bar(len(data)/1024)
+                        bar(incr=len(data)/1024)
     except IOError:
         sys.exit(f'ERROR: Could not download file from Zenodo! url={db_url}, path={tarball_path}')
 

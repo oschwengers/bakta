@@ -29,7 +29,7 @@ setup(
         'biopython >= 1.78',
         'xopen >= 1.1.0',
         'requests >= 2.25.1',
-        'alive-progress >= 2.1.0'
+        'alive-progress == 1.6.2'
     ],
     entry_points={
         'console_scripts': [
