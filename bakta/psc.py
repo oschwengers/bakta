@@ -3,6 +3,7 @@ import subprocess as sp
 import sqlite3
 
 from concurrent.futures import ThreadPoolExecutor
+from typing import Sequence, Tuple
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -25,7 +26,7 @@ DB_PSC_COL_GO = 'go_ids'
 log = logging.getLogger('PSC')
 
 
-def search(cdss):
+def search(cdss: Sequence[dict]) -> Tuple[Sequence[dict], Sequence[dict], Sequence[dict]]:
     """Conduct homology search of CDSs against PCS db."""
     cds_aa_path = cfg.tmp_path.joinpath('cds.psc.faa')
     orf.write_internal_faa(cdss, cds_aa_path)
@@ -97,7 +98,7 @@ def search(cdss):
     return pscs_found, psccs_found, cds_not_found
 
 
-def lookup(features):
+def lookup(features: Sequence[dict]):
     """Lookup PCS information"""
     no_psc_lookups = 0
     try:
@@ -140,7 +141,7 @@ def lookup(features):
     log.info('looked-up=%i', no_psc_lookups)
 
 
-def fetch_db_psc_result(conn, uniref90_id):
+def fetch_db_psc_result(conn: sqlite3.Connection, uniref90_id: str):
     c = conn.cursor()
     c.execute('select * from psc where uniref90_id=?', (uniref90_id,))
     rec = c.fetchone()
@@ -148,7 +149,7 @@ def fetch_db_psc_result(conn, uniref90_id):
     return rec
 
 
-def parse_annotation(rec):
+def parse_annotation(rec) -> dict:
     psc = {
         DB_PSC_COL_UNIREF90: bc.DB_PREFIX_UNIREF_90 + rec[DB_PSC_COL_UNIREF90]  # must not be NULL/None
     }

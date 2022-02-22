@@ -1,5 +1,8 @@
 import logging
 
+from pathlib import Path
+from typing import Dict, Sequence, Union
+
 import bakta
 import bakta.config as cfg
 import bakta.constants as bc
@@ -11,7 +14,7 @@ import bakta.so as so
 log = logging.getLogger('GFF')
 
 
-def write_gff3(genome, features_by_contig, gff3_path):
+def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Path):
     """Export features in GFF3 format."""
     log.info('write GFF3: path=%s', gff3_path)
 
@@ -299,7 +302,7 @@ def write_gff3(genome, features_by_contig, gff3_path):
     return
 
 
-def encode_attribute(product):
+def encode_attribute(product: str) -> str:
     """Replace special characters forbidden in column 9 of the GFF3 format: https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md"""
     product = str(product)
     product = product.replace('%', '%25')
@@ -310,7 +313,7 @@ def encode_attribute(product):
     return product
 
 
-def encode_annotations(annotations):
+def encode_annotations(annotations: Dict[str, Union[str, Sequence[str]]]) -> str:
     annotation_strings = []
     for key, val in annotations.items():
         if(type(val) is list):
@@ -323,7 +326,7 @@ def encode_annotations(annotations):
     return ';'.join(annotation_strings)
 
 
-def write_signal_peptide(fh, feat):
+def write_signal_peptide(fh, feat: dict):
     sig_peptide = feat[bc.FEATURE_SIGNAL_PEPTIDE]
     annotations = {
         'ID': f"{feat['locus']}_sigpep",

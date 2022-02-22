@@ -2,6 +2,8 @@ import logging
 import subprocess as sp
 
 from collections import OrderedDict
+from pathlib import Path
+from typing import Dict, Sequence
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -11,7 +13,7 @@ import bakta.io.fasta as fasta
 log = logging.getLogger('ORF')
 
 
-def detect_spurious(orfs, orf_aa_path):
+def detect_spurious(orfs: Sequence[dict], orf_aa_path: Path):
     """Detect spurious ORFs with AntiFam"""
     output_path = cfg.tmp_path.joinpath('cds.spurious.hmm.tsv')
     cmd = [
@@ -68,17 +70,17 @@ def detect_spurious(orfs, orf_aa_path):
     return discarded_orfs
 
 
-def get_orf_key(orf):
+def get_orf_key(orf: dict) -> str:
     """Generate a standardized and unique ORF-like feature key for internal store/analyze/parse/retrieval cycles."""
     return f"{orf['aa_hexdigest']}-{orf['contig']}-{orf['start']}-{orf['stop']}-{orf['strand']}"
 
 
-def get_orf_dictionary(orfs):
+def get_orf_dictionary(orfs: Sequence[dict]) -> Dict[str, dict]:
     """create a standardized ORF-like feature dict for internal store/analyze/parse/retrieval cycles."""
     return {get_orf_key(orf): orf for orf in orfs}
 
 
-def write_internal_faa(features, faa_path):
+def write_internal_faa(features: Sequence[dict], faa_path: Path):
     """Write aa sequences to internal temporary Fasta file."""
     log.info('write internal aa seqs: # seqs=%i, path=%s', len(features), faa_path)
     with faa_path.open(mode='wt') as fh:

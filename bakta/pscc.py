@@ -2,6 +2,7 @@ import logging
 import sqlite3
 
 from concurrent.futures import ThreadPoolExecutor
+from typing import Sequence
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -17,7 +18,7 @@ DB_PSCC_COL_PRODUCT = 'product'
 log = logging.getLogger('PSCC')
 
 
-def lookup(features):
+def lookup(features: Sequence[dict]):
     """Lookup PSCC information"""
     no_pscc_lookups = 0
     try:
@@ -53,7 +54,7 @@ def lookup(features):
     log.info('looked-up=%i', no_pscc_lookups)
 
 
-def fetch_db_pscc_result(conn, uniref50_id):
+def fetch_db_pscc_result(conn: sqlite3.Connection, uniref50_id: str):
     c = conn.cursor()
     c.execute('select * from pscc where uniref50_id=?', (uniref50_id,))
     rec = c.fetchone()
@@ -61,7 +62,7 @@ def fetch_db_pscc_result(conn, uniref50_id):
     return rec
 
 
-def parse_annotation(rec):
+def parse_annotation(rec) -> dict:
     uniref_full_id = bc.DB_PREFIX_UNIREF_50 + rec[DB_PSCC_COL_UNIREF50]
     pscc = {
         DB_PSCC_COL_UNIREF50: uniref_full_id,  # must not be NULL/None

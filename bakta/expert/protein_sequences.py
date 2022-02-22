@@ -2,6 +2,9 @@ import logging
 import subprocess as sp
 import sys
 
+from pathlib import Path
+from typing import Sequence
+
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.features.orf as orf
@@ -13,7 +16,7 @@ from xopen import xopen
 log = logging.getLogger('EXPERT_AA_SEQ')
 
 
-def search(cdss, cds_fasta_path, expert_system, db_path):
+def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_path: Path):
     """Conduct homology search of CDSs against PCS db."""
     diamond_output_path = cfg.tmp_path.joinpath('diamond.cds.expert.tsv')
     cmd = [
@@ -90,7 +93,7 @@ def search(cdss, cds_fasta_path, expert_system, db_path):
     return cds_found
 
 
-def write_user_protein_sequences(aa_fasta_path):
+def write_user_protein_sequences(aa_fasta_path: Path):
     user_proteins = []
     try:
         with xopen(str(cfg.user_proteins), threads=0) as fh_in:
@@ -171,7 +174,7 @@ def parse_user_protein_sequences_fasta(record):
     return (model_id, min_id, min_query_cov, min_model_cov, gene, product, db_xrefs, seq)
 
 
-def parse_user_protein_sequences_genbank(feature):
+def parse_user_protein_sequences_genbank(feature: dict):
     min_id = bc.MIN_PSC_IDENTITY * 100
     min_query_cov = bc.MIN_PSC_COVERAGE * 100
     min_model_cov = bc.MIN_PSC_COVERAGE * 100

@@ -53,7 +53,7 @@ FILE_NAMES = [
     ]
 
 
-def check(db_path):
+def check(db_path: Path) -> dict:
     """Check if database directory exists, is accessible and contains necessary files."""
 
     if(db_path is None):
@@ -109,7 +109,7 @@ def fetch_db_versions():
         return versions
 
 
-def download(db_url, tarball_path):
+def download(db_url: str, tarball_path: Path):
     try:
         with tarball_path.open('wb') as fh_out, requests.get(db_url, stream=True) as resp:
             total_length = resp.headers.get('content-length')
@@ -128,7 +128,7 @@ def download(db_url, tarball_path):
         sys.exit(f'ERROR: Could not download file from Zenodo! url={db_url}, path={tarball_path}')
 
 
-def calc_md5_sum(tarball_path, buffer_size=1024*1024):
+def calc_md5_sum(tarball_path: Path, buffer_size: int=1024*1024) -> str:
     md5 = hashlib.md5()
     with tarball_path.open('rb') as fh:
         data = fh.read(buffer_size)
@@ -138,7 +138,7 @@ def calc_md5_sum(tarball_path, buffer_size=1024*1024):
     return md5.hexdigest()
 
 
-def untar(tarball_path, output_path):
+def untar(tarball_path: Path, output_path: Path):
     try:
         with tarball_path.open('rb') as fh_in, tarfile.open(fileobj=fh_in, mode='r:gz') as tar_file:
             tar_file.extractall(path=str(output_path))
@@ -386,7 +386,7 @@ def main():
         sys.exit('Error: no subcommand provided!')
 
 
-def update_amrfinderplus_db(db_path):
+def update_amrfinderplus_db(db_path: Path):
     amrfinderplus_db_path = db_path.joinpath('amrfinderplus-db')
     cmd = [
         'amrfinder_update',

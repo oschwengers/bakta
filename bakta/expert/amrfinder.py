@@ -1,6 +1,9 @@
 import logging
 import subprocess as sp
 
+from pathlib import Path
+from typing import Sequence
+
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.features.orf as orf
@@ -9,7 +12,7 @@ import bakta.features.orf as orf
 log = logging.getLogger('EXPERT-AMRFINDER')
 
 
-def search(cdss, cds_fasta_path):
+def search(cdss: Sequence[dict], cds_fasta_path: Path):
     """Conduct expert CDS analysis with AMRFinderPlus."""
     amrfinder_output_path = cfg.tmp_path.joinpath('amrfinder.tsv')
     amrfinderplus_db_path = cfg.db_path.joinpath('amrfinderplus-db')

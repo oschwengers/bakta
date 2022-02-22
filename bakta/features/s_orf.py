@@ -4,6 +4,7 @@ import math
 import subprocess as sp
 
 from collections import OrderedDict
+from typing import Sequence
 
 from Bio.Seq import Seq
 
@@ -18,7 +19,7 @@ import bakta.so as so
 log = logging.getLogger('S_ORF')
 
 
-def extract(genome):
+def extract(genome: dict):
     """Predict open reading frames in mem via BioPython."""
     orfs = []
     for contig in genome['contigs']:
@@ -77,15 +78,15 @@ def extract(genome):
     return orfs
 
 
-def get_feature_start(feature):
+def get_feature_start(feature: dict) -> int:
     return feature['start'] if feature['strand'] == bc.STRAND_FORWARD else feature['stop']
 
 
-def get_feature_stop(feature):
+def get_feature_stop(feature: dict) -> int:
     return feature['stop'] if feature['strand'] == bc.STRAND_FORWARD else feature['start']
 
 
-def overlap_filter(genome, orfs_raw):
+def overlap_filter(genome: dict, orfs_raw: Sequence[dict]):
     """Filter in-mem ORFs by overlapping CDSs."""
     t_rnas_per_contig = {k['id']: [] for k in genome['contigs']}
     for t_rna in genome['features'].get(bc.FEATURE_T_RNA, []):
@@ -160,7 +161,7 @@ def overlap_filter(genome, orfs_raw):
     return valid_sorfs, discarded_sorfs
 
 
-def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_crispr_arrays):
+def filter_sorf(sorf_chunk: Sequence[dict], contig_cdss: Sequence[dict], contig_r_rnas: Sequence[dict], contig_t_rnas: Sequence[dict], contig_crispr_arrays: Sequence[dict]):
     discarded_sorf_keys = []
     for sorf in sorf_chunk:
         break_flag = False
@@ -257,7 +258,7 @@ def filter_sorf(sorf_chunk, contig_cdss, contig_r_rnas, contig_t_rnas, contig_cr
     return discarded_sorf_keys
 
 
-def annotation_filter(sorfs):
+def annotation_filter(sorfs: Sequence[dict]) -> Sequence[dict]:
     """Filter sORFs according to available annotations."""
     valid_sorfs = []
     for sorf in sorfs:
@@ -290,7 +291,7 @@ def annotation_filter(sorfs):
     return valid_sorfs
 
 
-def search_pscs(sorfs):
+def search_pscs(sorfs: Sequence[dict]):
     """Conduct homology search of sORFs against sORF db."""
     sorf_aa_path = cfg.tmp_path.joinpath('sorf.faa')
     orf.write_internal_faa(sorfs, sorf_aa_path)

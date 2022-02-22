@@ -2,6 +2,8 @@ import json
 import logging
 
 from collections import OrderedDict
+from pathlib import Path
+from typing import Sequence
 
 import bakta
 import bakta.constants as bc
@@ -11,7 +13,7 @@ import bakta.config as cfg
 log = logging.getLogger('JSON')
 
 
-def write_json(genome, features, json_path):
+def write_json(genome: dict, features: Sequence[dict], json_path: Path):
     log.info('write JSON: path=%s', json_path)
 
     # clean feature attributes

@@ -2,6 +2,7 @@ import logging
 import subprocess as sp
 
 from collections import OrderedDict
+from pathlib import Path
 
 from Bio import SeqIO
 
@@ -41,7 +42,7 @@ SO_TERMS = {
 }
 
 
-def predict_t_rnas(genome, contigs_path):
+def predict_t_rnas(genome: dict, contigs_path: Path):
     """Search for tRNA sequences."""
 
     txt_output_path = cfg.tmp_path.joinpath('trna.tsv')

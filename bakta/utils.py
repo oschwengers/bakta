@@ -5,9 +5,12 @@ import hashlib
 import logging
 import multiprocessing as mp
 import os
+from pathlib import Path
 import sys
 import subprocess as sp
 import re
+
+from typing import Dict, Sequence, Tuple
 
 from Bio.Seq import Seq
 
@@ -140,7 +143,7 @@ def read_tool_output(dependency):
         sys.exit('ERROR: Could not detect/read %s version!', command[0])
 
 
-def check_version(tool, min, max):
+def check_version(tool, min: int, max:int ) -> bool:
     """Method for checking tool versions with required version. Input: tool version, minimum and maximum version. Returns: boolean value for positive or negative check."""
     if tool.major < min.major or tool.major > max.major:
         return False
@@ -216,7 +219,7 @@ def test_dependencies():
         test_dependency(DEPENDENCY_BLASTN)
 
 
-def create_locus_tag_prefix(contigs, length=6):
+def create_locus_tag_prefix(contigs: Sequence[dict], length: int=6) -> str:
     """Create either genus/species or sequence MD5 hex based locus tag prefix."""
     hash = hashlib.md5()
     for contig in contigs:
@@ -235,12 +238,12 @@ def create_locus_tag_prefix(contigs, length=6):
     return locus_prefix
 
 
-def calc_aa_hash(seq):
+def calc_aa_hash(seq: str) -> Tuple[bytes, str]:
     aa_hash = hashlib.md5(seq.encode('utf-8'))
     return (aa_hash.digest(), aa_hash.hexdigest())
 
 
-def has_annotation(feature, attribute):
+def has_annotation(feature: dict, attribute: str) -> bool:
     value = feature.get(attribute, None)
     if(value is not None and value != ''):
         return True
@@ -248,7 +251,7 @@ def has_annotation(feature, attribute):
         return False
 
 
-def calc_genome_stats(genome, features):
+def calc_genome_stats(genome: dict, features: Sequence[dict]):
     genome_size = genome['size']
     log.info('genome-size=%i', genome_size)
 
@@ -298,7 +301,7 @@ def calc_genome_stats(genome, features):
     }
 
 
-def parse_replicon_table(replicon_table_path):
+def parse_replicon_table(replicon_table_path: Path) -> Dict[str, dict]:
     replicons = {}
     try:
         with replicon_table_path.open() as fh:
@@ -344,7 +347,7 @@ def parse_replicon_table(replicon_table_path):
     return replicons
 
 
-def qc_contigs(contigs, replicons):
+def qc_contigs(contigs: Sequence[dict], replicons: Dict[str, dict]) -> Tuple[Sequence[dict], bool]:
     valid_contigs = []
     contig_counter = 1
     contig_prefix = cfg.locus if cfg.locus else 'contig'
@@ -452,7 +455,7 @@ def qc_contigs(contigs, replicons):
     return valid_contigs, complete_genome
 
 
-def extract_feature_sequence(feature, contig):
+def extract_feature_sequence(feature: dict, contig: dict) -> str:
     if(feature.get('edge', False)):
         seq = contig['sequence'][feature['start']-1:] + contig['sequence'][:feature['stop']]
     else:

@@ -1,5 +1,8 @@
 import logging
+from pathlib import Path
 import re
+
+from typing import Sequence
 
 from Bio import SeqIO
 from xopen import xopen
@@ -14,7 +17,7 @@ FASTA_DNA_SEQUENCE_PATTERN = re.compile(r'[ATGCNMRWSYKVHDBN]+', re.IGNORECASE)
 FASTA_LINE_WRAPPING = 60
 
 
-def import_contigs(contigs_path):
+def import_contigs(contigs_path: Path) -> Sequence[dict]:
     """Import raw contigs."""
     contigs = []
     # with contigs_path.open() as fh:
@@ -45,7 +48,7 @@ def import_contigs(contigs_path):
     return contigs
 
 
-def export_contigs(contigs, fasta_path, description=False, wrap=False):
+def export_contigs(contigs: Sequence[dict], fasta_path: Path, description: bool=False, wrap: bool=False):
     """Write contigs to Fasta file."""
     log.info('write genome sequences: path=%s, description=%s, wrap=%s', fasta_path, description, wrap)
 
@@ -62,14 +65,14 @@ def export_contigs(contigs, fasta_path, description=False, wrap=False):
                 fh.write('\n')
 
 
-def wrap_sequence(sequence):
+def wrap_sequence(sequence: str):
     lines = []
     for i in range(0, len(sequence), FASTA_LINE_WRAPPING):
         lines.append(sequence[i:i + FASTA_LINE_WRAPPING])
     return '\n'.join(lines) + '\n'
 
 
-def write_faa(features, faa_path):
+def write_faa(features: Sequence[dict], faa_path: Path):
     """Write translated CDS sequences to Fasta file."""
     log.info('write translated CDS/sORF: path=%s', faa_path)
     with faa_path.open('wt') as fh:
@@ -78,7 +81,7 @@ def write_faa(features, faa_path):
                 fh.write(f">{feat['locus']} {feat['product']}\n{feat['aa']}\n")
 
 
-def write_ffn(features, ffn_path):
+def write_ffn(features: Sequence[dict], ffn_path: Path):
     """Write translated CDS sequences to Fasta file."""
     log.info('write feature nucleotide sequences: path=%s', ffn_path)
     with ffn_path.open('wt') as fh:

@@ -2,6 +2,8 @@ import logging
 import re
 
 from datetime import date, datetime
+from pathlib import Path
+from typing import Sequence, Tuple
 
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -18,7 +20,7 @@ import bakta.so as so
 log = logging.getLogger('INSDC')
 
 
-def write_insdc(genome, features, genbank_output_path, embl_output_path):
+def write_insdc(genome: dict, features:Sequence[dict], genbank_output_path: Path, embl_output_path: Path):
     log.debug('prepare: genbank=%s, embl=%s', genbank_output_path, embl_output_path)
 
     contig_list = []
@@ -263,7 +265,7 @@ def write_insdc(genome, features, genbank_output_path, embl_output_path):
         SeqIO.write(contig_list, fh, format='embl')
 
 
-def select_ncrna_class(feature):
+def select_ncrna_class(feature: dict) -> str:
     if(feature['class'] is None):
         return bc.INSDC_FEATURE_NC_RNA_CLASS_OTHER
     elif(feature['class'].id == so.SO_NCRNA_GENE_ANTISENSE.id):
@@ -276,7 +278,7 @@ def select_ncrna_class(feature):
         return bc.INSDC_FEATURE_NC_RNA_CLASS_OTHER
 
 
-def select_regulatory_class(feature):
+def select_regulatory_class(feature: dict) -> str:
     if(feature['class'] is None):
         return bc.INSDC_FEATURE_REGULATORY_CLASS_OTHER
     elif(feature['class'].id == so.SO_CIS_REG_ATTENUATOR.id):
@@ -293,7 +295,7 @@ def select_regulatory_class(feature):
         return bc.INSDC_FEATURE_REGULATORY_CLASS_OTHER
 
 
-def revise_product_insdc(feature):
+def revise_product_insdc(feature: dict):
     """Revise product name for INSDC compliant submissions"""
     product = feature['product']
 
@@ -315,7 +317,7 @@ def revise_product_insdc(feature):
     feature['product'] = product
 
 
-def revise_dbxref_insdc(dbxrefs):
+def revise_dbxref_insdc(dbxrefs: Sequence[str]) -> Tuple[Sequence[str], Sequence[str]]:
     """Remove INSDC non-compliant DbXrefs."""
     insdc_valid_dbxrefs = [bc.DB_XREF_UNIPROTKB, bc.DB_XREF_GO, bc.DB_XREF_PFAM, bc.DB_XREF_RFAM]
     valid_dbxrefs = []

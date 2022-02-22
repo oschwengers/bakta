@@ -581,7 +581,7 @@ def main():
     print(f'\nIf you use these results please cite Bakta: https://doi.org/{bc.BAKTA_DOI}')
     print(f'Annotation successfully finished in {int(run_duration / 60):01}:{int(run_duration % 60):02} [mm:ss].')
 
-def cleanup(log, tmp_path):
+def cleanup(log, tmp_path: Path):
     shutil.rmtree(str(tmp_path))  # remove tmp dir
     log.info('removed tmp dir: %s', tmp_path)
 

@@ -2,6 +2,7 @@ import logging
 import sqlite3
 
 from concurrent.futures import ThreadPoolExecutor
+from typing import Sequence, Tuple
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -21,7 +22,7 @@ DB_IPS_COL_GO = 'go_ids'
 log = logging.getLogger('IPS')
 
 
-def lookup(features):
+def lookup(features: Sequence[dict]) -> Tuple[Sequence[dict], Sequence[dict]]:
     """Lookup IPS by hash values."""
     try:
         features_found = []
@@ -62,7 +63,7 @@ def lookup(features):
         raise Exception('SQL error!', ex)
 
 
-def fetch_db_ips_result(conn, feature):
+def fetch_db_ips_result(conn: sqlite3.Connection, feature: dict):
     c = conn.cursor()
     c.execute('select * from ips where uniref100_id=?', (feature['ups']['uniref100_id'][10:],))
     rec = c.fetchone()
@@ -70,7 +71,7 @@ def fetch_db_ips_result(conn, feature):
     return rec
 
 
-def parse_annotation(rec):
+def parse_annotation(rec) -> dict:
     ips = {
         DB_IPS_COL_UNIREF100: bc.DB_PREFIX_UNIREF_100 + rec[DB_IPS_COL_UNIREF100]  # must not be NULL/None
     }

@@ -2,6 +2,8 @@ import logging
 import subprocess as sp
 
 from collections import OrderedDict
+from pathlib import Path
+from typing import Dict, Sequence
 
 from Bio import SeqIO
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
@@ -17,7 +19,7 @@ import bakta.so as so
 log = logging.getLogger('CDS')
 
 
-def predict(genome, sequences_path):
+def predict(genome: dict, sequences_path: Path):
     """Predict open reading frames with Prodigal."""
     # create prodigal trainining file if not provided by the user
     prodigal_tf_path = cfg.prodigal_tf
@@ -66,7 +68,7 @@ def predict(genome, sequences_path):
     return cdss
 
 
-def execute_prodigal(genome, contigs_path, traininng_file_path, proteins_path=None, gff_path=None, train=False, complete=False):
+def execute_prodigal(genome: dict, contigs_path: Path, traininng_file_path: Path, proteins_path: Path=None, gff_path: Path=None, train: bool=False, complete: bool=False):
     log.debug('execute-prodigal: contigs-path=%s, traininng-file-path=%s, proteins-path=%s, gff-path=%s, train=%s, complete=%s', contigs_path, traininng_file_path, proteins_path, gff_path, train, complete)
     cmd = [
         'prodigal',
@@ -109,7 +111,7 @@ def execute_prodigal(genome, contigs_path, traininng_file_path, proteins_path=No
         raise Exception(f'prodigal error! error code: {proc.returncode}')
 
 
-def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
+def parse_prodigal_output(genome: dict, sequences, gff_path: Path, proteins_path: Path):
     log.debug('parse-prodigal-output: gff-path=%s, proteins-path=%s', gff_path, proteins_path)
     cdss = {}
     partial_cdss_per_record = {}
@@ -226,7 +228,7 @@ def parse_prodigal_output(genome, sequences, gff_path, proteins_path):
     return cdss
 
 
-def split_gff_annotation(annotation_string):
+def split_gff_annotation(annotation_string: str) -> Dict[str, str]:
     annotations = {}
     for expr in annotation_string.split(';'):
         if(expr != ''):
@@ -238,7 +240,7 @@ def split_gff_annotation(annotation_string):
     return annotations
 
 
-def predict_pfam(cdss):
+def predict_pfam(cdss: Sequence[dict]) -> Sequence[dict]:
     """Detect Pfam-A entries"""
     fasta_path = cfg.tmp_path.joinpath('hypotheticals.faa')
     orf.write_internal_faa(cdss, fasta_path)
@@ -311,7 +313,7 @@ def predict_pfam(cdss):
     return cds_pfams_hits.values()
 
 
-def analyze_proteins(cdss):
+def analyze_proteins(cdss: Sequence[dict]):
     for cds in cdss:
         seq = ProteinAnalysis(cds['aa'])
         seq_stats = OrderedDict()
@@ -334,7 +336,7 @@ def analyze_proteins(cdss):
         cds['seq_stats'] = seq_stats
 
 
-def revise_special_cases(cdss):
+def revise_special_cases(cdss: Sequence[dict]):
     """
     Revise rare but known special cases as for istance supposedly truncated dnaA genes on rotated chromosome starts
     which often appear on re-annotated genomes.

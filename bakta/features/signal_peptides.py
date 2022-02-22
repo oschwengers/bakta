@@ -3,13 +3,16 @@ import sys
 import subprocess as sp
 from collections import OrderedDict
 
+from typing import Sequence, Tuple
+from pathlib import Path
+
 import bakta
 import bakta.constants as bc
 import bakta.config as cfg
 
 log = logging.getLogger('SIGNAL_PEPTIDES')
 
-def search(orfs, orf_aa_path):
+def search(orfs: Sequence[dict], orf_aa_path: Path):
     """Search for signal peptides with DeepSig."""
 
     deepsig_output_path = cfg.tmp_path.joinpath('deepsig.gff3')
@@ -71,7 +74,7 @@ def search(orfs, orf_aa_path):
     return sig_peps
 
 
-def orf_nt_start_stop(orf, start_aa, stop_aa):
+def orf_nt_start_stop(orf: dict, start_aa: int, stop_aa: int) -> Tuple[int, int]:
     """Determin signal peptide nucleotide position.
         orf: dictonary of ORF, either CDS or sORF
         start_aa: sig pep start position within aa seq
