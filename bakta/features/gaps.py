@@ -2,6 +2,7 @@ import logging
 import re
 
 from collections import OrderedDict
+from typing import Sequence
 
 import bakta.constants as bc
 
@@ -10,7 +11,7 @@ log = logging.getLogger('GAP')
 RE_ASSEMBLY_GAP = re.compile(r'N{1,}', flags=0)
 
 
-def detect_assembly_gaps(genome):
+def detect_assembly_gaps(genome: dict) -> Sequence[dict]:
     gaps = []
     for contig in genome['contigs']:
         m = RE_ASSEMBLY_GAP.search(contig['sequence'])

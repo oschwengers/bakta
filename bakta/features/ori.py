@@ -2,6 +2,8 @@ import logging
 import subprocess as sp
 
 from collections import OrderedDict
+from pathlib import Path
+from typing import Sequence
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -11,7 +13,7 @@ import bakta.utils as bu
 log = logging.getLogger('ORI')
 
 
-def predict_oris(genome, contigs_path, ori_type):
+def predict_oris(genome: dict, contigs_path: Path, ori_type: str) -> Sequence[dict]:
     """Search for oriT/C sequences."""
 
     database = 'oric.fna' if ori_type == bc.FEATURE_ORIC else 'orit.fna'
@@ -118,7 +120,7 @@ def predict_oris(genome, contigs_path, ori_type):
     return oris
 
 
-def refine_ori_region(region_hits, ori):
+def refine_ori_region(region_hits: Sequence[int], ori: dict):
     log.debug('refine ori: [%i-%i]', ori['start'], ori['stop'])
     hit_region = region_hits[ori['start']:ori['stop'] + 1]
     hit_min = min(hit_region)

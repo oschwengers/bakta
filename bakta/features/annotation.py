@@ -31,7 +31,7 @@ RE_GENE_SUSPECT_CHARS = re.compile(r'[\?]', flags=re.DOTALL)
 RE_GENE_SYMBOL = re.compile(r'[a-z]{3}[A-Z][0-9]?')
 
 
-def combine_annotation(feature):
+def combine_annotation(feature: dict):
     ups = feature.get('ups', None)
     ips = feature.get('ips', None)
     psc = feature.get('psc', None)
@@ -104,7 +104,7 @@ def combine_annotation(feature):
     feature['db_xrefs'] = sorted(list(db_xrefs))
 
 
-def detect_feature_overlaps(genome):
+def detect_feature_overlaps(genome: dict):
     """Apply feature type specific hierarchical feature overlap filters.
     tRNA < tmRNA
     CDS < tmRNA, tRNA, rRNA, CRISPR
@@ -340,7 +340,7 @@ def detect_feature_overlaps(genome):
                         )
 
 
-def calc_sorf_annotation_score(sorf):
+def calc_sorf_annotation_score(sorf: dict) -> int:
     """Calc an annotation score rewarding each identification & annotation"""
     score = 0
 
@@ -373,7 +373,7 @@ def calc_sorf_annotation_score(sorf):
     return score
 
 
-def revise_cds_gene_symbol(feature):
+def revise_cds_gene_symbol(feature: dict):
     raw_gene = feature.get('gene', '')
 
     raw_genes = raw_gene.replace('/', ',').split(',')  # replace slashes and split raw genes
@@ -432,7 +432,7 @@ def revise_cds_gene_symbol(feature):
         feature['gene'] = ','.join(revised_genes)
 
 
-def revise_cds_product(feature):
+def revise_cds_product(feature: dict):
     """Revise product name for INSDC compliant submissions"""
     product = feature['product']
     

@@ -2,6 +2,7 @@ import logging
 import subprocess as sp
 
 from collections import OrderedDict
+from pathlib import Path
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -12,7 +13,7 @@ import bakta.utils as bu
 log = logging.getLogger('NC_RNA')
 
 
-def predict_nc_rnas(genome, contigs_path):
+def predict_nc_rnas(genome: dict, contigs_path: Path):
     """Search for non-coding RNA genes."""
 
     output_path = cfg.tmp_path.joinpath('ncrna-genes.tsv')
@@ -132,7 +133,7 @@ def predict_nc_rnas(genome, contigs_path):
     return ncrnas
 
 
-def determine_class(description):
+def determine_class(description: str) -> str:
     description = description.lower()
     if('ribozyme' in description):
         return so.SO_NCRNA_GENE_RIBOZYME

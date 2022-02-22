@@ -2,6 +2,7 @@ import logging
 import subprocess as sp
 
 from collections import OrderedDict
+from pathlib import Path
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -12,7 +13,7 @@ import bakta.utils as bu
 log = logging.getLogger('NC_RNA_REGION')
 
 
-def predict_nc_rna_regions(genome, contigs_path):
+def predict_nc_rna_regions(genome: dict, contigs_path: Path):
     """Search for non-coding RNA regions."""
 
     output_path = cfg.tmp_path.joinpath('ncrna-regions.tsv')
@@ -130,7 +131,7 @@ def predict_nc_rna_regions(genome, contigs_path):
     return ncrnas
 
 
-def determine_class(description):
+def determine_class(description: str) -> str:
     description = description.lower()
     if('leader' in description):
         return so.SO_CIS_REG_ATTENUATOR

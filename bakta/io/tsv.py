@@ -1,5 +1,8 @@
 import logging
 
+from pathlib import Path
+from typing import Dict, Sequence
+
 import bakta
 import bakta.config as cfg
 import bakta.constants as bc
@@ -8,7 +11,7 @@ import bakta.constants as bc
 log = logging.getLogger('TSV')
 
 
-def write_tsv(contigs, features_by_contig, tsv_path):
+def write_tsv(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_path: Path):
     """Export features in TSV format."""
     log.info('write tsv: path=%s', tsv_path)
 
@@ -28,7 +31,7 @@ def write_tsv(contigs, features_by_contig, tsv_path):
     return
 
 
-def write_hypothetical_tsv(hypotheticals, tsv_path):
+def write_hypothetical_tsv(hypotheticals: Sequence[dict], tsv_path: Path):
     """Export hypothetical information in TSV format."""
     log.info('write hypothetical tsv: path=%s', tsv_path)
 

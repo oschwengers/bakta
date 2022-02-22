@@ -2,6 +2,7 @@ import logging
 import subprocess as sp
 
 from collections import OrderedDict
+from pathlib import Path
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -12,7 +13,7 @@ import bakta.utils as bu
 log = logging.getLogger('CRISPR')
 
 
-def predict_crispr(genome, contigs_path):
+def predict_crispr(genome: dict, contigs_path: Path):
     """Predict CRISPR arrays with PILER-CR."""
     # SO:0001459 <- Sequence Ontology
 

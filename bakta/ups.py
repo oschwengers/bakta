@@ -2,6 +2,7 @@ import logging
 import sqlite3
 
 from concurrent.futures import ThreadPoolExecutor
+from typing import Sequence
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -20,7 +21,7 @@ DB_UPS_COL_UNIREF100 = 'uniref100_id'
 log = logging.getLogger('UPS')
 
 
-def lookup(features):
+def lookup(features: Sequence[dict]):
     """Lookup UPS by hash values."""
     try:
         features_found = []
@@ -57,7 +58,7 @@ def lookup(features):
         raise Exception("SQL error!", ex)
 
 
-def fetch_db_ups_result(conn, feature):
+def fetch_db_ups_result(conn: sqlite3.Connection, feature: dict):
     c = conn.cursor()
     c.execute('select * from ups where hash=?', (feature['aa_digest'],))
     rec = c.fetchone()
@@ -65,7 +66,7 @@ def fetch_db_ups_result(conn, feature):
     return rec
 
 
-def parse_annotation(rec):
+def parse_annotation(rec: dict) -> dict:
     ups = {}
     db_xrefs = ['SO:0001217']
 

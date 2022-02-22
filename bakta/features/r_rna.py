@@ -2,6 +2,7 @@ import logging
 import subprocess as sp
 
 from collections import OrderedDict
+from pathlib import Path
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -12,7 +13,7 @@ import bakta.utils as bu
 log = logging.getLogger('R_RNA')
 
 
-def predict_r_rnas(genome, contigs_path):
+def predict_r_rnas(genome: dict, contigs_path: Path):
     """Search for ribosomal RNA sequences."""
 
     output_path = cfg.tmp_path.joinpath('rrna.tsv')

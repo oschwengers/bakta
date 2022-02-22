@@ -2,6 +2,7 @@ import logging
 import subprocess as sp
 
 from collections import OrderedDict
+from pathlib import Path
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -12,7 +13,7 @@ import bakta.utils as bu
 log = logging.getLogger('TM_RNA')
 
 
-def predict_tm_rnas(genome, contigs_path):
+def predict_tm_rnas(genome: dict, contigs_path: Path):
     """Search for tmRNA sequences."""
 
     txt_output_path = cfg.tmp_path.joinpath('tmrna.tsv')

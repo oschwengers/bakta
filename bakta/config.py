@@ -291,13 +291,13 @@ def setup(args):
     log.info('skip-ori=%s', skip_ori)
 
 
-def check_readability(file_name, file_Path):
+def check_readability(file_name: str, file_Path: Path):
     if(not os.access(str(file_Path), os.R_OK)):
         log.error('%s file not readable! path=%s', file_name, file_Path)
         sys.exit(f'ERROR: {file_name} file ({file_Path}) not readable!')
 
 
-def check_content_size(file_name, file_path):
+def check_content_size(file_name: str, file_path: Path):
     if(file_path.stat().st_size == 0):
         log.error('empty %s file! path=%s', file_name, file_path)
         sys.exit(f'ERROR: {file_name} file ({file_path}) is empty!')
