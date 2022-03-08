@@ -31,7 +31,7 @@ log = logging.getLogger('DB')
 
 def main():
     # parse options and arguments
-    parser = bu.init_parser()
+    parser = bu.init_parser(sub_command='_batch')
     parser.add_argument('input', metavar='<input>', help='Protein sequences in (zipped) fasta format')
     
     arg_group_io = parser.add_argument_group('Input / Output')

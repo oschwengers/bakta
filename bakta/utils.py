@@ -47,9 +47,9 @@ DEPENDENCY_BLASTN = (Version(2, 7, 1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DI
 DEPENDENCY_AMRFINDERPLUS = (Version(3, 10, 16), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('amrfinder', '--version'), ['--skip-cds'])
 
 
-def init_parser():
+def init_parser(sub_command: str=''):
     parser = argparse.ArgumentParser(
-        prog='bakta',
+        prog=f'bakta{sub_command}',
         description='Rapid & standardized annotation of bacterial genomes, MAGs & plasmids',
         epilog=f'Version: {bakta.__version__}\nDOI: {bc.BAKTA_DOI}\nURL: github.com/oschwengers/bakta\n\nCitation:\n{bc.BAKTA_CITATION}',
         formatter_class=argparse.RawDescriptionHelpFormatter,

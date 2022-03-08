@@ -149,7 +149,7 @@ def untar(tarball_path: Path, output_path: Path):
 
 def main():
     # parse options and arguments
-    parser = bu.init_parser()
+    parser = bu.init_parser(sub_command='_db')
     group_runtime = parser.add_argument_group('Runtime & auxiliary options')
     group_runtime.add_argument('--help', '-h', action='help', help='Show this help message and exit')
     group_runtime.add_argument('--version', '-V', action='version', version=f'%(prog)s {bakta.__version__}')
