@@ -272,6 +272,7 @@ def check_output_path(args: Namespace) -> Path:
 
 def check_db_path(args: Namespace) -> Path:
     global db_path
+    env = os.environ.copy()
     if(args.db):
         db_dir = args.db
         log.debug('test parameter db: db_tmp=%s', db_dir)
