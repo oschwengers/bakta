@@ -48,18 +48,7 @@ def main():
     # Setup logging
     ############################################################################
     cfg.prefix = args.prefix if args.prefix else Path(args.genome).stem
-    try:
-        output_path = Path(args.output) if args.output else Path.cwd()
-        if(not output_path.exists()):
-            output_path.mkdir(parents=True, exist_ok=True)
-        elif(not os.access(str(output_path), os.X_OK)):
-            sys.exit(f'ERROR: output path ({output_path}) not accessible!')
-        elif(not os.access(str(output_path), os.W_OK)):
-            sys.exit(f'ERROR: output path ({output_path}) not writable!')
-        output_path = output_path.resolve()
-        cfg.output_path = output_path
-    except:
-        sys.exit(f'ERROR: could not resolve or create output directory ({args.output})!')
+    output_path = cfg.check_output_path(args)
     logging.basicConfig(
         filename=str(output_path.joinpath(f'{cfg.prefix}.log')),
         filemode='w',
@@ -537,7 +526,7 @@ def main():
         hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
         print('\thypothetical TSV...')
         tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.tsv')
-        tsv.write_hypothetical_tsv(hypotheticals, tsv_path)
+        tsv.write_hypotheticals_tsv(hypotheticals, tsv_path)
 
         print('\ttranslated hypothetical CDS sequences...')
         faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.faa')

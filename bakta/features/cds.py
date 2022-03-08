@@ -300,9 +300,9 @@ def predict_pfam(cdss: Sequence[dict]) -> Sequence[dict]:
                 if('pfams' not in cds):
                     cds['pfams'] = []
                 cds['pfams'].append(pfam)
-                if('dbxrefs' not in cds):
-                    cds['dbxrefs'] = []
-                cds['dbxrefs'].append(f"PFAM:{pfam['id']}")
+                if('db_xrefs' not in cds):
+                    cds['db_xrefs'] = []
+                cds['db_xrefs'].append(f"PFAM:{pfam['id']}")
                 pfam_hits.append(cds)
                 cds_pfams_hits[aa_identifier] = cds
                 log.info(

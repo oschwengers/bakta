@@ -15,6 +15,7 @@ from alive_progress import alive_bar
 import requests
 
 import bakta
+import bakta.config as cfg
 import bakta.constants as bc
 import bakta.utils as bu
 
@@ -177,17 +178,7 @@ def main():
             print(f"{v['major']}.{v['minor']}\t{v['date']}\t{v['doi']}")
     elif(args.subcommand == 'download'):
         bu.test_dependency(bu.DEPENDENCY_AMRFINDERPLUS)
-        try:
-            output_path = Path(args.output)
-            if(not output_path.exists()):
-                output_path.mkdir(parents=True, exist_ok=True)
-            elif(not os.access(str(output_path), os.X_OK)):
-                sys.exit(f'ERROR: output path ({output_path}) not accessible!')
-            elif(not os.access(str(output_path), os.W_OK)):
-                sys.exit(f'ERROR: output path ({output_path}) not writable!')
-            output_path = output_path.resolve()
-        except:
-            sys.exit(f'ERROR: could not resolve or create output directory ({args.output})!')
+        output_path = cfg.check_output_path(args)
 
         print('fetch DB versions...')
         versions = fetch_db_versions()
