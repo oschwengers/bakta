@@ -95,10 +95,10 @@ def predict_r_rnas(genome: dict, contigs_path: Path):
                     continue
 
                 coverage = length / consensus_length
-                if(HIT_COVERAGE_TRUNCATED < 0.8):
+                if(coverage < HIT_COVERAGE_TRUNCATED):
                     truncated = bc.FEATURE_END_UNKNOWN
 
-                if(HIT_COVERAGE < 0.3):
+                if(coverage < HIT_COVERAGE):
                     log.debug(
                         'discard low coverage: contig=%s, rRNA=%s, start=%i, stop=%i, strand=%s, length=%i, coverage=%0.3f, truncated=%s, score=%1.1f, evalue=%1.1e',
                         contig_id, rrna_tag, start, stop, strand, length, coverage, truncated, score, evalue
