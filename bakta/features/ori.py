@@ -10,6 +10,11 @@ import bakta.constants as bc
 import bakta.utils as bu
 
 
+HIT_COVERAGE = 0.8
+HIT_IDENTITY = 0.8
+HIT_EVALUE = '1E-5'
+
+
 log = logging.getLogger('ORI')
 
 
@@ -23,7 +28,7 @@ def predict_oris(genome: dict, contigs_path: Path, ori_type: str) -> Sequence[di
         '-query', str(cfg.db_path.joinpath(database)),
         '-subject', str(contigs_path),
         '-culling_limit', '1',
-        '-evalue', '1E-5',
+        '-evalue', HIT_EVALUE,
         '-num_threads', str(cfg.threads),
         '-outfmt', '6 qseqid qstart qend qlen sseqid sstart send length nident sstrand',
         '-out', str(output_path)
@@ -55,13 +60,13 @@ def predict_oris(genome: dict, contigs_path: Path, ori_type: str) -> Sequence[di
                 'contig': cols[4],
                 'contig_start': int(cols[5]),
                 'contig_stop': int(cols[6]),
-                'strand': '+' if cols[9] == 'plus' else '-',
+                'strand': bc.STRAND_FORWARD if cols[9] == 'plus' else bc.STRAND_REVERSE,
                 'coverage': int(cols[7]) / int(cols[3]),
                 'identity': int(cols[8]) / int(cols[7])
             }
-            if(hit['strand'] == '-'):
+            if(hit['strand'] == bc.STRAND_REVERSE):
                 hit['contig_start'], hit['contig_stop'] = hit['contig_stop'], hit['contig_start']
-            if(hit['coverage'] >= 0.8 and hit['identity'] >= 0.8):
+            if(hit['coverage'] >= HIT_COVERAGE and hit['identity'] >= HIT_IDENTITY):
                 contig_hits = hits.get(hit['contig'], [])
                 contig_hits.append(hit)
                 if(len(contig_hits) == 1):

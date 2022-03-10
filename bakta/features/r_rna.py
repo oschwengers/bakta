@@ -10,6 +10,10 @@ import bakta.so as so
 import bakta.utils as bu
 
 
+HIT_COVERAGE = 0.3
+HIT_COVERAGE_TRUNCATED = 0.8
+
+
 log = logging.getLogger('R_RNA')
 
 
@@ -91,10 +95,10 @@ def predict_r_rnas(genome: dict, contigs_path: Path):
                     continue
 
                 coverage = length / consensus_length
-                if(coverage < 0.8):
+                if(HIT_COVERAGE_TRUNCATED < 0.8):
                     truncated = bc.FEATURE_END_UNKNOWN
 
-                if(coverage < 0.3):
+                if(HIT_COVERAGE < 0.3):
                     log.debug(
                         'discard low coverage: contig=%s, rRNA=%s, start=%i, stop=%i, strand=%s, length=%i, coverage=%0.3f, truncated=%s, score=%1.1f, evalue=%1.1e',
                         contig_id, rrna_tag, start, stop, strand, length, coverage, truncated, score, evalue

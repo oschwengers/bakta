@@ -10,6 +10,9 @@ import bakta.so as so
 import bakta.utils as bu
 
 
+HIT_EVALUE = 1E-4
+
+
 log = logging.getLogger('NC_RNA')
 
 
@@ -80,7 +83,7 @@ def predict_nc_rnas(genome: dict, contigs_path: Path):
                 else:
                     truncated = None
 
-                if(evalue > 1E-4):
+                if(evalue > HIT_EVALUE):
                     log.debug(
                         'discard low E value: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
                         contig_id, start, stop, strand, subject, length, truncated, score, evalue
