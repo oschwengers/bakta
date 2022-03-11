@@ -144,8 +144,8 @@ def map_hypothetical_columns(feat: dict) -> Sequence[str]:
     return [
         feat['id'],
         str(feat['length']),
-        f"{feat['seq_stats']['molecular_weight']:.1f}",
-        f"{feat['seq_stats']['isoelectric_point']:.2f}",
+        f"{(feat['seq_stats']['molecular_weight']/1000):.1f}" if feat['seq_stats']['molecular_weight'] else 'NA'
+        f"{feat['seq_stats']['isoelectric_point']:.1f}" if feat['seq_stats']['isoelectric_point'] else 'NA'
         ','.join([k.replace('PFAM:', '') for k in feat['db_xrefs'] if 'PFAM:' in k])
     ]
 
