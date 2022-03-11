@@ -5,12 +5,16 @@ import hashlib
 import logging
 import multiprocessing as mp
 import os
-from pathlib import Path
+import shutil
+import platform as pf
 import sys
 import subprocess as sp
 import re
 
+from argparse import Namespace
+from datetime import datetime
 from typing import Dict, Sequence, Tuple
+from pathlib import Path
 
 from Bio.Seq import Seq
 
@@ -107,6 +111,28 @@ def parse_arguments():
     return parser.parse_args()
 
 
+def setup_logger(output_path: Path, prefix: str, args: Namespace):
+    logging.basicConfig(
+        filename=str(output_path.joinpath(f'{prefix}.log')),
+        filemode='w',
+        format='%(asctime)s.%(msecs)03d - %(levelname)s - %(name)s - %(message)s',
+        datefmt='%H:%M:%S',
+        level=logging.DEBUG if args.verbose else logging.INFO
+    )
+    log.info('version=%s', bakta.__version__)
+    log.info('developer: Oliver Schwengers, github.com/oschwengers')
+    log.info('command: %s', ' '.join(sys.argv))
+    log.info('local time: %s', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    log.info('machine: type=%s, cores=%s', pf.processor(), os.cpu_count())
+    log.info('system: type=%s, release=%s', pf.system(), pf.release())
+    log.info('python: version=%s, implementation=%s', pf.python_version(), pf.python_implementation())
+
+
+def cleanup(log, tmp_path: Path):
+    shutil.rmtree(str(tmp_path))  # remove tmp dir
+    log.info('removed tmp dir: %s', tmp_path)
+
+
 def read_tool_output(dependency):
     """Method for reading tool version with regex. Input: regex expression, tool command. Retursn: version number."""
     version_regex = dependency[2]
@@ -180,19 +206,19 @@ def test_dependency(dependency):
 
 def test_dependencies():
     """Test the proper installation of all required 3rd party executables."""
-    if(not cfg.skip_trna):
+    if(cfg.skip_trna is not None and cfg.skip_trna is False):
         test_dependency(DEPENDENCY_TRNASCAN)
 
-    if(not cfg.skip_tmrna):
+    if(cfg.skip_tmrna is not None and cfg.skip_tmrna is False):
         test_dependency(DEPENDENCY_ARAGORN)
 
-    if(not cfg.skip_rrna or not cfg.skip_ncrna or not cfg.skip_ncrna_region):
+    if((cfg.skip_rrna is not None and cfg.skip_rrna is False) or (cfg.skip_ncrna is not None and cfg.skip_ncrna is False) or (cfg.skip_ncrna_region is not None and cfg.skip_ncrna_region is False)):
         test_dependency(DEPENDENCY_CMSCAN)
 
-    if(not cfg.skip_crispr):
+    if(cfg.skip_crispr is not None and cfg.skip_crispr is False):
         test_dependency(DEPENDENCY_PILERCR)
 
-    if(not cfg.skip_cds):
+    if(cfg.skip_cds is not None and cfg.skip_cds is False):
         test_dependency(DEPENDENCY_PRODIGAL)
         test_dependency(DEPENDENCY_AMRFINDERPLUS)
 
@@ -209,13 +235,13 @@ def test_dependencies():
             log.error('AMRFinderPlus database not installed')
             sys.exit("ERROR: AMRFinderPlus database not installed! Please, install AMRFinderPlus's internal database by executing: 'amrfinder_update --database <database-path>/amrfinderplus-db'. This must be done only once.")
 
-    if(not cfg.skip_cds or not cfg.skip_sorf):
+    if((cfg.skip_cds is not None and cfg.skip_cds is False) or (cfg.skip_sorf is not None and cfg.skip_sorf is False)):
         test_dependency(DEPENDENCY_HMMSEARCH)
         test_dependency(DEPENDENCY_DIAMOND)
-        if(cfg.gram != '?'):
+        if(cfg.gram is not None and cfg.gram != '?'):
             test_dependency(DEPENDENCY_DEEPSIG)
 
-    if(not cfg.skip_ori):
+    if(cfg.skip_ori is not None and cfg.skip_ori is False):
         test_dependency(DEPENDENCY_BLASTN)
 
 

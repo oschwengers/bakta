@@ -3,7 +3,6 @@ import argparse
 import logging
 from math import remainder
 import os
-import shutil
 import sys
 import platform as pf
 
@@ -49,21 +48,8 @@ def main():
     ############################################################################
     cfg.prefix = args.prefix if args.prefix else Path(args.genome).stem
     output_path = cfg.check_output_path(args)
-    logging.basicConfig(
-        filename=str(output_path.joinpath(f'{cfg.prefix}.log')),
-        filemode='w',
-        format='%(asctime)s.%(msecs)03d - %(levelname)s - %(name)s - %(message)s',
-        datefmt='%H:%M:%S',
-        level=logging.DEBUG if args.verbose else logging.INFO
-    )
+    bu.setup_logger(output_path, cfg.prefix, args)
     log = logging.getLogger('MAIN')
-    log.info('version=%s', bakta.__version__)
-    log.info('developer: Oliver Schwengers, github.com/oschwengers')
-    log.info('command: %s', ' '.join(sys.argv))
-    log.info('local time: %s', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-    log.info('machine: type=%s, cores=%s', pf.processor(), os.cpu_count())
-    log.info('system: type=%s, release=%s', pf.system(), pf.release())
-    log.info('python: version=%s, implementation=%s', pf.python_version(), pf.python_implementation())
 
     ############################################################################
     # Checks and configurations
@@ -72,7 +58,7 @@ def main():
     # - test binary dependencies
     ############################################################################
     cfg.setup(args)  # check parameters and prepare global configuration
-    atexit.register(cleanup, log, cfg.tmp_path)  # register cleanup exit hook
+    atexit.register(bu.cleanup, log, cfg.tmp_path)  # register cleanup exit hook
     cfg.db_info = db.check(cfg.db_path)
     bu.test_dependencies()
     if(cfg.verbose):
@@ -569,10 +555,6 @@ def main():
 
     print(f'\nIf you use these results please cite Bakta: https://doi.org/{bc.BAKTA_DOI}')
     print(f'Annotation successfully finished in {int(run_duration / 60):01}:{int(run_duration % 60):02} [mm:ss].')
-
-def cleanup(log, tmp_path: Path):
-    shutil.rmtree(str(tmp_path))  # remove tmp dir
-    log.info('removed tmp dir: %s', tmp_path)
 
 
 if __name__ == '__main__':

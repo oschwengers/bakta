@@ -1,3 +1,4 @@
+import atexit
 import logging
 import multiprocessing as mp
 import os
@@ -26,7 +27,8 @@ import bakta.ips as ips
 import bakta.psc as psc
 import bakta.pscc as pscc
 
-log = logging.getLogger('DB')
+
+log = logging.getLogger('BATCH')
 
 
 def main():
@@ -44,11 +46,28 @@ def main():
     
     arg_group_general = parser.add_argument_group('Runtime & auxiliary options')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
+    arg_group_general.add_argument('--verbose', '-v', action='store_true', help='Print verbose information')
     arg_group_general.add_argument('--threads', '-t', action='store', type=int, default=mp.cpu_count(), help='Number of threads to use (default = number of available CPUs)')
     arg_group_general.add_argument('--tmp-dir', action='store', default=None, dest='tmp_dir', help='Location for temporary files (default = system dependent auto detection)')
     arg_group_general.add_argument('--version', '-V', action='version', version=f'%(prog)s {bakta.__version__}')
     args = parser.parse_args()
 
+    ############################################################################
+    # Setup logging
+    ############################################################################
+    prefix = args.prefix if args.prefix else Path(args.input).stem
+    output_path = cfg.check_output_path(args)
+    
+    bu.setup_logger(output_path, prefix, args)
+    log.info('prefix=%s', prefix)
+    log.info('output=%s', output_path)
+
+    ############################################################################
+    # Checks and configurations
+    # - check parameters and setup global configuration
+    # - test database
+    # - test binary dependencies
+    ############################################################################
     try:
         if(args.input == ''):
             raise ValueError('File path argument must be non-empty')
@@ -62,15 +81,17 @@ def main():
     
     cfg.check_db_path(args)
     cfg.db_info = db.check(cfg.db_path)
-    output_path = cfg.check_output_path(args)
     cfg.check_tmp_path(args)
-    
-    prefix = args.prefix if args.prefix else Path(args.input).stem
-    log.info('prefix=%s', prefix)
-
     cfg.check_user_proteins(args)
     cfg.check_threads(args)
-    
+    cfg.skip_cds = False  # circumvent main config setup
+
+    bu.test_dependencies()
+    atexit.register(bu.cleanup, log, cfg.tmp_path)  # register cleanup exit hook
+
+    ############################################################################
+    # Setup logging
+    ############################################################################
     aas = fasta.import_contigs(aa_path, False, False)
     mock_start = 1
     for aa in aas:  # rename and mock feature attributes to reuse existing functions
