@@ -102,6 +102,7 @@ def main():
         aa['start'] = mock_start
         aa['stop'] = -1
         aa['strand'] = bc.STRAND_UNKNOWN
+        aa['frame'] = 1
         mock_start += 100
     print('annotate protein sequences...')
     annotate_aa(aas)
