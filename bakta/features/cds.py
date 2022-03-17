@@ -361,12 +361,10 @@ def revise_translational_exceptions(genome: dict, cdss: Sequence[dict]):
             cds_b = cdss_per_contig[i]
             strand = cds_a['strand']
             upstream_stop_codon = cds_a['nt'][-3:] if strand == bc.STRAND_FORWARD else cds_b['nt'][-3:]
-            downstream_rbs_motif = cds_b['rbs_motif'] if strand == bc.STRAND_FORWARD else cds_a['rbs_motif']
             if(
                 cds_a['strand'] == cds_b['strand'] and  # up- and downstream ORFs on the same strand
                 cds_a['frame'] == cds_b['frame'] and  # up- and downstream ORFs on the same frame
                 upstream_stop_codon == 'TGA' and  # tRNAScan-SE 2.0 only predicts tRNA-Sec with UCA anticodons, therefore we can only detect TGA stop codons
-                downstream_rbs_motif is None and  # downstream ORF should not have a RBS
                 (cds_b['start'] - cds_a['stop']) < 100):  # up- and downstream ORFs in close proximity
                 cds_pairs = cds_pairs_per_contig[cds_a['contig']]
                 cds_pairs.append((cds_a, cds_b))
