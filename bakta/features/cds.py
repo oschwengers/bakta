@@ -389,11 +389,6 @@ def revise_translational_exceptions(genome: dict, cdss: Sequence[dict]):
                     nt = bu.extract_feature_sequence(seleno_cds, contig)
                     seleno_cds['nt'] = nt
                     aa = str(Seq(nt).translate(table=cfg.translation_table, stop_symbol='*', to_stop=False, cds=False))
-                    
-                    # TODO: test on a large number of genomes and remove assertions upon successfull tests
-                    assert aa[0] == 'M', 'start with start (M)'
-                    assert aa[-1] == '*', 'ends with stop (*)'
-                    assert aa.count('*') == 2, 'contains 2 stops (*)'
                     if(
                         aa[0] == 'M' and  # starts with M
                         aa[-1] == '*' and  # ends with stop *
