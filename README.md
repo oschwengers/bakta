@@ -426,16 +426,17 @@ Conceptual terms:
 **CDS**:
 
 1. Prediction via Prodigal respecting sequences' completeness (distinct prediction for complete replicons and uncompleted contigs)
-2. discard spurious CDS via AntiFam
-3. Detection of UPSs via MD5 digests and lookup of related IPS and PCS
-4. Sequence alignments of remainder via Diamond vs. PSC (query/subject coverage=0.8, identity=0.5)
-5. Assignment to UniRef90 or UniRef50 clusters if alignment hits achieve identities larger than 0.9 or 0.5, respectively
-6. Execution of expert systems:
+2. Discard spurious CDS via AntiFam
+3. Detect translational exceptions (selenocysteines)
+4. Detection of UPSs via MD5 digests and lookup of related IPS and PCS
+5. Sequence alignments of remainder via Diamond vs. PSC (query/subject coverage=0.8, identity=0.5)
+6. Assignment to UniRef90 or UniRef50 clusters if alignment hits achieve identities larger than 0.9 or 0.5, respectively
+7. Execution of expert systems:
   - AMR: AMRFinderPlus
   - Expert proteins: NCBI BlastRules, VFDB
   - User proteins (optionally via `--proteins <Fasta/GenBank>`)
-7. Prediction of signal peptides (optionally via `--gram <+/->`)
-8. Combination of IPS, PSC, PSCC and expert system information favouring more specific annotations and avoiding redundancy
+8. Prediction of signal peptides (optionally via `--gram <+/->`)
+9. Combination of IPS, PSC, PSCC and expert system information favouring more specific annotations and avoiding redundancy
 
 CDS without IPS or PSC hits as well as those without gene symbols or product descriptions different from `hypothetical` will be marked as `hypothetical`.
 
