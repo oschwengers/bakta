@@ -158,6 +158,7 @@ TOPOLOGY_LINEAR = 'linear'
 ############################################################################
 DISCARD_TYPE_SPURIOUS = 'spurious'
 DISCARD_TYPE_OVERLAP = 'overlap'
+DISCARD_TYPE_RECODING = 'recoding'
 
 DB_VERSIONS_URL = 'https://raw.githubusercontent.com/oschwengers/bakta/master/db-versions.json'
 

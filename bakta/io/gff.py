@@ -213,6 +213,16 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         annotations['Note'] = [note for note in annotations['Note'] if bc.DB_XREF_EC not in note]
                         gene_annotations = encode_annotations(gene_annotations)
                         fh.write(f"{feat['contig']}\tProdigal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
+                    if('exception' in feat):
+                        ex = feat['exception']
+                        pos = f"{ex['start']}..{ex['stop']}"
+                        if(feat['strand'] == bc.STRAND_REVERSE):
+                            pos = f"complement({pos})"
+                        annotations['transl_except']=f"(pos:{pos},aa:{ex['aa']})"
+                        notes = annotations.get('Note', [])
+                        notes.append(f"codon on position {ex['codon_position']} is a {ex['type']} codon")
+                        if('Notes' not in annotations):
+                            annotations['Note'] = notes
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tProdigal\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
                     if(bc.FEATURE_SIGNAL_PEPTIDE in feat):
