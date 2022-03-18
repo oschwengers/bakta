@@ -1,6 +1,7 @@
 import logging
 
 from pathlib import Path
+from types import LambdaType
 from typing import Dict, Sequence
 
 import bakta
@@ -31,7 +32,23 @@ def write_tsv(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_
     return
 
 
-def write_hypothetical_tsv(hypotheticals: Sequence[dict], tsv_path: Path):
+def write_features(features: Sequence[dict], header_columns: Sequence[str], mapping: LambdaType, tsv_path: Path):
+    """Export features in TSV format."""
+    log.info('write tsv: path=%s', tsv_path)
+
+    with tsv_path.open('wt') as fh:
+        fh.write(f'#Annotated with Bakta (v{bakta.__version__}): https://github.com/oschwengers/bakta\n')
+        fh.write(f"#Database (v{cfg.db_info['major']}.{cfg.db_info['minor']}): https://doi.org/10.5281/zenodo.4247252\n")
+        fh.write('\t'.join(header_columns))
+        fh.write('\n')
+        for feat in features:
+            columns = mapping(feat)
+            fh.write('\t'.join(columns))
+            fh.write('\n')
+    return
+
+
+def write_hypotheticals_tsv(hypotheticals: Sequence[dict], tsv_path: Path):
     """Export hypothetical information in TSV format."""
     log.info('write hypothetical tsv: path=%s', tsv_path)
 

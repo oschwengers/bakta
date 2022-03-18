@@ -13,14 +13,14 @@ import bakta.constants as bc
 log = logging.getLogger('FASTA')
 
 
+FASTA_AA_SEQUENCE_PATTERN = re.compile(r'[ARNDCQEGHILKMFPOSUTWYVBZXJ]+', re.IGNORECASE)
 FASTA_DNA_SEQUENCE_PATTERN = re.compile(r'[ATGCNMRWSYKVHDBN]+', re.IGNORECASE)
 FASTA_LINE_WRAPPING = 60
 
 
-def import_contigs(contigs_path: Path) -> Sequence[dict]:
+def import_contigs(contigs_path: Path, is_genomic: bool=True, is_dna: bool=True) -> Sequence[dict]:
     """Import raw contigs."""
     contigs = []
-    # with contigs_path.open() as fh:
     with xopen(str(contigs_path), threads=0) as fh:
         for record in SeqIO.parse(fh, 'fasta'):
             seq = str(record.seq).upper()
@@ -28,21 +28,28 @@ def import_contigs(contigs_path: Path) -> Sequence[dict]:
                 dash_count = seq.count('-')
                 seq = seq.replace('-', '')
                 log.info('discarded alignment gaps (dashes): id=%s, occurences=%i', record.id, dash_count)
-            if(FASTA_DNA_SEQUENCE_PATTERN.fullmatch(seq) is None):
-                log.error('import: Fasta sequence contains invalid DNA characters! id=%s', record.id)
-                raise ValueError(f'Fasta sequence contains invalid DNA characters! id={record.id}')
+            if(is_dna):
+                if(FASTA_DNA_SEQUENCE_PATTERN.fullmatch(seq) is None):
+                    log.error('import: Fasta sequence contains invalid DNA characters! id=%s', record.id)
+                    raise ValueError(f'Fasta sequence contains invalid DNA characters! id={record.id}')
+            else:
+                if(FASTA_AA_SEQUENCE_PATTERN.fullmatch(seq) is None):
+                    log.error('import: Fasta sequence contains invalid AA characters! id=%s', record.id)
+                    raise ValueError(f'Fasta sequence contains invalid AA characters! id={record.id}')
+
             contig = {
                 'id': record.id,
                 'description': record.description.split(' ', maxsplit=1)[1] if ' ' in record.description else '',
                 'sequence': seq,
-                'length': len(seq),
-                'complete': False,
-                'type': bc.REPLICON_CONTIG,
-                'topology': bc.TOPOLOGY_LINEAR
+                'length': len(seq)
             }
+            if(is_genomic):
+                contig['complete'] = False,
+                contig['type'] = bc.REPLICON_CONTIG,
+                contig['topology'] = bc.TOPOLOGY_LINEAR
             log.info(
-                'imported: id=%s, length=%i, description=%s',
-                contig['id'], contig['length'], contig['description']
+                'imported: id=%s, length=%i, description=%s, genomic=%s, dna=%s',
+                contig['id'], contig['length'], contig['description'], is_genomic, is_dna
             )
             contigs.append(contig)
     return contigs

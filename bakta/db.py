@@ -15,6 +15,7 @@ from alive_progress import alive_bar
 import requests
 
 import bakta
+import bakta.config as cfg
 import bakta.constants as bc
 import bakta.utils as bu
 
@@ -148,7 +149,7 @@ def untar(tarball_path: Path, output_path: Path):
 
 def main():
     # parse options and arguments
-    parser = bu.init_parser()
+    parser = bu.init_parser(sub_command='_db')
     group_runtime = parser.add_argument_group('Runtime & auxiliary options')
     group_runtime.add_argument('--help', '-h', action='help', help='Show this help message and exit')
     group_runtime.add_argument('--version', '-V', action='version', version=f'%(prog)s {bakta.__version__}')
@@ -177,17 +178,7 @@ def main():
             print(f"{v['major']}.{v['minor']}\t{v['date']}\t{v['doi']}")
     elif(args.subcommand == 'download'):
         bu.test_dependency(bu.DEPENDENCY_AMRFINDERPLUS)
-        try:
-            output_path = Path(args.output)
-            if(not output_path.exists()):
-                output_path.mkdir(parents=True, exist_ok=True)
-            elif(not os.access(str(output_path), os.X_OK)):
-                sys.exit(f'ERROR: output path ({output_path}) not accessible!')
-            elif(not os.access(str(output_path), os.W_OK)):
-                sys.exit(f'ERROR: output path ({output_path}) not writable!')
-            output_path = output_path.resolve()
-        except:
-            sys.exit(f'ERROR: could not resolve or create output directory ({args.output})!')
+        output_path = cfg.check_output_path(args)
 
         print('fetch DB versions...')
         versions = fetch_db_versions()
@@ -251,49 +242,8 @@ def main():
         print(f"\nRun Bakta using '--db {db_path}' or set a BAKTA_DB environment variable: 'export BAKTA_DB={db_path}'")
     elif(args.subcommand == 'update'):
         bu.test_dependency(bu.DEPENDENCY_AMRFINDERPLUS)
-        env = os.environ.copy()
-        if(args.db):
-            db_dir = args.db
-            try:
-                db_tmp_path = Path(db_dir).resolve()
-                if(db_tmp_path.is_dir()):
-                    db_old_path = db_tmp_path
-                    print(f'database provided via parameter: path={db_old_path}')
-                else:
-                    sys.exit(f'ERROR: unvalid database path! type=parameter, path={db_tmp_path}')
-            except:
-                sys.exit(f'ERROR: wrong database path! type=parameter, path={db_dir}')
-        elif('BAKTA_DB' in env):
-            db_dir = env['BAKTA_DB']
-            try:
-                db_tmp_path = Path(db_dir).resolve()
-                if(db_tmp_path.is_dir()):
-                    db_old_path = db_tmp_path
-                    print(f'database provided via environment: path={db_old_path}')
-                else:
-                    sys.exit(f'ERROR: unvalid database path! type=environment, path={db_tmp_path}')
-            except:
-                sys.exit(f'ERROR: wrong database path! type=environment, BAKTA_DB={db_dir}')
-        else:
-            base_dir = Path(__file__).parent.parent
-            db_tmp_path = base_dir.joinpath('db')
-            if(db_tmp_path.is_dir()):
-                db_old_path = db_tmp_path
-                print(f'database detected in base-dir: path={db_old_path}')
-            else:
-                sys.exit('ERROR: database neither auto-detected nor provided!\nPlease, download the mandatory db and provide it either via the --db parameter, via a BAKTA_DB environment variable or copy it into the Bakta base directory.\nFor further information please read the readme.md')
-
-        if(args.tmp_dir):
-            tmp_path = Path(args.tmp_dir)
-            if(not tmp_path.exists()):
-                log.debug('dedicated temp dir does not exist! tmp-dir=%s', tmp_path)
-                sys.exit(f'ERROR: dedicated temp dir ({tmp_path}) does not exist!')
-            else:
-                log.info('use dedicated temp dir: path=%s', tmp_path)
-                tmp_path = Path(tempfile.mkdtemp(dir=str(tmp_path)))
-        else:
-            tmp_path = Path(tempfile.mkdtemp())
-
+        tmp_path = cfg.check_tmp_path(args)
+        db_old_path = cfg.check_db_path(args)
         db_old_info = check(db_old_path)
         print(f"existing database: v{db_old_info['major']}.{db_old_info['minor']}")
         print('fetch DB versions...')

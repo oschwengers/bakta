@@ -1,3 +1,4 @@
+from argparse import Namespace
 import logging
 import multiprocessing as mp
 import os
@@ -68,67 +69,14 @@ def setup(args):
     global env, threads, verbose
     env['BLAST_USAGE_REPORT'] = 'false'  # prevent BLAST from contacting NCBI
 
-    threads = args.threads
-    if(threads <= 0):
-        log.error("wrong argument for 'threads' parameter! threads=%i", threads)
-        sys.exit(f"ERROR: wrong argument ({threads}) for 'threads' parameter! Value must be larger than 0.")
-    elif(threads > mp.cpu_count()):
-        log.error("wrong argument for 'threads' parameter! More threads requested than available: requested=%i, available=%i", threads, mp.cpu_count())
-        sys.exit(f"ERROR: wrong argument ({threads}) for 'threads' parameter! More threads requested ({threads}) than available ({mp.cpu_count()}).")
-    log.info('threads=%i', threads)
+    threads = check_threads(args)
     verbose = args.verbose
     log.info('verbose=%s', verbose)
 
     # input / output path configurations
     global db_path, db_info, tmp_path, genome_path, min_contig_length, prefix, output_path
-    if(args.db):
-        db_dir = args.db
-        log.debug('test parameter db: db_tmp=%s', db_dir)
-        try:
-            db_tmp_path = Path(db_dir).resolve()
-            if(db_tmp_path.is_dir()):
-                db_path = db_tmp_path
-                log.info('database: type=parameter, path=%s', db_path)
-            else:
-                log.error('unvalid database path: type=parameter, path=%s', db_tmp_path)
-                raise IOError()
-        except:
-            sys.exit(f'ERROR: wrong database path! --db={db_dir}')
-    elif('BAKTA_DB' in env):
-        db_dir = env['BAKTA_DB']
-        log.debug('test env db: db_tmp=%s', db_dir)
-        try:
-            db_tmp_path = Path(db_dir).resolve()
-            if(db_tmp_path.is_dir()):
-                db_path = db_tmp_path
-                log.info('database: type=environment, path=%s', db_path)
-            else:
-                log.error('unvalid database path: type=environment, path=%s', db_tmp_path)
-                raise IOError()
-        except:
-            sys.exit(f'ERROR: wrong database path! BAKTA_DB={db_dir}')
-    else:
-        base_dir = Path(__file__).parent.parent
-        db_tmp_path = base_dir.joinpath('db')
-        log.debug('test base_dir db: db_tmp=%s', db_tmp_path)
-        if(db_tmp_path.is_dir()):
-            db_path = db_tmp_path
-            log.info('database: type=base-dir, path=%s', db_path)
-        else:
-            log.error('unvalid database path: type=base-dir, path=%s', db_tmp_path)
-            sys.exit('ERROR: database neither provided nor auto-detected!\nPlease, download the mandatory db and provide it via either the --db parameter, a BAKTA_DB environment variable or copy it into the Bakta base directory.\nFor further information please read the readme.md')
-
-    if(args.tmp_dir is not None):
-        tmp_path = Path(args.tmp_dir)
-        if(not tmp_path.exists()):
-            log.debug('dedicated temp dir does not exist! tmp-dir=%s', tmp_path)
-            sys.exit(f'ERROR: dedicated temporary directory ({tmp_path}) does not exist!')
-        else:
-            log.info('use dedicated temp dir: path=%s', tmp_path)
-            tmp_path = Path(tempfile.mkdtemp(dir=str(tmp_path))).resolve()
-    else:
-        tmp_path = Path(tempfile.mkdtemp()).resolve()
-    log.info('tmp-path=%s', tmp_path)
+    db_path = check_db_path(args)
+    tmp_path = check_tmp_path(args)
 
     try:
         if(args.genome == ''):
@@ -147,7 +95,7 @@ def setup(args):
         log.error("wrong argument for 'min-contig-length' parameter! min_contig_length=%s", min_contig_length)
         sys.exit(f"ERROR: wrong argument ({min_contig_length}) for 'min- contig-length' parameter! Value must be larger than 0")
     log.info('min_contig_length=%s', min_contig_length)
-    log.info('prefix=%s', prefix)  # set in bakta.py before global logger config
+    log.info('prefix=%s', prefix)  # set in main.py before global logger config
     log.info('output-path=%s', output_path)
 
     # organism configurations
@@ -253,19 +201,8 @@ def setup(args):
             log.error('provided replicon file not valid! path=%s', replicons)
             sys.exit(f'ERROR: replicon table file ({replicons}) not valid!')
     log.info('replicon-table=%s', replicons)
-    user_proteins = args.proteins
-    if(user_proteins is not None):
-        try:
-            if(user_proteins == ''):
-                raise ValueError('File path argument must be non-empty')
-            user_proteins_path = Path(args.proteins).resolve()
-            check_readability('user proteins', user_proteins_path)
-            check_content_size('user proteins', user_proteins_path)
-            user_proteins = user_proteins_path
-        except:
-            log.error('provided user proteins file not valid! path=%s', user_proteins)
-            sys.exit(f'ERROR: user proteins file ({user_proteins}) not valid!')
-    log.info('user-proteins=%s', user_proteins)
+    user_proteins = check_user_proteins(args)
+    
 
     # workflow configurations
     global skip_trna, skip_tmrna, skip_rrna, skip_ncrna, skip_ncrna_region, skip_crispr, skip_cds, skip_sorf, skip_gap, skip_ori
@@ -301,3 +238,111 @@ def check_content_size(file_name: str, file_path: Path):
     if(file_path.stat().st_size == 0):
         log.error('empty %s file! path=%s', file_name, file_path)
         sys.exit(f'ERROR: {file_name} file ({file_path}) is empty!')
+
+
+def check_threads(args: Namespace) -> int:
+    global threads
+    threads = args.threads
+    if(threads <= 0):
+        log.error("wrong argument for 'threads' parameter! threads=%i", threads)
+        sys.exit(f"ERROR: wrong argument ({threads}) for 'threads' parameter! Value must be larger than 0.")
+    elif(threads > mp.cpu_count()):
+        log.error("wrong argument for 'threads' parameter! More threads requested than available: requested=%i, available=%i", threads, mp.cpu_count())
+        sys.exit(f"ERROR: wrong argument ({threads}) for 'threads' parameter! More threads requested ({threads}) than available ({mp.cpu_count()}).")
+    log.info('threads=%i', threads)
+    return threads
+
+
+def check_output_path(args: Namespace) -> Path:
+    global output_path
+    try:
+        output_path = Path(args.output)
+        if(not output_path.exists()):
+            output_path.mkdir(parents=True, exist_ok=True)
+        elif(not os.access(str(output_path), os.X_OK)):
+            sys.exit(f'ERROR: output path ({output_path}) not accessible!')
+        elif(not os.access(str(output_path), os.W_OK)):
+            sys.exit(f'ERROR: output path ({output_path}) not writable!')
+        output_path = output_path.resolve()
+        log.info('output-path=%s', output_path)
+        return output_path
+    except:
+        sys.exit(f'ERROR: could not resolve or create output directory ({args.output})!')
+
+
+def check_db_path(args: Namespace) -> Path:
+    global db_path
+    env = os.environ.copy()
+    if(args.db):
+        db_dir = args.db
+        log.debug('test parameter db: db_tmp=%s', db_dir)
+        try:
+            db_tmp_path = Path(db_dir).resolve()
+            if(db_tmp_path.is_dir()):
+                db_path = db_tmp_path
+                log.info('database: type=parameter, path=%s', db_path)
+            else:
+                log.error('unvalid database path: type=parameter, path=%s', db_tmp_path)
+                raise IOError()
+        except:
+            sys.exit(f'ERROR: wrong database path! --db={db_dir}')
+    elif('BAKTA_DB' in env):
+        db_dir = env['BAKTA_DB']
+        log.debug('test env db: db_tmp=%s', db_dir)
+        try:
+            db_tmp_path = Path(db_dir).resolve()
+            if(db_tmp_path.is_dir()):
+                db_path = db_tmp_path
+                log.info('database: type=environment, path=%s', db_path)
+            else:
+                log.error('unvalid database path: type=environment, path=%s', db_tmp_path)
+                raise IOError()
+        except:
+            sys.exit(f'ERROR: wrong database path! BAKTA_DB={db_dir}')
+    else:
+        base_dir = Path(__file__).parent.parent
+        db_tmp_path = base_dir.joinpath('db')
+        log.debug('test base_dir db: db_tmp=%s', db_tmp_path)
+        if(db_tmp_path.is_dir()):
+            db_path = db_tmp_path
+            log.info('database: type=base-dir, path=%s', db_path)
+        else:
+            log.error('unvalid database path: type=base-dir, path=%s', db_tmp_path)
+            sys.exit('ERROR: database neither provided nor auto-detected!\nPlease, download the mandatory db and provide it via either the --db parameter, a BAKTA_DB environment variable or copy it into the Bakta base directory.\nFor further information please read the readme.md')
+    return db_path
+
+
+def check_user_proteins(args: Namespace):
+    global user_proteins
+    user_proteins = args.proteins
+    if(user_proteins is not None):
+        try:
+            if(user_proteins == ''):
+                raise ValueError('File path argument must be non-empty')
+            user_proteins_path = Path(args.proteins).resolve()
+            check_readability('user proteins', user_proteins_path)
+            check_content_size('user proteins', user_proteins_path)
+            user_proteins = user_proteins_path
+            log.info('user-proteins=%s', user_proteins)
+            return user_proteins
+        except:
+            log.error('provided user proteins file not valid! path=%s', user_proteins)
+            sys.exit(f'ERROR: user proteins file ({user_proteins}) not valid!')
+    else:
+        return None
+
+
+def check_tmp_path(args: Namespace) -> Path:
+    global tmp_path
+    if(args.tmp_dir is not None):
+        tmp_path = Path(args.tmp_dir)
+        if(not tmp_path.exists()):
+            log.debug('dedicated temp dir does not exist! tmp-dir=%s', tmp_path)
+            sys.exit(f'ERROR: dedicated temporary directory ({tmp_path}) does not exist!')
+        else:
+            log.info('use dedicated temp dir: path=%s', tmp_path)
+            tmp_path = Path(tempfile.mkdtemp(dir=str(tmp_path))).resolve()
+    else:
+        tmp_path = Path(tempfile.mkdtemp()).resolve()
+    log.info('tmp-path=%s', tmp_path)
+    return tmp_path

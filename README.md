@@ -21,6 +21,7 @@ Bakta is a tool for the rapid & standardized annotation of bacterial genomes and
 - [Annotation Workflow](#annotation-workflow)
 - [Database](#database)
 - [Genome Submission](#genome-submission)
+- [Protein batch annotation](#protein-batch-annotation)
 - [Web version](#web-version)
 - [Citation](#citation)
 - [FAQ](#faq)
@@ -570,6 +571,45 @@ $ cat chrom-list.tsv
 contig_1    contig_1    circular-chromosome
 contig_2    contig_2    circular-plasmid
 contig_3    contig_3    circular-plasmid
+```
+
+## Protein batch annotation
+For the direct batch annotation of protein sequences, Bakta provides a CLI entry point `bakta_batch`:
+
+Examples:
+
+```bash
+$ bakta_batch --db <db-path> input.fasta
+
+$ bakta_batch --db <db-path> --prefix test --output test --proteins special.faa --threads 8 input.fasta
+```
+
+Usage:
+
+```bash
+usage: bakta_batch [--db DB] [--output OUTPUT] [--prefix PREFIX] [--proteins PROTEINS] [--help] [--threads THREADS] [--tmp-dir TMP_DIR] [--version] <input>
+
+Rapid & standardized annotation of bacterial genomes, MAGs & plasmids
+
+positional arguments:
+  <input>               Protein sequences in (zipped) fasta format
+
+Input / Output:
+  --db DB, -d DB        Database path (default = <bakta_path>/db). Can also be provided as BAKTA_DB environment variable.
+  --output OUTPUT, -o OUTPUT
+                        Output directory (default = current working directory)
+  --prefix PREFIX, -p PREFIX
+                        Prefix for output files
+
+Annotation:
+  --proteins PROTEINS   Fasta file of trusted protein sequences for annotation
+
+Runtime & auxiliary options:
+  --help, -h            Show this help message and exit
+  --threads THREADS, -t THREADS
+                        Number of threads to use (default = number of available CPUs)
+  --tmp-dir TMP_DIR     Location for temporary files (default = system dependent auto detection)
+  --version, -V         show program's version number and exit
 ```
 
 ## Web version
