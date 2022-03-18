@@ -1,0 +1,51 @@
+#Assembly-id	Genus	Species	Strain	Complete
+GCF_000006765.1	Pseudomonas	aeruginosa	PAO1	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/006/765/GCF_000006765.1_ASM676v1
+GCF_000008865.2	Escherichia	coli O157:H7	Sakai	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/008/865/GCF_000008865.2_ASM886v2
+GCF_000009045.1	Bacillus	subtilis subsp. subtilis	168	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/009/045/GCF_000009045.1_ASM904v1
+GCF_000009085.1	Campylobacter	jejuni subsp. jejuni	NCTC 11168	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/009/085/GCF_000009085.1_ASM908v1
+GCF_000012745.1	Thiobacillus	denitrificans	ATCC 25259	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/012/745/GCF_000012745.1_ASM1274v1
+GCF_000013425.1	Staphylococcus	aureus subsp. aureus	NCTC 8325	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/013/425/GCF_000013425.1_ASM1342v1
+GCF_000017445.4	Rickettsia	rickettsii	Iowa	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/017/445/GCF_000017445.4_ASM1744v3
+GCF_000067165.1	Sorangium	cellulosum	So ce 56	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/067/165/GCF_000067165.1_ASM6716v1
+GCF_000218265.1	Sinorhizobium	meliloti	SM11	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/218/265/GCF_000218265.1_ASM21826v1
+GCF_000224555.1	Helicobacter	pylori	Puno135	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/224/555/GCF_000224555.1_ASM22455v1
+GCF_000336405.1	Enterococcus	faecium	ATCC 8459 = NRRL B-2354	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/336/405/GCF_000336405.1_ASM33640v1
+GCF_000364385.3	Klebsiella	pneumoniae	ATCC BAA-2146	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/364/385/GCF_000364385.3_ASM36438v3
+GCF_000438585.1	Listeria	monocytogenes	R2-502	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/438/585/GCF_000438585.1_ASM43858v1
+GCF_000770155.1	Enterobacter	cloacae	GGT036	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/770/155/GCF_000770155.1_ASM77015v1
+GCF_000817005.1	Streptococcus	pneumoniae	NT_110_58	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/817/005/GCF_000817005.1_ASM81700v1
+GCF_000829055.1	Lactobacillus	casei	DSM 20011	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/829/055/GCF_000829055.1_ASM82905v1
+GCF_000829215.1	Vibrio	cholerae	MS6	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/829/215/GCF_000829215.1_ASM82921v1
+GCF_000953495.1	Salmonella	enterica subsp. enterica serovar Infantis	1326/28	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/953/495/GCF_000953495.1_SINFA
+GCF_000967115.2	Clostridium	tetani	12124569	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/967/115/GCF_000967115.2_CT1
+GCF_000987925.1	Yersinia	enterocolitica	FORC_002	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/987/925/GCF_000987925.1_ASM98792v1
+GCF_001267845.1	Streptococcus	pyogenes	NGAS638	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/001/267/845/GCF_001267845.1_ASM126784v1
+GCF_001457455.1	Corynebacterium	diphtheriae	NCTC11397	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/001/457/455/GCF_001457455.1_NCTC11397
+GCF_001610735.1	Legionella	pneumophila	L10-023	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/001/610/735/GCF_001610735.1_ASM161073v1
+GCF_002007885.1	Clostridioides	difficile	BR81	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/007/885/GCF_002007885.1_ASM200788v1
+GCF_002116925.1	Acinetobacter	baumannii	ab736	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/116/925/GCF_002116925.1_ASM211692v1
+GCF_002119445.1	Bacillus	thuringiensis	ATCC 10792	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/119/445/GCF_002119445.1_ASM211944v1
+GCF_002151505.1	Borreliella	burgdorferi	B31_NRZ	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/151/505/GCF_002151505.1_ASM215150v1
+GCF_003058345.1	Clostridium	botulinum	DFPST0029	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/058/345/GCF_003058345.1_ASM305834v1
+GCF_004006515.1	Vibrio	parahaemolyticus	VPD14	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/004/006/515/GCF_004006515.1_ASM400651v1
+GCF_005885795.1	Treponema	pallidum subsp. pallidum	X-4	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/005/885/795/GCF_005885795.1_ASM588579v1
+GCF_006094375.1	Staphylococcus	epidermidis	ATCC 14990	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/006/094/375/GCF_006094375.1_ASM609437v1
+GCF_012044595.1	Streptomyces	antibioticus	DSM 41481	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/012/044/595/GCF_012044595.1_ASM1204459v1
+GCF_014841015.1	Xanthomonas	campestris	M28	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/014/841/015/GCF_014841015.1_ASM1484101v1
+GCF_017299435.1	Serratia	marcescens subsp. marcescens	ATCC 13880 substr. Sm_S95_jyu2015	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/017/299/435/GCF_017299435.1_ASM1729943v1
+GCF_900477975.1	Corynebacterium	jeikeium	NCTC11914	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/900/477/975/GCF_900477975.1_46983_G01
+GCF_004008975.1	Bordetella	pertussis	H640	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/004/008/975/GCF_004008975.1_ASM400897v1
+GCF_002073495.2	Leptospira	interrogans	FDAARGOS_203	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/073/495/GCF_002073495.2_ASM207349v2
+GCF_013030075.1	Neisseria	gonorrhoeae	TUM19854	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/013/030/075/GCF_013030075.1_ASM1303007v1
+GCF_020736045.1	Haemophilus	influenzae	FDAARGOS_1560	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/020/736/045/GCF_020736045.1_ASM2073604v1
+GCF_000195955.2	Mycobacterium	tuberculosis	H37Rv	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/195/955/GCF_000195955.2_ASM19595v2
+GCF_004028015.1	Mycobacteroides	abscessus	GZ002	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/004/028/015/GCF_004028015.1_ASM402801v1
+GCF_900637005.1	Yersinia	enterocolitica subsp. palearctica	NCTC13769	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/900/637/005/GCF_900637005.1_46582_C01
+GCF_000222975.1	Yersinia	pestis	A1122	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/222/975/GCF_000222975.1_ASM22297v1
+GCF_000022565.1	Acidobacterium	capsulatum	ATCC 51196	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/022/565/GCF_000022565.1_ASM2256v1
+GCF_000020025.1	Nostoc	punctiforme	PCC 73102	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/020/025/GCF_000020025.1_ASM2002v1
+GCF_000027325.1	Mycoplasma	genitalium	G37	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/027/325/GCF_000027325.1_ASM2732v1
+GCF_014841035.1	Lactobacillus	johnsonii	GHZ10a	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/014/841/035/GCF_014841035.1_ASM1484103v1
+GCF_002151505.1	Borreliella	burgdorferi	B31_NRZ	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/151/505/GCF_002151505.1_ASM215150v1
+GCF_000196555.1	Bifidobacterium	longum subsp. longum	JCM 1217	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/196/555/GCF_000196555.1_ASM19655v1
+GCF_000007025.1	Rickettsia	conorii	Malish 7	yes	https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/007/025/GCF_000007025.1_ASM702v1
