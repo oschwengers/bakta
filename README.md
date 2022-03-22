@@ -21,7 +21,7 @@ Bakta is a tool for the rapid & standardized annotation of bacterial genomes and
 - [Annotation Workflow](#annotation-workflow)
 - [Database](#database)
 - [Genome Submission](#genome-submission)
-- [Protein batch annotation](#protein-batch-annotation)
+- [Protein bulk annotation](#protein-bulk-annotation)
 - [Web version](#web-version)
 - [Citation](#citation)
 - [FAQ](#faq)
@@ -573,21 +573,32 @@ contig_2    contig_2    circular-plasmid
 contig_3    contig_3    circular-plasmid
 ```
 
-## Protein batch annotation
-For the direct batch annotation of protein sequences, Bakta provides a CLI entry point `bakta_batch`:
+## Protein bulk annotation
+
+For the direct bulk annotation of protein sequences aside from the genome, Bakta provides a dedicated CLI entry point `bakta_proteins`:
 
 Examples:
 
 ```bash
-$ bakta_batch --db <db-path> input.fasta
+$ bakta_proteins --db <db-path> input.fasta
 
-$ bakta_batch --db <db-path> --prefix test --output test --proteins special.faa --threads 8 input.fasta
+$ bakta_proteins --db <db-path> --prefix test --output test --proteins special.faa --threads 8 input.fasta
 ```
 
-Usage:
+### Output
+
+Annotation results are provided in standard bioinformatics file formats:
+
+- `<prefix>.tsv`: annotations as simple human readble TSV
+- `<prefix>.faa`: protein sequences as FASTA
+- `<prefix>.hypotheticals.tsv`: further information on hypothetical proteins as simple human readble tab separated values
+
+The `<prefix>` can be set via `--prefix <prefix>`. If no prefix is set, Bakta uses the input file prefix.
+
+### Usage
 
 ```bash
-usage: bakta_batch [--db DB] [--output OUTPUT] [--prefix PREFIX] [--proteins PROTEINS] [--help] [--threads THREADS] [--tmp-dir TMP_DIR] [--version] <input>
+usage: bakta_proteins [--db DB] [--output OUTPUT] [--prefix PREFIX] [--proteins PROTEINS] [--help] [--threads THREADS] [--tmp-dir TMP_DIR] [--version] <input>
 
 Rapid & standardized annotation of bacterial genomes, MAGs & plasmids
 
