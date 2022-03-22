@@ -140,7 +140,9 @@ def write_tmp_faa(aa, aa_path):
     "parameters",
     [
         'test/data/user-proteins.faa',
-        'test/data/user-proteins.gbff'
+        'test/data/user-proteins.faa.gz',
+        'test/data/user-proteins.gbff',
+        'test/data/user-proteins.gbff.gz'
     ]
 )
 def test_user_proteins(parameters, tmpdir):
