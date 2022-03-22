@@ -34,7 +34,7 @@ setup(
     entry_points={
         'console_scripts': [
             'bakta=bakta.main:main',
-            'bakta_batch=bakta.batch:main',
+            'bakta_proteins=bakta.proteins:main',
             'bakta_db=bakta.db:main'
         ]
     },

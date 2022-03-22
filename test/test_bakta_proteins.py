@@ -20,7 +20,7 @@ FILES = [
 )
 def test_bakta_genome(parameters, tmpdir):
     # full test on complete genome in compliant mode
-    proc = run(['bin/bakta_batch', '--db', 'test/db', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--proteins', parameters, 'test/data/GCF_000008865.2.faa'])
+    proc = run(['bin/bakta_proteins', '--db', 'test/db', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--proteins', parameters, 'test/data/GCF_000008865.2.faa'])
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)

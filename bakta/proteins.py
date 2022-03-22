@@ -19,7 +19,6 @@ import bakta.expert.protein_sequences as exp_aa_seq
 import bakta.features.annotation as anno
 import bakta.features.orf as orf
 import bakta.features.cds as feat_cds
-import bakta.features.signal_peptides as sig_peptides
 import bakta.io.fasta as fasta
 import bakta.io.tsv as tsv
 import bakta.ups as ups
@@ -28,12 +27,12 @@ import bakta.psc as psc
 import bakta.pscc as pscc
 
 
-log = logging.getLogger('BATCH')
+log = logging.getLogger('PROTEINS')
 
 
 def main():
     # parse options and arguments
-    parser = bu.init_parser(sub_command='_batch')
+    parser = bu.init_parser(sub_command='_proteins')
     parser.add_argument('input', metavar='<input>', help='Protein sequences in (zipped) fasta format')
     
     arg_group_io = parser.add_argument_group('Input / Output')
