@@ -12,15 +12,22 @@ FILES = [
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "parameters",
+    "user_proteins",
     [
         'test/data/user-proteins.faa',
         'test/data/user-proteins.gbff'
     ]
 )
-def test_bakta_genome(parameters, tmpdir):
+@pytest.mark.parametrize(
+    "input",
+    [
+        'test/data/GCF_000008865.2.faa',
+        'test/data/GCF_000008865.2.faa.gz'
+    ]
+)
+def test_bakta_genome(user_proteins, input, tmpdir):
     # full test on complete genome in compliant mode
-    proc = run(['bin/bakta_proteins', '--db', 'test/db', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--proteins', parameters, 'test/data/GCF_000008865.2.faa'])
+    proc = run(['bin/bakta_proteins', '--db', 'test/db', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--proteins', user_proteins, input])
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)
