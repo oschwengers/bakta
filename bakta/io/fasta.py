@@ -27,14 +27,17 @@ def import_contigs(contigs_path: Path, is_genomic: bool=True, is_dna: bool=True)
             if('-' in seq):
                 dash_count = seq.count('-')
                 seq = seq.replace('-', '')
-                log.info('discarded alignment gaps (dashes): id=%s, occurences=%i', record.id, dash_count)
+                log.info('import: Discarded alignment gaps (dashes): id=%s, occurences=%i', record.id, dash_count)
             if(is_dna):
                 if(FASTA_DNA_SEQUENCE_PATTERN.fullmatch(seq) is None):
                     log.error('import: Fasta sequence contains invalid DNA characters! id=%s', record.id)
                     raise ValueError(f'Fasta sequence contains invalid DNA characters! id={record.id}')
             else:
+                if(seq[-1] == '*'):  # remove trailing stop asterik
+                    seq = seq[:-1]
+                    log.debug('import: Removed trailing asterik! id=%s, seq=%s', record.id, seq)
                 if(FASTA_AA_SEQUENCE_PATTERN.fullmatch(seq) is None):
-                    log.error('import: Fasta sequence contains invalid AA characters! id=%s', record.id)
+                    log.error('import: Fasta sequence contains invalid AA characters! id=%s, seq=%s', record.id, seq)
                     raise ValueError(f'Fasta sequence contains invalid AA characters! id={record.id}')
 
             contig = {
