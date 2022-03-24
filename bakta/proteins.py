@@ -91,7 +91,13 @@ def main():
     ############################################################################
     # Setup logging
     ############################################################################
-    aas = fasta.import_contigs(aa_path, False, False)
+    try:
+        aas = fasta.import_contigs(aa_path, False, False)
+        log.info('imported sequences=%i', len(aas))
+        print(f'\timported: {len(aas)}')
+    except:
+        log.error('wrong file format or unallowed characters in amino acid sequences!', exc_info=True)
+        sys.exit('ERROR: wrong file format or unallowed characters in amino acid sequences!')
     mock_start = 1
     for aa in aas:  # rename and mock feature attributes to reuse existing functions
         aa['type'] = bc.FEATURE_CDS
