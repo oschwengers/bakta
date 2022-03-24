@@ -18,13 +18,13 @@ import bakta.so as so
 log = logging.getLogger('INSDC')
 
 
-def write_insdc(genome: dict, features:Sequence[dict], genbank_output_path: Path, embl_output_path: Path):
+def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Path, embl_output_path: Path):
     log.debug('prepare: genbank=%s, embl=%s', genbank_output_path, embl_output_path)
 
     contig_list = []
     for contig in genome['contigs']:
         contig_features = [feat for feat in features if feat['contig'] == contig['id']]
-        comment = (
+        comment = [
             'Annotated with Bakta',
             f"Software: v{bakta.__version__}\n",
             f"Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}\n",
@@ -46,15 +46,19 @@ def write_insdc(genome: dict, features:Sequence[dict], genbank_output_path: Path
             f"{'oriCs/oriVs':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_ORIC or feat['type'] == bc.FEATURE_ORIV]):5,}",
             f"{'oriTs':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_ORIT]):5,}",
             f"{'gaps':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_GAP]):5,}",
-        )
+        ]
+        if(cfg.pseudo):
+            all_pseudogenes: int = len([feat for feat in contig_features if feat['type'] == bc.FEATURE_CDS and bc.INSDC_FEATURE_PSEUDOGENE in feat])
+            comment.extend([f"{'pseudogenes':<30} :: {all_pseudogenes:5,}\n"  # TODO add cause metrics
+                            ])
         contig_annotations = {
             'molecule_type': 'DNA',
             'source': genome['taxon'],
             'date': date.today().strftime('%d-%b-%Y').upper(),
             'topology': contig['topology'],
             'data_file_division': 'HGT' if contig['type'] == bc.REPLICON_CONTIG else 'BCT',
-            # 'accession': '*',  # hold back unil EMBL output bug is fixed in BioPython (https://github.com/biopython/biopython/pull/3572)
-            'comment': comment
+            # 'accession': '*',  # hold back until EMBL output bug is fixed in BioPython (https://github.com/biopython/biopython/pull/3572)
+            'comment': tuple(comment)
             # TODO: taxonomy
         }
         source_qualifiers = {
@@ -124,13 +128,16 @@ def write_insdc(genome: dict, features:Sequence[dict], genbank_output_path: Path
                 if('product' in qualifiers):
                     del qualifiers['product']
             elif(feature['type'] == bc.FEATURE_CDS) or (feature['type'] == bc.FEATURE_SORF):
-                qualifiers['translation'] = feature['aa']
+                if(feature.get('pseudogene', False)):
+                    qualifiers[bc.INSDC_FEATURE_PSEUDOGENE] = feature['pseudogene']['qualifier']
+                else:
+                    qualifiers['protein_id'] = f"gnl|Bakta|{feature['locus']}"
+                    qualifiers['translation'] = feature['aa']
                 qualifiers['codon_start'] = 1
                 qualifiers['transl_table'] = cfg.translation_table
                 insdc_feature_type = bc.INSDC_FEATURE_CDS
                 inference = []
                 inference.append('ab initio prediction:Prodigal:2.6' if feature['type'] == bc.FEATURE_CDS else f"ab initio prediction:Bakta:{'.'.join(bakta.__version__.split('.')[0:2])}")
-                qualifiers['protein_id'] = f"gnl|Bakta|{feature['locus']}"
                 if('ncbi_nrp_id' in feature.get('ups', {})):
                     nrp_id = feature['ups']['ncbi_nrp_id']
                     inference.append(f'similar to AA sequence:{bc.DB_XREF_REFSEQ_NRP}:{nrp_id}')
@@ -151,6 +158,11 @@ def write_insdc(genome: dict, features:Sequence[dict], genbank_output_path: Path
                     qualifiers['note'], ec_number = extract_ec_from_notes_insdc(qualifiers, 'note')
                     if(ec_number is not None):
                             qualifiers['EC_number'] = ec_number
+                    if('pseudogene' in feature):
+                        qualifiers['note'].insert(0, f"{feature['pseudogene']['type']}: {feature['pseudogene']['note']}")
+                        qualifiers['note'].insert(1, f"pseudogene of {feature['product']}")
+                elif('pseudogene' in feature):
+                    qualifiers['note'].insert(0, f"{feature['pseudogene']['type']}: {feature['pseudogene']['note']}")
                 if('exception' in feature):
                     ex = feature['exception']
                     pos = f"{ex['start']}..{ex['stop']}"
@@ -164,7 +176,7 @@ def write_insdc(genome: dict, features:Sequence[dict], genbank_output_path: Path
                     sigpep_qualifiers['inference'] = 'ab initio prediction:DeepSig:1.2'
                     sigpep = feature[bc.FEATURE_SIGNAL_PEPTIDE]
                     sigpep_strand = 1 if feature['strand'] == bc.STRAND_FORWARD else -1 if feature['strand'] == bc.STRAND_REVERSE else 0
-                    sigpep_location = FeatureLocation(sigpep['start'] - 1, sigpep['stop'], strand = sigpep_strand)
+                    sigpep_location = FeatureLocation(sigpep['start'] - 1, sigpep['stop'], strand=sigpep_strand)
                     sigpep_feature = SeqFeature(sigpep_location, type=bc.INSDC_FEATURE_SIGNAL_PEPTIDE, qualifiers=sigpep_qualifiers)
                     accompanying_features.append(sigpep_feature)
             elif(feature['type'] == bc.FEATURE_T_RNA):
@@ -217,6 +229,11 @@ def write_insdc(genome: dict, features:Sequence[dict], genbank_output_path: Path
             start = feature['start'] - 1
             stop = feature['stop']
             if('edge' in feature):
+                if(feature.get('pseudogene', None)):
+                    if(feature['pseudogene']['cause'][5]):
+                        start = BeforePosition(feature['start'] - 1)
+                    if(feature['pseudogene']['cause'][3]):
+                        stop = AfterPosition(feature['stop'])
                 fl_1 = FeatureLocation(start, contig['length'], strand=strand)
                 fl_2 = FeatureLocation(0, stop, strand=strand)
                 if(feature['strand'] == bc.STRAND_REVERSE):
@@ -238,6 +255,11 @@ def write_insdc(genome: dict, features:Sequence[dict], genbank_output_path: Path
                     else:
                         start = BeforePosition(start)
                         stop = AfterPosition(stop)
+                elif(feature.get('pseudogene', None)):
+                    if(feature['pseudogene']['cause'][5]):
+                        start = BeforePosition(feature['start'] - 1)
+                    if(feature['pseudogene']['cause'][3]):
+                        stop = AfterPosition(feature['stop'])
                 feature_location = FeatureLocation(start, stop, strand=strand)
             if(feature.get('locus', None)):
                 gene_qualifier = {
@@ -246,6 +268,8 @@ def write_insdc(genome: dict, features:Sequence[dict], genbank_output_path: Path
                 if(feature.get('gene', None)):
                     qualifiers['gene'] = feature['gene']
                     gene_qualifier['gene'] = feature['gene']
+                if(feature.get('pseudogene', None)):
+                    gene_qualifier[bc.INSDC_FEATURE_PSEUDOGENE] = feature['pseudogene']['qualifier']
                 gen_seqfeat = SeqFeature(feature_location, type='gene', qualifiers=gene_qualifier)
                 seq_feature_list.append(gen_seqfeat)
             feat_seqfeat = SeqFeature(feature_location, type=insdc_feature_type, qualifiers=qualifiers)

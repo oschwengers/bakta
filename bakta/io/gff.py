@@ -193,6 +193,8 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
+                    if(feat.get('pseudogene', None)):
+                        annotations[bc.INSDC_FEATURE_PSEUDOGENE] = feat['pseudogene']['qualifier']
                     if(feat.get('gene', None)):  # add gene annotation if available
                         annotations['gene'] = feat['gene']
                     if(cfg.compliant):

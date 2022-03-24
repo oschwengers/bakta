@@ -371,6 +371,7 @@ Workflow:
   --skip-ncrna-region   Skip ncRNA region detection & annotation
   --skip-crispr         Skip CRISPR array detection & annotation
   --skip-cds            Skip CDS detection & annotation
+  --pseudo              Predict & annotate pseudo genes
   --skip-sorf           Skip sORF detection & annotation
   --skip-gap            Skip gap detection & annotation
   --skip-ori            Skip oriC/oriT detection & annotation
