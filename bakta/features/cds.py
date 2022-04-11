@@ -7,7 +7,7 @@ from math import ceil
 from typing import Union
 from collections import OrderedDict
 from pathlib import Path
-from typing import Dict, Sequence
+from typing import Dict, List, Sequence, Set
 
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -423,7 +423,7 @@ def revise_translational_exceptions(genome: dict, cdss: Sequence[dict]):
                         cds_b['discarded'] = discard
                         no_revised += 1
                     else:
-                        log.warn(
+                        log.warning(
                             'spurious selenocysteine CDS detected: contig=%s, start=%i, stop=%i, strand=%s, frame=%i, nt=[%s], aa=[%s]',
                             seleno_cds['contig'], seleno_cds['start'], seleno_cds['stop'], seleno_cds['strand'], seleno_cds['frame'], nt, aa
                         )
@@ -480,19 +480,18 @@ def revise_special_cases_annotated(genome: dict, cdss: Sequence[dict]):
             )
 
 
-def predict_pseudo(hypotheticals: list[dict], cdss: list[dict], genome: dict) -> list[dict]:
+def predict_pseudo(hypotheticals: Sequence[dict], cdss: Sequence[dict], genome: dict) -> Sequence[dict]:
     """
     Detect possible pseudogenes using Diamond blastp and tblastn.
     """
-    log.warning('Here be dragons')
-    pseudo_candidates: list[dict] = predict_pseudo_candidates(hypotheticals)
+    pseudo_candidates: Sequence[dict] = predict_pseudo_candidates(hypotheticals)
     print('\tpseudogene candidates:', len(pseudo_candidates))
     if(len(pseudo_candidates) > 0):
-        pseudogenes: list[dict] = pseudogene_class(pseudo_candidates, cdss, genome)
+        pseudogenes: Sequence[dict] = pseudogene_class(pseudo_candidates, cdss, genome)
         return pseudogenes
 
 
-def predict_pseudo_candidates(hypotheticals: list[dict]):
+def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
     """
     Conduct homology search of hypothetical CDSs against PCS db for pseudogene detection.
     """
@@ -533,7 +532,7 @@ def predict_pseudo_candidates(hypotheticals: list[dict]):
         log.warning('Diamond failed! diamond-error-code=%d', proc.returncode)
         raise Exception(f'diamond error! error code: {proc.returncode}')
 
-    cds_by_hexdigest: dict[str, dict] = orf.get_orf_dictionary(hypotheticals)
+    cds_by_hexdigest: Dict[str, dict] = orf.get_orf_dictionary(hypotheticals)
     with diamond_output_path.open() as fh:
         for line in fh:
             (aa_identifier, cluster_id, identity, alignment_length, query_start, query_end, subject_start, subject_end,
@@ -563,7 +562,7 @@ def predict_pseudo_candidates(hypotheticals: list[dict]):
                     identity, cluster_id
                 )
 
-    pseudo_candidates: list[dict] = []
+    pseudo_candidates: List[dict] = []
     for cds in hypotheticals:
         if 'pseudo-candidate' in cds:
             pseudo_candidates.append(cds)
@@ -571,7 +570,7 @@ def predict_pseudo_candidates(hypotheticals: list[dict]):
     return pseudo_candidates
 
 
-def pseudogene_class(candidates: list[dict], cdss: list[dict], genome: dict):
+def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: dict) -> Sequence[dict]:
     """
     Conduct homology search of hypothetical CDSs against PCS db for pseudogenes with a frameshift.
     """
@@ -585,8 +584,8 @@ def pseudogene_class(candidates: list[dict], cdss: list[dict], genome: dict):
         for cluster_id, faa_seq in {cds['pseudo-candidate'][DB_PSC_COL_UNIREF90]: cds['pseudo-candidate']['cluster_sequence'] for cds in candidates}.items():
             fh.write(f">{cluster_id}\n{faa_seq}\n")
 
-    contigs: dict[str, dict] = {c['id']: c for c in genome['contigs']}
-    candidates_extended_positions: dict[str, dict[str, Union[int, bool]]] = dict()
+    contigs: Dict[str, dict] = {c['id']: c for c in genome['contigs']}
+    candidates_extended_positions: Dict[str, Dict[str, Union[int, bool]]] = dict()
     with pseudo_fna_path.open(mode='w') as fh:
         for cds in candidates:
             contig: dict = contigs[cds['contig']]
@@ -653,14 +652,16 @@ def pseudogene_class(candidates: list[dict], cdss: list[dict], genome: dict):
             log.warning('PSEUDO failed! diamond-error-code=%d', proc.returncode)
             raise Exception(f'diamond error! error code: {proc.returncode}\n{proc.stdout}')
 
-    cds_by_hexdigest: dict[str, dict] = orf.get_orf_dictionary(candidates)
-    uniref90_by_hexdigest: dict[str, str] = {aa_identifier: cds['psc']['uniref90_id'] for aa_identifier, cds in cds_by_hexdigest.items() if 'psc' in cds and 'uniref90_id' in cds['psc']}
+    cds_by_hexdigest: Dict[str, dict] = orf.get_orf_dictionary(candidates)
+    uniref90_by_hexdigest: Dict[str, str] = {aa_identifier: cds['psc']['uniref90_id'] for aa_identifier, cds in
+                                             orf.get_orf_dictionary(cdss).items()
+                                             if 'psc' in cds and 'uniref90_id' in cds['psc']}
     with blast_out_path.open() as fh:
         root = ET.parse(fh).getroot()
         for query in root.findall('./BlastOutput_iterations/Iteration'):
             aa_identifier: str = query.find('Iteration_query-def').text
             cds: dict = cds_by_hexdigest[aa_identifier]
-            extended_positions: dict[str, Union[int, bool]] = candidates_extended_positions[aa_identifier]
+            extended_positions: Dict[str, Union[int, bool]] = candidates_extended_positions[aa_identifier]
             for hit in query.findall('./Iteration_hits/Hit'):
                 cluster_id: str = hit.find('Hit_id').text
                 if cluster_id == cds['pseudo-candidate'][DB_PSC_COL_UNIREF90]:
@@ -676,7 +677,7 @@ def pseudogene_class(candidates: list[dict], cdss: list[dict], genome: dict):
                         )
                         continue
 
-                    cause: dict[Union[str, int], Union[list[int], bool]] = parse_blastx_alignment(alignment,
+                    cause: Dict[Union[str, int], Union[List[int], bool]] = parse_blastx_alignment(alignment,
                                                                                                   ref_alignment,
                                                                                                   alignment_start,
                                                                                                   alignment_stop,
@@ -699,11 +700,11 @@ def pseudogene_class(candidates: list[dict], cdss: list[dict], genome: dict):
 
                         if is_unprocessed(uniref90_by_hexdigest, aa_identifier, cds['pseudo-candidate'][DB_PSC_COL_UNIREF90]):
                             cds['pseudogene']['qualifier'] = bc.PSEUDOGENE_UNPROCESSED
-                            print(bc.PSEUDOGENE_UNPROCESSED)
+                            print(bc.PSEUDOGENE_UNPROCESSED)  # DEBUG
                         else:
                             cds['pseudogene']['qualifier'] = bc.PSEUDOGENE_UNITARY
 
-                        tmp_type: list[str] = []
+                        tmp_type: List[str] = []
                         if cause[5]:
                             tmp_type.append('Internal START codon')
                         if cause[3]:
@@ -711,7 +712,7 @@ def pseudogene_class(candidates: list[dict], cdss: list[dict], genome: dict):
                         pseudogene_type: str = ', '.join(tmp_type)
                         cds['pseudogene']['type'] = pseudogene_type
 
-                        tmp_cause: list[str] = []
+                        tmp_cause: List[str] = []
                         if cause['insertion']:
                             tmp_cause.append('Frameshift due to the insertion around ' + ', '.join(map(str, cause['insertion'])) + '.')
                         if cause['deletion']:
@@ -737,7 +738,7 @@ def pseudogene_class(candidates: list[dict], cdss: list[dict], genome: dict):
                             cds['contig'], cds['start'], cds['stop'], cds['strand']
                         )
 
-    pseudogenes: list[dict] = []
+    pseudogenes: List[dict] = []
     for cds in candidates:
         if 'pseudogene' in cds:
             pseudogenes.append(cds)
@@ -747,17 +748,17 @@ def pseudogene_class(candidates: list[dict], cdss: list[dict], genome: dict):
     return pseudogenes
 
 
-def is_unprocessed(uniref90_by_hexdigest: dict[str, str], aa_identifier: str, cluster: str) -> bool:
-    excluded_uniref90: set[str] = set()
+def is_unprocessed(uniref90_by_hexdigest: Dict[str, str], aa_identifier: str, cluster: str) -> bool:
+    excluded_uniref90: Set[str] = set()
     for hexdigest, uniref90 in uniref90_by_hexdigest.items():
         if hexdigest != aa_identifier:
             excluded_uniref90.add(uniref90)
     return cluster in excluded_uniref90
 
 
-def parse_blastx_alignment(alignment, ref_alignment, qstart, qstop, extended_positions, cds) -> dict[Union[str, int], Union[list[int], bool]]:
+def parse_blastx_alignment(alignment, ref_alignment, qstart, qstop, extended_positions, cds) -> Dict[Union[str, int], Union[List[int], bool]]:
     # based on: https://github.com/nigyta/dfast_core/blob/1c366a017b07f0390b0da57fe8a3906b0d4a5f0e/dfc/components/PseudoGeneDetection.py#L173
-    cause: dict[Union[str, int], Union[list[int], bool]] = {'insertion': [],
+    cause: Dict[Union[str, int], Union[List[int], bool]] = {'insertion': [],
                                                             'deletion': [],
                                                             'start': [],
                                                             'stop': [],
@@ -769,7 +770,9 @@ def parse_blastx_alignment(alignment, ref_alignment, qstart, qstop, extended_pos
     elongated: bool = False
 
     if extended_positions.get('edge', False):
-        # TODO edge cases: extended_positions['edge'], filters for up/downstream below do not work for edge cases
+        # elongated_edge: bool = False
+        # TODO edge cases: extended_positions['edge'], filters for up/downstream below do not work for edge cases;
+        #  introduce extra flag for downstream analysis: if cds['start'] - (extended_positions['start'] + qstart - 1) > 0 or FLAG
         return cause
 
     if cds['start'] - (extended_positions['start'] + qstart - 1) > 0:  # elongated alignment 5'
@@ -893,5 +896,15 @@ def parse_blastx_alignment(alignment, ref_alignment, qstart, qstop, extended_pos
         )
     return cause
 
+
+def upstream_elongation(cause: Dict[Union[str, int], Union[List[int], bool]],
+                        elongated_edge: bool) -> Dict[Union[str, int], Union[List[int], bool]]:
+
+    return cause
+
+
+def downstream_elongation(cause: Dict[Union[str, int], Union[List[int], bool]],
+                          elongated_edge: bool) -> Dict[Union[str, int], Union[List[int], bool]]:
+    return cause
 
 # EOF

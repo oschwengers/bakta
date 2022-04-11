@@ -282,9 +282,9 @@ def main():
                 if(cfg.pseudo):
                     print('predict & annotate pseudogenes...')
                     print('\thypothetical CDS:', len(hypotheticals))
-                    pseudo_found: list[dict] = feat_cds.predict_pseudo(hypotheticals, cdss, genome)
+                    pseudo_found = feat_cds.predict_pseudo(hypotheticals, cdss, genome)
                     print(f'\tfound pseudogenes: {len(pseudo_found)}')
-                    hypotheticals: list[dict] = [cds for cds in hypotheticals if 'pseudogene' not in cds]
+                    hypotheticals = [cds for cds in hypotheticals if 'pseudogene' not in cds]
                 if(len(hypotheticals) > 0):
                     print(f'\tanalyze hypothetical proteins: {len(hypotheticals)}')
                     pfam_hits = feat_cds.predict_pfam(hypotheticals)
