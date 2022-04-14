@@ -51,7 +51,9 @@ setup(
         'Natural Language :: English'
     ],
     project_urls={
+        'Documentation': 'https://bakta.readthedocs.io',
+        'Source': 'https://github.com/oschwengers/bakta',
         'Bug Reports': 'https://github.com/oschwengers/bakta/issues',
-        'Source': 'https://github.com/oschwengers/bakta'
+        'CI': 'https://github.com/oschwengers/bakta/actions'
     },
 )
