@@ -282,8 +282,13 @@ def main():
                 if(cfg.pseudo):
                     print('predict & annotate pseudogenes...')
                     print('\thypothetical CDS:', len(hypotheticals))
-                    pseudo_found = feat_cds.predict_pseudo(hypotheticals, cdss, genome)
-                    print(f'\tfound pseudogenes: {len(pseudo_found)}')
+                    pseudo_candidates = feat_cds.predict_pseudo_candidates(hypotheticals)
+                    print('\tpseudogene candidates:', len(pseudo_candidates))
+                    if (len(pseudo_candidates) > 0):
+                        pseudogenes = feat_cds.pseudogene_class(pseudo_candidates, cdss, genome)
+                    else:
+                        pseudogenes = []
+                    print(f'\tfound pseudogenes: {len(pseudogenes)}')
                     hypotheticals = [cds for cds in hypotheticals if 'pseudogene' not in cds]
                 if(len(hypotheticals) > 0):
                     print(f'\tanalyze hypothetical proteins: {len(hypotheticals)}')
