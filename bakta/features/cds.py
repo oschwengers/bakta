@@ -640,8 +640,9 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                     ref_alignment: str = hit.find('Hit_hsps/Hsp/Hsp_hseq').text
                     alignment_start: int = int(hit.find('Hit_hsps/Hsp/Hsp_query-from').text)
                     alignment_stop: int = int(hit.find('Hit_hsps/Hsp/Hsp_query-to').text)
+                    alignment_length: int = int(hit.find('Hit_hsps/Hsp/Hsp_align-len').text)
 
-                    if len(alignment) <= len(cds['aa']):  # skip non-extended genes, complete match or aa deletions
+                    if alignment_length <= len(cds['aa']):  # skip non-extended genes, complete match or aa deletions
                         log.info(
                             'No pseudogene: contig=%s, start=%i, stop=%i, strand=%s',
                             cds['contig'], cds['start'], cds['stop'], cds['strand']
