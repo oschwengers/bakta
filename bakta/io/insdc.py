@@ -24,7 +24,7 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
     contig_list = []
     for contig in genome['contigs']:
         contig_features = [feat for feat in features if feat['contig'] == contig['id']]
-        comment = [
+        comment = (
             'Annotated with Bakta',
             f"Software: v{bakta.__version__}\n",
             f"Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}\n",
@@ -46,11 +46,8 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
             f"{'oriCs/oriVs':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_ORIC or feat['type'] == bc.FEATURE_ORIV]):5,}",
             f"{'oriTs':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_ORIT]):5,}",
             f"{'gaps':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_GAP]):5,}",
-        ]
-        if(cfg.pseudo):
-            all_pseudogenes: int = len([feat for feat in contig_features if feat['type'] == bc.FEATURE_CDS and bc.INSDC_FEATURE_PSEUDOGENE in feat])
-            comment.extend([f"{'pseudogenes':<30} :: {all_pseudogenes:5,}\n"  # TODO add cause metrics
-                            ])
+            f"{'pseudogenes':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_CDS and bc.INSDC_FEATURE_PSEUDOGENE in feat]):5,}\n"
+        )
         contig_annotations = {
             'molecule_type': 'DNA',
             'source': genome['taxon'],
@@ -58,7 +55,7 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
             'topology': contig['topology'],
             'data_file_division': 'HGT' if contig['type'] == bc.REPLICON_CONTIG else 'BCT',
             # 'accession': '*',  # hold back until EMBL output bug is fixed in BioPython (https://github.com/biopython/biopython/pull/3572)
-            'comment': tuple(comment)
+            'comment': comment
             # TODO: taxonomy
         }
         source_qualifiers = {
