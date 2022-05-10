@@ -532,9 +532,8 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
             query_cov: float = int(alignment_length) / len(cds['aa'])
             subject_cov: float = int(alignment_length) / len(subject_sequence)
             identity: float = float(identity) / 100
-            # if query_cov >= bc.MIN_PSEUDOGENE_QUERY_COVERAGE and identity >= bc.MIN_PSEUDOGENE_IDENTITY \
-            #         and bc.MIN_PSEUDOGENE_SUBJECT_COVERAGE <= subject_cov < bc.MIN_PSC_COVERAGE:
-            if True:
+            if query_cov >= bc.MIN_PSEUDOGENE_QUERY_COVERAGE and identity >= bc.MIN_PSEUDOGENE_IDENTITY \
+                    and bc.MIN_PSEUDOGENE_SUBJECT_COVERAGE <= subject_cov < bc.MIN_PSC_COVERAGE:
                 cds['pseudo-candidate'] = {
                     DB_PSC_COL_UNIREF90: cluster_id,
                     'query-cov': query_cov,
