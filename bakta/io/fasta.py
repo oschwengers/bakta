@@ -47,8 +47,8 @@ def import_contigs(contigs_path: Path, is_genomic: bool=True, is_dna: bool=True)
                 'length': len(seq)
             }
             if(is_genomic):
-                contig['complete'] = False,
-                contig['type'] = bc.REPLICON_CONTIG,
+                contig['complete'] = False
+                contig['type'] = bc.REPLICON_CONTIG
                 contig['topology'] = bc.TOPOLOGY_LINEAR
             log.info(
                 'imported: id=%s, length=%i, description=%s, genomic=%s, dna=%s',
