@@ -425,16 +425,19 @@ def revise_translational_exceptions(genome: dict, cdss: Sequence[dict]):
     return no_revised
 
 
-def revise_special_cases_annotated(cdss: Sequence[dict]):
+def revise_special_cases_annotated(genome: dict, cdss: Sequence[dict]):
     """
     Revise rare but known special cases as for istance supposedly truncated dnaA genes on rotated chromosome starts
     which often appear on re-annotated genomes.
     """
     
+    contigs = {c['id']: c for c in genome['contigs']}
     # look for supposedly truncated dnaA genes on rotated chromosome starts: start=1, strand=+
     dnaA = None
     for cds in cdss:
+        contig = contigs[cds['contig']]
         if(
+            contig['complete'] and
             cds['start'] == 1 and 
             cds['strand'] == bc.STRAND_FORWARD and 
             cds['start_type'] == 'Edge' and 
@@ -442,32 +445,32 @@ def revise_special_cases_annotated(cdss: Sequence[dict]):
             ('dnaa' in cds['product'].lower().split() or cds['gene'] == 'dnaA')):
             dnaA = cds
             break
-    if(dnaA is not None):
+    if(dnaA is not None and 'truncated' in dnaA):
         dnaA.pop('truncated')
-        gene = dnaA.get('gene', None)
-        gene = gene if gene is not None else '-'
+        gene = dnaA.get('gene', '-')
         log.info(
             'revise supposedly truncated dnaA gene on rotated chromosome start: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s], aa=[%s..%s]',
             dnaA['contig'], dnaA['start'], dnaA['stop'], dnaA['strand'], gene, dnaA['product'], dnaA['nt'][:10], dnaA['nt'][-10:], dnaA['aa'][:10], dnaA['aa'][-10:]
         )
     
     # look for supposedly truncated repA genes on rotated plasmid starts: start=1, strand=+
-    repA = None
+    repAs = []
     for cds in cdss:
+        contig = contigs[cds['contig']]
         if(
+            contig['complete'] and
             cds['start'] == 1 and 
             cds['strand'] == bc.STRAND_FORWARD and 
             cds['start_type'] == 'Edge' and 
             cds['rbs_motif'] is None and
             ('repa' in cds['product'].lower().split() or cds['gene'] == 'repA')):
-            repA = cds
-            break
-    if(repA is not None):
-        repA.pop('truncated')
-        gene = repA.get('gene', None)
-        gene = gene if gene is not None else '-'
-        log.info(
-            'revise supposedly truncated repA gene on rotated plasmid start: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s], aa=[%s..%s]',
-            repA['contig'], repA['start'], repA['stop'], repA['strand'], gene, repA['product'], repA['nt'][:10], repA['nt'][-10:], repA['aa'][:10], repA['aa'][-10:]
-        )
+            repAs.append(cds)
+    for repA in repAs:
+        if('truncated' in repA):
+            repA.pop('truncated')
+            gene = repA.get('gene', '-')
+            log.info(
+                'revise supposedly truncated repA gene on rotated plasmid start: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s], aa=[%s..%s]',
+                repA['contig'], repA['start'], repA['stop'], repA['strand'], gene, repA['product'], repA['nt'][:10], repA['nt'][-10:], repA['aa'][:10], repA['aa'][-10:]
+            )
     

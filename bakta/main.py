@@ -290,7 +290,7 @@ def main():
                 print('\tcalculated proteins statistics')
             
             print('\trevise special cases...')
-            feat_cds.revise_special_cases_annotated(cdss)
+            feat_cds.revise_special_cases_annotated(genome, cdss)
 
         genome['features'][bc.FEATURE_CDS] = cdss
 
