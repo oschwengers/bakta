@@ -388,18 +388,23 @@ def qc_contigs(contigs: Sequence[dict], replicons: Dict[str, dict]) -> Tuple[Seq
             contig['simple_id'] = contig_id_generated
             contig_counter += 1
 
-            if('circular=true' in contig['description'].lower()):  # detection of Unicycler circularized sequences
+            contig_description = contig['description'].lower()
+            if(cfg.complete):
+                contig['complete'] = True
+                contig['topology'] = bc.TOPOLOGY_CIRCULAR
+            elif('circular=true' in contig_description):  # detection of Unicycler circularized sequences
                 contig['complete'] = True
                 contig['topology'] = bc.TOPOLOGY_CIRCULAR
                 log.debug('qc: detected Unicycler circular topology via description: id=%s, description=%s', contig['id'], contig['description'])
-            if('complete' in contig['description'].lower()):
+            elif('complete' in contig_description):  # detection of public/described sequences
                 contig['complete'] = True
                 contig['topology'] = bc.TOPOLOGY_CIRCULAR
                 log.debug('qc: detected complete replicon via description: id=%s, description=%s', contig['id'], contig['description'])
-            if('chromosome' in contig['description'].lower()):
+            
+            if('chromosome' in contig_description):
                 contig['type'] = bc.REPLICON_CHROMOSOME
                 log.debug('qc: detected chromosome replicon type via description: id=%s, description=%s', contig['id'], contig['description'])
-            elif('plasmid' in contig['description'].lower()):
+            elif('plasmid' in contig_description):
                 contig['type'] = bc.REPLICON_PLASMID
                 log.debug('qc: detected plasmid replicon type via description: id=%s, description=%s', contig['id'], contig['description'])
 
@@ -427,13 +432,13 @@ def qc_contigs(contigs: Sequence[dict], replicons: Dict[str, dict]) -> Tuple[Seq
                 contig_desc.append(f'[gcode={cfg.translation_table}]')
                 contig['description'] = ' '.join(contig_desc)
 
-            if(cfg.complete):
-                contig['complete'] = True
-                contig['topology'] = bc.TOPOLOGY_CIRCULAR
+            if(contig['complete'] and contig['topology'] == bc.TOPOLOGY_CIRCULAR):  # detection of chromosomes/plasmids via sequence length thresholds
                 if(contig['length'] >= bc.REPLICON_LENGTH_THRESHOLD_CHROMOSOME):
                     contig['type'] = bc.REPLICON_CHROMOSOME
+                    log.debug('qc: detected replicon type via length: id=%s, type=%s, length=%i, description=%s', contig['id'], contig['type'], contig['length'], contig['description'])
                 elif(contig['length'] < bc.REPLICON_LENGTH_THRESHOLD_PLASMID):
                     contig['type'] = bc.REPLICON_PLASMID
+                    log.debug('qc: detected replicon type via length: id=%s, type=%s, length=%i, description=%s', contig['id'], contig['type'], contig['length'], contig['description'])
             valid_contigs.append(contig)
 
             if(len(contigs) == 1 and contig['type'] == bc.REPLICON_PLASMID and cfg.plasmid is not None):
