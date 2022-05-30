@@ -116,7 +116,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         gene_id = f"{feat['locus']}_gene"
                         annotations['Parent'] = gene_id
                         for dbxref in feat['db_xrefs']:
-                            if(dbxref.split(':')[0] == 'RFAM'):
+                            if(dbxref.split(':')[0] == bc.DB_XREF_RFAM):
                                 rfam_id = dbxref.split(':')[1]
                                 annotations['inference'] = f'profile:Rfam:{rfam_id}'
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
@@ -150,7 +150,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         }
                         annotations['Parent'] = gene_id
                         for dbxref in feat['db_xrefs']:
-                            if(dbxref.split(':')[0] == 'RFAM'):
+                            if(dbxref.split(':')[0] == bc.DB_XREF_RFAM):
                                 rfam_id = dbxref.split(':')[1]
                                 annotations['inference'] = f'profile:Rfam:{rfam_id}'
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs

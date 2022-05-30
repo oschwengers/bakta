@@ -185,21 +185,21 @@ def write_insdc(genome: dict, features:Sequence[dict], genbank_output_path: Path
                 insdc_feature_type = bc.INSDC_FEATURE_TM_RNA
             elif(feature['type'] == bc.FEATURE_R_RNA):
                 for dbxref in feature['db_xrefs']:
-                    if(dbxref.split(':')[0] == 'RFAM'):
+                    if(dbxref.split(':')[0] == bc.DB_XREF_RFAM):
                         rfam_id = dbxref.split(':')[1]
                         qualifiers['inference'] = f'profile:Rfam:{rfam_id}'
                 insdc_feature_type = bc.INSDC_FEATURE_R_RNA
             elif(feature['type'] == bc.FEATURE_NC_RNA):
                 # TODO: ncRNA_class
                 for dbxref in feature['db_xrefs']:
-                    if(dbxref.split(':')[0] == 'RFAM'):
+                    if(dbxref.split(':')[0] == bc.DB_XREF_RFAM):
                         rfam_id = dbxref.split(':')[1]
                         qualifiers['inference'] = f'profile:Rfam:{rfam_id}'
                 qualifiers[bc.INSDC_FEATURE_NC_RNA_CLASS] = select_ncrna_class(feature)
                 insdc_feature_type = bc.INSDC_FEATURE_NC_RNA
             elif(feature['type'] == bc.FEATURE_NC_RNA_REGION):
                 for dbxref in feature['db_xrefs']:
-                    if(dbxref.split(':')[0] == 'RFAM'):
+                    if(dbxref.split(':')[0] == bc.DB_XREF_RFAM):
                         rfam_id = dbxref.split(':')[1]
                         qualifiers['inference'] = f'profile:Rfam:{rfam_id}'
                 qualifiers[bc.INSDC_FEATURE_REGULATORY_CLASS] = select_regulatory_class(feature)
