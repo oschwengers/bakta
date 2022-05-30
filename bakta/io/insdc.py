@@ -150,10 +150,9 @@ def write_insdc(genome: dict, features:Sequence[dict], genbank_output_path: Path
                     inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIREF}:{pscc_subject_id}')
                 qualifiers['inference'] = inference
                 if(cfg.compliant):
-                    for note in qualifiers['note']:  # move EC numbers from note to EC_number
-                        if(bc.DB_XREF_EC in note):
-                            qualifiers['EC_number'] = note.replace('EC:', '')
-                    qualifiers['note'] = [note for note in qualifiers['note'] if bc.DB_XREF_EC not in note]
+                    qualifiers['note'], ec_number = extract_ec_from_notes_insdc(qualifiers, 'note')
+                    if(ec_number is not None):
+                            qualifiers['EC_number'] = ec_number
                 if('exception' in feature):
                     ex = feature['exception']
                     pos = f"{ex['start']}..{ex['stop']}"
@@ -337,3 +336,14 @@ def revise_dbxref_insdc(dbxrefs: Sequence[str]) -> Tuple[Sequence[str], Sequence
         else:
             invalid_dbxrefs.append(dbxref)
     return valid_dbxrefs, invalid_dbxrefs
+
+
+def extract_ec_from_notes_insdc(qualifiers: dict, note_key: str):
+    note_tmp = []
+    ec_number = None
+    for note in qualifiers[note_key]:  # move EC numbers from note to EC_number qualifier
+        if(note.split(':')[0] == bc.DB_XREF_EC):
+            ec_number = note.replace('EC:', '')
+        else:
+            note_tmp.append(note)
+    return note_tmp, ec_number

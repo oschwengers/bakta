@@ -207,10 +207,9 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         annotations['Parent'] = gene_id
                         annotations['inference'] = 'ab initio prediction:Prodigal:2.6'
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
-                        for note in annotations['Note']:
-                            if(bc.DB_XREF_EC in note):
-                                annotations['ec_number'] = note.replace('EC:', '')
-                        annotations['Note'] = [note for note in annotations['Note'] if bc.DB_XREF_EC not in note]
+                        annotations['Note'], ec_number = insdc.extract_ec_from_notes_insdc(annotations, 'Note')
+                        if(ec_number is not None):
+                            annotations['ec_number'] = ec_number
                         gene_annotations = encode_annotations(gene_annotations)
                         fh.write(f"{feat['contig']}\tProdigal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     if('exception' in feat):
@@ -248,10 +247,9 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         annotations['Parent'] = gene_id
                         annotations['inference'] = 'ab initio prediction:Bakta'
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
-                        for note in annotations['Note']:
-                            if(bc.DB_XREF_EC in note):
-                                annotations['ec_number'] = note.replace('EC:', '')
-                        annotations['Note'] = [note for note in annotations['Note'] if bc.DB_XREF_EC not in note]
+                        annotations['Note'], ec_number = insdc.extract_ec_from_notes_insdc(annotations, 'Note')
+                        if(ec_number is not None):
+                            annotations['ec_number'] = ec_number
                         gene_annotations = encode_annotations(gene_annotations)
                         fh.write(f"{feat['contig']}\tBakta\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
