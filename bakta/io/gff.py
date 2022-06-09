@@ -270,6 +270,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                     }
                     if(cfg.compliant):
                         annotations['Note'] = feat['product']
+                        annotations['inference'] = 'similar to DNA sequence'
                     else:
                         annotations['product'] = feat['product']
                     annotations = encode_annotations(annotations)
@@ -282,6 +283,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                     }
                     if(cfg.compliant):
                         annotations['Note'] = feat['product']
+                        annotations['inference'] = 'similar to DNA sequence'
                     else:
                         annotations['product'] = feat['product']
                     annotations = encode_annotations(annotations)
@@ -294,6 +296,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                     }
                     if(cfg.compliant):
                         annotations['Note'] = feat['product']
+                        annotations['inference'] = 'similar to DNA sequence'
                     else:
                         annotations['product'] = feat['product']
                     annotations = encode_annotations(annotations)
