@@ -178,6 +178,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                     feat_type = so.SO_CRISPR.name
                     if(cfg.compliant):
                         feat_type = bc.INSDC_FEATURE_REPEAT_REGION
+                        annotations['inference'] = 'COORDINATES:alignment:pilercr:1.02'
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         annotations[bc.INSDC_FEATURE_REPEAT_FAMILY] = 'CRISPR'
                         annotations[bc.INSDC_FEATURE_REPEAT_TYPE] = 'direct'
