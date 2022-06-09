@@ -125,31 +125,12 @@ rm uniref100.xml.gz uniparc_active.fasta.gz
 
 
 ############################################################################
-# Integrate NCBI nonredundant protein identifiers and PCLA cluster information
-# - download bacterial RefSeq nonredundant proteins and cluster files
-# - annotate UPSs with NCBI nrp IDs (WP_*)
-# - annotate IPSs/PSCs with NCBI gene names (WP_* -> hash -> UniRef100 -> UniRef90 -> PSC)
-############################################################################
-printf "\n10/17: download RefSeq nonredundant proteins and clusters ...\n"
-wget https://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_proteins.txt
-wget https://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_clusters.txt
-for i in {1..1473}; do
-    wget https://ftp.ncbi.nlm.nih.gov/refseq/release/bacteria/bacteria.nonredundant_protein.${i}.protein.faa.gz
-    pigz -dc bacteria.nonredundant_protein.${i}.protein.faa.gz | seqtk seq -CU >> refseq-bacteria-nrp.trimmed.faa
-    rm bacteria.nonredundant_protein.${i}.protein.faa.gz
-done
-printf "\n10/17: annotate IPSs and PSCs ...\n"
-python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-nrp.py --db bakta.db --nrp refseq-bacteria-nrp.trimmed.faa --pcla-proteins PCLA_proteins.txt --pcla-clusters PCLA_clusters.txt
-rm refseq-bacteria-nrp.trimmed.faa PCLA_proteins.txt PCLA_clusters.txt
-
-
-############################################################################
 # Integrate NCBI COG db
 # - download NCBI COG db
 # - align UniRef90 proteins to COG protein sequences
 # - annotate PSCs with COG info
 ############################################################################
-printf "\n11/17: download COG db ...\n"
+printf "\n10/17: download COG db ...\n"
 wget https://ftp.ncbi.nih.gov/pub/COG/COG2020/data/cog-20.def.tab  # COG IDs and functional class
 wget https://ftp.ncbi.nih.gov/pub/COG/COG2020/data/cog-20.cog.csv # Mapping GenBank IDs -> COG IDs
 for i in $(seq -f "%04g" 1 5950)
@@ -158,13 +139,32 @@ do
     pigz -dc COG${i}.fa.gz | seqtk seq -CU >> cog.faa
     rm COG${i}.fa.gz
 done
-printf "\n11/17: annotate PSCs ...\n"
+printf "\n10/17: annotate PSCs ...\n"
 diamond makedb --in cog.faa --db cog.dmnd
 nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db cog.dmnd --block 1000000 --id 90 --qcov 80 --scov 80 --out diamond.cog.psc.tsv
 python3 ${BAKTA_DB_SCRIPTS}/annotate-cog.py --db bakta.db --alignments diamond.cog.psc.tsv --cog-ids cog-20.def.tab --gi-cog-mapping cog-20.cog.csv
 nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in sorf.faa --db cog.dmnd --block 1000000 --id 90 --qcov 90 --scov 90 --out diamond.cog.sorf.tsv
 python3 ${BAKTA_DB_SCRIPTS}/annotate-cog.py --db bakta.db --alignments diamond.cog.sorf.tsv --cog-ids cog-20.def.tab --gi-cog-mapping cog-20.cog.csv
 rm cognames2003-2015.tab cog2003-2015.csv prot2003-2015.fa.gz diamond.cog.tsv cog.*
+
+
+############################################################################
+# Integrate NCBI nonredundant protein identifiers and PCLA cluster information
+# - download bacterial RefSeq nonredundant proteins and cluster files
+# - annotate UPSs with NCBI nrp IDs (WP_*)
+# - annotate IPSs/PSCs with NCBI gene names (WP_* -> hash -> UniRef100 -> UniRef90 -> PSC)
+############################################################################
+printf "\n11/17: download RefSeq nonredundant proteins and clusters ...\n"
+wget https://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_proteins.txt
+wget https://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_clusters.txt
+for i in {1..1473}; do
+    wget https://ftp.ncbi.nlm.nih.gov/refseq/release/bacteria/bacteria.nonredundant_protein.${i}.protein.faa.gz
+    pigz -dc bacteria.nonredundant_protein.${i}.protein.faa.gz | seqtk seq -CU >> refseq-bacteria-nrp.trimmed.faa
+    rm bacteria.nonredundant_protein.${i}.protein.faa.gz
+done
+printf "\n11/17: annotate IPSs and PSCs ...\n"
+python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-nrp.py --db bakta.db --nrp refseq-bacteria-nrp.trimmed.faa --pcla-proteins PCLA_proteins.txt --pcla-clusters PCLA_clusters.txt
+rm refseq-bacteria-nrp.trimmed.faa PCLA_proteins.txt PCLA_clusters.txt
 
 
 ############################################################################
