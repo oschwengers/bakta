@@ -37,23 +37,26 @@ log_psc = logging.getLogger('PSC')
 
 
 print('import PCLA proteins and cluster information...')
-pcla_cluster_genes = {}
+pcla_cluster_annotations = {}
 with pcla_clusters_path.open() as fh:
     for line in fh:
         (id_, id, product, proteins, organisms, conserved_in_organism, conserved_in_taxid, gene, hmm) = line.split('\t')
         gene = gene.strip()
-        if(gene != ''):
-            pcla_cluster_genes[id] = gene
+        product = product.strip()
+        if(gene == ''):
+            gene = None
+        if(product == ''):
+            product = None
+        pcla_cluster_annotations[id] = (gene, product)
 
-nrp_genes = {}
+nrp_annotations = {}
 with pcla_proteins_path.open() as fh:
     for line in fh:
         (cluster_id, id, definition, organism, taxid, length) = line.split('\t')
-        gene = pcla_cluster_genes.get(cluster_id, None)
-        if(gene is not None):
-            nrp_genes[id] = gene
-del pcla_cluster_genes
-print(f'\tfound {len(nrp_genes)} NRP / gene annotations')
+        if(cluster_id in pcla_cluster_annotations):
+            nrp_annotations[id] = pcla_cluster_annotations[cluster_id]
+del pcla_cluster_annotations
+print(f'\tfound {len(nrp_annotations)} NRP / gene annotations')
 
 
 print('lookup UPS by NRP hash & update WP_* / gene annotations...')
@@ -61,8 +64,8 @@ nrps_processed = 0
 nrps_not_found = 0
 nrps_wo_ips = 0
 ups_updated = 0
-ips_updated = 0
-psc_updated = 0
+psc_updated_gene = 0
+psc_updated_product = 0
 ncbi_nrp_path = Path(args.nrp).resolve()
 with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA page_size = 4096;')
@@ -87,23 +90,23 @@ with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='
             if(rec_ups['uniref100_id']):
                 rec_ips = conn.execute('SELECT * FROM ips WHERE uniref100_id=?', (rec_ups['uniref100_id'],)).fetchone()
                 if(rec_ips is not None):
-                    gene = nrp_genes.get(nrp_id, None)
+                    (gene, product) = nrp_annotations.get(nrp_id, (None, None))
                     log_ups.debug(
-                        'ncbi-nrp-id=%s, hash=%s, uniref100=%s, uniref90=%s, gene=%s',
-                        nrp_id, seq_hash.hexdigest(), rec_ips['uniref100_id'], rec_ips['uniref90_id'], gene
+                        'ncbi-nrp-id=%s, hash=%s, uniref100=%s, uniref90=%s, gene=%s, product=%s',
+                        nrp_id, seq_hash.hexdigest(), rec_ips['uniref100_id'], rec_ips['uniref90_id'], gene, product
                     )
                     conn.execute('UPDATE ups SET ncbi_nrp_id=? WHERE hash=?', (nrp_id[3:], seq_hash_digest))  # annotate IPS with NCBI nrp id (WP_*)
                     log_ups.info('UPDATE ups SET ncbi_nrp_id=%s WHERE hash=%s', nrp_id[3:], seq_hash_hexdigest)
                     ups_updated += 1
-                    if(gene is not None):  # annotate IPS or PSC with NCBI PCLA cluster's gene if present
-                        if(rec_ips['uniref90_id'] is None):
-                            conn.execute('UPDATE ips SET gene=? WHERE uniref100_id=?', (gene, rec_ups['uniref100_id']))
-                            log_ips.info('UPDATE ips SET gene=%s WHERE uniref100_id=%s', gene, rec_ups['uniref100_id'])
-                            ips_updated += 1
-                        else:
+                    if(rec_ips['uniref90_id'] is not None):
+                        if(gene is not None):
                             conn.execute('UPDATE psc SET gene=? WHERE uniref90_id=?', (gene, rec_ips['uniref90_id']))
                             log_psc.info('UPDATE psc SET gene=%s WHERE uniref90_id=%s', gene, rec_ips['uniref90_id'])
-                            psc_updated += 1
+                            psc_updated_gene += 1
+                        if(product is not None):
+                            conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (product, rec_ips['uniref90_id']))
+                            log_psc.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', product, rec_ips['uniref90_id'])
+                            psc_updated_product += 1
                 else:
                     nrps_wo_ips += 1
             else:
@@ -121,11 +124,11 @@ print(f'NRPs processed: {nrps_processed}')
 log_ups.debug('summary: # UPS with annotated NRP IDs=%i', ups_updated)
 print(f'UPSs with annotated WP_* id: {ups_updated}')
 
-log_ips.debug('summary: # IPS with annotated genes=%i', ips_updated)
-print(f'IPSs with annotated gene names: {ips_updated}')
+log_psc.debug('summary: # PSC with annotated genes=%i', psc_updated_gene)
+print(f'PSCs with annotated gene names: {psc_updated_gene}')
 
-log_psc.debug('summary: # PSC with annotated genes=%i', psc_updated)
-print(f'PSCs with annotated gene names: {psc_updated}')
+log_psc.debug('summary: # PSC with annotated products=%i', psc_updated_product)
+print(f'PSCs with annotated gene products: {psc_updated_product}')
 
 print(f'NRPs not found: {nrps_not_found}')
 print(f'NRPs w/o IPS: {nrps_wo_ips}')
