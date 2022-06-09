@@ -15,7 +15,6 @@ log = logging.getLogger('CRISPR')
 
 def predict_crispr(genome: dict, contigs_path: Path):
     """Predict CRISPR arrays with PILER-CR."""
-    # SO:0001459 <- Sequence Ontology
 
     output_path = cfg.tmp_path.joinpath('crispr.txt')
     cmd = [

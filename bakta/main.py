@@ -1,10 +1,6 @@
 import atexit
-import argparse
 import logging
-from math import remainder
-import os
 import sys
-import platform as pf
 
 from datetime import datetime
 from pathlib import Path

@@ -1,12 +1,10 @@
 import logging
 import sys
 import subprocess as sp
-from collections import OrderedDict
 
 from typing import Sequence, Tuple
 from pathlib import Path
 
-import bakta
 import bakta.constants as bc
 import bakta.config as cfg
 

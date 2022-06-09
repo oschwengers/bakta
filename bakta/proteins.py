@@ -4,10 +4,8 @@ import multiprocessing as mp
 import os
 import sys
 
-
 from typing import Sequence
 from pathlib import Path
-
 
 import bakta
 import bakta.constants as bc

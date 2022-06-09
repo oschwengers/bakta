@@ -7,7 +7,6 @@ from typing import Dict, Sequence
 
 import bakta.config as cfg
 import bakta.constants as bc
-import bakta.io.fasta as fasta
 
 
 log = logging.getLogger('ORF')
