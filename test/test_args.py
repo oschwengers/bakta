@@ -434,6 +434,27 @@ def test_genus_failiing(parameters, tmpdir):
 @pytest.mark.parametrize(
     'parameters',
     [
+        (['--species', 'sp.']),
+        (['--species', 'sp. nov.']),
+        (['--species', 'a']),
+        (['--species', '1']),
+        (['--species', 'az_123'])
+    ]
+)
+def test_species_ok(parameters, tmpdir):
+    # test species prefix arguments
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        parameters +
+        SKIP_PARAMETERS +
+        ['test/data/NC_002127.1.fna']
+    )
+    assert proc.returncode == 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
         (['--species']),  # not provided
         (['--species', '']),  # empty
         (['--species', ' ']),  # whitespace only
@@ -449,6 +470,26 @@ def test_species_failiing(parameters, tmpdir):
         ['test/data/NC_002127.1.fna']
     )
     assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--strain', 'a']),
+        (['--strain', '1']),
+        (['--strain', 'az. 123-123_234/123 = 123']),  # full blown crazy strain designation
+        (['--strain', "0123456789'azAZ/.,#+* -_:(1)[]"])  # all RefSeq bacterial strain characters
+    ]
+)
+def test_strain_ok(parameters, tmpdir):
+    # test strain prefix arguments
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        parameters +
+        SKIP_PARAMETERS +
+        ['test/data/NC_002127.1.fna']
+    )
+    assert proc.returncode == 0
 
 
 @pytest.mark.parametrize(
