@@ -484,7 +484,7 @@ def revise_special_cases_annotated(genome: dict, cdss: Sequence[dict]):
 
 def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
     """
-    Conduct homology search of hypothetical CDSs against PCS db for pseudogene detection.
+    Conduct homology search of hypothetical CDSs against the PSC db to find pseudogene candidates.
     """
     diamond_output_path: Path = cfg.tmp_path.joinpath('diamond.pseudo.tsv')
     diamond_db_path: Path = cfg.db_path.joinpath('psc.dmnd')
@@ -562,7 +562,8 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
 
 def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: dict) -> Sequence[dict]:
     """
-    Conduct homology search of hypothetical CDSs against PCS db for pseudogenes with a frameshift.
+    Conduct BLASTX search of extended pseudogene CDS candidates against matching PCS db for pseudogenes with a frameshift.
+    Search for possible pseudogenization causes in the alignment and determine them.
     """
     psc_faa_path: Path = cfg.tmp_path.joinpath('psc.pseudogene.candidates.faa')
     psc_dmnd_path: Path = cfg.tmp_path.joinpath('psc.pseudogene.candidates.dmnd')
@@ -655,7 +656,7 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                         )
                         continue
 
-                    cause: Dict[Union[str, int], Union[Set[int], bool]] = parse_blastx_alignment(alignment,
+                    cause: Dict[Union[str, int], Union[Set[int], bool]] = pseudogenization_cause(alignment,
                                                                                                  ref_alignment,
                                                                                                  alignment_start,
                                                                                                  alignment_stop,
@@ -718,6 +719,9 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
 
 
 def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSET) -> Tuple[dict, bool, int, int]:
+    """
+    Elongate the given CDS sequence with the offset in upstream and downstream direction, if possible.
+    """
     tmp_cds: dict = cds.copy()
     edge: bool = False
     left_fill: int = 0
@@ -747,6 +751,10 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
 
 
 def is_unprocessed(uniref90_by_hexdigest: Dict[str, str], aa_identifier: str, cluster: str) -> bool:
+    """
+    Check if the pseudogene is 'unprocessed' (the pseudogene has arisen from a copy of the parent gene by duplication
+    followed by accumulation of random mutation).
+    """
     excluded_uniref90: Set[str] = set()
     for hexdigest, uniref90 in uniref90_by_hexdigest.items():
         if hexdigest != aa_identifier:
@@ -754,8 +762,11 @@ def is_unprocessed(uniref90_by_hexdigest: Dict[str, str], aa_identifier: str, cl
     return cluster in excluded_uniref90
 
 
-def parse_blastx_alignment(alignment: str, ref_alignment: str, qstart: int, qstop: int, extended_positions: dict,
+def pseudogenization_cause(alignment: str, ref_alignment: str, qstart: int, qstop: int, extended_positions: dict,
                            cds: dict) -> Dict[Union[str, int], Union[Set[int], bool]]:
+    """
+    Search for pseudogenization causes in the given alignments.
+    """
     cause: Dict[Union[str, int], Union[Set[int], bool]] = {'insertion': set(),
                                                            'deletion': set(),
                                                            'start': set(),
@@ -788,6 +799,9 @@ def parse_blastx_alignment(alignment: str, ref_alignment: str, qstart: int, qsto
 
 def compare_alignments(cause: Dict[Union[str, int], Union[Set[int], bool]], alignment: str, ref_alignment: str,
                        cds: dict, direction: int) -> Dict[Union[str, int], Union[Set[int], bool]]:
+    """
+    Compare the alignment and reference alignment to find the causes of pseudogenization.
+    """
     # based on: https://github.com/nigyta/dfast_core/blob/1c366a017b07f0390b0da57fe8a3906b0d4a5f0e/dfc/components/PseudoGeneDetection.py#L173
     position: int = cds['start']
     for char, ref_char in zip(alignment, ref_alignment):
@@ -836,6 +850,9 @@ def compare_alignments(cause: Dict[Union[str, int], Union[Set[int], bool]], alig
 def upstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
                         alignment: str, ref_alignment: str, qstart: int, extended_positions: dict,
                         cds: dict, elongated_edge: bool) -> Dict[Union[str, int], Union[Set[int], bool]]:
+    """
+    Search for pseudogenization causes in the elongated upstream sequence of the CDS.
+    """
     if cds['start'] - (extended_positions['start'] + qstart - 1) > 0 or elongated_edge:  # elongated alignment 5'
         up_length: int = ceil((cds['start'] - (extended_positions['start'] + qstart - 1)) / 3)
         cause = compare_alignments(cause, alignment[:up_length], ref_alignment[:up_length], cds, direction=5)
@@ -873,13 +890,20 @@ def upstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
 def downstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
                           alignment: str, ref_alignment: str, qstop: int, extended_positions: dict, cds: dict,
                           elongated_edge: bool) -> Dict[Union[str, int], Union[Set[int], bool]]:
-    # TODO exclude upstream part if 5' elongated --> distinct between start and stop cause
+    """
+    Search for pseudogenization causes in the CDS itself and the elongated downstream sequence.
+    """
+    # TODO exclude upstream part if 5' elongated --> distinct between 5' and 3' cause
     if extended_positions['start'] + qstop - 1 > cds['stop'] or elongated_edge:  # elongated alignment 3'
         cause = compare_alignments(cause, alignment, ref_alignment, cds, direction=3)
     return cause
 
 
 def convert_dict_set_values_to_list(tmp_dict: dict) -> dict:
+    """
+    Convert the positions of pseudogenization causes stored in a set to a list. Needed for cause export.
+    dict[str, set[int, ...]] --> dict[str, list[int, ...]]
+    """
     for key, value in tmp_dict.items():
         if type(value) == set:
             tmp_dict[key] = sorted(list(value))
