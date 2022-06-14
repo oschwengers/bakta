@@ -580,8 +580,14 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
     with pseudo_fna_path.open(mode='w') as fh:
         for cds in candidates:
             contig: dict = contigs[cds['contig']]
-            tmp_cds, edge = get_elongated_cds(cds, contig)
-            fh.write(f">{orf.get_orf_key(cds)}\n{bu.extract_feature_sequence(tmp_cds, contig)}\n")
+            tmp_cds, edge, left, right = get_elongated_cds(cds, contig)
+            seq: str = bu.extract_feature_sequence(tmp_cds, contig)
+            # padding cannot be used atm because it conflicts with position counters
+            # if left:
+            #     seq = ('N' * left) + seq
+            # if right:
+            #     seq = seq + ('N' * left)
+            fh.write(f">{orf.get_orf_key(cds)}\n{seq}\n")
             candidates_extended_positions[orf.get_orf_key(cds)] = {'start': tmp_cds['start'],
                                                                    'stop': tmp_cds['stop'],
                                                                    'edge': edge,
@@ -657,9 +663,8 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                                                                                                  cds)
 
                     if cause[5] or cause[3]:
-                        cds['pseudogene'] = dict()
-                        cds['pseudogene']['cause'] = convert_dict_set_values_to_list(cause)
-                        cds['pseudogene']['pseudo-candidate'] = cds['pseudo-candidate']
+                        cds['pseudogene'] = {'cause': convert_dict_set_values_to_list(cause),
+                                             'pseudo-candidate': cds['pseudo-candidate']}
 
                         if is_unprocessed(uniref90_by_hexdigest, aa_identifier, cds['pseudo-candidate'][DB_PSC_COL_UNIREF90]):
                             cds['pseudogene']['qualifier'] = bc.PSEUDOGENE_UNPROCESSED
@@ -672,8 +677,7 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                             tmp_type.append('Internal START codon')
                         if cause[3]:
                             tmp_type.append('Internal STOP codon')
-                        pseudogene_type: str = ', '.join(tmp_type)
-                        cds['pseudogene']['type'] = pseudogene_type
+                        cds['pseudogene']['type'] = ', '.join(tmp_type)
 
                         tmp_cause: List[str] = []
                         if cause['insertion']:
@@ -688,22 +692,16 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                             tmp_cause.append('Translation exception: Selenocysteine around ' + ', '.join(map(str, cause['selenocysteine'])) + '.')
                         if cause['pyrolysine']:
                             tmp_cause.append('Translation exception: Pyrolysin around ' + ', '.join(map(str, cause['pyrolysine'])) + '.')
-                        pseudogene_cause: str = ' '.join(tmp_cause)
-                        cds['pseudogene']['note'] = pseudogene_cause
+                        cds['pseudogene']['note'] = ' '.join(tmp_cause)  # pseudogene cause
 
-                    elif cause['selenocysteine'] or cause['pyrolysine']:
-                        # TODO handle translation exception, correct annotation;
-                        #  ignore translation exceptions if a pseudogene cause is found
+                    elif cause['selenocysteine'] or cause['pyrolysine'] and \
+                            not (cause['insertion'] or cause['deletion'] or cause['start'] or cause['stop']):
+                        # TODO handle translation exception, correct annotation
                         if cause['selenocysteine']:
                             pass
                         elif cause['pyrolysine']:
                             pass
                     else:  # complete AA insertion
-                        # print('No cause found:')
-                        # le = ceil((cds['start'] - (extended_positions['start'] + alignment_start - 1)) / 3)
-                        # print(f"{alignment}\n{hit.find('Hit_hsps/Hsp/Hsp_midline').text}\n{ref_alignment}\n{' ' * le}{cds['aa']}\n"
-                        #       f"{alignment[:le]}\n{cds['rbs_motif']}", cds['strand'], cds['start'], cds['stop'],
-                        #       alignment[le:le+2], ref_alignment[le:le+2], cds['aa'][:2], '\n')
                         log.info(
                             'No pseudogene: contig=%s, start=%i, stop=%i, strand=%s',
                             cds['contig'], cds['start'], cds['stop'], cds['strand']
@@ -719,9 +717,11 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
     return pseudogenes
 
 
-def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSET) -> Tuple[dict, bool]:
+def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSET) -> Tuple[dict, bool, int, int]:
     tmp_cds: dict = cds.copy()
     edge: bool = False
+    left_fill: int = 0
+    right_fill: int = 0
 
     if contig['topology'] == 'circular' and tmp_cds['start'] - offset < 0:
         tmp_cds['start'] = len(contig['sequence']) - (offset - tmp_cds['start'])
@@ -729,6 +729,7 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
         edge = True
     elif tmp_cds['start'] - offset < 0:
         tmp_cds['start'] = 0
+        left_fill = (tmp_cds['start'] - offset) * -1
     else:
         tmp_cds['start'] = tmp_cds['start'] - offset
 
@@ -738,10 +739,11 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
         edge = True
     elif tmp_cds['stop'] + offset > len(contig['sequence']):
         tmp_cds['stop'] = len(contig['sequence'])
+        right_fill = tmp_cds['stop'] + offset - len(contig['sequence'])
     else:
         tmp_cds['stop'] = tmp_cds['stop'] + offset
 
-    return tmp_cds, edge
+    return tmp_cds, edge, left_fill, right_fill
 
 
 def is_unprocessed(uniref90_by_hexdigest: Dict[str, str], aa_identifier: str, cluster: str) -> bool:
@@ -871,7 +873,7 @@ def upstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
 def downstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
                           alignment: str, ref_alignment: str, qstop: int, extended_positions: dict, cds: dict,
                           elongated_edge: bool) -> Dict[Union[str, int], Union[Set[int], bool]]:
-    # TODO maybe exclude upstream part if 5' elongated
+    # TODO exclude upstream part if 5' elongated --> distinct between start and stop cause
     if extended_positions['start'] + qstop - 1 > cds['stop'] or elongated_edge:  # elongated alignment 3'
         cause = compare_alignments(cause, alignment, ref_alignment, cds, direction=3)
     return cause
