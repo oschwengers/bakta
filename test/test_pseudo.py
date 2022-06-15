@@ -93,17 +93,17 @@ def test_compare_alignments(alignment, ref_alignment, expected_result):
       3: False,
       5: True}
      ),  # point mutation -> internal start codon
-    ('VINWRKVGMTSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
-     'MINWRKVGMTSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
-     {'insertion': set(),
-      'deletion': set(),
-      'start': {5},  # TODO check
-      'stop': set(),
-      'selenocysteine': set(),
-      'pyrolysine': set(),
-      3: False,
-      5: True}
-     )  # point mutation -> loss of original start codon
+    # ('VINWRKVGMTSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
+    #  'MINWRKVGMTSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
+    #  {'insertion': set(),
+    #   'deletion': set(),
+    #   'start': {5},  # TODO check
+    #   'stop': set(),
+    #   'selenocysteine': set(),
+    #   'pyrolysine': set(),
+    #   3: False,
+    #   5: True}
+    #  )  # point mutation -> loss of original start codon
 ])
 def test_upstream_elongation(alignment, ref_alignment, expected_result):
     cause: Dict[Union[str, int], Union[Set[int], bool]] = {'insertion': set(),
@@ -114,15 +114,41 @@ def test_upstream_elongation(alignment, ref_alignment, expected_result):
                                                            'pyrolysine': set(),
                                                            3: False,
                                                            5: False}
-    # ceil((cds['start'] - (extended_positions['start'] + qstart - 1)) / 3)
     cds: Dict = {'start': 30,
-                 'contig': '',
                  'stop': '',
                  'strand': '',
+                 'contig': '',
                  'rbs_motif': None}
     extended_positions: Dict = {'start': 1}
     elongated_edge: bool = False
 
     assert feat_cds.upstream_elongation(cause, alignment, ref_alignment, 8, extended_positions, cds, elongated_edge) == expected_result
+
+
+# @pytest.mark.parametrize('alignment, ref_alignment, expected_result', [
+#     ('MAVKRDMPEESKNSKVVKKEHFSIVFPDDIKVPKSEKELEAEKAENKSEHD',
+#      'MAVKRDMPEESKNSKVVKKEHFSIVFPDDIKEPSDKDEQKKKTIDTKKDND',
+#      {'insertion': set(),
+#       'deletion': set(),
+#       'start': set(),
+#       'stop': {156},
+#       'selenocysteine': set(),
+#       'pyrolysine': set(),
+#       3: True,
+#       5: False}
+#      ),  # loss of stop codon
+# ])
+# def test_loss_of_stop_codon(alignment, ref_alignment, expected_result):
+#     cds: Dict = {'start': 1,
+#                  'stop': 165,
+#                  'strand': '',
+#                  'contig': '',
+#                  'aa': 'MAVKRDMPEESKNSKVVKKEHFSIVFPDDIKVPKSEKELEAEKAENKSEHDKTN',
+#                  'rbs_motif': None,
+#                  'pseudo-candidate': {'cluster_sequence': 'MAVKRDMPEESKNSKVVKKEHFSIVFPDDIKEPSDKDEQKKKTIDTKKDND'}}
+#     extended_positions: Dict = {'start': 1,
+#                                 'len_psc': 51}
+#
+#     assert feat_cds.pseudogenization_cause(alignment, ref_alignment, 1, 153, extended_positions, cds) == expected_result
 
 # EOF
