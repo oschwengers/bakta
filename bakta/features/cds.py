@@ -491,7 +491,7 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
     cds_faa_path: Path = cfg.tmp_path.joinpath('cds.pseudo_candidates.faa')
     orf.write_internal_faa(hypotheticals, cds_faa_path)
     # TODO allow for several top max-target-seqs, best hit might be a hit of a pseudogene in the database,
-    #  search hits with longer gene that might have a worse subject-coverage to get a "real" gene
+    #  search hits with longer psc that might have a worse subject-coverage to get the "real" gene
     cmd = [
         'diamond',
         'blastp',
@@ -649,7 +649,7 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                     alignment_stop: int = int(hit.find('Hit_hsps/Hsp/Hsp_query-to').text)
                     alignment_length: int = int(hit.find('Hit_hsps/Hsp/Hsp_align-len').text)
 
-                    if alignment_length <= len(cds['aa']):  # skip non-extended genes, complete match or aa deletions
+                    if alignment_length == len(cds['aa']):  # skip non-extended genes (complete match)
                         log.info(
                             'No pseudogene: contig=%s, start=%i, stop=%i, strand=%s',
                             cds['contig'], cds['start'], cds['stop'], cds['strand']
@@ -689,20 +689,24 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                             tmp_cause.append('Point mutation around ' + ', '.join(map(str, cause['start'])) + '.')
                         if cause['stop']:
                             tmp_cause.append('Nonsense mutation around ' + ', '.join(map(str, cause['stop'])) + '.')
-                        if cause['selenocysteine']:
+                        if cause['selenocysteine']:  # only for pseudogenes with translation exception + other cause
                             tmp_cause.append('Translation exception: Selenocysteine around ' + ', '.join(map(str, cause['selenocysteine'])) + '.')
-                        if cause['pyrolysine']:
+                        if cause['pyrolysine']:  # only for pseudogenes with translation exception + other cause
                             tmp_cause.append('Translation exception: Pyrolysin around ' + ', '.join(map(str, cause['pyrolysine'])) + '.')
                         cds['pseudogene']['note'] = ' '.join(tmp_cause)  # pseudogene cause
 
-                    elif cause['selenocysteine'] or cause['pyrolysine'] and \
-                            not (cause['insertion'] or cause['deletion'] or cause['start'] or cause['stop']):
+                        log.info(
+                            'Pseudogene: contig=%s, start=%i, stop=%i, strand=%s, casue=%s',
+                            cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['pseudogene']['note']
+                        )
+
+                    elif cause['selenocysteine'] or cause['pyrolysine']:
                         # TODO handle translation exception, correct annotation
                         if cause['selenocysteine']:
                             pass
                         elif cause['pyrolysine']:
                             pass
-                    else:  # complete AA insertion
+                    else:  # skip non-extended genes (complete aa insertion or deletion)
                         log.info(
                             'No pseudogene: contig=%s, start=%i, stop=%i, strand=%s',
                             cds['contig'], cds['start'], cds['stop'], cds['strand']
@@ -778,22 +782,25 @@ def pseudogenization_cause(alignment: str, ref_alignment: str, qstart: int, qsto
 
     elongated_edge: bool = False
     if extended_positions.get('edge', False):
-        # TODO edge cases: extended_positions['edge'], filters for up/downstream below do not work for edge cases;
+        # TODO edge cases: extended_positions['edge']
+        #  filters for up/downstream below do not work for edge cases
         #  introduce extra flag for downstream analysis:
-        #  if cds['start'] - (extended_positions['start'] + qstart - 1) > 0 or elongated_edge
+        #  e.g. if cds['start'] - (extended_positions['start'] + qstart - 1) > 0 or elongated_edge
         # elongated_edge: bool = True
-        return cause
+        pass
+
+    # TODO
+    #  point mutation -> loss of stop codon
+    #  find sensible cutoff length for elongated cds['aa'] -> is pseudogene;
+    #  look at non-aligned ends (cds['pseudo-candidate']['cluster_sequence']) != len(ref_alignment)
+    # if len(cds['pseudo-candidate']['cluster_sequence']) == len(ref_alignment) < len(cds['aa']) and extended_positions['start'] + qstop - 1 + 3 < cds['stop']:
+    #     cause[3] = True
+    #     cause['stop'].add(cds['start'] + (len(ref_alignment) * 3) + 3 - 1)  # -1?
 
     cause = upstream_elongation(cause, alignment, ref_alignment, qstart, extended_positions, cds,
                                 elongated_edge=elongated_edge)
     cause = downstream_elongation(cause, alignment, ref_alignment, qstop, extended_positions, cds,
                                   elongated_edge=elongated_edge)
-
-    if not (cause[5] or cause[3]):  # skip non-pseudogenes with aa deletions
-        log.info(
-            'No pseudogene: contig=%s, start=%i, stop=%i, strand=%s',
-            cds['contig'], cds['start'], cds['stop'], cds['strand']
-        )
     return cause
 
 
@@ -868,16 +875,19 @@ def upstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
             else:  # do nothing since an RBS was predicted, protein iso-form
                 pass
 
-        # point mutation -> loss of original start codon
-        if alignment[0] != 'M' and ref_alignment[0] == 'M' and up_length != 0:
-            cause['start'].add(cds['start'] - (up_length * 3) - 1)
-            cause[5] = True
-            log.info(
-                'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, original start=%i',
-                cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + (up_length * 3)
-            )
-        else:  # PSC cluster does not start with fMet
-            pass
+        # TODO
+        #  point mutation -> loss of original start codon
+        #  case 1: start codon in the upstream region, cutoff length
+        #  case 2: internal start codon
+        # if alignment[0] != 'M' and ref_alignment[0] == 'M' and up_length != 0:
+        #     cause['start'].add(cds['start'] - (up_length * 3) - 1)
+        #     cause[5] = True
+        #     log.info(
+        #         'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, original start=%i',
+        #         cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + (up_length * 3)
+        #     )
+        # else:  # PSC cluster does not start with fMet
+        #     pass
 
         if (alignment[0] == 'M' and ref_alignment[0] == 'M' and up_length != 0) and \
                 (alignment[up_length+1] == 'M' and ref_alignment[up_length+1] == 'M') and cds['rbs_motif'] is None:
