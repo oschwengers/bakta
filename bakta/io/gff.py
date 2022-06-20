@@ -270,9 +270,9 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                     }
                     if(cfg.compliant):
                         annotations['Note'] = feat['product']
-                        annotations['inference'] = 'similar to DNA sequence'
                     else:
                         annotations['product'] = feat['product']
+                        annotations['inference'] = 'similar to DNA sequence'
                     annotations = encode_annotations(annotations)
                     feat_type = bc.INSDC_FEATURE_ORIGIN_REPLICATION if cfg.compliant else so.SO_ORIC.name
                     fh.write(f"{feat['contig']}\tBLAST+\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
@@ -283,9 +283,9 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                     }
                     if(cfg.compliant):
                         annotations['Note'] = feat['product']
-                        annotations['inference'] = 'similar to DNA sequence'
                     else:
                         annotations['product'] = feat['product']
+                        annotations['inference'] = 'similar to DNA sequence'
                     annotations = encode_annotations(annotations)
                     feat_type = bc.INSDC_FEATURE_ORIGIN_REPLICATION if cfg.compliant else so.SO_ORIC.name
                     fh.write(f"{feat['contig']}\tBLAST+\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
@@ -296,9 +296,9 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                     }
                     if(cfg.compliant):
                         annotations['Note'] = feat['product']
-                        annotations['inference'] = 'similar to DNA sequence'
                     else:
                         annotations['product'] = feat['product']
+                        annotations['inference'] = 'similar to DNA sequence'
                     annotations = encode_annotations(annotations)
                     feat_type = bc.INSDC_FEATURE_ORIGIN_TRANSFER if cfg.compliant else so.SO_ORIT.name
                     fh.write(f"{feat['contig']}\tBLAST+\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
