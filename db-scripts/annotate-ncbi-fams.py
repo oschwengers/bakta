@@ -28,6 +28,50 @@ logging.basicConfig(
 )
 log_psc = logging.getLogger('PSC')
 
+family_type_ranks = {
+    'exception': 77,
+    'equivalog': 70
+}
+
+print('parse NCBIfam HMMs...')
+hmms = {}
+with hmms_path.open() as fh:
+    for line in fh:
+        (
+            ncbi_accession, source_identifier, label, sequence_cutoff, domain_cutoff, hmm_length, family_type, for_structural_annotation, for_naming, for_AMRFinder, product_name, gene_symbol, ec_numbers, go_terms, pmids, taxonomic_range, taxonomic_range_name, taxonomic_rank_name, n_refseq_protein_hits, source, name_orig
+        ) = line.split('\t')
+        if(family_type in family_type_ranks.keys() and for_naming == 'Y'):  # only accept exception/equivalog HMMs eligible for naming proteins
+            hmm = {
+                'acc': ncbi_accession,
+                'gene': gene_symbol,
+                'type': family_type,
+                'product': product_name.strip()
+            }
+            if(ncbi_accession != '-'):
+                hmms[ncbi_accession] = hmm
+print(f'read {len(hmms)} HMMs')
+
+print('parse NCBIfam hits...')
+hit_per_psc = {}
+with hmm_result_path.open() as fh:
+    for line in fh:
+        if(line[0] != '#'):
+            (psc_id, _, hmm_name, hmm_id, evalue, bitscore, _) = re.split(r'\s+', line.strip(), maxsplit=6)
+            hit = {
+                'psc_id': psc_id,
+                'hmm_id': hmm_id,
+                'bitscore': float(bitscore)
+            }
+            if(psc_id not in hit_per_psc):
+                hit_per_psc[psc_id] = hit
+            else:
+                existing_hit = hit_per_psc[psc_id]
+                if(family_type_ranks[hit['type']] > family_type_ranks[existing_hit['type']]):  # give precedence to HMMs of higher ranking family types
+                    hit_per_psc[psc_id] = hit
+                elif(family_type_ranks[hit['type']] == family_type_ranks[existing_hit['type']]):
+                    if(hit['bitscore'] > existing_hit['bitscore']):
+                        hit_per_psc[psc_id] = hit
+print(f'read {len(hit_per_psc)} hits')
 
 psc_annotated = 0
 with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
@@ -39,44 +83,8 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA journal_mode = OFF')
     conn.execute('PRAGMA threads = 2;')
     conn.commit()
-
-    print('parse NCBIfam AMR HMMs...')
-    amr_hmms = {}
-    with hmms_path.open() as fh:
-        for line in fh:
-            (
-                hmm_accession, tc_1, tc_2, gene_symbol, length, hmm_description, scope, hmm_type, subtype, clazz, subclass, db_version, hierarchy_node
-            ) = line.split('\t')
-            hmm = {
-                'acc': hmm_accession,
-                'gene': gene_symbol,
-                'product': hmm_description.strip()
-            }
-            if(hmm_accession != '-'):
-                amr_hmms[hmm_accession] = hmm
-    print(f'read {len(amr_hmms)} HMMs')
-
-    print('parse NCBI AMR hits...')
-    hit_per_psc = {}
-    with hmm_result_path.open() as fh:
-        for line in fh:
-            if(line[0] != '#'):
-                (psc_id, _, hmm_name, hmm_id, evalue, bitscore, _) = re.split(r'\s+', line.strip(), maxsplit=6)
-                hit = {
-                    'psc_id': psc_id,
-                    'hmm_id': hmm_id,
-                    'bitscore': float(bitscore)
-                }
-                if(psc_id not in hit_per_psc):
-                    hit_per_psc[psc_id] = hit
-                else:
-                    existing_hit = hit_per_psc[psc_id]
-                    if(hit['bitscore'] > existing_hit['bitscore']):
-                        hit_per_psc[psc_id] = hit
-    print(f'read {len(hit_per_psc)} hits')
-
     for psc_id, hit in hit_per_psc.items():
-        hmm = amr_hmms.get(hit['hmm_id'], None)
+        hmm = hmms.get(hit['hmm_id'], None)
         if(hmm is not None):
             if(hmm['gene'] == ''):
                 conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (hmm['product'], psc_id))  # annotate PSC
@@ -89,5 +97,5 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
 
 print('\n')
 
-print(f'PSCs with annotated AMR gene / product: {psc_annotated}')
+print(f'PSCs with annotated gene / product: {psc_annotated}')
 log_psc.debug('summary: PSC annotated=%d', psc_annotated)

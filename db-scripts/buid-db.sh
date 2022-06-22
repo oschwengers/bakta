@@ -186,14 +186,18 @@ rm uniprot_sprot.xml.gz
 # - annotate PSCs
 ############################################################################
 printf "\n13/17: download NCBIfams HMM models...\n"
-wget https://ftp.ncbi.nlm.nih.gov/hmm/NCBIfam-AMRFinder/latest/NCBIfam-AMRFinder.LIB
-wget https://ftp.ncbi.nlm.nih.gov/hmm/NCBIfam-AMRFinder/latest/NCBIfam-AMRFinder.tsv
+wget https://ftp.ncbi.nlm.nih.gov/hmm/current/hmm_PGAP.LIB
+wget https://ftp.ncbi.nlm.nih.gov/hmm/current/hmm_PGAP.tsv
+grep -v "(Provisional)" hmm_PGAP.tsv > hmms.non-prov.tsv
+grep exception hmms.non-prov.tsv >> hmms.selected.tsv
+grep equivalog hmms.non-prov.tsv >> hmms.selected.tsv
+cut -f1 hmms.selected.tsv > hmms.ids.txt
+hmmfetch -f -o ncbifams hmm_PGAP.LIB hmms.ids.txt
+hmmpress ncbifams
 printf "\n13/17: annotate PSCs...\n"
-mv NCBIfam-AMRFinder.LIB ncbifam-amr
-hmmpress ncbifam-amr
-nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in psc.faa --db ncbifam-amr
-python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-fams.py --db bakta.db --hmms NCBIfam-AMRFinder.tsv --hmm-results hmmsearch.tblout
-rm  ncbifam-amr* NCBIfam-AMRFinder.tsv hmmsearch.tblout
+nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in psc.faa --db ncbifams
+python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-fams.py --db bakta.db --hmms hmms.selected.tsv --hmm-results hmmsearch.tblout
+rm ncbifams* hmms.* hmm_PGAP.* hmmsearch.tblout
 
 
 ############################################################################
