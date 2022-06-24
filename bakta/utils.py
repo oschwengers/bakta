@@ -98,7 +98,7 @@ def parse_arguments():
     arg_group_workflow.add_argument('--skip-ncrna-region', action='store_true', dest='skip_ncrna_region', help='Skip ncRNA region detection & annotation')
     arg_group_workflow.add_argument('--skip-crispr', action='store_true', dest='skip_crispr', help='Skip CRISPR array detection & annotation')
     arg_group_workflow.add_argument('--skip-cds', action='store_true', dest='skip_cds', help='Skip CDS detection & annotation')
-    arg_group_workflow.add_argument('--skip-pseudo', action='store_false', dest='skip_pseudo', help='Predict & annotate pseudo genes')
+    arg_group_workflow.add_argument('--skip-pseudo', action='store_true', dest='skip_pseudo', help='Skip pseudogene detection & annotation')
     arg_group_workflow.add_argument('--skip-sorf', action='store_true', dest='skip_sorf', help='Skip sORF detection & annotation')
     arg_group_workflow.add_argument('--skip-gap', action='store_true', dest='skip_gap', help='Skip gap detection & annotation')
     arg_group_workflow.add_argument('--skip-ori', action='store_true', dest='skip_ori', help='Skip oriC/oriT detection & annotation')

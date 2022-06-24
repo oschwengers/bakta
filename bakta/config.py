@@ -222,7 +222,7 @@ def setup(args):
     skip_cds = args.skip_cds
     log.info('skip-CDS=%s', skip_cds)
     skip_pseudo = args.skip_pseudo
-    log.info('predict-pseudo=%s', skip_pseudo)
+    log.info('skip-pseudo=%s', skip_pseudo)
     skip_sorf = args.skip_sorf
     log.info('skip-sORF=%s', skip_sorf)
     skip_gap = args.skip_gap

@@ -279,7 +279,7 @@ def main():
             log.debug('analyze hypotheticals')
             hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
             if(len(hypotheticals) > 0):
-                if(cfg.skip_pseudo):
+                if(not cfg.skip_pseudo):
                     print('predict & annotate pseudogenes...')
                     print('\thypothetical CDS:', len(hypotheticals))
                     pseudo_candidates = feat_cds.predict_pseudo_candidates(hypotheticals)
