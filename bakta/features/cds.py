@@ -663,48 +663,48 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                                                                                                  extended_positions,
                                                                                                  cds)
 
-                    if cause[5] or cause[3]:
-                        cds['pseudogene'] = {'cause': convert_dict_set_values_to_list(cause),
-                                             'pseudo-candidate': cds['pseudo-candidate']}
+                    if cause[bc.FEATURE_END_5_PRIME] or cause[bc.FEATURE_END_3_PRIME]:
+                        cds[bc.PSEUDOGENE] = {'cause': convert_dict_set_values_to_list(cause),
+                                              'pseudo-candidate': cds['pseudo-candidate']}
 
                         if is_unprocessed(uniref90_by_hexdigest, aa_identifier, cds['pseudo-candidate'][DB_PSC_COL_UNIREF90]):
-                            cds['pseudogene']['qualifier'] = bc.PSEUDOGENE_UNPROCESSED
+                            cds[bc.PSEUDOGENE]['qualifier'] = bc.PSEUDOGENE_UNPROCESSED
                             print(bc.PSEUDOGENE_UNPROCESSED)  # DEBUG
                         else:
-                            cds['pseudogene']['qualifier'] = bc.PSEUDOGENE_UNITARY
+                            cds[bc.PSEUDOGENE]['qualifier'] = bc.PSEUDOGENE_UNITARY
 
                         tmp_type: List[str] = []
-                        if cause[5]:
+                        if cause[bc.FEATURE_END_5_PRIME]:
                             tmp_type.append('Internal START codon')
-                        if cause[3]:
+                        if cause[bc.FEATURE_END_3_PRIME]:
                             tmp_type.append('Internal STOP codon')
-                        cds['pseudogene']['type'] = ', '.join(tmp_type)
+                        cds[bc.PSEUDOGENE]['type'] = ', '.join(tmp_type)
 
                         tmp_cause: List[str] = []
-                        if cause['insertion']:
-                            tmp_cause.append('Frameshift due to the insertion around ' + ', '.join(map(str, cause['insertion'])) + '.')
-                        if cause['deletion']:
-                            tmp_cause.append('Frameshift due to the deletion around ' + ', '.join(map(str, cause['deletion'])) + '.')
-                        if cause['start']:
-                            tmp_cause.append('Point mutation around ' + ', '.join(map(str, cause['start'])) + '.')
-                        if cause['stop']:
-                            tmp_cause.append('Nonsense mutation around ' + ', '.join(map(str, cause['stop'])) + '.')
-                        if cause['selenocysteine']:  # only for pseudogenes with translation exception + other cause
-                            tmp_cause.append('Translation exception: Selenocysteine around ' + ', '.join(map(str, cause['selenocysteine'])) + '.')
-                        if cause['pyrolysine']:  # only for pseudogenes with translation exception + other cause
-                            tmp_cause.append('Translation exception: Pyrolysin around ' + ', '.join(map(str, cause['pyrolysine'])) + '.')
-                        cds['pseudogene']['note'] = ' '.join(tmp_cause)  # pseudogene cause
+                        if cause[bc.PSEUDOGENE_INSERTION]:
+                            tmp_cause.append('Frameshift due to the insertion around ' + ', '.join(map(str, cause[bc.PSEUDOGENE_INSERTION])) + '.')
+                        if cause[bc.PSEUDOGENE_DELETION]:
+                            tmp_cause.append('Frameshift due to the deletion around ' + ', '.join(map(str, cause[bc.PSEUDOGENE_DELETION])) + '.')
+                        if cause[bc.PSEUDOGENE_START]:
+                            tmp_cause.append('Point mutation around ' + ', '.join(map(str, cause[bc.PSEUDOGENE_START])) + '.')
+                        if cause[bc.PSEUDOGENE_STOP]:
+                            tmp_cause.append('Nonsense mutation around ' + ', '.join(map(str, cause[bc.PSEUDOGENE_STOP])) + '.')
+                        if cause[bc.PSEUDOGENE_SELENOCYSTEINE]:  # only for pseudogenes with translation exception + other cause
+                            tmp_cause.append('Translation exception: Selenocysteine around ' + ', '.join(map(str, cause[bc.PSEUDOGENE_SELENOCYSTEINE])) + '.')
+                        if cause[bc.PSEUDOGENE_PYROLYSINE]:  # only for pseudogenes with translation exception + other cause
+                            tmp_cause.append('Translation exception: Pyrolysin around ' + ', '.join(map(str, cause[bc.PSEUDOGENE_PYROLYSINE])) + '.')
+                        cds[bc.PSEUDOGENE]['note'] = ' '.join(tmp_cause)  # pseudogene cause
 
                         log.info(
                             'Pseudogene: contig=%s, start=%i, stop=%i, strand=%s, casue=%s',
-                            cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['pseudogene']['note']
+                            cds['contig'], cds['start'], cds['stop'], cds['strand'], cds[bc.PSEUDOGENE]['note']
                         )
 
-                    elif cause['selenocysteine'] or cause['pyrolysine']:
+                    elif cause[bc.PSEUDOGENE_SELENOCYSTEINE] or cause[bc.PSEUDOGENE_PYROLYSINE]:
                         # TODO handle translation exception, correct annotation
-                        if cause['selenocysteine']:
+                        if cause[bc.PSEUDOGENE_SELENOCYSTEINE]:
                             pass
-                        elif cause['pyrolysine']:
+                        elif cause[bc.PSEUDOGENE_PYROLYSINE]:
                             pass
                     else:  # skip non-extended genes (complete aa insertion or deletion)
                         log.info(
@@ -771,14 +771,14 @@ def pseudogenization_cause(alignment: str, ref_alignment: str, qstart: int, qsto
     """
     Search for pseudogenization causes in the given alignments.
     """
-    cause: Dict[Union[str, int], Union[Set[int], bool]] = {'insertion': set(),
-                                                           'deletion': set(),
-                                                           'start': set(),
-                                                           'stop': set(),
-                                                           'selenocysteine': set(),
-                                                           'pyrolysine': set(),
-                                                           3: False,
-                                                           5: False}
+    cause: Dict[Union[str, int], Union[Set[int], bool]] = {bc.PSEUDOGENE_INSERTION: set(),
+                                                           bc.PSEUDOGENE_DELETION: set(),
+                                                           bc.PSEUDOGENE_START: set(),
+                                                           bc.PSEUDOGENE_STOP: set(),
+                                                           bc.PSEUDOGENE_SELENOCYSTEINE: set(),
+                                                           bc.PSEUDOGENE_PYROLYSINE: set(),
+                                                           bc.FEATURE_END_3_PRIME: False,
+                                                           bc.FEATURE_END_5_PRIME: False}
 
     elongated_edge: bool = False
     if extended_positions.get('edge', False):
@@ -794,8 +794,8 @@ def pseudogenization_cause(alignment: str, ref_alignment: str, qstart: int, qsto
     #  find sensible cutoff length for elongated cds['aa'] -> is pseudogene;
     #  look at non-aligned ends (cds['pseudo-candidate']['cluster_sequence']) != len(ref_alignment)
     # if len(cds['pseudo-candidate']['cluster_sequence']) == len(ref_alignment) < len(cds['aa']) and extended_positions['start'] + qstop - 1 + 3 < cds['stop']:
-    #     cause[3] = True
-    #     cause['stop'].add(cds['start'] + (len(ref_alignment) * 3) + 3 - 1)  # -1?
+    #     cause[bc.FEATURE_END_3_PRIME] = True
+    #     cause[bc.PSEUDOGENE_STOP].add(cds['start'] + (len(ref_alignment) * 3) + 3 - 1)  # -1?
 
     cause = upstream_elongation(cause, alignment, ref_alignment, qstart, extended_positions, cds,
                                 elongated_edge=elongated_edge)
@@ -813,14 +813,14 @@ def compare_alignments(cause: Dict[Union[str, int], Union[Set[int], bool]], alig
     position: int = cds['start']
     for char, ref_char in zip(alignment, ref_alignment):
         if char == '/':  # deletion
-            cause['deletion'].add(position)
+            cause[bc.PSEUDOGENE_DELETION].add(position)
             cause[direction] = True
             log.info(
                 'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, deletion=%i',
                 cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
             )
         elif char == '\\':  # insertion
-            cause['insertion'].add(position)
+            cause[bc.PSEUDOGENE_INSERTION].add(position)
             cause[direction] = True
             position += 1
             log.info(
@@ -829,20 +829,20 @@ def compare_alignments(cause: Dict[Union[str, int], Union[Set[int], bool]], alig
             )
         elif char == '*':  # stop codon, selenocysteine, pyrolysine
             if ref_char == 'U':  # selenocysteine
-                cause['selenocysteine'].add(position)
+                cause[bc.PSEUDOGENE_SELENOCYSTEINE].add(position)
                 log.info(
                     'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, selenocysteine=%i',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
                 )
             elif ref_char == 'O':  # pyrolysine
-                cause['pyrolysine'].add(position)
+                cause[bc.PSEUDOGENE_PYROLYSINE].add(position)
                 log.info(
                     'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, pyrolysin=%i',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
                 )
             else:  # stop codon
                 cause[direction] = True
-                cause['stop'].add(position)
+                cause[bc.PSEUDOGENE_STOP].add(position)
                 log.info(
                     'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, internal stop=%i',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
@@ -862,12 +862,12 @@ def upstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
     """
     if cds['start'] - (extended_positions['start'] + qstart - 1) > 0 or elongated_edge:  # elongated alignment 5'
         up_length: int = ceil((cds['start'] - (extended_positions['start'] + qstart - 1)) / 3)
-        cause = compare_alignments(cause, alignment[:up_length], ref_alignment[:up_length], cds, direction=5)
+        cause = compare_alignments(cause, alignment[:up_length], ref_alignment[:up_length], cds, direction=bc.FEATURE_END_5_PRIME)
 
         if alignment[up_length] == 'M' and ref_alignment[up_length] != 'M':
             if cds['rbs_motif'] is None:  # point mutation -> internal start codon
-                cause['start'].add(cds['start'])
-                cause[5] = True
+                cause[bc.PSEUDOGENE_START].add(cds['start'])
+                cause[bc.FEATURE_END_5_PRIME] = True
                 log.info(
                     'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, original start=%i',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + (up_length * 3)
@@ -880,8 +880,8 @@ def upstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
         #  case 1: start codon in the upstream region, cutoff length
         #  case 2: internal start codon
         # if alignment[0] != 'M' and ref_alignment[0] == 'M' and up_length != 0:
-        #     cause['start'].add(cds['start'] - (up_length * 3) - 1)
-        #     cause[5] = True
+        #     cause[bc.PSEUDOGENE_START].add(cds['start'] - (up_length * 3) - 1)
+        #     cause[bc.FEATURE_END_5_PRIME] = True
         #     log.info(
         #         'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, original start=%i',
         #         cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + (up_length * 3)
@@ -905,7 +905,7 @@ def downstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
     """
     # TODO exclude upstream part if 5' elongated --> distinct between 5' and 3' cause
     if extended_positions['start'] + qstop - 1 > cds['stop'] or elongated_edge:  # elongated alignment 3'
-        cause = compare_alignments(cause, alignment, ref_alignment, cds, direction=3)
+        cause = compare_alignments(cause, alignment, ref_alignment, cds, direction=bc.FEATURE_END_3_PRIME)
     return cause
 
 

@@ -42,6 +42,12 @@ PSEUDOGENE_OFFSET: int = 300  # nucleotide offset for pseudogene class detection
 PSEUDOGENE: str = 'pseudogene'  # /pseudogene qualifier
 PSEUDOGENE_UNPROCESSED: str = 'unprocessed'
 PSEUDOGENE_UNITARY: str = 'unitary'
+PSEUDOGENE_INSERTION: str = 'insertion'
+PSEUDOGENE_DELETION: str = 'deletion'
+PSEUDOGENE_START: str = 'start'
+PSEUDOGENE_STOP: str = 'stop'
+PSEUDOGENE_SELENOCYSTEINE: str = 'selenocysteine'
+PSEUDOGENE_PYROLYSINE: str = 'pyrolysine'
 
 
 ############################################################################

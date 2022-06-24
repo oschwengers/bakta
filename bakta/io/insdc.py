@@ -46,7 +46,7 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
             f"{'oriCs/oriVs':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_ORIC or feat['type'] == bc.FEATURE_ORIV]):5,}",
             f"{'oriTs':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_ORIT]):5,}",
             f"{'gaps':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_GAP]):5,}",
-            f"{'pseudogenes':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_CDS and bc.INSDC_FEATURE_PSEUDOGENE in feat]):5,}\n"
+            f"{'pseudogenes':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_CDS and bc.PSEUDOGENE in feat]):5,}\n"
         )
         contig_annotations = {
             'molecule_type': 'DNA',
@@ -125,8 +125,8 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                 if('product' in qualifiers):
                     del qualifiers['product']
             elif(feature['type'] == bc.FEATURE_CDS) or (feature['type'] == bc.FEATURE_SORF):
-                if(feature.get('pseudogene', False)):
-                    qualifiers[bc.INSDC_FEATURE_PSEUDOGENE] = feature['pseudogene']['qualifier']
+                if(feature.get(bc.PSEUDOGENE, False)):
+                    qualifiers[bc.INSDC_FEATURE_PSEUDOGENE] = feature[bc.PSEUDOGENE]['qualifier']
                 else:
                     qualifiers['protein_id'] = f"gnl|Bakta|{feature['locus']}"
                     qualifiers['translation'] = feature['aa']
@@ -155,11 +155,11 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                     qualifiers['note'], ec_number = extract_ec_from_notes_insdc(qualifiers, 'note')
                     if(ec_number is not None):
                             qualifiers['EC_number'] = ec_number
-                    if('pseudogene' in feature):
-                        qualifiers['note'].insert(0, f"{feature['pseudogene']['type']}: {feature['pseudogene']['note']}")
+                    if(bc.PSEUDOGENE in feature):
+                        qualifiers['note'].insert(0, f"{feature[bc.PSEUDOGENE]['type']}: {feature[bc.PSEUDOGENE]['note']}")
                         qualifiers['note'].insert(1, f"pseudogene of {feature['product']}")
-                elif('pseudogene' in feature):
-                    qualifiers['note'].insert(0, f"{feature['pseudogene']['type']}: {feature['pseudogene']['note']}")
+                elif(bc.PSEUDOGENE in feature):
+                    qualifiers['note'].insert(0, f"{feature[bc.PSEUDOGENE]['type']}: {feature[bc.PSEUDOGENE]['note']}")
                 if('exception' in feature):
                     ex = feature['exception']
                     pos = f"{ex['start']}..{ex['stop']}"
@@ -226,10 +226,10 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
             start = feature['start'] - 1
             stop = feature['stop']
             if('edge' in feature):
-                if(feature.get('pseudogene', None)):
-                    if(feature['pseudogene']['cause'][5]):
+                if(feature.get(bc.PSEUDOGENE, None)):
+                    if(feature[bc.PSEUDOGENE]['cause'][bc.FEATURE_END_5_PRIME]):
                         start = BeforePosition(feature['start'] - 1)
-                    if(feature['pseudogene']['cause'][3]):
+                    if(feature[bc.PSEUDOGENE]['cause'][bc.FEATURE_END_3_PRIME]):
                         stop = AfterPosition(feature['stop'])
                 fl_1 = FeatureLocation(start, contig['length'], strand=strand)
                 fl_2 = FeatureLocation(0, stop, strand=strand)
@@ -252,10 +252,10 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                     else:
                         start = BeforePosition(start)
                         stop = AfterPosition(stop)
-                elif(feature.get('pseudogene', None)):
-                    if(feature['pseudogene']['cause'][5]):
+                elif(feature.get(bc.PSEUDOGENE, None)):
+                    if(feature[bc.PSEUDOGENE]['cause'][bc.FEATURE_END_5_PRIME]):
                         start = BeforePosition(feature['start'] - 1)
-                    if(feature['pseudogene']['cause'][3]):
+                    if(feature[bc.PSEUDOGENE]['cause'][bc.FEATURE_END_3_PRIME]):
                         stop = AfterPosition(feature['stop'])
                 feature_location = FeatureLocation(start, stop, strand=strand)
             if(feature.get('locus', None)):
@@ -265,8 +265,8 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                 if(feature.get('gene', None)):
                     qualifiers['gene'] = feature['gene']
                     gene_qualifier['gene'] = feature['gene']
-                if(feature.get('pseudogene', None)):
-                    gene_qualifier[bc.INSDC_FEATURE_PSEUDOGENE] = feature['pseudogene']['qualifier']
+                if(feature.get(bc.PSEUDOGENE, None)):
+                    gene_qualifier[bc.INSDC_FEATURE_PSEUDOGENE] = feature[bc.PSEUDOGENE]['qualifier']
                 gen_seqfeat = SeqFeature(feature_location, type='gene', qualifiers=gene_qualifier)
                 seq_feature_list.append(gen_seqfeat)
             feat_seqfeat = SeqFeature(feature_location, type=insdc_feature_type, qualifiers=qualifiers)
