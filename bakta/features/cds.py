@@ -21,11 +21,10 @@ import bakta.features.orf as orf
 import bakta.io.fasta as fasta
 import bakta.utils as bu
 import bakta.so as so
+from bakta.psc import DB_PSC_COL_UNIREF90
 
 
 log = logging.getLogger('CDS')
-
-DB_PSC_COL_UNIREF90: str = 'uniref90_id'
 
 
 def predict(genome: dict, sequences_path: Path):
@@ -490,16 +489,15 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
     diamond_db_path: Path = cfg.db_path.joinpath('psc.dmnd')
     cds_faa_path: Path = cfg.tmp_path.joinpath('cds.pseudo_candidates.faa')
     orf.write_internal_faa(hypotheticals, cds_faa_path)
-    # TODO allow for several top max-target-seqs, best hit might be a hit of a pseudogene in the database,
-    #  search hits with longer psc that might have a worse subject-coverage to get the "real" gene
+    # TODO allow multiple hits
     cmd = [
         'diamond',
         'blastp',
         '--db', str(diamond_db_path),
         '--query', str(cds_faa_path),
         '--out', str(diamond_output_path),
-        '--id', str(int(bc.MIN_PSEUDOGENE_IDENTITY * 100)),                     # '80' Psi-Phi https://genome.cshlp.org/content/14/11/2273.long
-        '--query-cover', str(int(bc.MIN_PSEUDOGENE_QUERY_COVERAGE * 100)),      # '80' Compare to 1.4 in https://genome.cshlp.org/content/suppl/2020/10/14/gr.260828.120.DC1/Supplemental_Texts.pdf
+        '--id', str(int(bc.MIN_PSEUDOGENE_IDENTITY * 100)),                     # '80'
+        '--query-cover', str(int(bc.MIN_PSEUDOGENE_QUERY_COVERAGE * 100)),      # '80'
         '--subject-cover', str(int(bc.MIN_PSEUDOGENE_SUBJECT_COVERAGE * 100)),  # '40'
         '--max-target-seqs', '1',  # single best output
         '--outfmt', '6 qseqid sseqid pident length qstart qend sstart send full_sseq',
@@ -575,7 +573,7 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
         for cluster_id, faa_seq in {cds['pseudo-candidate'][DB_PSC_COL_UNIREF90]: cds['pseudo-candidate']['cluster_sequence'] for cds in candidates}.items():
             fh.write(f">{cluster_id}\n{faa_seq}\n")
 
-    # get extended cds sequences
+    # Get extended cds sequences
     contigs: Dict[str, dict] = {c['id']: c for c in genome['contigs']}
     candidates_extended_positions: Dict[str, Dict[str, Union[int, bool]]] = dict()
     with pseudo_fna_path.open(mode='w') as fh:
@@ -583,11 +581,6 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
             contig: dict = contigs[cds['contig']]
             tmp_cds, edge, left, right = get_elongated_cds(cds, contig)
             seq: str = bu.extract_feature_sequence(tmp_cds, contig)
-            # padding cannot be used atm because it conflicts with position counters
-            # if left:
-            #     seq = ('N' * left) + seq
-            # if right:
-            #     seq = seq + ('N' * left)
             fh.write(f">{orf.get_orf_key(cds)}\n{seq}\n")
             candidates_extended_positions[orf.get_orf_key(cds)] = {'start': tmp_cds['start'],
                                                                    'stop': tmp_cds['stop'],
@@ -649,9 +642,9 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                     alignment_stop: int = int(hit.find('Hit_hsps/Hsp/Hsp_query-to').text)
                     alignment_length: int = int(hit.find('Hit_hsps/Hsp/Hsp_align-len').text)
 
-                    if alignment_length == len(cds['aa']):  # skip non-extended genes (complete match)
-                        log.info(
-                            'No pseudogene: contig=%s, start=%i, stop=%i, strand=%s',
+                    if alignment_length == len(cds['aa']):  # skip non-extended genes (full match)
+                        log.debug(
+                            'No pseudogene (full match): contig=%s, start=%i, stop=%i, strand=%s',
                             cds['contig'], cds['start'], cds['stop'], cds['strand']
                         )
                         continue
@@ -669,7 +662,6 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
 
                         if is_unprocessed(uniref90_by_hexdigest, aa_identifier, cds['pseudo-candidate'][DB_PSC_COL_UNIREF90]):
                             cds[bc.PSEUDOGENE]['qualifier'] = bc.PSEUDOGENE_UNPROCESSED
-                            print(bc.PSEUDOGENE_UNPROCESSED)  # DEBUG
                         else:
                             cds[bc.PSEUDOGENE]['qualifier'] = bc.PSEUDOGENE_UNITARY
 
@@ -696,19 +688,19 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                         cds[bc.PSEUDOGENE]['note'] = ' '.join(tmp_cause)  # pseudogene cause
 
                         log.info(
-                            'Pseudogene: contig=%s, start=%i, stop=%i, strand=%s, casue=%s',
+                            'Pseudogene: contig=%s, start=%i, stop=%i, strand=%s, cause=%s',
                             cds['contig'], cds['start'], cds['stop'], cds['strand'], cds[bc.PSEUDOGENE]['note']
                         )
 
                     elif cause[bc.PSEUDOGENE_SELENOCYSTEINE] or cause[bc.PSEUDOGENE_PYROLYSINE]:
-                        # TODO handle translation exception, correct annotation
+                        # TODO handle translation exceptions, correct annotation
                         if cause[bc.PSEUDOGENE_SELENOCYSTEINE]:
                             pass
                         elif cause[bc.PSEUDOGENE_PYROLYSINE]:
                             pass
                     else:  # skip non-extended genes (complete aa insertion or deletion)
-                        log.info(
-                            'No pseudogene: contig=%s, start=%i, stop=%i, strand=%s',
+                        log.debug(
+                            'No pseudogene (aa indels): contig=%s, start=%i, stop=%i, strand=%s',
                             cds['contig'], cds['start'], cds['stop'], cds['strand']
                         )
 
@@ -782,20 +774,10 @@ def pseudogenization_cause(alignment: str, ref_alignment: str, qstart: int, qsto
 
     elongated_edge: bool = False
     if extended_positions.get('edge', False):
-        # TODO edge cases: extended_positions['edge']
-        #  filters for up/downstream below do not work for edge cases
-        #  introduce extra flag for downstream analysis:
-        #  e.g. if cds['start'] - (extended_positions['start'] + qstart - 1) > 0 or elongated_edge
-        # elongated_edge: bool = True
+        # TODO implement edge case
         pass
 
-    # TODO
-    #  point mutation -> loss of stop codon
-    #  find sensible cutoff length for elongated cds['aa'] -> is pseudogene;
-    #  look at non-aligned ends (cds['pseudo-candidate']['cluster_sequence']) != len(ref_alignment)
-    # if len(cds['pseudo-candidate']['cluster_sequence']) == len(ref_alignment) < len(cds['aa']) and extended_positions['start'] + qstop - 1 + 3 < cds['stop']:
-    #     cause[bc.FEATURE_END_3_PRIME] = True
-    #     cause[bc.PSEUDOGENE_STOP].add(cds['start'] + (len(ref_alignment) * 3) + 3 - 1)  # -1?
+    # TODO implement case: point mutation -> loss of stop codon
 
     cause = upstream_elongation(cause, alignment, ref_alignment, qstart, extended_positions, cds,
                                 elongated_edge=elongated_edge)
@@ -809,7 +791,6 @@ def compare_alignments(cause: Dict[Union[str, int], Union[Set[int], bool]], alig
     """
     Compare the alignment and reference alignment to find the causes of pseudogenization.
     """
-    # based on: https://github.com/nigyta/dfast_core/blob/1c366a017b07f0390b0da57fe8a3906b0d4a5f0e/dfc/components/PseudoGeneDetection.py#L173
     position: int = cds['start']
     for char, ref_char in zip(alignment, ref_alignment):
         if char == '/':  # deletion
@@ -875,19 +856,7 @@ def upstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
             else:  # do nothing since an RBS was predicted, protein iso-form
                 pass
 
-        # TODO
-        #  point mutation -> loss of original start codon
-        #  case 1: start codon in the upstream region, cutoff length
-        #  case 2: internal start codon
-        # if alignment[0] != 'M' and ref_alignment[0] == 'M' and up_length != 0:
-        #     cause[bc.PSEUDOGENE_START].add(cds['start'] - (up_length * 3) - 1)
-        #     cause[bc.FEATURE_END_5_PRIME] = True
-        #     log.info(
-        #         'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, original start=%i',
-        #         cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + (up_length * 3)
-        #     )
-        # else:  # PSC cluster does not start with fMet
-        #     pass
+        # TODO implement case: point mutation -> loss of original start codon
 
         if (alignment[0] == 'M' and ref_alignment[0] == 'M' and up_length != 0) and \
                 (alignment[up_length+1] == 'M' and ref_alignment[up_length+1] == 'M') and cds['rbs_motif'] is None:
@@ -903,7 +872,6 @@ def downstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
     """
     Search for pseudogenization causes in the CDS itself and the elongated downstream sequence.
     """
-    # TODO exclude upstream part if 5' elongated --> distinct between 5' and 3' cause
     if extended_positions['start'] + qstop - 1 > cds['stop'] or elongated_edge:  # elongated alignment 3'
         cause = compare_alignments(cause, alignment, ref_alignment, cds, direction=bc.FEATURE_END_3_PRIME)
     return cause
