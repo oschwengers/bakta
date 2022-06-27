@@ -728,8 +728,8 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
         tmp_cds['edge'] = True
         edge = True
     elif tmp_cds['start'] - offset < 0:
-        tmp_cds['start'] = 0
         left_fill = (tmp_cds['start'] - offset) * -1
+        tmp_cds['start'] = 0
     else:
         tmp_cds['start'] = tmp_cds['start'] - offset
 
@@ -738,8 +738,8 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
         tmp_cds['edge'] = True
         edge = True
     elif tmp_cds['stop'] + offset > len(contig['sequence']):
-        tmp_cds['stop'] = len(contig['sequence'])
         right_fill = tmp_cds['stop'] + offset - len(contig['sequence'])
+        tmp_cds['stop'] = len(contig['sequence'])
     else:
         tmp_cds['stop'] = tmp_cds['stop'] + offset
 
