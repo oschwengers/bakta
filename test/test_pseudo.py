@@ -17,17 +17,18 @@ import pytest
       3: False,
       5: True}
      ),  # deletion
-    ('MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKNVIWDYPKDFIAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL\\KIIA\\AVANNYMPGVASYAG',
-     'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKDVIWDYPKDFMAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL-KIIA-PVANDYMPGVDSYAG',
-     {'insertion': {430, 443},
-      'deletion': set(),
-      'start': set(),
-      'stop': set(),
-      'selenocysteine': set(),
-      'pyrolysine': set(),
-      3: False,
-      5: True}
-     ),  # insertion
+    (
+    'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKNVIWDYPKDFIAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL\\KIIA\\AVANNYMPGVASYAG',
+    'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKDVIWDYPKDFMAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL-KIIA-PVANDYMPGVDSYAG',
+    {'insertion': {430, 443},
+     'deletion': set(),
+     'start': set(),
+     'stop': set(),
+     'selenocysteine': set(),
+     'pyrolysine': set(),
+     3: False,
+     5: True}
+    ),  # insertion
     ('MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
      'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASQGSWYNF',
      {'insertion': set(),
@@ -122,8 +123,42 @@ def test_upstream_elongation(alignment, ref_alignment, expected_result):
     extended_positions: Dict = {'start': 1}
     elongated_edge: bool = False
 
-    assert feat_cds.upstream_elongation(cause, alignment, ref_alignment, 8, extended_positions, cds, elongated_edge) == expected_result
+    assert feat_cds.upstream_elongation(cause, alignment, ref_alignment, 8, extended_positions, cds,
+                                        elongated_edge) == expected_result
 
+
+@pytest.mark.parametrize('cds, contig, expected_result', [
+    ({'start': 310,  # linear fits cutoff
+      'stop': 370},
+     {'sequence': 'ACGT' * 200,
+      'topology': 'linear'},
+     ({'start': 10,
+       'stop': 670},
+      False,
+      0, 0
+      )),
+    ({'start': 100,  # linear does not fit cutoff
+      'stop': 190},
+     {'sequence': 'ACGT' * 50,  # 200nt
+      'topology': 'linear'},
+     ({'start': 0,
+       'stop': 200},
+      False,
+      200, 290
+      )),
+    ({'start': 100,  # circular does not fit cutoff
+      'stop': 190},
+     {'sequence': 'ACGT' * 100,  # 400nt
+      'topology': 'circular'},
+     ({'start': 200,
+       'stop': 90,
+       'edge': True},
+      True,
+      0, 0
+      ))
+])
+def test_get_elongated_cds(cds, contig, expected_result):
+    assert feat_cds.get_elongated_cds(cds=cds, contig=contig) == expected_result
 
 # @pytest.mark.parametrize('alignment, ref_alignment, expected_result', [
 #     ('MAVKRDMPEESKNSKVVKKEHFSIVFPDDIKVPKSEKELEAEKAENKSEHD',
