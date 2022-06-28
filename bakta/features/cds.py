@@ -500,7 +500,7 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
         '--query-cover', str(int(bc.MIN_PSEUDOGENE_QUERY_COVERAGE * 100)),      # '80'
         '--subject-cover', str(int(bc.MIN_PSEUDOGENE_SUBJECT_COVERAGE * 100)),  # '40'
         '--max-target-seqs', '1',  # single best output
-        '--outfmt', '6 qseqid sseqid pident length qstart qend sstart send full_sseq',
+        '--outfmt', '6', 'qseqid', 'sseqid', 'pident', 'length', 'qstart', 'qend', 'sstart', 'send', 'full_sseq',
         '--threads', str(cfg.threads),
         '--tmpdir', str(cfg.tmp_path),
         '--block-size', '3',  # slightly increase block size for faster executions
@@ -508,8 +508,7 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
     ]
     log.debug('cmd=%s', cmd)
     proc = sp.run(
-        ' '.join(cmd),
-        shell=True,
+        cmd,
         cwd=str(cfg.tmp_path),
         env=cfg.env,
         stdout=sp.PIPE,
@@ -610,8 +609,7 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
     for cmd in commands:
         log.debug('cmd=%s', cmd)
         proc = sp.run(
-            ' '.join(cmd),
-            shell=True,
+            cmd,
             cwd=str(cfg.tmp_path),
             env=cfg.env,
             stdout=sp.PIPE,
