@@ -1,5 +1,6 @@
 from typing import Dict, Set, Union
 
+import bakta.constants as bc
 import bakta.features.cds as feat_cds
 
 import pytest
@@ -8,76 +9,76 @@ import pytest
 @pytest.mark.parametrize('alignment, ref_alignment, expected_result', [
     ('MKEGQFVGY/FKMKEQRKIPLTHIMIIGAFIFAFLQVVLLASLVHAVNVNNEIQEGLFQSGRIMVESLQHILSVQTGIH',
      'MKEGQFVGY-FKMKEQRKIPLTHIMIIGAFIFAFLQVVLLASLVHAVNVNNEIQEGLFQSGRIMVESLQHILSVQTGIN',
-     {'insertion': set(),
-      'deletion': {28},
-      'start': set(),
-      'stop': set(),
-      'selenocysteine': set(),
-      'pyrolysine': set(),
-      3: False,
-      5: True}
+     {bc.PSEUDOGENE_INSERTION: set(),
+      bc.PSEUDOGENE_DELETION: {28},
+      bc.PSEUDOGENE_START: set(),
+      bc.PSEUDOGENE_STOP: set(),
+      bc.PSEUDOGENE_SELENOCYSTEINE: set(),
+      bc.PSEUDOGENE_PYROLYSINE: set(),
+      bc.FEATURE_END_3_PRIME: False,
+      bc.FEATURE_END_5_PRIME: True}
      ),  # deletion
     (
-    'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKNVIWDYPKDFIAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL\\KIIA\\AVANNYMPGVASYAG',
-    'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKDVIWDYPKDFMAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL-KIIA-PVANDYMPGVDSYAG',
-    {'insertion': {430, 443},
-     'deletion': set(),
-     'start': set(),
-     'stop': set(),
-     'selenocysteine': set(),
-     'pyrolysine': set(),
-     3: False,
-     5: True}
+     'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKNVIWDYPKDFIAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL\\KIIA\\AVANNYMPGVASYAG',
+     'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKDVIWDYPKDFMAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL-KIIA-PVANDYMPGVDSYAG',
+     {bc.PSEUDOGENE_INSERTION: {430, 443},
+      bc.PSEUDOGENE_DELETION: set(),
+      bc.PSEUDOGENE_START: set(),
+      bc.PSEUDOGENE_STOP: set(),
+      bc.PSEUDOGENE_SELENOCYSTEINE: set(),
+      bc.PSEUDOGENE_PYROLYSINE: set(),
+      bc.FEATURE_END_3_PRIME: False,
+      bc.FEATURE_END_5_PRIME: True}
     ),  # insertion
     ('MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
      'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASQGSWYNF',
-     {'insertion': set(),
-      'deletion': set(),
-      'start': set(),
-      'stop': {277},
-      'selenocysteine': set(),
-      'pyrolysine': set(),
-      3: False,
-      5: True}
+     {bc.PSEUDOGENE_INSERTION: set(),
+      bc.PSEUDOGENE_DELETION: set(),
+      bc.PSEUDOGENE_START: set(),
+      bc.PSEUDOGENE_STOP: {277},
+      bc.PSEUDOGENE_SELENOCYSTEINE: set(),
+      bc.PSEUDOGENE_PYROLYSINE: set(),
+      bc.FEATURE_END_3_PRIME: False,
+      bc.FEATURE_END_5_PRIME: True}
      ),  # internal stop
     ('MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
      'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASUGSWYNF',
-     {'insertion': set(),
-      'deletion': set(),
-      'start': set(),
-      'stop': set(),
-      'selenocysteine': {277},
-      'pyrolysine': set(),
-      3: False,
-      5: False}
+     {bc.PSEUDOGENE_INSERTION: set(),
+      bc.PSEUDOGENE_DELETION: set(),
+      bc.PSEUDOGENE_START: set(),
+      bc.PSEUDOGENE_STOP: set(),
+      bc.PSEUDOGENE_SELENOCYSTEINE: {277},
+      bc.PSEUDOGENE_PYROLYSINE: set(),
+      bc.FEATURE_END_3_PRIME: False,
+      bc.FEATURE_END_5_PRIME: False}
      ),  # selenocysteine
     ('MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
      'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASOGSWYNF',
-     {'insertion': set(),
-      'deletion': set(),
-      'start': set(),
-      'stop': set(),
-      'selenocysteine': set(),
-      'pyrolysine': {277},
-      3: False,
-      5: False}
+     {bc.PSEUDOGENE_INSERTION: set(),
+      bc.PSEUDOGENE_DELETION: set(),
+      bc.PSEUDOGENE_START: set(),
+      bc.PSEUDOGENE_STOP: set(),
+      bc.PSEUDOGENE_SELENOCYSTEINE: set(),
+      bc.PSEUDOGENE_PYROLYSINE: {277},
+      bc.FEATURE_END_3_PRIME: False,
+      bc.FEATURE_END_5_PRIME: False}
      ),  # pyrolysine
 ])
 def test_compare_alignments(alignment, ref_alignment, expected_result):
     # Includes test_downstream_elongation
-    cause: Dict[Union[str, int], Union[Set[int], bool]] = {'insertion': set(),
-                                                           'deletion': set(),
-                                                           'start': set(),
-                                                           'stop': set(),
-                                                           'selenocysteine': set(),
-                                                           'pyrolysine': set(),
-                                                           3: False,
-                                                           5: False}
+    cause: Dict[Union[str, int], Union[Set[int], bool]] = {bc.PSEUDOGENE_INSERTION: set(),
+                                                           bc.PSEUDOGENE_DELETION: set(),
+                                                           bc.PSEUDOGENE_START: set(),
+                                                           bc.PSEUDOGENE_STOP: set(),
+                                                           bc.PSEUDOGENE_SELENOCYSTEINE: set(),
+                                                           bc.PSEUDOGENE_PYROLYSINE: set(),
+                                                           bc.FEATURE_END_3_PRIME: False,
+                                                           bc.FEATURE_END_5_PRIME: False}
     cds: Dict = {'start': 1,
                  'contig': '',
                  'stop': '',
                  'strand': ''}
-    direction: int = 5
+    direction: str = bc.FEATURE_END_5_PRIME
 
     assert feat_cds.compare_alignments(cause, alignment, ref_alignment, cds, direction) == expected_result
 
@@ -85,36 +86,36 @@ def test_compare_alignments(alignment, ref_alignment, expected_result):
 @pytest.mark.parametrize('alignment, ref_alignment, expected_result', [
     ('MINWRKVGMTSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
      'MINWRKVGATSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
-     {'insertion': set(),
-      'deletion': set(),
-      'start': {30},
-      'stop': set(),
-      'selenocysteine': set(),
-      'pyrolysine': set(),
-      3: False,
-      5: True}
-     ),  # point mutation -> internal start codon
+     {bc.PSEUDOGENE_INSERTION: set(),
+      bc.PSEUDOGENE_DELETION: set(),
+      bc.PSEUDOGENE_START: {30},
+      bc.PSEUDOGENE_STOP: set(),
+      bc.PSEUDOGENE_SELENOCYSTEINE: set(),
+      bc.PSEUDOGENE_PYROLYSINE: set(),
+      bc.FEATURE_END_3_PRIME: False,
+      bc.FEATURE_END_5_PRIME: True}
+     )# ,  # point mutation -> internal start codon
     # ('VINWRKVGMTSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
     #  'MINWRKVGMTSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
-    #  {'insertion': set(),
-    #   'deletion': set(),
-    #   'start': {5},  # TODO check
-    #   'stop': set(),
-    #   'selenocysteine': set(),
-    #   'pyrolysine': set(),
-    #   3: False,
-    #   5: True}
+    #  {bc.PSEUDOGENE_INSERTION: set(),
+    #   bc.PSEUDOGENE_DELETION: set(),
+    #   bc.PSEUDOGENE_START: {5},  # TODO check
+    #   bc.PSEUDOGENE_STOP: set(),
+    #   bc.PSEUDOGENE_SELENOCYSTEINE: set(),
+    #   bc.PSEUDOGENE_PYROLYSINE: set(),
+    #   bc.FEATURE_END_3_PRIME: False,
+    #   bc.FEATURE_END_5_PRIME: True}
     #  )  # point mutation -> loss of original start codon
 ])
 def test_upstream_elongation(alignment, ref_alignment, expected_result):
-    cause: Dict[Union[str, int], Union[Set[int], bool]] = {'insertion': set(),
-                                                           'deletion': set(),
-                                                           'start': set(),
-                                                           'stop': set(),
-                                                           'selenocysteine': set(),
-                                                           'pyrolysine': set(),
-                                                           3: False,
-                                                           5: False}
+    cause: Dict[Union[str, int], Union[Set[int], bool]] = {bc.PSEUDOGENE_INSERTION: set(),
+                                                           bc.PSEUDOGENE_DELETION: set(),
+                                                           bc.PSEUDOGENE_START: set(),
+                                                           bc.PSEUDOGENE_STOP: set(),
+                                                           bc.PSEUDOGENE_SELENOCYSTEINE: set(),
+                                                           bc.PSEUDOGENE_PYROLYSINE: set(),
+                                                           bc.FEATURE_END_3_PRIME: False,
+                                                           bc.FEATURE_END_5_PRIME: False}
     cds: Dict = {'start': 30,
                  'stop': '',
                  'strand': '',
@@ -163,14 +164,14 @@ def test_get_elongated_cds(cds, contig, expected_result):
 # @pytest.mark.parametrize('alignment, ref_alignment, expected_result', [
 #     ('MAVKRDMPEESKNSKVVKKEHFSIVFPDDIKVPKSEKELEAEKAENKSEHD',
 #      'MAVKRDMPEESKNSKVVKKEHFSIVFPDDIKEPSDKDEQKKKTIDTKKDND',
-#      {'insertion': set(),
-#       'deletion': set(),
-#       'start': set(),
-#       'stop': {156},
-#       'selenocysteine': set(),
-#       'pyrolysine': set(),
-#       3: True,
-#       5: False}
+#      {bc.PSEUDOGENE_INSERTION: set(),
+#       bc.PSEUDOGENE_DELETION: set(),
+#       bc.PSEUDOGENE_START: set(),
+#       bc.PSEUDOGENE_STOP: {156},
+#       bc.PSEUDOGENE_SELENOCYSTEINE: set(),
+#       bc.PSEUDOGENE_PYROLYSINE: set(),
+#       bc.FEATURE_END_3_PRIME: True,
+#       bc.FEATURE_END_5_PRIME: False}
 #      ),  # loss of stop codon
 # ])
 # def test_loss_of_stop_codon(alignment, ref_alignment, expected_result):

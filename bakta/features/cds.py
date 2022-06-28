@@ -787,7 +787,7 @@ def pseudogenization_cause(alignment: str, ref_alignment: str, qstart: int, qsto
 
 
 def compare_alignments(cause: Dict[Union[str, int], Union[Set[int], bool]], alignment: str, ref_alignment: str,
-                       cds: dict, direction: int) -> Dict[Union[str, int], Union[Set[int], bool]]:
+                       cds: dict, direction: str) -> Dict[Union[str, int], Union[Set[int], bool]]:
     """
     Compare the alignment and reference alignment to find the causes of pseudogenization.
     """
