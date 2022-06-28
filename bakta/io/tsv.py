@@ -27,7 +27,12 @@ def write_tsv(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_
                     feat_type = bc.INSDC_FEATURE_ASSEMBLY_GAP if feat['length'] >= 100 else bc.INSDC_FEATURE_GAP
 
                 gene = feat['gene'] if feat.get('gene', None) else ''
-                pseudogene: str = f"pseudogene={feat['pseudogene']['qualifier']}; " if feat.get('pseudogene', False) else ''
+
+                if feat.get(bc.PSEUDOGENE, False):
+                    pseudogene: str = f"pseudogene={bc.PSEUDOGENE_UNPROCESSED if feat[bc.PSEUDOGENE]['paralog'] else bc.PSEUDOGENE_UNITARY}; "
+                else:
+                    pseudogene: str = ''
+
                 fh.write('\t'.join([feat['contig'],
                                     feat_type,
                                     str(feat['start']),

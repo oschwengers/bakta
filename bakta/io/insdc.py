@@ -126,7 +126,7 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                     del qualifiers['product']
             elif(feature['type'] == bc.FEATURE_CDS) or (feature['type'] == bc.FEATURE_SORF):
                 if(feature.get(bc.PSEUDOGENE, False)):
-                    qualifiers[bc.INSDC_FEATURE_PSEUDOGENE] = feature[bc.PSEUDOGENE]['qualifier']
+                    qualifiers[bc.INSDC_FEATURE_PSEUDOGENE] = bc.PSEUDOGENE_UNPROCESSED if feature[bc.PSEUDOGENE]['paralog'] else bc.PSEUDOGENE_UNITARY
                 else:
                     qualifiers['protein_id'] = f"gnl|Bakta|{feature['locus']}"
                     qualifiers['translation'] = feature['aa']
@@ -156,10 +156,10 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                     if(ec_number is not None):
                             qualifiers['EC_number'] = ec_number
                     if(bc.PSEUDOGENE in feature):
-                        qualifiers['note'].insert(0, f"{feature[bc.PSEUDOGENE]['type']}: {feature[bc.PSEUDOGENE]['note']}")
+                        qualifiers['note'].insert(0, f"{feature[bc.PSEUDOGENE]['orientation']}: {feature[bc.PSEUDOGENE]['type']}")
                         qualifiers['note'].insert(1, f"pseudogene of {feature['product']}")
                 elif(bc.PSEUDOGENE in feature):
-                    qualifiers['note'].insert(0, f"{feature[bc.PSEUDOGENE]['type']}: {feature[bc.PSEUDOGENE]['note']}")
+                    qualifiers['note'].insert(0, f"{feature[bc.PSEUDOGENE]['orientation']}: {feature[bc.PSEUDOGENE]['type']}")
                 if('exception' in feature):
                     ex = feature['exception']
                     pos = f"{ex['start']}..{ex['stop']}"
@@ -266,7 +266,7 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                     qualifiers['gene'] = feature['gene']
                     gene_qualifier['gene'] = feature['gene']
                 if(feature.get(bc.PSEUDOGENE, None)):
-                    gene_qualifier[bc.INSDC_FEATURE_PSEUDOGENE] = feature[bc.PSEUDOGENE]['qualifier']
+                    gene_qualifier[bc.INSDC_FEATURE_PSEUDOGENE] = bc.PSEUDOGENE_UNPROCESSED if feature[bc.PSEUDOGENE]['paralog'] else bc.PSEUDOGENE_UNITARY
                 gen_seqfeat = SeqFeature(feature_location, type='gene', qualifiers=gene_qualifier)
                 seq_feature_list.append(gen_seqfeat)
             feat_seqfeat = SeqFeature(feature_location, type=insdc_feature_type, qualifiers=qualifiers)

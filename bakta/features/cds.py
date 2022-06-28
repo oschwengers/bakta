@@ -658,17 +658,14 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                         cds[bc.PSEUDOGENE] = {'cause': convert_dict_set_values_to_list(cause),
                                               'pseudo-candidate': cds['pseudo-candidate']}
 
-                        if is_unprocessed(uniref90_by_hexdigest, aa_identifier, cds['pseudo-candidate'][DB_PSC_COL_UNIREF90]):
-                            cds[bc.PSEUDOGENE]['qualifier'] = bc.PSEUDOGENE_UNPROCESSED
-                        else:
-                            cds[bc.PSEUDOGENE]['qualifier'] = bc.PSEUDOGENE_UNITARY
+                        cds[bc.PSEUDOGENE]['paralog'] = is_paralog(uniref90_by_hexdigest, aa_identifier, cds['pseudo-candidate'][DB_PSC_COL_UNIREF90])
 
                         tmp_type: List[str] = []
                         if cause[bc.FEATURE_END_5_PRIME]:
                             tmp_type.append('Internal START codon')
                         if cause[bc.FEATURE_END_3_PRIME]:
                             tmp_type.append('Internal STOP codon')
-                        cds[bc.PSEUDOGENE]['type'] = ', '.join(tmp_type)
+                        cds[bc.PSEUDOGENE]['orientation'] = ', '.join(tmp_type)
 
                         tmp_cause: List[str] = []
                         if cause[bc.PSEUDOGENE_INSERTION]:
@@ -683,11 +680,11 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                             tmp_cause.append('Translation exception: Selenocysteine around ' + ', '.join(map(str, cause[bc.PSEUDOGENE_SELENOCYSTEINE])) + '.')
                         if cause[bc.PSEUDOGENE_PYROLYSINE]:  # only for pseudogenes with translation exception + other cause
                             tmp_cause.append('Translation exception: Pyrolysin around ' + ', '.join(map(str, cause[bc.PSEUDOGENE_PYROLYSINE])) + '.')
-                        cds[bc.PSEUDOGENE]['note'] = ' '.join(tmp_cause)  # pseudogene cause
+                        cds[bc.PSEUDOGENE]['type'] = ' '.join(tmp_cause)  # pseudogene cause
 
                         log.info(
                             'Pseudogene: contig=%s, start=%i, stop=%i, strand=%s, cause=%s',
-                            cds['contig'], cds['start'], cds['stop'], cds['strand'], cds[bc.PSEUDOGENE]['note']
+                            cds['contig'], cds['start'], cds['stop'], cds['strand'], cds[bc.PSEUDOGENE]['type']
                         )
 
                     elif cause[bc.PSEUDOGENE_SELENOCYSTEINE] or cause[bc.PSEUDOGENE_PYROLYSINE]:
@@ -744,7 +741,7 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
     return tmp_cds, edge, left_fill, right_fill
 
 
-def is_unprocessed(uniref90_by_hexdigest: Dict[str, str], aa_identifier: str, cluster: str) -> bool:
+def is_paralog(uniref90_by_hexdigest: Dict[str, str], aa_identifier: str, cluster: str) -> bool:
     """
     Check if the pseudogene is 'unprocessed' (the pseudogene has arisen from a copy of the parent gene by duplication
     followed by accumulation of random mutation).
