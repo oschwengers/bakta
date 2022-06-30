@@ -27,6 +27,28 @@ MIN_SORF_COVERAGE = 0.9  # min sORF coverage for PSC detection
 MIN_SORF_IDENTITY = 0.9  # min sORF identity for PSC detection
 HYPOTHETICAL_PROTEIN = 'hypothetical protein'  # hypothetical protein product description
 
+############################################################################
+# Pseudogene identification settings
+############################################################################
+MIN_PSEUDOGENE_IDENTITY: float = 0.8  # min protein identity for pseudogene prediction
+MIN_PSEUDOGENE_QUERY_COVERAGE: float = 0.8  # min query coverage for pseudogene prediction
+MIN_PSEUDOGENE_SUBJECT_COVERAGE: float = 0.4  # min subject coverage for pseudogene prediction
+PSEUDOGENE_OFFSET: int = 300  # nucleotide offset for pseudogene class detection; 300bp see Psi-Phy and DFAST
+
+
+############################################################################
+# Pseudogene feature tags
+############################################################################
+PSEUDOGENE: str = 'pseudogene'  # /pseudogene qualifier
+PSEUDOGENE_UNPROCESSED: str = 'unprocessed'
+PSEUDOGENE_UNITARY: str = 'unitary'
+PSEUDOGENE_INSERTION: str = 'insertion'
+PSEUDOGENE_DELETION: str = 'deletion'
+PSEUDOGENE_START: str = 'start'
+PSEUDOGENE_STOP: str = 'stop'
+PSEUDOGENE_SELENOCYSTEINE: str = 'selenocysteine'
+PSEUDOGENE_PYROLYSINE: str = 'pyrolysine'
+
 
 ############################################################################
 # DB identifiers
@@ -96,6 +118,7 @@ INSDC_FEATURE_REPEAT_TYPE = 'rpt_type'  # /rpt_type=<repeat_type>  # 'direct'
 INSDC_FEATURE_REPEAT_UNIT_RANGE = 'rpt_unit_range'  # /rpt_unit_range=<base_range>
 INSDC_FEATURE_REPEAT_UNIT_SEQ = 'rpt_unit_seq'  # /rpt_unit_seq="text"
 INSDC_FEATURE_CDS = 'CDS'
+INSDC_FEATURE_PSEUDOGENE = 'pseudogene'
 INSDC_FEATURE_SIGNAL_PEPTIDE = 'sig_peptide'
 INSDC_FEATURE_GAP = 'gap'
 INSDC_FEATURE_ASSEMBLY_GAP = 'assembly_gap'
