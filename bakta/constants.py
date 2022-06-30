@@ -65,6 +65,7 @@ DB_XREF_REFSEQ_NRP = 'RefSeq'
 DB_XREF_NCBI_PROTEIN = 'NCBIProtein'
 DB_XREF_EC = 'EC'
 DB_XREF_COG = 'COG'
+DB_XREF_KOFAM = 'KEGG'
 DB_XREF_PFAM = 'Pfam'
 DB_XREF_RFAM = 'RFAM'
 DB_XREF_IS = 'IS'
@@ -81,6 +82,7 @@ DB_PREFIX_UNIPARC = 'UPI'  # https://registry.identifiers.org/registry/uniparc
 DB_PREFIX_REFSEQ_NRP = 'WP_'
 DB_PREFIX_GO = 'GO:'  # https://registry.identifiers.org/registry/go
 DB_PREFIX_COG = 'COG'  # https://www.ebi.ac.uk/miriam/main/collections/MIR:00000296
+DB_PREFIX_KEGG_ORTHOLOGY = 'K'
 DB_PREFIX_IS = 'IS'  # https://www.ebi.ac.uk/miriam/main/collections/MIR:00000173
 DB_PREFIX_PFAM = 'PF'  # https://registry.identifiers.org/registry/pfam
 

@@ -20,6 +20,7 @@ DB_PSC_COL_UNIREF50 = 'uniref50_id'
 DB_PSC_COL_COG_ID = 'cog_id'
 DB_PSC_COL_COG_CAT = 'cog_category'
 DB_PSC_COL_EC = 'ec_ids'
+DB_PSC_COL_KOFAM_ID = 'kegg_orthology_id'
 DB_PSC_COL_GO = 'go_ids'
 
 
@@ -187,6 +188,9 @@ def parse_annotation(rec) -> dict:
     if(rec[DB_PSC_COL_COG_CAT]):
         psc[DB_PSC_COL_COG_CAT] = rec[DB_PSC_COL_COG_CAT]
         db_xrefs.append(f'{bc.DB_XREF_COG}:{psc[DB_PSC_COL_COG_CAT]}')
+    if(rec[DB_PSC_COL_KOFAM_ID]):
+        psc[DB_PSC_COL_KOFAM_ID] = bc.DB_PREFIX_KEGG_ORTHOLOGY + rec[DB_PSC_COL_KOFAM_ID]
+        db_xrefs.append(f'{bc.DB_XREF_KOFAM}:{psc[DB_PSC_COL_KOFAM_ID]}')
     if(rec[DB_PSC_COL_GO]):
         go_ids = []
         for go_id in rec[DB_PSC_COL_GO].split(','):

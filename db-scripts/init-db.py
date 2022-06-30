@@ -79,6 +79,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
         ec_ids TEXT,
         cog_id TEXT,
         cog_category TEXT,
+        kegg_orthology_id TEXT,
         go_ids TEXT
         ) WITHOUT ROWID;'''
     stmt = ' '.join(stmt.replace('\n', '').split())
