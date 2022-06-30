@@ -476,6 +476,7 @@ def main():
     cdss = [f for f in features if f['type'] == bc.FEATURE_CDS]
     print(f"\tCDSs: {len(cdss)}")
     print(f"\t  hypotheticals: {len([cds for cds in cdss if 'hypothetical' in cds])}")
+    print(f"\t  pseudogenes: {len([cds for cds in cdss if 'pseudogene' in cds])}")
     print(f"\t  signal peptides: {len([cds for cds in cdss if bc.FEATURE_SIGNAL_PEPTIDE in cds])}")
     print(f"\tsORFs: {len([f for f in features if f['type'] == bc.FEATURE_SORF])}")
     print(f"\tgaps: {len([f for f in features if f['type'] == bc.FEATURE_GAP])}")
