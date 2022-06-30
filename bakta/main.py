@@ -279,11 +279,23 @@ def main():
             log.debug('analyze hypotheticals')
             hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
             if(len(hypotheticals) > 0):
-                print(f'\tanalyze hypothetical proteins: {len(hypotheticals)}')
-                pfam_hits = feat_cds.predict_pfam(hypotheticals)
-                print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
-                feat_cds.analyze_proteins(hypotheticals)
-                print('\tcalculated proteins statistics')
+                if(not cfg.skip_pseudo):
+                    print('predict & annotate pseudogenes...')
+                    print('\thypothetical CDS:', len(hypotheticals))
+                    pseudo_candidates = feat_cds.predict_pseudo_candidates(hypotheticals)
+                    print('\tpseudogene candidates:', len(pseudo_candidates))
+                    if (len(pseudo_candidates) > 0):
+                        pseudogenes = feat_cds.pseudogene_class(pseudo_candidates, cdss, genome)
+                    else:
+                        pseudogenes = []
+                    print(f'\tfound pseudogenes: {len(pseudogenes)}')
+                    hypotheticals = [cds for cds in hypotheticals if 'pseudogene' not in cds]
+                if(len(hypotheticals) > 0):
+                    print(f'\tanalyze hypothetical proteins: {len(hypotheticals)}')
+                    pfam_hits = feat_cds.predict_pfam(hypotheticals)
+                    print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
+                    feat_cds.analyze_proteins(hypotheticals)
+                    print('\tcalculated proteins statistics')
             
             print('\trevise special cases...')
             feat_cds.revise_special_cases_annotated(genome, cdss)
@@ -464,6 +476,7 @@ def main():
     cdss = [f for f in features if f['type'] == bc.FEATURE_CDS]
     print(f"\tCDSs: {len(cdss)}")
     print(f"\t  hypotheticals: {len([cds for cds in cdss if 'hypothetical' in cds])}")
+    print(f"\t  pseudogenes: {len([cds for cds in cdss if 'pseudogene' in cds])}")
     print(f"\t  signal peptides: {len([cds for cds in cdss if bc.FEATURE_SIGNAL_PEPTIDE in cds])}")
     print(f"\tsORFs: {len([f for f in features if f['type'] == bc.FEATURE_SORF])}")
     print(f"\tgaps: {len([f for f in features if f['type'] == bc.FEATURE_GAP])}")
@@ -542,6 +555,7 @@ def main():
         fh_out.write(f"ncRNA regions: {len([f for f in features if f['type'] == bc.FEATURE_NC_RNA_REGION])}\n")
         fh_out.write(f"CRISPR arrays: {len([f for f in features if f['type'] == bc.FEATURE_CRISPR])}\n")
         fh_out.write(f"CDSs: {len(cdss)}\n")
+        fh_out.write(f"pseudogenes: {len([cds for cds in cdss if 'pseudogene' in cds])}\n")
         fh_out.write(f"hypotheticals: {len([cds for cds in cdss if 'hypothetical' in cds])}\n")
         fh_out.write(f"signal peptides: {len([cds for cds in cdss if bc.FEATURE_SIGNAL_PEPTIDE in cds])}\n")
         fh_out.write(f"sORFs: {len([f for f in features if f['type'] == bc.FEATURE_SORF])}\n")
