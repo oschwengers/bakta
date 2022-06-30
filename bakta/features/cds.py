@@ -668,17 +668,17 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                         cds[bc.PSEUDOGENE]['orientation'] = ', '.join(tmp_type)
 
                         tmp_cause: List[str] = []
-                        if cause[bc.PSEUDOGENE_INSERTION]:
+                        if cause.get(bc.PSEUDOGENE_INSERTION, None):
                             tmp_cause.append('Frameshift due to the insertion around ' + ', '.join(map(str, cause[bc.PSEUDOGENE_INSERTION])) + '.')
-                        if cause[bc.PSEUDOGENE_DELETION]:
+                        if cause.get(bc.PSEUDOGENE_DELETION, None):
                             tmp_cause.append('Frameshift due to the deletion around ' + ', '.join(map(str, cause[bc.PSEUDOGENE_DELETION])) + '.')
-                        if cause[bc.PSEUDOGENE_START]:
+                        if cause.get(bc.PSEUDOGENE_START, None):
                             tmp_cause.append('Point mutation around ' + ', '.join(map(str, cause[bc.PSEUDOGENE_START])) + '.')
-                        if cause[bc.PSEUDOGENE_STOP]:
+                        if cause.get(bc.PSEUDOGENE_STOP, None):
                             tmp_cause.append('Nonsense mutation around ' + ', '.join(map(str, cause[bc.PSEUDOGENE_STOP])) + '.')
-                        if cause[bc.PSEUDOGENE_SELENOCYSTEINE]:  # only for pseudogenes with translation exception + other cause
+                        if cause.get(bc.PSEUDOGENE_SELENOCYSTEINE, None):  # only for pseudogenes with translation exception + other cause
                             tmp_cause.append('Translation exception: Selenocysteine around ' + ', '.join(map(str, cause[bc.PSEUDOGENE_SELENOCYSTEINE])) + '.')
-                        if cause[bc.PSEUDOGENE_PYROLYSINE]:  # only for pseudogenes with translation exception + other cause
+                        if cause.get(bc.PSEUDOGENE_PYROLYSINE, None):  # only for pseudogenes with translation exception + other cause
                             tmp_cause.append('Translation exception: Pyrolysin around ' + ', '.join(map(str, cause[bc.PSEUDOGENE_PYROLYSINE])) + '.')
                         cds[bc.PSEUDOGENE]['type'] = ' '.join(tmp_cause)  # pseudogene cause
 
@@ -877,9 +877,15 @@ def convert_dict_set_values_to_list(tmp_dict: dict) -> dict:
     Convert the positions of pseudogenization causes stored in a set to a list. Needed for cause export.
     dict[str, set[int, ...]] --> dict[str, list[int, ...]]
     """
+    drop_keys: Set = set()
     for key, value in tmp_dict.items():
         if type(value) == set:
-            tmp_dict[key] = sorted(list(value))
+            if len(value) == 0:
+                drop_keys.add(key)
+            else:
+                tmp_dict[key] = sorted(list(value))
+    for key in drop_keys:
+        tmp_dict.pop(key)
     return tmp_dict
 
 # EOF
