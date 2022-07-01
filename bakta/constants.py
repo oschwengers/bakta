@@ -10,6 +10,7 @@ RE_INSDC_ID = re.compile(r'[A-Za-z\d_.:*#-]{1,25}')  # https://www.ncbi.nlm.nih.
 RE_LOCUSTAG_PREFIX = re.compile(r'[A-Za-z\d_.-]{1,24}')  # https://ena-docs.readthedocs.io/en/latest/faq/locus_tags.html
 RE_INSDC_LOCUSTAG_PREFIX = re.compile(r'[A-Z][A-Z0-9]{2,11}')  # https://ena-docs.readthedocs.io/en/latest/faq/locus_tags.html
 
+
 ############################################################################
 # sORF prediction setttings
 ############################################################################
@@ -27,6 +28,7 @@ MIN_SORF_COVERAGE = 0.9  # min sORF coverage for PSC detection
 MIN_SORF_IDENTITY = 0.9  # min sORF identity for PSC detection
 HYPOTHETICAL_PROTEIN = 'hypothetical protein'  # hypothetical protein product description
 
+
 ############################################################################
 # Pseudogene identification settings
 ############################################################################
@@ -39,7 +41,7 @@ PSEUDOGENE_OFFSET: int = 300  # nucleotide offset for pseudogene class detection
 ############################################################################
 # Pseudogene feature tags
 ############################################################################
-PSEUDOGENE: str = 'pseudogene'  # /pseudogene qualifier
+PSEUDOGENE: str = 'pseudogene'
 PSEUDOGENE_UNPROCESSED: str = 'unprocessed'
 PSEUDOGENE_UNITARY: str = 'unitary'
 PSEUDOGENE_INSERTION: str = 'insertion'
@@ -100,6 +102,7 @@ FEATURE_ORIT = 'oriT'
 FEATURE_IS = 'is'
 FEATURE_MITE = 'mite'
 
+
 ############################################################################
 # INSDC feature tags
 ############################################################################
@@ -141,12 +144,14 @@ INSDC_FEATURE_MOBILE_ELEMENT_TYPE_TRANSPOSON = 'transposon'
 INSDC_FEATURE_MOBILE_ELEMENT_TYPE_ = 'integron'
 INSDC_FEATURE_MOBILE_ELEMENT_TYPE_ = 'other'
 
+
 ############################################################################
 # Feature ends
 ############################################################################
 FEATURE_END_5_PRIME = '5-prime'
 FEATURE_END_3_PRIME = '3-prime'
 FEATURE_END_UNKNOWN = '?'
+
 
 ############################################################################
 # Strand types prefixes
@@ -156,6 +161,7 @@ STRAND_REVERSE = '-'
 STRAND_UNKNOWN = '?'
 STRAND_NA = '.'
 
+
 ############################################################################
 # Gram types
 ############################################################################
@@ -163,18 +169,18 @@ GRAM_POSITIVE = '+'
 GRAM_NEGATIVE = '-'
 GRAM_UNKNOWN = '?'
 
+
 ############################################################################
 # Replicon types, length thresholds & topology
 ############################################################################
 REPLICON_CHROMOSOME = 'chromosome'
 REPLICON_PLASMID = 'plasmid'
 REPLICON_CONTIG = 'contig'
-
 REPLICON_LENGTH_THRESHOLD_PLASMID = 112_000  # Nasuia deltocephalinicola -> DOI: 10.1093/gbe/evt118
 REPLICON_LENGTH_THRESHOLD_CHROMOSOME = 2_800_000  # max plasmid length (except 1 outlier-> https://ccb-microbe.cs.uni-saarland.de/plsdb/plasmids/
-
 TOPOLOGY_CIRCULAR = 'circular'
 TOPOLOGY_LINEAR = 'linear'
+
 
 ############################################################################
 # Miscellaneous constants

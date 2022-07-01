@@ -269,29 +269,26 @@ def main():
 
             if(cfg.gram != bc.GRAM_UNKNOWN):
                 sig_peptides_found = sig_peptides.search(cdss, cds_aa_path)
-                print(f"\tsignal peptides: {len(sig_peptides_found)}")
+                print(f'\tsignal peptides: {len(sig_peptides_found)}')
 
             print('\tcombine annotations and mark hypotheticals...')
             log.debug('combine CDS annotations')
             for cds in cdss:
                 anno.combine_annotation(cds)  # combine IPS & PSC annotations and mark hypotheticals
 
-            log.debug('analyze hypotheticals')
             hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
             if(len(hypotheticals) > 0):
                 if(not cfg.skip_pseudo):
-                    print('predict & annotate pseudogenes...')
-                    print('\thypothetical CDS:', len(hypotheticals))
+                    print('\tdetect pseudogenes...')
+                    log.debug('search pseudogene candidates')
                     pseudo_candidates = feat_cds.predict_pseudo_candidates(hypotheticals)
-                    print('\tpseudogene candidates:', len(pseudo_candidates))
-                    if (len(pseudo_candidates) > 0):
-                        pseudogenes = feat_cds.pseudogene_class(pseudo_candidates, cdss, genome)
-                    else:
-                        pseudogenes = []
-                    print(f'\tfound pseudogenes: {len(pseudogenes)}')
+                    print(f'\t\tpseudogene candidates: {len(pseudo_candidates)}')
+                    pseudogenes = feat_cds.pseudogene_class(pseudo_candidates, cdss, genome) if len(pseudo_candidates) > 0 else []
+                    print(f'\t\tfound pseudogenes: {len(pseudogenes)}')
                     hypotheticals = [cds for cds in hypotheticals if 'pseudogene' not in cds]
                 if(len(hypotheticals) > 0):
-                    print(f'\tanalyze hypothetical proteins: {len(hypotheticals)}')
+                    log.debug('analyze hypotheticals')
+                    print(f'analyze hypothetical proteins: {len(hypotheticals)}')
                     pfam_hits = feat_cds.predict_pfam(hypotheticals)
                     print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
                     feat_cds.analyze_proteins(hypotheticals)

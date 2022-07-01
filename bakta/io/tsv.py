@@ -28,8 +28,8 @@ def write_tsv(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_
 
                 gene = feat['gene'] if feat.get('gene', None) else ''
 
-                if feat.get(bc.PSEUDOGENE, False):
-                    pseudogene: str = f"pseudogene={bc.PSEUDOGENE_UNPROCESSED if feat[bc.PSEUDOGENE]['paralog'] else bc.PSEUDOGENE_UNITARY}; "
+                if feat.get('pseudo', False):
+                    pseudogene: str = f"(pseudo) "
                 else:
                     pseudogene: str = ''
 

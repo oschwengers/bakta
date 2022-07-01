@@ -125,7 +125,7 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                 if('product' in qualifiers):
                     del qualifiers['product']
             elif(feature['type'] == bc.FEATURE_CDS) or (feature['type'] == bc.FEATURE_SORF):
-                if(feature.get(bc.PSEUDOGENE, False)):
+                if('pseudo' in feature):
                     qualifiers[bc.INSDC_FEATURE_PSEUDOGENE] = bc.PSEUDOGENE_UNPROCESSED if feature[bc.PSEUDOGENE]['paralog'] else bc.PSEUDOGENE_UNITARY
                 else:
                     qualifiers['protein_id'] = f"gnl|Bakta|{feature['locus']}"
@@ -252,7 +252,7 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                     else:
                         start = BeforePosition(start)
                         stop = AfterPosition(stop)
-                elif(feature.get(bc.PSEUDOGENE, None)):
+                elif(feature.get('pseudo', False) and feature['type'] == bc.FEATURE_CDS):
                     if(feature[bc.PSEUDOGENE]['cause'][bc.FEATURE_END_5_PRIME]):
                         start = BeforePosition(feature['start'] - 1)
                     if(feature[bc.PSEUDOGENE]['cause'][bc.FEATURE_END_3_PRIME]):
