@@ -34,7 +34,7 @@ import bakta.ups as ups
 import bakta.ips as ips
 import bakta.psc as psc
 import bakta.pscc as pscc
-
+import bakta.plot as plot
 
 def main():
     args = bu.parse_arguments()  # parse arguments
@@ -509,6 +509,10 @@ def main():
     print('\ttranslated CDS sequences...')
     faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.faa')
     fasta.write_faa(features, faa_path)
+
+    print('\tplot...')
+    plot_path = cfg.output_path
+    plot.write_plot(features, contigs, plot_path)
 
     if(cfg.skip_cds is False):
         hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
