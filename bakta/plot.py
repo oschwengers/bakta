@@ -22,14 +22,23 @@ def write_plot(features,
         outdir = outdir.joinpath('Plots')
         Path(outdir).mkdir(parents=True, exist_ok=True)
         for c in contigs:
-            contig_features = []
-            contig_contigs = [c]
-            for f in features:
-                if f['contig'] == c['id']:
-                    contig_features.append(f)
-            plot_count += 1
+            if c['complete'] == True:
+                contig_features = []
+                contig_contigs = [c]
+                for f in features:
+                    if f['contig'] == c['id']:
+                        contig_features.append(f)
+                plot_count += 1
 
-            write_plot(contig_features,contig_contigs,outdir, False, plot_count,p_gc_content_color,p_gc_skew_color,n_gc_content_color,n_gc_skew_color)
+                write_plot(contig_features,
+                            contig_contigs,
+                            outdir,
+                            False,
+                            plot_count,
+                            p_gc_content_color,
+                            p_gc_skew_color,
+                            n_gc_content_color,
+                            n_gc_skew_color)
 
     #######################
     # Define Variables
@@ -39,7 +48,8 @@ def write_plot(features,
     step_sizes = []
     for c in contigs:
         genome_lengths += int(c['length'])
-        window_size = 2 if c['length'] < 2000 else c['length'] / 1000
+        window_size = c['length']/100 if c['length'] < 2000 else c['length'] / 1000
+        window_size = 10 if window_size < 10 else window_size
         window_sizes.append(window_size)
         step_size = window_size* 0.2 if window_size >= 5 else 1
         step_sizes.append(step_size)
@@ -104,21 +114,22 @@ def write_plot(features,
         step_size = int(step_size)
         window_size = int(window_size)
         for w in range(0, len(seq), step_size):
+
             start = w - (window_size / 2)
             start = start + len(seq) if start < 0 else start
-            end = w + (window_size / 2)
-            end = end - len(seq) if end > len(seq) else end
+            stop = w + (window_size / 2)
+            stop = stop - len(seq) if stop > len(seq) else stop
             start = int(start)
-            end = int(end)
-            if start < end:
-                subseq = seq[start:end]
+            stop = int(stop)
+
+            if start < stop:
+                subseq = seq[start:stop]
             else:
-                subseq = "".join([seq[start:], seq[:end]])
+                subseq = "".join([seq[start:], seq[:stop]])
             gc_value = gc_mean - SeqUtils.GC(subseq)
-            max_gc_content = gc_value if max_gc_content < gc_value else max_gc_content
+            max_gc_content = abs(gc_value) if max_gc_content < abs(gc_value) else max_gc_content
             content_color = p_gc_content_color if gc_value > 0 else n_gc_content_color
             gc_content_text += f"{contig['id']} {w} {w + step_size} {gc_value} fill_color={content_color}\n"
-
             G = float(subseq.count('G'))
             C = float(subseq.count('C'))
             try:
@@ -164,8 +175,8 @@ def write_plot(features,
     count = 0
     colors = [ 'dgrey', 'grey', 'red', 'black']
     for i, c in enumerate(contigs):
-        karyotype_text += f"chr - {c['id']} {i + 1} {count} {count + len(c['sequence'])} {colors[i]}\n"
-        count += len('sequence')
+        karyotype_text += f"chr - {c['id']} {i + 1} {count} {len(c['sequence'])} {colors[i]}\n"
+
     with open(karyotype_txt, 'w') as f:
         f.write(karyotype_text)
 
@@ -253,7 +264,7 @@ def write_plot(features,
         type = histogram
         file = {gc_file}
         r1 = {track_radius}r
-        r0 = {track_radius-0.1}r
+        r0 = {track_radius-0.15}r
         min = {minimum}
         max = {maximum}
         thickness = 0
@@ -261,7 +272,7 @@ def write_plot(features,
         </plot>    
         '''
 
-        track_radius -= 0.1
+        track_radius -= 0.15
     with open(tracks_conf, 'w') as f:
         f.write(tracks_text)
 
