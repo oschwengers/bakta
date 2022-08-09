@@ -35,7 +35,7 @@ HYPOTHETICAL_PROTEIN = 'hypothetical protein'  # hypothetical protein product de
 MIN_PSEUDOGENE_IDENTITY = 0.8  # min protein identity for pseudogene prediction
 MIN_PSEUDOGENE_QUERY_COVERAGE = 0.8  # min query coverage for pseudogene prediction
 MIN_PSEUDOGENE_SUBJECT_COVERAGE = 0.4  # min subject coverage for pseudogene prediction
-PSEUDOGENE_OFFSET = 1000  # nucleotide offset for pseudogene class detection
+PSEUDOGENE_OFFSET = 300  # nucleotide offset for pseudogene class detection
 
 
 ############################################################################
