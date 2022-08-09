@@ -98,7 +98,7 @@ def search(cdss: Sequence[dict]) -> Tuple[Sequence[dict], Sequence[dict], Sequen
     return pscs_found, psccs_found, cds_not_found
 
 
-def lookup(features: Sequence[dict]):
+def lookup(features: Sequence[dict], pseudo: bool = False):
     """Lookup PCS information"""
     no_psc_lookups = 0
     try:
@@ -109,10 +109,13 @@ def lookup(features: Sequence[dict]):
             with ThreadPoolExecutor(max_workers=max(10, cfg.threads)) as tpe:  # use min 10 threads for IO bound non-CPU lookups
                 for feature in features:
                     uniref90_id = None
-                    if('psc' in feature):
-                        uniref90_id = feature['psc'].get(DB_PSC_COL_UNIREF90, None)
-                    elif('ips' in feature):
-                        uniref90_id = feature['ips'].get(DB_PSC_COL_UNIREF90, None)
+                    if(pseudo):  # if pseudogene use pseudogene info 
+                        uniref90_id = feature[bc.PSEUDOGENE]['inference'][DB_PSC_COL_UNIREF90]
+                    else:
+                        if('psc' in feature):
+                            uniref90_id = feature['psc'].get(DB_PSC_COL_UNIREF90, None)
+                        elif('ips' in feature):
+                            uniref90_id = feature['ips'].get(DB_PSC_COL_UNIREF90, None)
 
                     if(uniref90_id is not None):
                         if(bc.DB_PREFIX_UNIREF_90 in uniref90_id):
@@ -124,10 +127,14 @@ def lookup(features: Sequence[dict]):
             rec = future.result()
             if(rec is not None):
                 psc = parse_annotation(rec)
-                if('psc' in feature):
-                    feature['psc'] = {**feature['psc'], **psc}  # merge dicts to store alignment info for later PSC/PSCC annotations
+                if(pseudo):
+                    feature[bc.PSEUDOGENE]['psc'] = psc  # store PSC info for pseudogene annotation
+                    feature[bc.PSEUDOGENE]['inference'][DB_PSC_COL_UNIREF90] = bc.DB_PREFIX_UNIREF_90 + feature[bc.PSEUDOGENE]['inference'][DB_PSC_COL_UNIREF90]  # restore full UniRef90 identifier
                 else:
-                    feature['psc'] = psc
+                    if('psc' in feature):
+                        feature['psc'] = {**feature['psc'], **psc}  # merge dicts to store alignment info for later PSC/PSCC annotations
+                    else:
+                        feature['psc'] = psc
                 no_psc_lookups += 1
                 log.debug(
                     'lookup: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, gene=%s, product=%s',

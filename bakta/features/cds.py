@@ -518,6 +518,7 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
         log.warning('Diamond failed! diamond-error-code=%d', proc.returncode)
         raise Exception(f'diamond error! error code: {proc.returncode}')
 
+    pseudo_candidates = []
     cds_by_hexdigest = orf.get_orf_dictionary(hypotheticals)
     with diamond_output_path.open() as fh:
         for line in fh:
@@ -536,21 +537,14 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
                     'identity': identity,
                     'pseudo_start': int(query_start),
                     'cluster_start': int(subject_start),
-                    'pseudo_end': int(query_end),
                     'cluster_end': int(subject_end),
                     'cluster_sequence': subject_sequence
                 }
+                pseudo_candidates.append(cds)
                 log.debug(
-                    'pseudogene-candidate: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, '
-                    'subject-cov=%0.3f, identity=%0.3f, UniRef90=%s',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, subject_cov,
-                    identity, cluster_id
+                    'pseudogene-candidate: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, subject-cov=%0.3f, identity=%0.3f, UniRef90=%s',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, subject_cov, identity, cluster_id
                 )
-
-    pseudo_candidates = []
-    for cds in hypotheticals:
-        if 'pseudo-candidate' in cds:
-            pseudo_candidates.append(cds)
     log.info('found: pseudogene-candidates=%i', len(pseudo_candidates))
     return pseudo_candidates
 
@@ -661,8 +655,8 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                     if causes[bc.FEATURE_END_5_PRIME] or causes[bc.FEATURE_END_3_PRIME]:
                         pseudogene = {
                             'cause': convert_dict_set_values_to_list(causes),
-                            'pseudo-candidate': cds['pseudo-candidate'],
-                            'paralog': is_paralog(uniref90_by_hexdigest, aa_identifier, cds['pseudo-candidate'][DB_PSC_COL_UNIREF90])
+                            'inference': cds['pseudo-candidate'],
+                            'paralog': is_paralog(uniref90_by_hexdigest, aa_identifier, cluster_id)
                         }
 
                         tmp_type = []

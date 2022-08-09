@@ -32,6 +32,11 @@ RE_GENE_SYMBOL = re.compile(r'[a-z]{3}[A-Z][0-9]?')
 
 
 def combine_annotation(feature: dict):
+    pseudogene_psc = None
+    pseudogene_pscc = None
+    if(bc.PSEUDOGENE in feature):
+        pseudogene_psc = feature[bc.PSEUDOGENE].get('psc', None)
+        pseudogene_pscc = feature[bc.PSEUDOGENE].get('pscc', None)
     ups = feature.get('ups', None)
     ips = feature.get('ips', None)
     psc = feature.get('psc', None)
@@ -41,6 +46,24 @@ def combine_annotation(feature: dict):
     gene = None
     product = None
     db_xrefs = set()
+    if(pseudogene_pscc):
+        pscc_gene = pseudogene_pscc.get('gene', None)
+        if(pscc_gene):
+            gene = pscc_gene
+        pscc_product = pseudogene_pscc.get('product', None)
+        if(pscc_product):
+            product = pscc_product
+        for db_xref in pseudogene_pscc['db_xrefs']:
+            db_xrefs.add(db_xref)
+    if(pseudogene_psc):
+        psc_gene = pseudogene_psc.get('gene', None)
+        if(psc_gene):
+            gene = psc_gene
+        psc_product = pseudogene_psc.get('product', None)
+        if(psc_product):
+            product = psc_product
+        for db_xref in pseudogene_psc['db_xrefs']:
+            db_xrefs.add(db_xref)
     if(pscc):
         pscc_product = pscc.get('product', None)
         if(pscc_product):

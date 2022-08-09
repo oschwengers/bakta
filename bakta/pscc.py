@@ -18,7 +18,7 @@ DB_PSCC_COL_PRODUCT = 'product'
 log = logging.getLogger('PSCC')
 
 
-def lookup(features: Sequence[dict]):
+def lookup(features: Sequence[dict], pseudo: bool = False):
     """Lookup PSCC information"""
     no_pscc_lookups = 0
     try:
@@ -28,19 +28,27 @@ def lookup(features: Sequence[dict]):
             conn.row_factory = sqlite3.Row
             with ThreadPoolExecutor(max_workers=max(10, cfg.threads)) as tpe:  # use min 10 threads for IO bound non-CPU lookups
                 for feature in features:
-                    if('psc' in feature):
-                        uniref50_id = feature['psc'].get(DB_PSCC_COL_UNIREF50, None)
-                        if(uniref50_id is not None):
-                            if(bc.DB_PREFIX_UNIREF_50 in uniref50_id):
-                                uniref50_id = uniref50_id[9:]  # remove 'UniRef50_' prefix
-                            future = tpe.submit(fetch_db_pscc_result, conn, uniref50_id)
-                            rec_futures.append((feature, future))
+                    uniref50_id = None
+                    if(pseudo):  # if pseudogene use pseudogene info
+                        if('psc' in feature[bc.PSEUDOGENE]):
+                            uniref50_id = feature[bc.PSEUDOGENE]['psc'].get(DB_PSCC_COL_UNIREF50, None)
+                    else:
+                        if('psc' in feature):
+                            uniref50_id = feature['psc'].get(DB_PSCC_COL_UNIREF50, None)
+                    if(uniref50_id is not None):
+                        if(bc.DB_PREFIX_UNIREF_50 in uniref50_id):
+                            uniref50_id = uniref50_id[9:]  # remove 'UniRef50_' prefix
+                        future = tpe.submit(fetch_db_pscc_result, conn, uniref50_id)
+                        rec_futures.append((feature, future))
 
         for (feature, future) in rec_futures:
             rec = future.result()
             if(rec is not None):
                 pscc = parse_annotation(rec)
-                feature['pscc'] = pscc
+                if(pseudo):
+                    feature[bc.PSEUDOGENE]['pscc'] = pscc
+                else:
+                    feature['pscc'] = pscc
                 no_pscc_lookups += 1
                 log.debug(
                     'lookup: contig=%s, start=%i, stop=%i, strand=%s, UniRef50=%s, product=%s',
