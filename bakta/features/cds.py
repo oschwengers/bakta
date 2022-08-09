@@ -536,6 +536,7 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
                     'subject-cov': subject_cov,
                     'identity': identity,
                     'pseudo_start': int(query_start),
+                    'pseudo_end': int(query_end),
                     'cluster_start': int(subject_start),
                     'cluster_end': int(subject_end),
                     'cluster_sequence': subject_sequence
