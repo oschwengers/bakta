@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 
 from collections import OrderedDict
 from math import ceil
-from typing import Dict, List, Sequence, Set, Tuple, Union
+from typing import Dict, Sequence, Set, Union
 from pathlib import Path
 
 from Bio import SeqIO
@@ -522,8 +522,7 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
     cds_by_hexdigest = orf.get_orf_dictionary(hypotheticals)
     with diamond_output_path.open() as fh:
         for line in fh:
-            (aa_identifier, cluster_id, identity, alignment_length, query_start, query_end, subject_start, subject_end,
-             subject_sequence) = line.rstrip('\n').split('\t')
+            (aa_identifier, cluster_id, identity, alignment_length, query_start, query_end, subject_start, subject_end, subject_sequence) = line.rstrip('\n').split('\t')
             cds = cds_by_hexdigest[aa_identifier]
             query_cov = int(alignment_length) / len(cds['aa'])
             subject_cov = int(alignment_length) / len(subject_sequence)
@@ -552,8 +551,8 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
 
 def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: dict) -> Sequence[dict]:
     """
-    Conduct BLASTX search of extended pseudogene CDS candidates against matching PCS db for pseudogenes with a frameshift.
-    Search for possible pseudogenization causes in the alignment and determine them.
+    Conduct a BLASTX search of 5'/3'-extended sequences of pseudogene candidates against matching PSCs.
+    Search for and determine possible pseudogenization causes in the resulting alignments.
     """
     psc_faa_path = cfg.tmp_path.joinpath('psc.pseudogene.candidates.faa')
     psc_dmnd_path = cfg.tmp_path.joinpath('psc.pseudogene.candidates.dmnd')
@@ -639,7 +638,7 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
 
                     if alignment_length == len(cds['aa']):  # skip non-extended genes (full match)
                         log.debug(
-                            'No pseudogene (full match): contig=%s, start=%i, stop=%i, strand=%s',
+                            'no pseudogene (full match): contig=%s, start=%i, stop=%i, strand=%s',
                             cds['contig'], cds['start'], cds['stop'], cds['strand']
                         )
                         continue
@@ -687,19 +686,16 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                         cds.pop('hypothetical')
                         pseudogenes.append(cds)
                         log.info(
-                            'Pseudogene: contig=%s, start=%i, stop=%i, strand=%s, cause=%s',
+                            'pseudogene: contig=%s, start=%i, stop=%i, strand=%s, cause=%s',
                             cds['contig'], cds['start'], cds['stop'], cds['strand'], cds[bc.PSEUDOGENE]['type']
                         )
 
                     elif causes[bc.PSEUDOGENE_SELENOCYSTEINE] or causes[bc.PSEUDOGENE_PYROLYSINE]:
                         # TODO handle translation exceptions, correct annotation
-                        if causes[bc.PSEUDOGENE_SELENOCYSTEINE]:
-                            pass
-                        elif causes[bc.PSEUDOGENE_PYROLYSINE]:
-                            pass
+                        pass
                     else:  # skip non-extended genes (complete aa insertion or deletion)
                         log.debug(
-                            'No pseudogene (aa indels): contig=%s, start=%i, stop=%i, strand=%s',
+                            'no pseudogene (aa indels): contig=%s, start=%i, stop=%i, strand=%s',
                             cds['contig'], cds['start'], cds['stop'], cds['strand']
                         )
 
@@ -709,7 +705,7 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
     return pseudogenes
 
 
-def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSET) -> Tuple[dict, bool, int, int]:
+def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSET) -> Dict[str, Union[int, str, bool]]:
     """
     Elongate the given CDS sequence with the offset in upstream and downstream direction, if possible.
     """
@@ -719,14 +715,11 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
         'strand': cds['strand'],
         'edge': cds.get('edge', False),
     }
-    # left_fill = 0
-    # right_fill = 0
 
     if contig['topology'] == 'circular' and tmp_cds['start'] - offset < 0:
         tmp_cds['start'] = len(contig['sequence']) - (offset - tmp_cds['start'])
         tmp_cds['edge'] = True
     elif tmp_cds['start'] - offset < 0:
-        # left_fill = (tmp_cds['start'] - offset) * -1
         tmp_cds['start'] = 0
     else:
         tmp_cds['start'] = tmp_cds['start'] - offset
@@ -735,7 +728,6 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
         tmp_cds['stop'] = (tmp_cds['stop'] + offset) - len(contig['sequence'])
         tmp_cds['edge'] = True
     elif tmp_cds['stop'] + offset > len(contig['sequence']):
-        # right_fill = tmp_cds['stop'] + offset - len(contig['sequence'])
         tmp_cds['stop'] = len(contig['sequence'])
     else:
         tmp_cds['stop'] = tmp_cds['stop'] + offset
@@ -789,7 +781,7 @@ def compare_alignments(cause: Dict[Union[str, int], Union[Set[int], bool]], alig
     """
     Compare the alignment and reference alignment to find the causes of pseudogenization.
     """
-    position: int = cds['start']
+    position = cds['start']
     for char, ref_char in zip(alignment, ref_alignment):
         if char == '/':  # deletion
             cause[bc.PSEUDOGENE_DELETION].add(position)
@@ -840,7 +832,7 @@ def upstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
     Search for pseudogenization causes in the elongated upstream sequence of the CDS.
     """
     if cds['start'] - (extended_positions['start'] + qstart - 1) > 0 or elongated_edge:  # elongated alignment 5'
-        up_length: int = ceil((cds['start'] - (extended_positions['start'] + qstart - 1)) / 3)
+        up_length = ceil((cds['start'] - (extended_positions['start'] + qstart - 1)) / 3)
         cause = compare_alignments(cause, alignment[:up_length], ref_alignment[:up_length], cds, direction=bc.FEATURE_END_5_PRIME)
 
         if alignment[up_length] == 'M' and ref_alignment[up_length] != 'M':

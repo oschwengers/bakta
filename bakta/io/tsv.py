@@ -29,7 +29,7 @@ def write_tsv(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_
                 gene = feat['gene'] if feat.get('gene', None) else ''
 
                 if feat.get('pseudo', False):
-                    pseudogene: str = f"(pseudo) "
+                    pseudogene: str = '(pseudo) '
                 else:
                     pseudogene: str = ''
 

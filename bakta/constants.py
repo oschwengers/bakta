@@ -32,24 +32,24 @@ HYPOTHETICAL_PROTEIN = 'hypothetical protein'  # hypothetical protein product de
 ############################################################################
 # Pseudogene identification settings
 ############################################################################
-MIN_PSEUDOGENE_IDENTITY: float = 0.8  # min protein identity for pseudogene prediction
-MIN_PSEUDOGENE_QUERY_COVERAGE: float = 0.8  # min query coverage for pseudogene prediction
-MIN_PSEUDOGENE_SUBJECT_COVERAGE: float = 0.4  # min subject coverage for pseudogene prediction
-PSEUDOGENE_OFFSET: int = 300  # nucleotide offset for pseudogene class detection; 300bp see Psi-Phy and DFAST
+MIN_PSEUDOGENE_IDENTITY = 0.8  # min protein identity for pseudogene prediction
+MIN_PSEUDOGENE_QUERY_COVERAGE = 0.8  # min query coverage for pseudogene prediction
+MIN_PSEUDOGENE_SUBJECT_COVERAGE = 0.4  # min subject coverage for pseudogene prediction
+PSEUDOGENE_OFFSET = 1000  # nucleotide offset for pseudogene class detection
 
 
 ############################################################################
 # Pseudogene feature tags
 ############################################################################
-PSEUDOGENE: str = 'pseudogene'
-PSEUDOGENE_UNPROCESSED: str = 'unprocessed'
-PSEUDOGENE_UNITARY: str = 'unitary'
-PSEUDOGENE_INSERTION: str = 'insertion'
-PSEUDOGENE_DELETION: str = 'deletion'
-PSEUDOGENE_START: str = 'start'
-PSEUDOGENE_STOP: str = 'stop'
-PSEUDOGENE_SELENOCYSTEINE: str = 'selenocysteine'
-PSEUDOGENE_PYROLYSINE: str = 'pyrolysine'
+PSEUDOGENE = 'pseudogene'
+PSEUDOGENE_UNPROCESSED = 'unprocessed'
+PSEUDOGENE_UNITARY = 'unitary'
+PSEUDOGENE_INSERTION = 'insertion'
+PSEUDOGENE_DELETION = 'deletion'
+PSEUDOGENE_START = 'start'
+PSEUDOGENE_STOP = 'stop'
+PSEUDOGENE_SELENOCYSTEINE = 'selenocysteine'
+PSEUDOGENE_PYROLYSINE = 'pyrolysine'
 
 
 ############################################################################
