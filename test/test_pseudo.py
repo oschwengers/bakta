@@ -7,7 +7,7 @@ import pytest
 
 
 @pytest.mark.parametrize('alignment, ref_alignment, expected_result', [
-        (
+        (  # deletion
             'MKEGQFVGY/FKMKEQRKIPLTHIMIIGAFIFAFLQVVLLASLVHAVNVNNEIQEGLFQSGRIMVESLQHILSVQTGIH',
             'MKEGQFVGY-FKMKEQRKIPLTHIMIIGAFIFAFLQVVLLASLVHAVNVNNEIQEGLFQSGRIMVESLQHILSVQTGIN',
             {
@@ -20,8 +20,8 @@ import pytest
                 bc.FEATURE_END_3_PRIME: False,
                 bc.FEATURE_END_5_PRIME: True
             }
-        ),  # deletion
-        (
+        ),
+        (  # insertion
             'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKNVIWDYPKDFIAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL\\KIIA\\AVANNYMPGVASYAG',
             'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKDVIWDYPKDFMAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL-KIIA-PVANDYMPGVDSYAG',
             {
@@ -34,8 +34,8 @@ import pytest
                 bc.FEATURE_END_3_PRIME: False,
                 bc.FEATURE_END_5_PRIME: True
             }
-        ),  # insertion
-        (
+        ),
+        (  # internal stop
             'MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
             'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASQGSWYNF',
             {
@@ -48,8 +48,8 @@ import pytest
                 bc.FEATURE_END_3_PRIME: False,
                 bc.FEATURE_END_5_PRIME: True
             }
-        ),  # internal stop
-        (
+        ),
+        (  # selenocysteine
             'MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
             'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASUGSWYNF',
             {
@@ -62,8 +62,8 @@ import pytest
                 bc.FEATURE_END_3_PRIME: False,
                 bc.FEATURE_END_5_PRIME: False
             }
-        ),  # selenocysteine
-        (
+        ),
+        (  # pyrolysine
             'MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
             'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASOGSWYNF',
             {
@@ -76,12 +76,12 @@ import pytest
                 bc.FEATURE_END_3_PRIME: False,
                 bc.FEATURE_END_5_PRIME: False
             }
-        )  # pyrolysine
+        )
     ]
 )
 def test_compare_alignments(alignment, ref_alignment, expected_result):
     # Includes test_downstream_elongation
-    cause = {
+    causes = {
         bc.PSEUDOGENE_INSERTION: set(),
         bc.PSEUDOGENE_DELETION: set(),
         bc.PSEUDOGENE_START: set(),
@@ -99,11 +99,12 @@ def test_compare_alignments(alignment, ref_alignment, expected_result):
         'edge': False
     }
     direction = bc.FEATURE_END_5_PRIME
-    assert feat_cds.compare_alignments(cause, alignment, ref_alignment, cds, direction) == expected_result
+    feat_cds.compare_alignments(causes, alignment, ref_alignment, cds, direction)
+    assert causes == expected_result
 
 
 @pytest.mark.parametrize('alignment, ref_alignment, expected_result', [
-        (
+        (  # point mutation -> internal start codon
             'MINWRKVGMTSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
             'MINWRKVGATSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
             {
@@ -116,25 +117,11 @@ def test_compare_alignments(alignment, ref_alignment, expected_result):
                 bc.FEATURE_END_3_PRIME: False,
                 bc.FEATURE_END_5_PRIME: True
             }
-        ) # ,  # point mutation -> internal start codon
-        # (
-            # 'VINWRKVGMTSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
-            # 'MINWRKVGMTSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
-            # {
-                # bc.PSEUDOGENE_INSERTION: set(),
-                # bc.PSEUDOGENE_DELETION: set(),
-                # bc.PSEUDOGENE_START: {5},  # TODO check
-                # bc.PSEUDOGENE_STOP: set(),
-                # bc.PSEUDOGENE_SELENOCYSTEINE: set(),
-                # bc.PSEUDOGENE_PYROLYSINE: set(),
-                # bc.FEATURE_END_3_PRIME: False,
-                # bc.FEATURE_END_5_PRIME: True
-            # }
-        # )  # point mutation -> loss of original start codon
+        )
     ]
 )
 def test_upstream_elongation(alignment, ref_alignment, expected_result):
-    cause = {
+    causes = {
         bc.PSEUDOGENE_INSERTION: set(),
         bc.PSEUDOGENE_DELETION: set(),
         bc.PSEUDOGENE_START: set(),
@@ -153,8 +140,8 @@ def test_upstream_elongation(alignment, ref_alignment, expected_result):
     }
     extended_positions = {'start': 1}
     elongated_edge = False
-
-    assert feat_cds.upstream_elongation(cause, alignment, ref_alignment, 8, extended_positions, cds, elongated_edge) == expected_result
+    feat_cds.upstream_elongation(causes, alignment, ref_alignment, 8, extended_positions, cds, elongated_edge)
+    assert causes == expected_result
 
 
 @pytest.mark.parametrize('cds, contig, expected_result', [
@@ -215,41 +202,4 @@ def test_upstream_elongation(alignment, ref_alignment, expected_result):
     ]
 )
 def test_get_elongated_cds(cds, contig, expected_result):
-    assert feat_cds.get_elongated_cds(cds=cds, contig=contig) == expected_result
-
-
-# @pytest.mark.parametrize('alignment, ref_alignment, expected_result', [
-#         (
-#             'MAVKRDMPEESKNSKVVKKEHFSIVFPDDIKVPKSEKELEAEKAENKSEHD',
-#             'MAVKRDMPEESKNSKVVKKEHFSIVFPDDIKEPSDKDEQKKKTIDTKKDND',
-#             {
-#                 bc.PSEUDOGENE_INSERTION: set(),
-#                 bc.PSEUDOGENE_DELETION: set(),
-#                 bc.PSEUDOGENE_START: set(),
-#                 bc.PSEUDOGENE_STOP: {156},
-#                 bc.PSEUDOGENE_SELENOCYSTEINE: set(),
-#                 bc.PSEUDOGENE_PYROLYSINE: set(),
-#                 bc.FEATURE_END_3_PRIME: True,
-#                 bc.FEATURE_END_5_PRIME: False
-#             }
-#         ),  # loss of stop codon
-#     ]
-# )
-# def test_loss_of_stop_codon(alignment, ref_alignment, expected_result):
-#     cds = {
-#         'start': 1,
-#         'stop': 165,
-#         'strand': '',
-#         'contig': '',
-#         'aa': 'MAVKRDMPEESKNSKVVKKEHFSIVFPDDIKVPKSEKELEAEKAENKSEHDKTN',
-#         'rbs_motif': None,
-#         'pseudo-candidate': {
-#             'cluster_sequence': 'MAVKRDMPEESKNSKVVKKEHFSIVFPDDIKEPSDKDEQKKKTIDTKKDND'
-#         }
-#     }
-#     extended_positions = {
-#         'start': 1,
-#         'len_psc': 51
-#     }
-#
-#     assert feat_cds.pseudogenization_cause(alignment, ref_alignment, 1, 153, extended_positions, cds) == expected_result
+    assert feat_cds.get_elongated_cds(cds, contig) == expected_result

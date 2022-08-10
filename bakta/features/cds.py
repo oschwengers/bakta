@@ -654,7 +654,7 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
 
                     if causes[bc.FEATURE_END_5_PRIME] or causes[bc.FEATURE_END_3_PRIME]:
                         pseudogene = {
-                            'cause': convert_dict_set_values_to_list(causes),
+                            'observations': convert_dict_set_values_to_list(causes),
                             'inference': cds['pseudo-candidate'],
                             'paralog': is_paralog(uniref90_by_hexdigest, aa_identifier, cluster_id)
                         }
@@ -709,30 +709,30 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
     """
     Elongate the given CDS sequence with the offset in upstream and downstream direction, if possible.
     """
-    tmp_cds = {
+    elongated_cds = {
         'start': cds['start'],
         'stop': cds['stop'],
         'strand': cds['strand'],
         'edge': cds.get('edge', False),
     }
 
-    if contig['topology'] == 'circular' and tmp_cds['start'] - offset < 0:
-        tmp_cds['start'] = len(contig['sequence']) - (offset - tmp_cds['start'])
-        tmp_cds['edge'] = True
-    elif tmp_cds['start'] - offset < 0:
-        tmp_cds['start'] = 0
+    if contig['topology'] == 'circular' and elongated_cds['start'] - offset < 0:
+        elongated_cds['start'] = len(contig['sequence']) - (offset - elongated_cds['start'])
+        elongated_cds['edge'] = True
+    elif elongated_cds['start'] - offset < 0:
+        elongated_cds['start'] = 0
     else:
-        tmp_cds['start'] = tmp_cds['start'] - offset
+        elongated_cds['start'] = elongated_cds['start'] - offset
 
-    if contig['topology'] == 'circular' and tmp_cds['stop'] + offset > len(contig['sequence']):
-        tmp_cds['stop'] = (tmp_cds['stop'] + offset) - len(contig['sequence'])
-        tmp_cds['edge'] = True
-    elif tmp_cds['stop'] + offset > len(contig['sequence']):
-        tmp_cds['stop'] = len(contig['sequence'])
+    if contig['topology'] == 'circular' and elongated_cds['stop'] + offset > len(contig['sequence']):
+        elongated_cds['stop'] = (elongated_cds['stop'] + offset) - len(contig['sequence'])
+        elongated_cds['edge'] = True
+    elif elongated_cds['stop'] + offset > len(contig['sequence']):
+        elongated_cds['stop'] = len(contig['sequence'])
     else:
-        tmp_cds['stop'] = tmp_cds['stop'] + offset
+        elongated_cds['stop'] = elongated_cds['stop'] + offset
 
-    return tmp_cds
+    return elongated_cds
 
 
 def is_paralog(uniref90_by_hexdigest: Dict[str, str], aa_identifier: str, cluster: str) -> bool:
@@ -752,7 +752,7 @@ def pseudogenization_causes(alignment: str, ref_alignment: str, qstart: int, qst
     """
     Search for pseudogenization causes in the given alignments.
     """
-    causes: Dict[Union[str, int], Union[Set[int], bool]] = {
+    causes = {
         bc.PSEUDOGENE_INSERTION: set(),
         bc.PSEUDOGENE_DELETION: set(),
         bc.PSEUDOGENE_START: set(),
@@ -763,16 +763,13 @@ def pseudogenization_causes(alignment: str, ref_alignment: str, qstart: int, qst
         bc.FEATURE_END_5_PRIME: False
     }
 
-    elongated_edge: bool = False
+    elongated_edge = False
     if extended_positions.get('edge', False):
         # TODO implement edge case
         pass
-    # TODO implement case: point mutation -> loss of stop codon
 
-    causes = upstream_elongation(causes, alignment, ref_alignment, qstart, extended_positions, cds,
-                                 elongated_edge=elongated_edge)
-    causes = downstream_elongation(causes, alignment, ref_alignment, qstop, extended_positions, cds,
-                                   elongated_edge=elongated_edge)
+    upstream_elongation(causes, alignment, ref_alignment, qstart, extended_positions, cds, elongated_edge=elongated_edge)
+    downstream_elongation(causes, alignment, ref_alignment, qstop, extended_positions, cds, elongated_edge=elongated_edge)
     return causes
 
 
@@ -822,18 +819,16 @@ def compare_alignments(cause: Dict[Union[str, int], Union[Set[int], bool]], alig
         else:
             position += 3
 
-    return cause
-
 
 def upstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
                         alignment: str, ref_alignment: str, qstart: int, extended_positions: dict,
-                        cds: dict, elongated_edge: bool) -> Dict[Union[str, int], Union[Set[int], bool]]:
+                        cds: dict, elongated_edge: bool):
     """
     Search for pseudogenization causes in the elongated upstream sequence of the CDS.
     """
     if cds['start'] - (extended_positions['start'] + qstart - 1) > 0 or elongated_edge:  # elongated alignment 5'
         up_length = ceil((cds['start'] - (extended_positions['start'] + qstart - 1)) / 3)
-        cause = compare_alignments(cause, alignment[:up_length], ref_alignment[:up_length], cds, direction=bc.FEATURE_END_5_PRIME)
+        compare_alignments(cause, alignment[:up_length], ref_alignment[:up_length], cds, direction=bc.FEATURE_END_5_PRIME)
 
         if alignment[up_length] == 'M' and ref_alignment[up_length] != 'M':
             if cds['rbs_motif'] is None:  # point mutation -> internal start codon
@@ -852,25 +847,22 @@ def upstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
             # TODO correct structural annotation
             pass
 
-    return cause
-
 
 def downstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
                           alignment: str, ref_alignment: str, qstop: int, extended_positions: dict, cds: dict,
-                          elongated_edge: bool) -> Dict[Union[str, int], Union[Set[int], bool]]:
+                          elongated_edge: bool):
     """
     Search for pseudogenization causes in the CDS and the elongated downstream sequence.
     """
     if extended_positions['start'] + qstop - 1 > cds['stop'] or elongated_edge:  # elongated alignment 3'
-        cause = compare_alignments(cause, alignment, ref_alignment, cds, direction=bc.FEATURE_END_3_PRIME)
-    return cause
+        compare_alignments(cause, alignment, ref_alignment, cds, direction=bc.FEATURE_END_3_PRIME)
 
 
 def convert_dict_set_values_to_list(tmp_dict: dict) -> dict:
     """
-    Cleanup pseudogenization causes and positions.
+    Cleanup pseudogenization observations.
     """
-    drop_keys: Set = set()
+    drop_keys = set()
     for key, value in tmp_dict.items():
         if type(value) == set:
             if len(value) == 0:
