@@ -598,6 +598,7 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
             '--tmpdir', str(cfg.tmp_path),  # use tmp folder
             '--block-size', '3',  # slightly increase block size for faster executions
             '--query-gencode', str(cfg.translation_table),
+            '--strand', 'plus',
             '--frameshift', '15',
             '--ultra-sensitive'
         ]
