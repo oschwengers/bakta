@@ -253,9 +253,9 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                         start = BeforePosition(start)
                         stop = AfterPosition(stop)
                 elif(feature.get('pseudo', False) and feature['type'] == bc.FEATURE_CDS):
-                    if(feature[bc.PSEUDOGENE]['cause'][bc.FEATURE_END_5_PRIME]):
+                    if(feature[bc.PSEUDOGENE]['observations'][bc.FEATURE_END_5_PRIME]):
                         start = BeforePosition(feature['start'] - 1)
-                    if(feature[bc.PSEUDOGENE]['cause'][bc.FEATURE_END_3_PRIME]):
+                    if(feature[bc.PSEUDOGENE]['observations'][bc.FEATURE_END_3_PRIME]):
                         stop = AfterPosition(feature['stop'])
                 feature_location = FeatureLocation(start, stop, strand=strand)
             if(feature.get('locus', None)):
