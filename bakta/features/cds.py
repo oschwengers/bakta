@@ -572,13 +572,9 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
             contig = contigs[cds['contig']]
             cds_elongated = get_elongated_cds(cds, contig)
             seq = bu.extract_feature_sequence(cds_elongated, contig)
-            fh.write(f">{orf.get_orf_key(cds)}\n{seq}\n")
-            candidates_extended_positions[orf.get_orf_key(cds)] = {
-                'start': cds_elongated['start'],
-                'stop': cds_elongated['stop'],
-                'edge': cds_elongated.get('edge', False),
-                'len_contig': len(contig['sequence'])
-            }
+            orf_key = orf.get_orf_key(cds)
+            fh.write(f">{orf_key}\n{seq}\n")
+            candidates_extended_positions[orf_key] = cds_elongated
 
     commands = [
         [
@@ -694,11 +690,6 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                     elif causes[bc.PSEUDOGENE_SELENOCYSTEINE] or causes[bc.PSEUDOGENE_PYROLYSINE]:
                         # TODO handle translation exceptions, correct annotation
                         pass
-                    else:  # skip non-extended genes (complete aa insertion or deletion)
-                        log.debug(
-                            'no pseudogene (aa indels): contig=%s, start=%i, stop=%i, strand=%s',
-                            cds['contig'], cds['start'], cds['stop'], cds['strand']
-                        )
 
     for cds in candidates:
         cds.pop('pseudo-candidate')
