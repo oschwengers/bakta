@@ -48,7 +48,7 @@ def predict(genome: dict, sequences_path: Path):
     if(len(contigs) > 0):
         fasta.export_contigs(contigs, contigs_path)
         log.debug('export contigs: # contigs=%i, path=%s', len(contigs), contigs_path)
-        proteins_contigs_path = cfg.tmp_path.joinpath('prodigal.proteins.contigs.faa')
+        proteins_contigs_path = cfg.tmp_path.joinpath('prodigal.contigs.faa')
         gff_contigs_path = cfg.tmp_path.joinpath('prodigal.contigs.gff')
         log.info('run prodigal: type=contigs, # sequences=%i', len(contigs))
         execute_prodigal(genome, contigs_path, prodigal_tf_path, proteins_path=proteins_contigs_path, gff_path=gff_contigs_path, complete=False)
@@ -62,7 +62,7 @@ def predict(genome: dict, sequences_path: Path):
     if(len(replicons) > 0):
         fasta.export_contigs(replicons, replicons_path)
         log.debug('export replicons: # sequences=%i, path=%s', len(replicons), replicons_path)
-        proteins_replicons_path = cfg.tmp_path.joinpath('prodigal.proteins.replicons.faa')
+        proteins_replicons_path = cfg.tmp_path.joinpath('prodigal.replicons.faa')
         gff_replicons_path = cfg.tmp_path.joinpath('prodigal.replicons.gff')
         log.info('run prodigal: type=replicons, # sequences=%i', len(replicons))
         execute_prodigal(genome, replicons_path, prodigal_tf_path, proteins_path=proteins_replicons_path, gff_path=gff_replicons_path, complete=True)
@@ -250,7 +250,7 @@ def predict_pfam(cdss: Sequence[dict]) -> Sequence[dict]:
     """Detect Pfam-A entries"""
     fasta_path = cfg.tmp_path.joinpath('hypotheticals.faa')
     orf.write_internal_faa(cdss, fasta_path)
-    output_path = cfg.tmp_path.joinpath('cds.hypotheticals.pfam.hmm.tsv')
+    output_path = cfg.tmp_path.joinpath('cds.hypotheticals.pfam.tsv')
     cmd = [
         'hmmsearch',
         '--noali',
@@ -483,16 +483,16 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
     """
     Conduct homology search of hypothetical CDSs against the PSC db to find pseudogene candidates.
     """
-    diamond_output_path = cfg.tmp_path.joinpath('diamond.pseudo.tsv')
     diamond_db_path = cfg.db_path.joinpath('psc.dmnd')
-    cds_faa_path = cfg.tmp_path.joinpath('cds.pseudo_candidates.faa')
-    orf.write_internal_faa(hypotheticals, cds_faa_path)
+    diamond_output_path = cfg.tmp_path.joinpath('cds.pseudo.candidates.diamond.tsv')
+    cds_hypotheticals_faa_path = cfg.tmp_path.joinpath('cds.pseudo.candidates.faa')
+    orf.write_internal_faa(hypotheticals, cds_hypotheticals_faa_path)
     # TODO allow multiple hits
     cmd = [
         'diamond',
         'blastp',
         '--db', str(diamond_db_path),
-        '--query', str(cds_faa_path),
+        '--query', str(cds_hypotheticals_faa_path),
         '--out', str(diamond_output_path),
         '--id', str(int(bc.MIN_PSEUDOGENE_IDENTITY * 100)),                     # '80'
         '--query-cover', str(int(bc.MIN_PSEUDOGENE_QUERY_COVERAGE * 100)),      # '80'
@@ -554,29 +554,29 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
     Conduct a BLASTX search of 5'/3'-extended sequences of pseudogene candidates against matching PSCs.
     Search for and determine possible pseudogenization causes in the resulting alignments.
     """
-    psc_faa_path = cfg.tmp_path.joinpath('psc.pseudogene.candidates.faa')
-    psc_dmnd_path = cfg.tmp_path.joinpath('psc.pseudogene.candidates.dmnd')
-    pseudo_fna_path = cfg.tmp_path.joinpath('hypothticals.pseudogene.fna')
-    blast_out_path = cfg.tmp_path.joinpath('blastx.pseudogene.xml')
+    psc_references_faa_path = cfg.tmp_path.joinpath('cds.pseudo.references.faa')
+    psc_references_dmnd_path = cfg.tmp_path.joinpath('cds.pseudo.references.dmnd')
+    candidates_elongated_sequences_path = cfg.tmp_path.joinpath('cds.pseudo.elongated-sequences.fna')
+    candidates_blastx_output_path = cfg.tmp_path.joinpath('cds.pseudo.blastx.xml')
 
     # Write unique PSC cluster sequences to a FAA file
-    with psc_faa_path.open(mode='w') as fh:
+    with psc_references_faa_path.open(mode='w') as fh:
         for cluster_id, faa_seq in {cds['pseudo-candidate'][DB_PSC_COL_UNIREF90]: cds['pseudo-candidate']['cluster_sequence'] for cds in candidates}.items():
             fh.write(f">{cluster_id}\n{faa_seq}\n")
 
     # Get extended cds sequences
     contigs = {c['id']: c for c in genome['contigs']}
     candidates_extended_positions = {}
-    with pseudo_fna_path.open(mode='w') as fh:
+    with candidates_elongated_sequences_path.open(mode='w') as fh:
         for cds in candidates:
             contig = contigs[cds['contig']]
-            tmp_cds = get_elongated_cds(cds, contig)
-            seq = bu.extract_feature_sequence(tmp_cds, contig)
+            cds_elongated = get_elongated_cds(cds, contig)
+            seq = bu.extract_feature_sequence(cds_elongated, contig)
             fh.write(f">{orf.get_orf_key(cds)}\n{seq}\n")
             candidates_extended_positions[orf.get_orf_key(cds)] = {
-                'start': tmp_cds['start'],
-                'stop': tmp_cds['stop'],
-                'edge': tmp_cds.get('edge', False),
+                'start': cds_elongated['start'],
+                'stop': cds_elongated['stop'],
+                'edge': cds_elongated.get('edge', False),
                 'len_contig': len(contig['sequence'])
             }
 
@@ -584,15 +584,15 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
         [
             'diamond',
             'makedb',
-            '--in', str(psc_faa_path),
-            '--db', str(psc_dmnd_path)
+            '--in', str(psc_references_faa_path),
+            '--db', str(psc_references_dmnd_path)
         ],
         [
             'diamond',
             'blastx',
-            '--db', str(psc_dmnd_path),  # PSC pseudogene candidates
-            '--query', str(pseudo_fna_path),  # nucleotide sequences of hypotheticals
-            '--out', str(blast_out_path),
+            '--db', str(psc_references_dmnd_path),  # PSC pseudogene candidates
+            '--query', str(candidates_elongated_sequences_path),  # nucleotide sequences of hypotheticals
+            '--out', str(candidates_blastx_output_path),
             '--outfmt', '5',
             '--threads', str(cfg.threads),
             '--tmpdir', str(cfg.tmp_path),  # use tmp folder
@@ -621,7 +621,7 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
     pseudogenes = []
     cds_by_hexdigest = orf.get_orf_dictionary(candidates)
     uniref90_by_hexdigest = {aa_identifier: cds['psc']['uniref90_id'] for aa_identifier, cds in orf.get_orf_dictionary(cdss).items() if 'psc' in cds and 'uniref90_id' in cds['psc']}
-    with blast_out_path.open() as fh:
+    with candidates_blastx_output_path.open() as fh:
         root = ET.parse(fh).getroot()
         for query in root.findall('./BlastOutput_iterations/Iteration'):
             aa_identifier = query.find('Iteration_query-def').text
