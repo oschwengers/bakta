@@ -42,14 +42,17 @@ PSEUDOGENE_OFFSET = 300  # nucleotide offset for pseudogene class detection
 # Pseudogene feature tags
 ############################################################################
 PSEUDOGENE = 'pseudogene'
-PSEUDOGENE_UNPROCESSED = 'unprocessed'
-PSEUDOGENE_UNITARY = 'unitary'
-PSEUDOGENE_INSERTION = 'insertion'
-PSEUDOGENE_DELETION = 'deletion'
-PSEUDOGENE_START = 'start'
-PSEUDOGENE_STOP = 'stop'
-PSEUDOGENE_SELENOCYSTEINE = 'selenocysteine'
-PSEUDOGENE_PYROLYSINE = 'pyrolysine'
+PSEUDOGENE_CAUSE_INSERTION = 'insertion'
+PSEUDOGENE_CAUSE_DELETION = 'deletion'
+PSEUDOGENE_CAUSE_MUTATION = 'mutation'
+PSEUDOGENE_EFFECT_START = 'start'
+PSEUDOGENE_EFFECT_START_GAIN = 'start-gain'
+PSEUDOGENE_EFFECT_START_LOSS = 'start-loss'
+PSEUDOGENE_EFFECT_STOP = 'stop'
+PSEUDOGENE_EFFECT_STOP_GAIN = 'stop-gain'
+PSEUDOGENE_EFFECT_STOP_LOSS = 'stop-loss'
+PSEUDOGENE_EXCEPTION_SELENOCYSTEINE = 'selenocysteine'
+PSEUDOGENE_EXCEPTION_PYROLYSINE = 'pyrolysine'
 
 
 ############################################################################
@@ -122,6 +125,8 @@ INSDC_FEATURE_REPEAT_UNIT_RANGE = 'rpt_unit_range'  # /rpt_unit_range=<base_rang
 INSDC_FEATURE_REPEAT_UNIT_SEQ = 'rpt_unit_seq'  # /rpt_unit_seq="text"
 INSDC_FEATURE_CDS = 'CDS'
 INSDC_FEATURE_PSEUDOGENE = 'pseudogene'
+INSDC_FEATURE_PSEUDOGENE_TYPE_UNITARY = 'unitary'
+INSDC_FEATURE_PSEUDOGENE_TYPE_UNPROCESSED = 'unprocessed'
 INSDC_FEATURE_SIGNAL_PEPTIDE = 'sig_peptide'
 INSDC_FEATURE_GAP = 'gap'
 INSDC_FEATURE_ASSEMBLY_GAP = 'assembly_gap'

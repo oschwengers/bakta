@@ -549,7 +549,7 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
     return pseudo_candidates
 
 
-def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: dict) -> Sequence[dict]:
+def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome: dict) -> Sequence[dict]:
     """
     Conduct a BLASTX search of 5'/3'-extended sequences of pseudogene candidates against matching PSCs.
     Search for and determine possible pseudogenization causes in the resulting alignments.
@@ -627,10 +627,10 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
             for hit in query.findall('./Iteration_hits/Hit'):
                 cluster_id = hit.find('Hit_id').text
                 if cluster_id == cds['pseudo-candidate'][DB_PSC_COL_UNIREF90]:
-                    alignment = hit.find('Hit_hsps/Hsp/Hsp_qseq').text
+                    query_alignment = hit.find('Hit_hsps/Hsp/Hsp_qseq').text
                     ref_alignment = hit.find('Hit_hsps/Hsp/Hsp_hseq').text
-                    alignment_start = int(hit.find('Hit_hsps/Hsp/Hsp_query-from').text)
-                    alignment_stop = int(hit.find('Hit_hsps/Hsp/Hsp_query-to').text)
+                    query_alignment_start = int(hit.find('Hit_hsps/Hsp/Hsp_query-from').text)
+                    query_alignment_stop = int(hit.find('Hit_hsps/Hsp/Hsp_query-to').text)
                     alignment_length = int(hit.find('Hit_hsps/Hsp/Hsp_align-len').text)
 
                     if alignment_length == len(cds['aa']):  # skip non-extended genes (full match)
@@ -640,54 +640,57 @@ def pseudogene_class(candidates: Sequence[dict], cdss: Sequence[dict], genome: d
                         )
                         continue
 
-                    causes: Dict[Union[str, int], Union[Set[int], bool]] = pseudogenization_causes(
-                        alignment,
+                    observations = detect_pseudogenization_observations(
+                        query_alignment,
                         ref_alignment,
-                        alignment_start,
-                        alignment_stop,
+                        query_alignment_start,
+                        query_alignment_stop,
                         extended_positions,
                         cds
                     )
 
-                    if causes[bc.FEATURE_END_5_PRIME] or causes[bc.FEATURE_END_3_PRIME]:
+                    directions = observations.get('directions', [])
+                    if bc.FEATURE_END_5_PRIME in directions or bc.FEATURE_END_3_PRIME in directions:
                         pseudogene = {
-                            'observations': convert_dict_set_values_to_list(causes),
+                            'observations': clean_observations(observations),
                             'inference': cds['pseudo-candidate'],
                             'paralog': is_paralog(uniref90_by_hexdigest, aa_identifier, cluster_id)
                         }
 
-                        tmp_type = []
-                        if causes[bc.FEATURE_END_5_PRIME]:
-                            tmp_type.append('Internal START codon')
-                        if causes[bc.FEATURE_END_3_PRIME]:
-                            tmp_type.append('Internal STOP codon')
-                        pseudogene['orientation'] = ', '.join(tmp_type)
+                        effects = []
+                        if len(observations.get(bc.PSEUDOGENE_EFFECT_START, [])) > 0:
+                            effects.append('Internal start codon')
+                        if len(observations.get(bc.PSEUDOGENE_EFFECT_STOP, [])) > 0:
+                            effects.append('Internal stop codon')
+                        effects = ', '.join(effects)
 
-                        tmp_causes = []
-                        if causes.get(bc.PSEUDOGENE_INSERTION, None):
-                            tmp_causes.append('Frameshift due to the insertion around ' + ', '.join(map(str, causes[bc.PSEUDOGENE_INSERTION])) + '.')
-                        if causes.get(bc.PSEUDOGENE_DELETION, None):
-                            tmp_causes.append('Frameshift due to the deletion around ' + ', '.join(map(str, causes[bc.PSEUDOGENE_DELETION])) + '.')
-                        if causes.get(bc.PSEUDOGENE_START, None):
-                            tmp_causes.append('Point mutation around ' + ', '.join(map(str, causes[bc.PSEUDOGENE_START])) + '.')
-                        if causes.get(bc.PSEUDOGENE_STOP, None):
-                            tmp_causes.append('Nonsense mutation around ' + ', '.join(map(str, causes[bc.PSEUDOGENE_STOP])) + '.')
-                        if causes.get(bc.PSEUDOGENE_SELENOCYSTEINE, None):  # only for pseudogenes with translation exception + other cause
-                            tmp_causes.append('Translation exception: Selenocysteine around ' + ', '.join(map(str, causes[bc.PSEUDOGENE_SELENOCYSTEINE])) + '.')
-                        if causes.get(bc.PSEUDOGENE_PYROLYSINE, None):  # only for pseudogenes with translation exception + other cause
-                            tmp_causes.append('Translation exception: Pyrolysin around ' + ', '.join(map(str, causes[bc.PSEUDOGENE_PYROLYSINE])) + '.')
-                        pseudogene['type'] = ' '.join(tmp_causes)  # pseudogene cause
+                        causes = []
+                        if len(observations.get(bc.PSEUDOGENE_CAUSE_INSERTION, [])) > 0:
+                            insertions = ', '.join(map(str, observations[bc.PSEUDOGENE_CAUSE_INSERTION]))
+                            causes.append(f"Frameshift due to insertion around {insertions}.")
+                        if len(observations.get(bc.PSEUDOGENE_CAUSE_DELETION, [])) > 0:
+                            deletions = ', '.join(map(str, observations[bc.PSEUDOGENE_CAUSE_DELETION]))
+                            causes.append(f"Frameshift due to deletion around {deletions}.")
+                        if len(observations.get(bc.PSEUDOGENE_CAUSE_MUTATION, [])) > 0:
+                            mutations = ', '.join(map(str, observations[bc.PSEUDOGENE_CAUSE_MUTATION]))
+                            causes.append(f"Nonsense mutation around {mutations}.")
+                        # if observations.get(bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE, None):  # only for pseudogenes with translation exception + other cause
+                        #     causes.append('Translation exception: Selenocysteine around ' + ', '.join(map(str, observations[bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE])) + '.')
+                        # if observations.get(bc.PSEUDOGENE_EXCEPTION_PYROLYSINE, None):  # only for pseudogenes with translation exception + other cause
+                        #     causes.append('Translation exception: Pyrolysin around ' + ', '.join(map(str, observations[bc.PSEUDOGENE_EXCEPTION_PYROLYSINE])) + '.')
+                        causes = ' '.join(causes)  # pseudogene cause
+                        pseudogene['description'] = f"{effects}. {causes}"
 
                         cds['pseudo'] = True
                         cds[bc.PSEUDOGENE] = pseudogene
                         cds.pop('hypothetical')
                         pseudogenes.append(cds)
                         log.info(
-                            'pseudogene: contig=%s, start=%i, stop=%i, strand=%s, cause=%s',
-                            cds['contig'], cds['start'], cds['stop'], cds['strand'], cds[bc.PSEUDOGENE]['type']
+                            'pseudogene: contig=%s, start=%i, stop=%i, strand=%s, insertions=%s, deletions=%s, mutations=%s, effect=%s',
+                            cds['contig'], cds['start'], cds['stop'], cds['strand'], observations.get(bc.PSEUDOGENE_CAUSE_INSERTION, []), observations.get(bc.PSEUDOGENE_CAUSE_DELETION, []), observations.get(bc.PSEUDOGENE_CAUSE_MUTATION, []), effects
                         )
 
-                    elif causes[bc.PSEUDOGENE_SELENOCYSTEINE] or causes[bc.PSEUDOGENE_PYROLYSINE]:
+                    elif observations[bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE] or observations[bc.PSEUDOGENE_EXCEPTION_PYROLYSINE]:
                         # TODO handle translation exceptions, correct annotation
                         pass
 
@@ -708,19 +711,20 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
         'edge': cds.get('edge', False),
     }
 
+    contig_length = len(contig['sequence'])
     if contig['topology'] == 'circular' and elongated_cds['start'] - offset < 0:
-        elongated_cds['start'] = len(contig['sequence']) - (offset - elongated_cds['start'])
+        elongated_cds['start'] = contig_length + elongated_cds['start'] - offset
         elongated_cds['edge'] = True
     elif elongated_cds['start'] - offset < 0:
         elongated_cds['start'] = 0
     else:
         elongated_cds['start'] = elongated_cds['start'] - offset
 
-    if contig['topology'] == 'circular' and elongated_cds['stop'] + offset > len(contig['sequence']):
-        elongated_cds['stop'] = (elongated_cds['stop'] + offset) - len(contig['sequence'])
+    if contig['topology'] == 'circular' and elongated_cds['stop'] + offset > contig_length:
+        elongated_cds['stop'] = elongated_cds['stop'] + offset - contig_length
         elongated_cds['edge'] = True
-    elif elongated_cds['stop'] + offset > len(contig['sequence']):
-        elongated_cds['stop'] = len(contig['sequence'])
+    elif elongated_cds['stop'] + offset > contig_length:
+        elongated_cds['stop'] = contig_length
     else:
         elongated_cds['stop'] = elongated_cds['stop'] + offset
 
@@ -739,20 +743,20 @@ def is_paralog(uniref90_by_hexdigest: Dict[str, str], aa_identifier: str, cluste
     return cluster in excluded_uniref90
 
 
-def pseudogenization_causes(alignment: str, ref_alignment: str, qstart: int, qstop: int, extended_positions: dict,
-                            cds: dict) -> Dict[Union[str, int], Union[Set[int], bool]]:
+def detect_pseudogenization_observations(alignment: str, ref_alignment: str, qstart: int, qstop: int, extended_positions: dict,
+                            cds: dict) -> Dict[str, Union[Set[int], bool]]:
     """
-    Search for pseudogenization causes in the given alignments.
+    Search for pseudogenization observations in the given alignments.
     """
-    causes = {
-        bc.PSEUDOGENE_INSERTION: set(),
-        bc.PSEUDOGENE_DELETION: set(),
-        bc.PSEUDOGENE_START: set(),
-        bc.PSEUDOGENE_STOP: set(),
-        bc.PSEUDOGENE_SELENOCYSTEINE: set(),
-        bc.PSEUDOGENE_PYROLYSINE: set(),
-        bc.FEATURE_END_3_PRIME: False,
-        bc.FEATURE_END_5_PRIME: False
+    observations = {
+        bc.PSEUDOGENE_CAUSE_INSERTION: set(),
+        bc.PSEUDOGENE_CAUSE_DELETION: set(),
+        bc.PSEUDOGENE_CAUSE_MUTATION: set(),
+        bc.PSEUDOGENE_EFFECT_START: set(),
+        bc.PSEUDOGENE_EFFECT_STOP: set(),
+        bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
+        bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
+        'directions': set()
     }
 
     elongated_edge = False
@@ -760,51 +764,52 @@ def pseudogenization_causes(alignment: str, ref_alignment: str, qstart: int, qst
         # TODO implement edge case
         pass
 
-    upstream_elongation(causes, alignment, ref_alignment, qstart, extended_positions, cds, elongated_edge=elongated_edge)
-    downstream_elongation(causes, alignment, ref_alignment, qstop, extended_positions, cds, elongated_edge=elongated_edge)
-    return causes
+    detect_pseudogenization_observations_upstream(observations, alignment, ref_alignment, qstart, extended_positions, cds, elongated_edge=elongated_edge)
+    detect_pseudogenization_observations_downstream(observations, alignment, ref_alignment, qstop, extended_positions, cds, elongated_edge=elongated_edge)
+    return observations
 
 
-def compare_alignments(cause: Dict[Union[str, int], Union[Set[int], bool]], alignment: str, ref_alignment: str,
-                       cds: dict, direction: str) -> Dict[Union[str, int], Union[Set[int], bool]]:
+def compare_alignments(observations: Dict[str, Union[Set[str], Set[int]]], alignment: str, ref_alignment: str, cds: dict, direction: str):
     """
     Compare the alignment and reference alignment to find the causes of pseudogenization.
     """
     position = cds['start']
+    
     for char, ref_char in zip(alignment, ref_alignment):
-        if char == '/':  # deletion
-            cause[bc.PSEUDOGENE_DELETION].add(position)
-            cause[direction] = True
-            log.info(
-                'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, deletion=%i',
-                cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
-            )
-        elif char == '\\':  # insertion
-            cause[bc.PSEUDOGENE_INSERTION].add(position)
-            cause[direction] = True
+        if char == '\\':  # insertion
+            observations[bc.PSEUDOGENE_CAUSE_INSERTION].add(position)
+            observations['directions'].add(direction)
             position += 1
             log.info(
-                'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, insertion=%i',
+                'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, cause=insertion, postion=%i',
+                cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
+            )
+        elif char == '/':  # deletion
+            observations[bc.PSEUDOGENE_CAUSE_DELETION].add(position)
+            observations['directions'].add(direction)
+            log.info(
+                'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, cause=deletion, position=%i',
                 cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
             )
         elif char == '*':  # stop codon, selenocysteine, pyrolysine
             if ref_char == 'U':  # selenocysteine
-                cause[bc.PSEUDOGENE_SELENOCYSTEINE].add(position)
+                observations[bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE].add(position)
                 log.info(
-                    'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, selenocysteine=%i',
+                    'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, exception=selenocysteine, position=%i',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
                 )
             elif ref_char == 'O':  # pyrolysine
-                cause[bc.PSEUDOGENE_PYROLYSINE].add(position)
+                observations[bc.PSEUDOGENE_EXCEPTION_PYROLYSINE].add(position)
                 log.info(
-                    'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, pyrolysin=%i',
+                    'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, exception=pyrolysin, position=%i',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
                 )
             else:  # stop codon
-                cause[direction] = True
-                cause[bc.PSEUDOGENE_STOP].add(position)
+                # observations[bc.PSEUDOGENE_CAUSE_MUTATION].add(position)
+                observations[bc.PSEUDOGENE_EFFECT_STOP].add(position)
+                observations['directions'].add(direction)
                 log.info(
-                    'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, internal stop=%i',
+                    'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, cause=mutation, position=%i',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
                 )
             position += 3
@@ -812,22 +817,20 @@ def compare_alignments(cause: Dict[Union[str, int], Union[Set[int], bool]], alig
             position += 3
 
 
-def upstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
-                        alignment: str, ref_alignment: str, qstart: int, extended_positions: dict,
-                        cds: dict, elongated_edge: bool):
+def detect_pseudogenization_observations_upstream(observations: Dict[str, Union[Set[str], Set[int]]], alignment: str, ref_alignment: str, qstart: int, extended_positions: dict, cds: dict, elongated_edge: bool):
     """
-    Search for pseudogenization causes in the elongated upstream sequence of the CDS.
+    Search for pseudogenization observations in the elongated upstream sequence of the CDS.
     """
-    if cds['start'] - (extended_positions['start'] + qstart - 1) > 0 or elongated_edge:  # elongated alignment 5'
+    if cds['start'] > (extended_positions['start'] + qstart - 1) or elongated_edge:  # elongated alignment 5'
         up_length = ceil((cds['start'] - (extended_positions['start'] + qstart - 1)) / 3)
-        compare_alignments(cause, alignment[:up_length], ref_alignment[:up_length], cds, direction=bc.FEATURE_END_5_PRIME)
+        compare_alignments(observations, alignment[:up_length], ref_alignment[:up_length], cds, direction=bc.FEATURE_END_5_PRIME)
 
         if alignment[up_length] == 'M' and ref_alignment[up_length] != 'M':
             if cds['rbs_motif'] is None:  # point mutation -> internal start codon
-                cause[bc.PSEUDOGENE_START].add(cds['start'])
-                cause[bc.FEATURE_END_5_PRIME] = True
+                observations[bc.PSEUDOGENE_EFFECT_START].add(cds['start'])
+                observations['directions'].add(bc.FEATURE_END_5_PRIME)
                 log.info(
-                    'pseudogene detected: contig=%s, start=%i, stop=%i, strand=%s, original start=%i',
+                    'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, original start=%i',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + (up_length * 3)
                 )
             else:  # RBS was predicted (protein iso-form) -> skip
@@ -840,27 +843,24 @@ def upstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
             pass
 
 
-def downstream_elongation(cause: Dict[Union[str, int], Union[Set[int], bool]],
-                          alignment: str, ref_alignment: str, qstop: int, extended_positions: dict, cds: dict,
-                          elongated_edge: bool):
+def detect_pseudogenization_observations_downstream(observations: Dict[str, Union[Set[str], Set[int]]], alignment: str, ref_alignment: str, qstop: int, extended_positions: dict, cds: dict, elongated_edge: bool):
     """
-    Search for pseudogenization causes in the CDS and the elongated downstream sequence.
+    Search for pseudogenization observations in the CDS and the elongated downstream sequence.
     """
     if extended_positions['start'] + qstop - 1 > cds['stop'] or elongated_edge:  # elongated alignment 3'
-        compare_alignments(cause, alignment, ref_alignment, cds, direction=bc.FEATURE_END_3_PRIME)
+        compare_alignments(observations, alignment, ref_alignment, cds, direction=bc.FEATURE_END_3_PRIME)
 
 
-def convert_dict_set_values_to_list(tmp_dict: dict) -> dict:
+def clean_observations(observations: dict) -> dict:
     """
     Cleanup pseudogenization observations.
     """
-    drop_keys = set()
-    for key, value in tmp_dict.items():
-        if type(value) == set:
-            if len(value) == 0:
-                drop_keys.add(key)
-            else:
-                tmp_dict[key] = sorted(list(value))
+    drop_keys = []
+    for key, value in observations.items():
+        if len(value) == 0:
+            drop_keys.add(key)
+        else:
+            observations[key] = sorted(list(value))
     for key in drop_keys:
-        tmp_dict.pop(key)
-    return tmp_dict
+        observations.pop(key)
+    return observations

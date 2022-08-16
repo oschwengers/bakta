@@ -283,7 +283,7 @@ def main():
                     log.debug('search pseudogene candidates')
                     pseudo_candidates = feat_cds.predict_pseudo_candidates(hypotheticals)
                     print(f'\t\tpseudogene candidates: {len(pseudo_candidates)}')
-                    pseudogenes = feat_cds.pseudogene_class(pseudo_candidates, cdss, genome) if len(pseudo_candidates) > 0 else []
+                    pseudogenes = feat_cds.detect_pseudogenes(pseudo_candidates, cdss, genome) if len(pseudo_candidates) > 0 else []
                     psc.lookup(pseudogenes, pseudo=True)
                     pscc.lookup(pseudogenes, pseudo=True)
                     for pseudogene in pseudogenes:

@@ -11,85 +11,85 @@ import pytest
             'MKEGQFVGY/FKMKEQRKIPLTHIMIIGAFIFAFLQVVLLASLVHAVNVNNEIQEGLFQSGRIMVESLQHILSVQTGIH',
             'MKEGQFVGY-FKMKEQRKIPLTHIMIIGAFIFAFLQVVLLASLVHAVNVNNEIQEGLFQSGRIMVESLQHILSVQTGIN',
             {
-                bc.PSEUDOGENE_INSERTION: set(),
-                bc.PSEUDOGENE_DELETION: {28},
-                bc.PSEUDOGENE_START: set(),
-                bc.PSEUDOGENE_STOP: set(),
-                bc.PSEUDOGENE_SELENOCYSTEINE: set(),
-                bc.PSEUDOGENE_PYROLYSINE: set(),
-                bc.FEATURE_END_3_PRIME: False,
-                bc.FEATURE_END_5_PRIME: True
+                bc.PSEUDOGENE_CAUSE_INSERTION: set(),
+                bc.PSEUDOGENE_CAUSE_DELETION: {28},
+                bc.PSEUDOGENE_CAUSE_MUTATION: set(),
+                bc.PSEUDOGENE_EFFECT_START: set(),
+                bc.PSEUDOGENE_EFFECT_STOP: set(),
+                bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
+                bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
+                'directions': {bc.FEATURE_END_5_PRIME}
             }
         ),
         (  # insertion
             'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKNVIWDYPKDFIAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL\\KIIA\\AVANNYMPGVASYAG',
             'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKDVIWDYPKDFMAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL-KIIA-PVANDYMPGVDSYAG',
             {
-                bc.PSEUDOGENE_INSERTION: {430, 443},
-                bc.PSEUDOGENE_DELETION: set(),
-                bc.PSEUDOGENE_START: set(),
-                bc.PSEUDOGENE_STOP: set(),
-                bc.PSEUDOGENE_SELENOCYSTEINE: set(),
-                bc.PSEUDOGENE_PYROLYSINE: set(),
-                bc.FEATURE_END_3_PRIME: False,
-                bc.FEATURE_END_5_PRIME: True
+                bc.PSEUDOGENE_CAUSE_INSERTION: {430, 443},
+                bc.PSEUDOGENE_CAUSE_DELETION: set(),
+                bc.PSEUDOGENE_CAUSE_MUTATION: set(),
+                bc.PSEUDOGENE_EFFECT_START: set(),
+                bc.PSEUDOGENE_EFFECT_STOP: set(),
+                bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
+                bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
+                'directions': {bc.FEATURE_END_5_PRIME}
             }
         ),
         (  # internal stop
             'MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
             'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASQGSWYNF',
             {
-                bc.PSEUDOGENE_INSERTION: set(),
-                bc.PSEUDOGENE_DELETION: set(),
-                bc.PSEUDOGENE_START: set(),
-                bc.PSEUDOGENE_STOP: {277},
-                bc.PSEUDOGENE_SELENOCYSTEINE: set(),
-                bc.PSEUDOGENE_PYROLYSINE: set(),
-                bc.FEATURE_END_3_PRIME: False,
-                bc.FEATURE_END_5_PRIME: True
+                bc.PSEUDOGENE_CAUSE_INSERTION: set(),
+                bc.PSEUDOGENE_CAUSE_DELETION: set(),
+                bc.PSEUDOGENE_CAUSE_MUTATION: set(),  #{277},
+                bc.PSEUDOGENE_EFFECT_START: set(),
+                bc.PSEUDOGENE_EFFECT_STOP: {277},
+                bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
+                bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
+                'directions': {bc.FEATURE_END_5_PRIME}
             }
         ),
         (  # selenocysteine
             'MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
             'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASUGSWYNF',
             {
-                bc.PSEUDOGENE_INSERTION: set(),
-                bc.PSEUDOGENE_DELETION: set(),
-                bc.PSEUDOGENE_START: set(),
-                bc.PSEUDOGENE_STOP: set(),
-                bc.PSEUDOGENE_SELENOCYSTEINE: {277},
-                bc.PSEUDOGENE_PYROLYSINE: set(),
-                bc.FEATURE_END_3_PRIME: False,
-                bc.FEATURE_END_5_PRIME: False
+                bc.PSEUDOGENE_CAUSE_INSERTION: set(),
+                bc.PSEUDOGENE_CAUSE_DELETION: set(),
+                bc.PSEUDOGENE_CAUSE_MUTATION: set(),
+                bc.PSEUDOGENE_EFFECT_START: set(),
+                bc.PSEUDOGENE_EFFECT_STOP: set(),
+                bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: {277},
+                bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
+                'directions': set()
             }
         ),
         (  # pyrolysine
             'MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
             'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASOGSWYNF',
             {
-                bc.PSEUDOGENE_INSERTION: set(),
-                bc.PSEUDOGENE_DELETION: set(),
-                bc.PSEUDOGENE_START: set(),
-                bc.PSEUDOGENE_STOP: set(),
-                bc.PSEUDOGENE_SELENOCYSTEINE: set(),
-                bc.PSEUDOGENE_PYROLYSINE: {277},
-                bc.FEATURE_END_3_PRIME: False,
-                bc.FEATURE_END_5_PRIME: False
+                bc.PSEUDOGENE_CAUSE_INSERTION: set(),
+                bc.PSEUDOGENE_CAUSE_DELETION: set(),
+                bc.PSEUDOGENE_CAUSE_MUTATION: set(),
+                bc.PSEUDOGENE_EFFECT_START: set(),
+                bc.PSEUDOGENE_EFFECT_STOP: set(),
+                bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
+                bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: {277},
+                'directions': set()
             }
         )
     ]
 )
 def test_compare_alignments(alignment, ref_alignment, expected_result):
     # Includes test_downstream_elongation
-    causes = {
-        bc.PSEUDOGENE_INSERTION: set(),
-        bc.PSEUDOGENE_DELETION: set(),
-        bc.PSEUDOGENE_START: set(),
-        bc.PSEUDOGENE_STOP: set(),
-        bc.PSEUDOGENE_SELENOCYSTEINE: set(),
-        bc.PSEUDOGENE_PYROLYSINE: set(),
-        bc.FEATURE_END_3_PRIME: False,
-        bc.FEATURE_END_5_PRIME: False
+    observations = {
+        bc.PSEUDOGENE_CAUSE_INSERTION: set(),
+        bc.PSEUDOGENE_CAUSE_DELETION: set(),
+        bc.PSEUDOGENE_CAUSE_MUTATION: set(),
+        bc.PSEUDOGENE_EFFECT_START: set(),
+        bc.PSEUDOGENE_EFFECT_STOP: set(),
+        bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
+        bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
+        'directions': set()
     }
     cds = {
         'start': 1,
@@ -98,9 +98,8 @@ def test_compare_alignments(alignment, ref_alignment, expected_result):
         'strand': '+',
         'edge': False
     }
-    direction = bc.FEATURE_END_5_PRIME
-    feat_cds.compare_alignments(causes, alignment, ref_alignment, cds, direction)
-    assert causes == expected_result
+    feat_cds.compare_alignments(observations, alignment, ref_alignment, cds, bc.FEATURE_END_5_PRIME)
+    assert observations == expected_result
 
 
 @pytest.mark.parametrize('alignment, ref_alignment, expected_result', [
@@ -108,28 +107,28 @@ def test_compare_alignments(alignment, ref_alignment, expected_result):
             'MINWRKVGMTSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
             'MINWRKVGATSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
             {
-                bc.PSEUDOGENE_INSERTION: set(),
-                bc.PSEUDOGENE_DELETION: set(),
-                bc.PSEUDOGENE_START: {30},
-                bc.PSEUDOGENE_STOP: set(),
-                bc.PSEUDOGENE_SELENOCYSTEINE: set(),
-                bc.PSEUDOGENE_PYROLYSINE: set(),
-                bc.FEATURE_END_3_PRIME: False,
-                bc.FEATURE_END_5_PRIME: True
+                bc.PSEUDOGENE_CAUSE_INSERTION: set(),
+                bc.PSEUDOGENE_CAUSE_DELETION: set(),
+                bc.PSEUDOGENE_CAUSE_MUTATION: set(),
+                bc.PSEUDOGENE_EFFECT_START: {30},
+                bc.PSEUDOGENE_EFFECT_STOP: set(),
+                bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
+                bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
+                'directions': {bc.FEATURE_END_5_PRIME}
             }
         )
     ]
 )
 def test_upstream_elongation(alignment, ref_alignment, expected_result):
-    causes = {
-        bc.PSEUDOGENE_INSERTION: set(),
-        bc.PSEUDOGENE_DELETION: set(),
-        bc.PSEUDOGENE_START: set(),
-        bc.PSEUDOGENE_STOP: set(),
-        bc.PSEUDOGENE_SELENOCYSTEINE: set(),
-        bc.PSEUDOGENE_PYROLYSINE: set(),
-        bc.FEATURE_END_3_PRIME: False,
-        bc.FEATURE_END_5_PRIME: False
+    observations = {
+        bc.PSEUDOGENE_CAUSE_INSERTION: set(),
+        bc.PSEUDOGENE_CAUSE_DELETION: set(),
+        bc.PSEUDOGENE_CAUSE_MUTATION: set(),
+        bc.PSEUDOGENE_EFFECT_START: set(),
+        bc.PSEUDOGENE_EFFECT_STOP: set(),
+        bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
+        bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
+        'directions': set()
     }
     cds = {
         'start': 30,
@@ -140,8 +139,8 @@ def test_upstream_elongation(alignment, ref_alignment, expected_result):
     }
     extended_positions = {'start': 1}
     elongated_edge = False
-    feat_cds.upstream_elongation(causes, alignment, ref_alignment, 8, extended_positions, cds, elongated_edge)
-    assert causes == expected_result
+    feat_cds.detect_pseudogenization_observations_upstream(observations, alignment, ref_alignment, 8, extended_positions, cds, elongated_edge)
+    assert observations == expected_result
 
 
 @pytest.mark.parametrize('cds, contig, expected_result', [
