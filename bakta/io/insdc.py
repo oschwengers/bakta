@@ -223,11 +223,6 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
             start = feature['start'] - 1
             stop = feature['stop']
             if('edge' in feature):
-                if(feature.get(bc.PSEUDOGENE, None)):
-                    if(bc.FEATURE_END_5_PRIME in feature[bc.PSEUDOGENE]['observations'].get('directions', [])):
-                        start = BeforePosition(start)
-                    if(bc.FEATURE_END_3_PRIME in feature[bc.PSEUDOGENE]['observations'].get('directions', [])):
-                        stop = AfterPosition(stop)
                 fl_1 = FeatureLocation(start, contig['length'], strand=strand)
                 fl_2 = FeatureLocation(0, stop, strand=strand)
                 if(feature['strand'] == bc.STRAND_REVERSE):
@@ -246,13 +241,8 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                             stop = AfterPosition(stop)
                         else:
                             start = BeforePosition(start)
-                    else:
+                    elif(feature['truncated'] == bc.FEATURE_END_BOTH):
                         start = BeforePosition(start)
-                        stop = AfterPosition(stop)
-                elif(feature.get('pseudo', False) and feature['type'] == bc.FEATURE_CDS):
-                    if(bc.FEATURE_END_5_PRIME in feature[bc.PSEUDOGENE]['observations'].get('directions', [])):
-                        start = BeforePosition(start)
-                    if(bc.FEATURE_END_3_PRIME in feature[bc.PSEUDOGENE]['observations'].get('directions', [])):
                         stop = AfterPosition(stop)
                 feature_location = FeatureLocation(start, stop, strand=strand)
             if(feature.get('locus', None)):

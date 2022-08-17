@@ -681,6 +681,14 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
                         causes = ' '.join(causes)  # pseudogene cause
                         pseudogene['description'] = f"{effects}. {causes}"
 
+                        if bc.FEATURE_END_5_PRIME in directions and bc.FEATURE_END_3_PRIME in directions:
+                            truncation = bc.FEATURE_END_BOTH
+                        elif bc.FEATURE_END_5_PRIME in directions:
+                            truncation = bc.FEATURE_END_5_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_3_PRIME
+                        elif bc.FEATURE_END_3_PRIME in directions:
+                            truncation = bc.FEATURE_END_3_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_5_PRIME
+                        cds['truncated'] = truncation
+
                         cds['pseudo'] = True
                         cds[bc.PSEUDOGENE] = pseudogene
                         cds.pop('hypothetical')
@@ -858,7 +866,7 @@ def clean_observations(observations: dict) -> dict:
     drop_keys = []
     for key, value in observations.items():
         if len(value) == 0:
-            drop_keys.add(key)
+            drop_keys.append(key)
         else:
             observations[key] = sorted(list(value))
     for key in drop_keys:

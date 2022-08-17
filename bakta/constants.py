@@ -155,6 +155,7 @@ INSDC_FEATURE_MOBILE_ELEMENT_TYPE_ = 'other'
 ############################################################################
 FEATURE_END_5_PRIME = '5-prime'
 FEATURE_END_3_PRIME = '3-prime'
+FEATURE_END_BOTH = 'both'
 FEATURE_END_UNKNOWN = '?'
 
 
