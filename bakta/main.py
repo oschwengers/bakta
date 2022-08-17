@@ -276,7 +276,7 @@ def main():
             for cds in cdss:
                 anno.combine_annotation(cds)  # combine IPS & PSC annotations and mark hypotheticals
 
-            hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
+            hypotheticals = [cds for cds in cdss if 'hypothetical' in cds and 'edge' not in cds and cds.get('start_type', 'Edge') != 'Edge']
             if(len(hypotheticals) > 0):
                 if(not cfg.skip_pseudo):
                     print('\tdetect pseudogenes...')
@@ -289,14 +289,14 @@ def main():
                     for pseudogene in pseudogenes:
                         anno.combine_annotation(pseudogene)
                     print(f'\t\tfound pseudogenes: {len(pseudogenes)}')
-                    hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
-                if(len(hypotheticals) > 0):
-                    log.debug('analyze hypotheticals')
-                    print(f'analyze hypothetical proteins: {len(hypotheticals)}')
-                    pfam_hits = feat_cds.predict_pfam(hypotheticals)
-                    print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
-                    feat_cds.analyze_proteins(hypotheticals)
-                    print('\tcalculated proteins statistics')
+            hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
+            if(len(hypotheticals) > 0):
+                log.debug('analyze hypotheticals')
+                print(f'analyze hypothetical proteins: {len(hypotheticals)}')
+                pfam_hits = feat_cds.predict_pfam(hypotheticals)
+                print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
+                feat_cds.analyze_proteins(hypotheticals)
+                print('\tcalculated proteins statistics')
             
             print('\trevise special cases...')
             feat_cds.revise_special_cases_annotated(genome, cdss)
