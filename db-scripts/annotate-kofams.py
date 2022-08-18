@@ -57,7 +57,7 @@ with hmms_path.open() as fh:
             hmms[knum] = hmm
 print(f'read {len(hmms)} HMMs')
 
-print('parse NCBIfam hits...')
+print('parse Kofam hits...')
 hit_per_psc = {}
 with hmm_result_path.open() as fh:
     for line in fh:
@@ -74,9 +74,10 @@ with hmm_result_path.open() as fh:
                 existing_hit = hit_per_psc[psc_id]
                 if(hit['bitscore'] > existing_hit['bitscore']):
                     hit_per_psc[psc_id] = hit
-print(f'read {len(hit_per_psc)} hits')
+print(f'parsed and selected {len(hit_per_psc)} valid hits')
 
 psc_annotated = 0
+ecs_added = 0
 with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
@@ -90,8 +91,8 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     for psc_id, hit in hit_per_psc.items():
         hmm = hmms.get(hit['hmm_id'], None)
         if(hmm is not None):
-            #conn.execute('UPDATE psc SET kegg_orthology_id=? WHERE uniref90_id=?', (hmm['ko'], psc_id))  # annotate PSC
-            #log_psc.info('UPDATE psc SET kegg_orthology_id=%s WHERE uniref90_id=%s', hmm['ko'], psc_id)
+            conn.execute('UPDATE psc SET kegg_orthology_id=? WHERE uniref90_id=?', (hmm['ko'], psc_id))  # annotate PSC
+            log_psc.info('UPDATE psc SET kegg_orthology_id=%s WHERE uniref90_id=%s', hmm['ko'], psc_id)
             psc_annotated += 1
             if('ecs' in hmm):
                 rec_psc = conn.execute('SELECT ec_ids FROM psc WHERE uniref90_id=?', (psc_id,)).fetchone()
@@ -106,7 +107,10 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                 ec_list = ','.join(sorted(ecs))
                 conn.execute('UPDATE psc SET ec_ids=? WHERE uniref90_id=?', (ec_list, psc_id))  # annotate PSC
                 log_psc.info('UPDATE psc SET ec_ids=%s WHERE uniref90_id=%s', ec_list, psc_id)
+                ecs_added += 1
 print('\n')
 
 print(f'PSCs with annotated kofam: {psc_annotated}')
 log_psc.debug('summary: PSC annotated=%d', psc_annotated)
+
+print(f'Added ECs: {ecs_added}')

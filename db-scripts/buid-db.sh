@@ -204,6 +204,7 @@ rm ncbifams* hmms.* hmm_PGAP.* hmmsearch.tblout
 ############################################################################
 # Integrate KEGG kofams
 # - download KEGG kofams
+# - select eligible HMMs (f measure>0.77)
 # - annotate PSCs
 ############################################################################
 printf "\n14/18: download KEGG kofams HMM models...\n"
