@@ -39,11 +39,11 @@ process hmmsearch {
     path('hmm.tblout') into chHmmResults
     path('hmm.dom.tblout') optional true  into chHmmDomResults
 
-    String paramTC = useTC ? "--cut_tc" : ""
+    String paramTC = useTC ? "--cut_tc" : "-E 1E-10"
     String paramDom = useDom ? "--domtblout hmm.dom.tblout" : ""
     script:
     """
-    hmmsearch ${paramTC} -o /dev/null -E 1E-10 --noali --tblout hmm.tblout ${paramDom} --cpu ${task.cpus} ${pathDb} input.faa
+    hmmsearch ${paramTC} -o /dev/null --noali --tblout hmm.tblout ${paramDom} --cpu ${task.cpus} ${pathDb} input.faa
     """
 }
 
