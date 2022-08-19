@@ -241,7 +241,7 @@ rm ReferenceGeneCatalog.txt
 # - annotate IPSs with IS info
 ############################################################################
 printf "\n16/18: download ISfinder protein sequences ...\n"
-wget https://raw.githubusercontent.com/oschwengers/ISfinder-sequences/2e9172bd5e3448c86ec1549a55315e498bef72fc/IS.faa
+wget https://github.com/oschwengers/ISfinder-sequences/raw/2e9162bd5e3448c86ec1549a55315e498bef72fc/IS.faa
 printf "\n16/18: annotate IPSs ...\n"
 grep -A 1 ~~~Transposase~~~ IS.faa | tr -d - | tr -s "\n" > is.transposase.faa
 diamond makedb --in is.transposase.faa --db is
