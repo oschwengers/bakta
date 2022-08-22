@@ -5,6 +5,7 @@ import sqlite3
 
 from pathlib import Path
 
+from alive_progress import alive_bar
 from lxml import etree as et
 from xopen import xopen
 
@@ -69,7 +70,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA threads = 2;')
     conn.commit()
     conn.row_factory = sqlite3.Row
-    with xopen(str(xml_path), mode="rb") as fh:
+    with xopen(str(xml_path), mode="rb") as fh, alive_bar() as bar:
         ups_entries = []
         i = 0
         for event, elem in et.iterparse(fh, tag='{*}entry'):
@@ -160,12 +161,9 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                         psc_annotated += 1
             if((sp_processed % 10000) == 0):
                 conn.commit()
-                print(f'\t... {sp_processed}')
             elem.clear()  # forstall out of memory errors
-
-print('\n')
+            bar()
 print(f'SwissProt proteins not found: {sp_not_found}')
-
 print(f'IPSs annotated: {ips_annotated}')
 log_ips.debug('summary: IPS annotated=%i', ips_annotated)
 print(f'PSCs annotated: {psc_annotated}')

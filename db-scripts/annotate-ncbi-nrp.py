@@ -6,6 +6,7 @@ import sqlite3
 
 from pathlib import Path
 
+from alive_progress import alive_bar
 from Bio import SeqIO
 
 
@@ -38,7 +39,7 @@ log_psc = logging.getLogger('PSC')
 
 print('import PCLA proteins and cluster information...')
 pcla_cluster_annotations = {}
-with pcla_clusters_path.open() as fh:
+with pcla_clusters_path.open() as fh, alive_bar() as bar:
     for line in fh:
         (id_, id, product, proteins, organisms, conserved_in_organism, conserved_in_taxid, gene, hmm) = line.split('\t')
         gene = gene.strip()
@@ -48,15 +49,17 @@ with pcla_clusters_path.open() as fh:
         if(product == ''):
             product = None
         pcla_cluster_annotations[id] = (gene, product)
+    bar()
 
 nrp_annotations = {}
-with pcla_proteins_path.open() as fh:
+with pcla_proteins_path.open() as fh, alive_bar() as bar:
     for line in fh:
         (cluster_id, id, definition, organism, taxid, length) = line.split('\t')
         if(cluster_id in pcla_cluster_annotations):
             nrp_annotations[id] = pcla_cluster_annotations[cluster_id]
+        bar()
 del pcla_cluster_annotations
-print(f'\tfound {len(nrp_annotations)} NRP / gene annotations')
+print(f'found {len(nrp_annotations)} NRP / gene annotations')
 
 
 print('lookup UPS by NRP hash & update WP_* / gene annotations...')
@@ -67,7 +70,7 @@ ups_updated = 0
 psc_updated_gene = 0
 psc_updated_product = 0
 ncbi_nrp_path = Path(args.nrp).resolve()
-with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
+with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, alive_bar() as bar:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
@@ -115,20 +118,14 @@ with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='
             nrps_not_found += 1
         if((nrps_processed % 1000000) == 0):
             conn.commit()
-            print(f'\t... {nrps_processed}')
+        bar()
     conn.commit()
-
-print('\n')
 print(f'NRPs processed: {nrps_processed}')
-
 log_ups.debug('summary: # UPS with annotated NRP IDs=%i', ups_updated)
 print(f'UPSs with annotated WP_* id: {ups_updated}')
-
 log_psc.debug('summary: # PSC with annotated genes=%i', psc_updated_gene)
 print(f'PSCs with annotated gene names: {psc_updated_gene}')
-
 log_psc.debug('summary: # PSC with annotated products=%i', psc_updated_product)
 print(f'PSCs with annotated gene products: {psc_updated_product}')
-
 print(f'NRPs not found: {nrps_not_found}')
 print(f'NRPs w/o IPS: {nrps_wo_ips}')

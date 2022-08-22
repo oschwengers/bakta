@@ -4,6 +4,8 @@ import sqlite3
 
 from pathlib import Path
 
+from alive_progress import alive_bar
+
 
 parser = argparse.ArgumentParser(
     description='Annotate IPSs by NCBI nrp IDs and PSCs by nrp cluster gene labels.'
@@ -65,7 +67,7 @@ print(f'\tmapped COG ids: {len(gb_id_cog)}')
 print('parse PSC alignments and add NCBI COG annotation...')
 psc_processed = 0
 psc_updated = 0
-with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
+with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, alive_bar() as bar:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
@@ -98,10 +100,9 @@ with alignments_path.open() as fh, sqlite3.connect(str(db_path), isolation_level
         psc_processed += 1
         if((psc_processed % 100000) == 0):
             conn.commit()
-            print(f'\t... {psc_processed}')
+            # print(f'\t... {psc_processed}')
+        bar()
     conn.commit()
-
-print('\n')
 print(f'PSCs processed: {psc_processed}')
 print(f'PSCs with annotated COG id/category: {psc_updated}')
 log.debug('summary: PSC annotated=%i', psc_updated)

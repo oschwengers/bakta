@@ -4,6 +4,8 @@ import sqlite3
 
 from pathlib import Path
 
+
+from alive_progress import alive_bar
 from Bio import SeqIO
 from lxml import etree as et
 from xopen import xopen
@@ -74,7 +76,7 @@ uniref90_uniparc_ids = {}
 
 pscc_total = 0
 print('parse & store UniRef50 PSCC information...')
-with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, xopen(str(uniref50_path), mode='rb') as fh_xml:
+with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, xopen(str(uniref50_path), mode='rb') as fh_xml, alive_bar() as bar:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
@@ -109,9 +111,10 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, xopen(s
         i += 1
         if((i % 1000000) == 0):
             conn.commit()
-            print(f'\tread={i}, stored={pscc_total}')
+        bar()
     conn.commit()
 print(f'\tparsed PSCC: {pscc_total}')
+print('\n')
 log_pscc.debug('summary: # PSCC=%i', pscc_total)
 
 
@@ -119,7 +122,7 @@ psc_total = 0
 psc_seqs = 0
 psc_sorf_seqs = 0
 print('parse & store PSC information...')
-with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, xopen(str(uniref90_path), mode='rb') as fh_xml, psc_path.open(mode='wt') as fh_fasta_psc, sorf_path.open(mode='wt') as fh_fasta_sorf:
+with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, xopen(str(uniref90_path), mode='rb') as fh_xml, psc_path.open(mode='wt') as fh_fasta_psc, sorf_path.open(mode='wt') as fh_fasta_sorf, alive_bar() as bar:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
@@ -201,19 +204,19 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, xopen(s
         i += 1
         if((i % 1_000_000) == 0):
             conn.commit()
-            print(f'\tread={i}, stored={psc_total}')
         rep_member.clear()
         rep_member_dbref.clear()
         elem.clear()  # forstall out of memory errors
+        bar()
     conn.commit()
-print(f'\tparsed PSC: {psc_total}')
+print(f'parsed PSC: {psc_total}')
 log_psc.debug('summary: # PSC=%i', psc_total)
+print('\n')
 
 
 print(f'UniParc ({len(uniref90_uniparc_ids)})...')
 log_psc.debug('lookup non-representative UniParc seed sequences: %s', len(uniref90_uniparc_ids))
-i = 0
-with xopen(str(uniparc_path), mode='rt') as fh_uniparc, psc_path.open(mode='at') as fh_fasta_psc, sorf_path.open(mode='at') as fh_fasta_sorf:
+with xopen(str(uniparc_path), mode='rt') as fh_uniparc, psc_path.open(mode='at') as fh_fasta_psc, sorf_path.open(mode='at') as fh_fasta_sorf, alive_bar() as bar:
     for record in SeqIO.parse(fh_uniparc, 'fasta'):
         uniref90_id = uniref90_uniparc_ids.get(record.id, None)
         if(uniref90_id):
@@ -227,16 +230,14 @@ with xopen(str(uniparc_path), mode='rt') as fh_uniparc, psc_path.open(mode='at')
                 log_sorf.info('write seed: uniref90-id=%s, type=UniParc, id=%s, length=%s', uniref90_id, record.id, len(record.seq))
                 psc_sorf_seqs += 1
             uniref90_uniparc_ids.pop(record.id)
-        i += 1
-        if((i % 1_000_000) == 0):
-            print(f'\tread={i}, psc-seqs={psc_seqs}, psc-sorf-seqs={psc_sorf_seqs}')
-uniparc_total_seqs = psc_seqs+psc_sorf_seqs
-print(f'\twritten UniParc seed sequences: {uniparc_total_seqs}')
+        bar()
+uniparc_total_seqs = psc_seqs + psc_sorf_seqs
+print(f'written UniParc seed sequences: {uniparc_total_seqs}')
 log_psc.debug('written UniParc seed sequences: %i', uniparc_total_seqs)
 
-print(f'\tPSC normal seqs: {psc_seqs}')
+print(f'PSC normal seqs: {psc_seqs}')
 log_psc.debug('summary: # PSC normal=%i', psc_seqs)
-print(f'\tPSC sORF seqs: {psc_sorf_seqs}')
+print(f'PSC sORF seqs: {psc_sorf_seqs}')
 log_psc.debug('summary: # PSC sORFs=%i', psc_sorf_seqs)
 
 print("\nsuccessfully initialized PSC table!")

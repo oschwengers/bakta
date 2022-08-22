@@ -5,6 +5,8 @@ import sqlite3
 
 from pathlib import Path
 
+from alive_progress import alive_bar
+
 RE_EC = re.compile(r'(?:\[EC:([0-9\.\-\s]+)\])')
 
 parser = argparse.ArgumentParser(
@@ -59,7 +61,7 @@ print(f'read {len(hmms)} HMMs')
 
 print('parse Kofam hits...')
 hit_per_psc = {}
-with hmm_result_path.open() as fh:
+with hmm_result_path.open() as fh, alive_bar() as bar:
     for line in fh:
         if(line[0] != '#'):
             (psc_id, _, hmm_name, hmm_id, evalue, bitscore, _) = re.split(r'\s+', line.strip(), maxsplit=6)
@@ -74,11 +76,13 @@ with hmm_result_path.open() as fh:
                 existing_hit = hit_per_psc[psc_id]
                 if(hit['bitscore'] > existing_hit['bitscore']):
                     hit_per_psc[psc_id] = hit
+        bar()
 print(f'parsed and selected {len(hit_per_psc)} valid hits')
+print('\n')
 
 psc_annotated = 0
 ecs_added = 0
-with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
+with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, alive_bar(total=len(hit_per_psc)) as bar:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
@@ -108,9 +112,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                 conn.execute('UPDATE psc SET ec_ids=? WHERE uniref90_id=?', (ec_list, psc_id))  # annotate PSC
                 log_psc.info('UPDATE psc SET ec_ids=%s WHERE uniref90_id=%s', ec_list, psc_id)
                 ecs_added += 1
-print('\n')
-
+        bar()
 print(f'PSCs with annotated kofam: {psc_annotated}')
 log_psc.debug('summary: PSC annotated=%d', psc_annotated)
-
 print(f'Added ECs: {ecs_added}')

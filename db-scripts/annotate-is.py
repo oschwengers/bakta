@@ -4,6 +4,7 @@ import sqlite3
 
 from pathlib import Path
 
+from alive_progress import alive_bar
 
 parser = argparse.ArgumentParser(
     description='Annotate PSCs by ISfinder transposon protein sequences.'
@@ -44,7 +45,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA threads = 2;')
     conn.commit()
 
-    with ips_alignments_path.open() as fh:
+    with ips_alignments_path.open() as fh, alive_bar() as bar:
         for line in fh:
             (uniref100_id, sseqid, stitle, length, pident, qlen, slen, evalue) = line.strip().split('\t')
             length = int(length)
@@ -65,10 +66,15 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
             ips_processed += 1
             if((ips_processed % 10000) == 0):
                 conn.commit()
-                print(f'\t... {ips_processed}')
+            bar()
         conn.commit()
+    print(f'IPSs processed: {ips_processed}')
+    print(f'IPSs with annotated IS transposases: {ips_updated}')
+    print('\n')
+    log_ips.debug('summary: IPS annotated=%i', ips_updated)
 
-    with psc_alignments_path.open() as fh:
+
+    with psc_alignments_path.open() as fh, alive_bar() as bar:
         for line in fh:
             (uniref90_id, sseqid, stitle, length, pident, qlen, slen, evalue) = line.strip().split('\t')
             length = int(length)
@@ -89,13 +95,9 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
             psc_processed += 1
             if((psc_processed % 10000) == 0):
                 conn.commit()
-                print(f'\t... {psc_processed}')
+            bar()
         conn.commit()
-
-print('\n')
-print(f'IPSs processed: {ips_processed}')
-print(f'IPSs with annotated IS transposases: {ips_updated}')
-log_ips.debug('summary: IPS annotated=%i', ips_updated)
-print(f'PSCs processed: {psc_processed}')
-print(f'PSCs with annotated IS transposases: {psc_updated}')
-log_psc.debug('summary: PSC annotated=%i', psc_updated)
+    print(f'PSCs processed: {psc_processed}')
+    print(f'PSCs with annotated IS transposases: {psc_updated}')
+    log_psc.debug('summary: PSC annotated=%i', psc_updated)
+    
