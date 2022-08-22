@@ -53,11 +53,9 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
             nrps_processed += 1
             (
                 allele, gene_family, whitelisted_taxa, product, scope, amr_type,
-                subtype, clazz, subclazz, refseq_protein_accession,
-                refseq_nucleotide_accession, curated_refseq_start,
-                genbank_protein_accession, genbank_nucleotide_accession,
-                genbank_strand_orientation, genbank_cds_start, genbank_cds_stop,
-                pubmed_reference, blacklisted_taxa, synonyms, hierarchy_node, db_version
+                subtype, clazz, subclazz, refseq_protein_accession, refseq_nucleotide_accession, curated_refseq_start,
+                genbank_protein_accession, genbank_nucleotide_accession, genbank_strand, genbank_start, genbank_stop,
+                refseq_strand, refseq_start, refseq_stop, pubmed_reference, blacklisted_taxa, synonyms, hierarchy_node, db_version
             ) = line.split('\t')
             if('WP_' in refseq_protein_accession):
                 refseq_protein_accession = refseq_protein_accession[3:]  # remove 'WP_' in NCBI NRP IDs
