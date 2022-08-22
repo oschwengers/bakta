@@ -149,12 +149,34 @@ rm cognames2003-2015.tab cog2003-2015.csv prot2003-2015.fa.gz diamond.cog.tsv co
 
 
 ############################################################################
+# Integrate KEGG kofams
+# - download KEGG kofams
+# - select eligible HMMs (f measure>0.77)
+# - annotate PSCs
+############################################################################
+printf "\n11/18: download KEGG kofams HMM models...\n"
+wget https://www.genome.jp/ftp/db/kofam/ko_list.gz
+wget https://www.genome.jp/ftp/db/kofam/profiles.tar.gz
+zcat ko_list.gz | grep full | awk '{ if($5>=0.77) print $0}' > hmms.selected.tsv
+cut -f1 hmms.selected.tsv > hmms.ids.txt
+tar -I pigz -xf profiles.tar.gz
+for kofam in `cat profiles/prokaryote.hal`; do cat profiles/$kofam >> kofam-prok; done
+hmmfetch -f -o kofams kofam-prok hmms.ids.txt
+hmmpress kofams
+printf "\n11/18: annotate PSCs...\n"
+mkdir -p work/collect
+nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in psc.faa --db kofams --no_tc --dom
+python3 ${BAKTA_DB_SCRIPTS}/annotate-kofams.py --db bakta.db --hmms hmms.selected.tsv --hmm-results hmmsearch.tblout
+rm -rf profiles ko_list.gz kofam* hmmsearch.tblout hmms*
+
+
+############################################################################
 # Integrate NCBI nonredundant protein identifiers and PCLA cluster information
 # - download bacterial RefSeq nonredundant proteins and cluster files
 # - annotate UPSs with NCBI nrp IDs (WP_*)
 # - annotate IPSs/PSCs with NCBI gene names (WP_* -> hash -> UniRef100 -> UniRef90 -> PSC)
 ############################################################################
-printf "\n11/18: download RefSeq nonredundant proteins and clusters ...\n"
+printf "\n12/18: download RefSeq nonredundant proteins and clusters ...\n"
 wget https://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_proteins.txt
 wget https://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_clusters.txt
 for i in {1..1573}; do
@@ -162,7 +184,7 @@ for i in {1..1573}; do
     pigz -dc bacteria.nonredundant_protein.${i}.protein.faa.gz | seqtk seq -CU >> refseq-bacteria-nrp.trimmed.faa
     rm bacteria.nonredundant_protein.${i}.protein.faa.gz
 done
-printf "\n11/18: annotate IPSs and PSCs ...\n"
+printf "\n12/18: annotate IPSs and PSCs ...\n"
 python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-nrp.py --db bakta.db --nrp refseq-bacteria-nrp.trimmed.faa --pcla-proteins PCLA_proteins.txt --pcla-clusters PCLA_clusters.txt
 rm refseq-bacteria-nrp.trimmed.faa PCLA_proteins.txt PCLA_clusters.txt
 
@@ -173,9 +195,9 @@ rm refseq-bacteria-nrp.trimmed.faa PCLA_proteins.txt PCLA_clusters.txt
 # - annotate PSCs if IPS have PSC UniRef90 identifier (seq -> hash -> UPS -> IPS -> PSC)
 # - annotate IPSs if IPS have no PSC UniRef90 identifier (seq -> hash -> UPS -> IPS)
 ############################################################################
-printf "\n12/18: download UniProt/SwissProt ...\n"
+printf "\n13/18: download UniProt/SwissProt ...\n"
 wget https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
-printf "\n12/18: annotate IPSs and PSCs ...\n"
+printf "\n13/18: annotate IPSs and PSCs ...\n"
 python3 ${BAKTA_DB_SCRIPTS}/annotate-swissprot.py --taxonomy nodes.dmp --xml uniprot_sprot.xml.gz --db bakta.db
 rm uniprot_sprot.xml.gz
 
@@ -185,7 +207,7 @@ rm uniprot_sprot.xml.gz
 # - download NCBIfams HMM models
 # - annotate PSCs
 ############################################################################
-printf "\n13/18: download NCBIfams HMM models...\n"
+printf "\n14/18: download NCBIfams HMM models...\n"
 wget https://ftp.ncbi.nlm.nih.gov/hmm/current/hmm_PGAP.LIB
 wget https://ftp.ncbi.nlm.nih.gov/hmm/current/hmm_PGAP.tsv
 grep -v "(Provisional)" hmm_PGAP.tsv > hmms.non-prov.tsv
@@ -194,33 +216,11 @@ grep equivalog hmms.non-prov.tsv >> hmms.selected.tsv
 cut -f1 hmms.selected.tsv > hmms.ids.txt
 hmmfetch -f -o ncbifams hmm_PGAP.LIB hmms.ids.txt
 hmmpress ncbifams
-printf "\n13/18: annotate PSCs...\n"
+printf "\n14/18: annotate PSCs...\n"
 mkdir -p work/collect
 nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in psc.faa --db ncbifams
 python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-fams.py --db bakta.db --hmms hmms.selected.tsv --hmm-results hmmsearch.tblout
 rm ncbifams* hmms.* hmm_PGAP.* hmmsearch.tblout
-
-
-############################################################################
-# Integrate KEGG kofams
-# - download KEGG kofams
-# - select eligible HMMs (f measure>0.77)
-# - annotate PSCs
-############################################################################
-printf "\n14/18: download KEGG kofams HMM models...\n"
-wget https://www.genome.jp/ftp/db/kofam/ko_list.gz
-wget https://www.genome.jp/ftp/db/kofam/profiles.tar.gz
-zcat ko_list.gz | grep full | awk '{ if($5>=0.77) print $0}' > hmms.selected.tsv
-cut -f1 hmms.selected.tsv > hmms.ids.txt
-tar -I pigz -xf profiles.tar.gz
-for kofam in `cat profiles/prokaryote.hal`; do cat profiles/$kofam >> kofam-prok; done
-hmmfetch -f -o kofams kofam-prok hmms.ids.txt
-hmmpress kofams
-printf "\n14/18: annotate PSCs...\n"
-mkdir -p work/collect
-nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in psc.faa --db kofams --no_tc --dom
-python3 ${BAKTA_DB_SCRIPTS}/annotate-kofams.py --db bakta.db --hmms hmms.selected.tsv --hmm-results hmmsearch.tblout
-rm -rf profiles ko_list.gz kofam* hmmsearch.tblout hmms*
 
 
 ############################################################################
