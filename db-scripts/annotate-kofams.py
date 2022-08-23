@@ -70,12 +70,14 @@ with hmm_result_path.open() as fh, alive_bar() as bar:
                 'hmm_id': hmm_name,
                 'bitscore': float(bitscore)
             }
-            if(psc_id not in hit_per_psc):
-                hit_per_psc[psc_id] = hit
-            else:
-                existing_hit = hit_per_psc[psc_id]
-                if(hit['bitscore'] > existing_hit['bitscore']):
+            hmm = hmms.get(hmm_name, None)
+            if(hmm is not None and hit['bitscore'] > hmm['threshold']):
+                if(psc_id not in hit_per_psc):
                     hit_per_psc[psc_id] = hit
+                else:
+                    existing_hit = hit_per_psc[psc_id]
+                    if(hit['bitscore'] > existing_hit['bitscore']):
+                        hit_per_psc[psc_id] = hit
         bar()
 print(f'parsed and selected {len(hit_per_psc)} valid hits')
 print('\n')
