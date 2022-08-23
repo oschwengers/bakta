@@ -268,6 +268,7 @@ hmmpress pfam-families
 hmmfetch -o pfam -f Pfam-A.hmm pfam.non-families.tsv
 hmmpress pfam
 python3 ${BAKTA_DB_SCRIPTS}/extract-hypotheticals.py --psc psc.faa --db bakta.db --hypotheticals hypotheticals.faa
+mkdir -p work/collect
 nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in hypotheticals.faa --db pfam-families
 python3 ${BAKTA_DB_SCRIPTS}/annotate-pfam.py --db bakta.db --hmms pfam-families --hmm-results hmmsearch.tblout
 rm pfam-families* pfam *.tsv Pfam* hmmsearch.tblout
