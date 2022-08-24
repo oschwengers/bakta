@@ -34,7 +34,7 @@ pfam_descriptions = {}
 PFAM_ACC_PATTERN = re.compile(r'^ACC\s{3}(PF.+)\n')
 PFAM_DESC_PATTERN = re.compile(r'^DESC\s{2}(.+)\n')
 print('parse PFAM entries...')
-with hmms_path.open() as fh:
+with hmms_path.open() as fh, alive_bar() as bar:
     acc = None
     for line in fh:
         if(acc is None):
@@ -46,8 +46,8 @@ with hmms_path.open() as fh:
             if(m):
                 description = m.group(1)
                 pfam_descriptions[acc] = description
-                # print(f'id={acc}, desc={description}')
                 acc = None
+        bar()
 
 
 print('parse Pfam hits...')
@@ -62,13 +62,7 @@ with hmm_result_path.open() as fh, alive_bar() as bar:
             pfam_acc = cols[3]
             bitscore = float(cols[5])
             best_hit = best_hits.get(psc_id, None)
-            if(best_hit is None):
-                best_hits[psc_id] = {
-                    'psc_id': psc_id,
-                    'pfam_acc': pfam_acc,
-                    'bitscore': bitscore
-                }
-            elif(bitscore > best_hit['bitscore']):
+            if(best_hit is None or bitscore > best_hit['bitscore']):
                 best_hits[psc_id] = {
                     'psc_id': psc_id,
                     'pfam_acc': pfam_acc,
