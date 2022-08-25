@@ -659,10 +659,12 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
 
                         effects = []
                         if len(observations.get(bc.PSEUDOGENE_EFFECT_START, [])) > 0:
-                            effects.append('Internal start codon')
+                            start_codon = ', '.join(map(str, observations[bc.PSEUDOGENE_EFFECT_START]))
+                            effects.append(f'Internal start codon at {start_codon}')
                         if len(observations.get(bc.PSEUDOGENE_EFFECT_STOP, [])) > 0:
-                            effects.append('Internal stop codon')
-                        effects = ', '.join(effects)
+                            stop_codon = ', '.join(map(str, observations[bc.PSEUDOGENE_EFFECT_STOP]))
+                            effects.append(f'Internal stop codon at {stop_codon}')
+                        effects = '; '.join(effects)
 
                         causes = []
                         if len(observations.get(bc.PSEUDOGENE_CAUSE_INSERTION, [])) > 0:
@@ -791,7 +793,7 @@ def compare_alignments(observations: Dict[str, Union[Set[str], Set[int]]], align
             observations[bc.PSEUDOGENE_CAUSE_INSERTION].add(start + position)
             observations['directions'].add(direction)
             log.info(
-                'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, cause=insertion, postion=%i',
+                'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, cause=insertion, position=%i',
                 cds['contig'], cds['start'], cds['stop'], cds['strand'], start + position
             )
             position = position + 1 if cds['strand'] == '+' else position - 1
@@ -820,7 +822,7 @@ def compare_alignments(observations: Dict[str, Union[Set[str], Set[int]]], align
                 observations[bc.PSEUDOGENE_EFFECT_STOP].add(start + position)
                 observations['directions'].add(direction)
                 log.info(
-                    'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, cause=mutation, position=%i',
+                    'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, effect=stop, position=%i',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], start + position
                 )
             position = position + 3 if cds['strand'] == '+' else position - 3
