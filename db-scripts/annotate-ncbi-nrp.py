@@ -43,7 +43,7 @@ with pcla_clusters_path.open() as fh, alive_bar() as bar:
     for line in fh:
         (id_, id, product, proteins, organisms, conserved_in_organism, conserved_in_taxid, gene, hmm) = line.split('\t')
         gene = gene.strip()
-        product = product.strip()
+        product = product.strip().replace('"', '')
         if(gene == ''):
             gene = None
         if(product == ''):
