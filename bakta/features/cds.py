@@ -781,48 +781,51 @@ def compare_alignments(observations: Dict[str, Union[Set[str], Set[int]]], align
     """
     Compare the alignment and reference alignment to find the causes of pseudogenization.
     """
-    position = cds['start']
+    position = 0
+    start = cds['start'] if cds['strand'] == '+' else cds['stop']
     
     for char, ref_char in zip(alignment, ref_alignment):
-        if char == '\\':  # insertion
-            observations[bc.PSEUDOGENE_CAUSE_INSERTION].add(position)
+        if char == '-':
+            continue
+        elif char == '\\':  # insertion
+            observations[bc.PSEUDOGENE_CAUSE_INSERTION].add(start + position)
             observations['directions'].add(direction)
-            position += 1
             log.info(
                 'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, cause=insertion, postion=%i',
-                cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
+                cds['contig'], cds['start'], cds['stop'], cds['strand'], start + position
             )
+            position = position + 1 if cds['strand'] == '+' else position - 1
         elif char == '/':  # deletion
-            observations[bc.PSEUDOGENE_CAUSE_DELETION].add(position)
+            observations[bc.PSEUDOGENE_CAUSE_DELETION].add(start + position)
             observations['directions'].add(direction)
             log.info(
                 'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, cause=deletion, position=%i',
-                cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
+                cds['contig'], cds['start'], cds['stop'], cds['strand'], start + position
             )
         elif char == '*':  # stop codon, selenocysteine, pyrolysine
             if ref_char == 'U':  # selenocysteine
-                observations[bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE].add(position)
+                observations[bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE].add(start + position)
                 log.info(
                     'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, exception=selenocysteine, position=%i',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], start + position
                 )
             elif ref_char == 'O':  # pyrolysine
-                observations[bc.PSEUDOGENE_EXCEPTION_PYROLYSINE].add(position)
+                observations[bc.PSEUDOGENE_EXCEPTION_PYROLYSINE].add(start + position)
                 log.info(
                     'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, exception=pyrolysin, position=%i',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], start + position
                 )
             else:  # stop codon
                 # observations[bc.PSEUDOGENE_CAUSE_MUTATION].add(position)
-                observations[bc.PSEUDOGENE_EFFECT_STOP].add(position)
+                observations[bc.PSEUDOGENE_EFFECT_STOP].add(start + position)
                 observations['directions'].add(direction)
                 log.info(
                     'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, cause=mutation, position=%i',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], start + position
                 )
-            position += 3
+            position = position + 3 if cds['strand'] == '+' else position - 3
         else:
-            position += 3
+            position = position + 3 if cds['strand'] == '+' else position - 3
 
 
 def detect_pseudogenization_observations_upstream(observations: Dict[str, Union[Set[str], Set[int]]], alignment: str, ref_alignment: str, qstart: int, extended_positions: dict, cds: dict, elongated_edge: bool):
