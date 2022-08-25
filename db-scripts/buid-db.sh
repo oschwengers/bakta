@@ -164,7 +164,7 @@ for kofam in `cat profiles/prokaryote.hal`; do cat profiles/$kofam >> kofam-prok
 hmmfetch -f -o kofams kofam-prok hmms.ids.txt
 hmmpress kofams
 printf "\n11/18: annotate PSCs...\n"
-mkdir -p work/collect
+mkdir -p work/tblout work/domtblout
 nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in psc.faa --db kofams --no_tc --out hmmsearch.kofam.tblout
 python3 ${BAKTA_DB_SCRIPTS}/annotate-kofams.py --db bakta.db --hmms hmms.selected.tsv --hmm-results hmmsearch.kofam.tblout
 rm -rf profiles ko_list.gz kofam* hmmsearch.kofam.* hmms*
@@ -217,7 +217,7 @@ cut -f1 hmms.selected.tsv > hmms.ids.txt
 hmmfetch -f -o ncbifams hmm_PGAP.LIB hmms.ids.txt
 hmmpress ncbifams
 printf "\n14/18: annotate PSCs...\n"
-mkdir -p work/collect
+mkdir -p work/tblout work/domtblout
 nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in psc.faa --db ncbifams --out hmmsearch.ncbifams.tblout
 python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-fams.py --db bakta.db --hmms hmms.selected.tsv --hmm-results hmmsearch.ncbifams.tblout
 rm ncbifams* hmms.* hmm_PGAP.* hmmsearch.ncbifams.tblout
@@ -268,7 +268,7 @@ hmmpress pfam-families
 hmmfetch -o pfam -f Pfam-A.hmm pfam.non-families.tsv
 hmmpress pfam
 python3 ${BAKTA_DB_SCRIPTS}/extract-hypotheticals.py --psc psc.faa --db bakta.db --hypotheticals hypotheticals.faa
-mkdir -p work/collect
+mkdir -p work/tblout work/domtblout
 nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in hypotheticals.faa --db pfam-families --out hmmsearch.pfam-families.tblout
 python3 ${BAKTA_DB_SCRIPTS}/annotate-pfam.py --db bakta.db --hmms pfam-families --hmm-results hmmsearch.pfam-families.tblout
 rm pfam-families* pfam *.tsv Pfam* hmmsearch.pfam-families.tblout

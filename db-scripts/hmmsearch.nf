@@ -47,5 +47,5 @@ process hmmsearch {
     """
 }
 
-chHmmResults.collectFile( sort: false, name: pathOutput, skip: 3, keepHeader: true, storeDir: '.', tempDir: "${workDir}/collect")
-chHmmDomResults.collectFile( sort: false, name: pathDomOutput, skip: 3, keepHeader: true, storeDir: '.', tempDir: "${workDir}/collect")
+chHmmResults.collectFile( sort: false, name: pathOutput, skip: 3, keepHeader: true, storeDir: '.', tempDir: "${workDir}/tblout")
+chHmmDomResults.collectFile( sort: false, name: pathDomOutput, skip: 3, keepHeader: true, storeDir: '.', tempDir: "${workDir}/domtblout")
