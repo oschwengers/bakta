@@ -512,7 +512,7 @@ def main():
 
     print('\tplot...')
     plot_path = cfg.output_path
-    plot.write_plot(features, contigs, plot_path, True)
+    plot.write_plot(features, contigs, plot_path)
 
     if(cfg.skip_cds is False):
         hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
