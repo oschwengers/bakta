@@ -1,3 +1,4 @@
+import subprocess as sp
 import sys
 
 from pathlib import Path
@@ -6,6 +7,18 @@ from subprocess import run
 import pytest
 
 from .conftest import FILES, SKIP_PARAMETERS
+
+
+def test_deepsig():
+    command = ('deepsig', '--version')
+    is_available = False
+    try:
+        # tool_output = str(sp.check_output(command, stderr=sp.STDOUT))  # stderr must be added in case the tool output is not piped into stdout
+        sp.check_output(command, stderr=sp.STDOUT)  # stderr must be added in case the tool output is not piped into stdout
+        is_available = True
+    except:
+        print(f"WARNING: {command[0]} not found or not executable! Skip dependen test.")
+    return is_available
 
 
 @pytest.mark.slow
@@ -43,7 +56,7 @@ def test_bakta_mock_skipped_features(parameters, tmpdir):
         (['test/data/NC_002127.1-win.fna.gz'])  # Windows format (\r\n)
     ]
 )
-@pytest.mark.skipif(sys.platform=='darwin', reason=f'Skip on {sys.platform}')
+@pytest.mark.skipif(test_deepsig() == False, reason=f'Skip on unavailable DeepSig')
 def test_bakta_plasmid(parameters, tmpdir):
     # full test on plasmid
     proc = run(
