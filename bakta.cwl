@@ -122,6 +122,10 @@ inputs:
     id: skip_cds
     inputBinding: {prefix: --skip-cds}
     type: boolean
+  - doc: Skip Pseudogene detection & annotation
+    id: skip_pseudo
+    inputBinding: {prefix: --skip-pseudo}
+    type: boolean
   - doc: Skip sORF detection & annotation
     id: skip_sorf
     inputBinding: {prefix: --skip-sorf}
