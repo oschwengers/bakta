@@ -806,6 +806,8 @@ def compare_alignments(observations: dict, alignment: str, ref_alignment: str, c
     """
     position = coordinates['up']
     start = cds['start'] if cds['strand'] == '+' else cds['stop']
+    insertions = 0
+    deletions = 0
 
     # Check for anomalous start codons
     if coordinates['up'] < 0:
@@ -833,6 +835,7 @@ def compare_alignments(observations: dict, alignment: str, ref_alignment: str, c
         if char == '-':
             continue
         elif char == '\\':  # insertion
+            insertions += 1
             pos = get_abs_position(cds, start, position, edge)
             observations[bc.PSEUDOGENE_CAUSE_INSERTION].add(pos)
             observations['directions'].add(get_direction(position, edge))
@@ -842,6 +845,7 @@ def compare_alignments(observations: dict, alignment: str, ref_alignment: str, c
             )
             position += 1
         elif char == '/':  # deletion
+            deletions += 1
             pos = get_abs_position(cds, start, position, edge)
             observations[bc.PSEUDOGENE_CAUSE_DELETION].add(pos)
             observations['directions'].add(get_direction(position, edge))
@@ -865,13 +869,16 @@ def compare_alignments(observations: dict, alignment: str, ref_alignment: str, c
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], pos
                 )
             else:  # stop codon
+                mutation = ''
                 pos = get_abs_position(cds, start, position, edge)
-                # observations[bc.PSEUDOGENE_CAUSE_MUTATION].add(pos)
+                if abs(insertions - deletions) % 3 == 0:
+                    observations[bc.PSEUDOGENE_CAUSE_MUTATION].add(pos)
+                    mutation = ', cause=mutation'
                 observations[bc.PSEUDOGENE_EFFECT_STOP].add(pos)
                 observations['directions'].add(get_direction(position, edge))
                 log.info(
-                    'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, effect=stop, position=%i',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], pos
+                    'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, effect=stop%s, position=%i',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], mutation, pos
                 )
             position += 3
         else:
