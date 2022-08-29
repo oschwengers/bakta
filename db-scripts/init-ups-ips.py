@@ -6,6 +6,7 @@ import sqlite3
 
 from pathlib import Path
 
+from alive_progress import alive_bar
 from Bio import SeqIO
 from lxml import etree as et
 from xopen import xopen
@@ -82,8 +83,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     db_updates = 0
     ups_seqs = 0
     ips_seqs = 0
-    i = 0
-    with xopen(str(uniref100_path), mode='rb') as fh_xml, ips_path.open(mode='wt') as fh_fasta_ips:
+    with xopen(str(uniref100_path), mode='rb') as fh_xml, ips_path.open(mode='wt') as fh_fasta_ips, alive_bar() as bar:
         for event, elem in et.iterparse(fh_xml, tag='{*}entry'):
             if('Fragment' not in elem.find('./{*}name').text):  # skip protein fragments
                 common_tax_id = elem.find('./{*}property[@type="common taxon ID"]')
@@ -161,18 +161,16 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     if((db_updates % 100000) == 0):
                         conn.commit()
             elem.clear()  # forstall out of memory errors
-            i += 1
-            if((i % 1000000) == 0):
-                print(f'\t... {i}')
+            bar()
     conn.commit()
-    print(f'\tstored representative IPS: {ips_seqs}')
+    print(f'stored representative IPS: {ips_seqs}')
+    print('\n')
     log_ips.debug('summary: # IPS=%i', ips_seqs)
 
     print(f'UniParc ({len(uniparc_to_uniref100)})...')
     log_ups.debug('lookup non-representative UniParc member sequences: %s', len(uniparc_to_uniref100))
     db_updates = 0
-    i = 0
-    with xopen(str(uniparc_path), mode='rt') as fh_uniparc:
+    with xopen(str(uniparc_path), mode='rt') as fh_uniparc, alive_bar() as bar:
         for record in SeqIO.parse(fh_uniparc, 'fasta'):
             uniparc_id = record.id
             uniref100_id = uniparc_to_uniref100.get(uniparc_id, None)
@@ -204,12 +202,9 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     uniparc_to_uniref100.pop(uniparc_id)
                 if((db_updates % 100000) == 0):
                     conn.commit()
-            i += 1
-            if((i % 10000000) == 0):
-                print(f'\t... {i}')
+            bar()
     conn.commit()
-    print(f'\tstored UPS: {ups_seqs}')
+    print(f'stored UPS: {ups_seqs}')
     log_ips.debug('summary: # UPS=%i', ups_seqs)
-
 
 print("\nsuccessfully initialized UPS & IPS tables!")

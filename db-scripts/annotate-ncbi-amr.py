@@ -4,6 +4,8 @@ import sqlite3
 
 from pathlib import Path
 
+from alive_progress import alive_bar
+
 
 parser = argparse.ArgumentParser(
     description='Annotate IPSs by NCBI nrp IDs.'
@@ -46,16 +48,14 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
 
     print('lookup IPS by AMR NRP id (WP_*) and update gene/product annotations...')
     conn.row_factory = sqlite3.Row
-    with genes_path.open() as fh:
+    with genes_path.open() as fh, alive_bar() as bar:
         for line in fh:
             nrps_processed += 1
             (
                 allele, gene_family, whitelisted_taxa, product, scope, amr_type,
-                subtype, clazz, subclazz, refseq_protein_accession,
-                refseq_nucleotide_accession, curated_refseq_start,
-                genbank_protein_accession, genbank_nucleotide_accession,
-                genbank_strand_orientation, genbank_cds_start, genbank_cds_stop,
-                pubmed_reference, blacklisted_taxa, synonyms, hierarchy_node, db_version
+                subtype, clazz, subclazz, refseq_protein_accession, refseq_nucleotide_accession, curated_refseq_start,
+                genbank_protein_accession, genbank_nucleotide_accession, genbank_strand, genbank_start, genbank_stop,
+                refseq_strand, refseq_start, refseq_stop, pubmed_reference, blacklisted_taxa, synonyms, hierarchy_node, db_version
             ) = line.split('\t')
             if('WP_' in refseq_protein_accession):
                 refseq_protein_accession = refseq_protein_accession[3:]  # remove 'WP_' in NCBI NRP IDs
@@ -79,7 +79,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     ips_annotated += 1
             if((nrps_processed % 1000) == 0):
                 conn.commit()
-                print(f'\t... {nrps_processed}')
+            bar()
     conn.commit()
 
     print('drop UPS index on NCBI NRP ids...')
@@ -87,7 +87,6 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.commit()
     log_ups.info('DROP INDEX nrp')
 
-print('\n')
 print(f'NRPs processed: {nrps_processed}')
 print(f'IPSs with annotated AMR gene / product: {ips_annotated}')
 log_ips.debug('summary: IPS annotated=%d', ips_annotated)

@@ -23,10 +23,10 @@ non_family_path = Path(args.non_family)
 logging.basicConfig(
     filename='bakta.db.log',
     filemode='a',
-    format='%(name)s - EXPERT-SEQ - %(levelname)s - %(message)s',
+    format='%(name)s - PFAM - %(levelname)s - %(message)s',
     level=logging.DEBUG
 )
-log = logging.getLogger('PFAM')
+log = logging.getLogger('PSC')
 
 
 non_families = 0

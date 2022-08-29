@@ -5,6 +5,7 @@ import sqlite3
 
 from pathlib import Path
 
+from alive_progress import alive_bar
 
 parser = argparse.ArgumentParser(
     description='Annotate PSCs by PFAM family descriptions.'
@@ -33,7 +34,7 @@ pfam_descriptions = {}
 PFAM_ACC_PATTERN = re.compile(r'^ACC\s{3}(PF.+)\n')
 PFAM_DESC_PATTERN = re.compile(r'^DESC\s{2}(.+)\n')
 print('parse PFAM entries...')
-with hmms_path.open() as fh:
+with hmms_path.open() as fh, alive_bar() as bar:
     acc = None
     for line in fh:
         if(acc is None):
@@ -45,14 +46,14 @@ with hmms_path.open() as fh:
             if(m):
                 description = m.group(1)
                 pfam_descriptions[acc] = description
-                # print(f'id={acc}, desc={description}')
                 acc = None
+        bar()
 
 
 print('parse Pfam hits...')
 psc_ids = set()
 best_hits = {}
-with hmm_result_path.open() as fh:
+with hmm_result_path.open() as fh, alive_bar() as bar:
     for line in fh:
         if(line[0] != '#'):
             cols = re.split(r'\s+', line.strip(), maxsplit=18)
@@ -61,24 +62,19 @@ with hmm_result_path.open() as fh:
             pfam_acc = cols[3]
             bitscore = float(cols[5])
             best_hit = best_hits.get(psc_id, None)
-            if(best_hit is None):
+            if(best_hit is None or bitscore > best_hit['bitscore']):
                 best_hits[psc_id] = {
                     'psc_id': psc_id,
                     'pfam_acc': pfam_acc,
                     'bitscore': bitscore
                 }
-            elif(bitscore > best_hit['bitscore']):
-                best_hits[psc_id] = {
-                    'psc_id': psc_id,
-                    'pfam_acc': pfam_acc,
-                    'bitscore': bitscore
-                }
+        bar()
 print(f'PSC ids: {len(psc_ids)}')
 print(f'best PFAM hits: {len(best_hits)}')
-
+print('\n')
 
 psc_annotated = 0
-with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
+with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, alive_bar(total=len(best_hits)) as bar:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
@@ -96,14 +92,11 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
         if(len(product_terms) > 1):
             if(product_terms[-1] == 'domain'):
                 product = f'{product}-containing protein'
-        # print(f'UPDATE psc SET product={product} WHERE uniref90_id={psc_id}')
         conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (product, psc_id))  # annotate PSC with Pfam family hit
         log_psc.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', product, psc_id)
         psc_annotated += 1
         if((psc_annotated % 1000000) == 0):
             conn.commit()
-            print(f'\t... {psc_annotated}')
-
-print('\n')
+        bar()
 print(f'PSCs annotated by Pfam family: {psc_annotated}')
 log_psc.debug('summary: PSC annotated=%i', psc_annotated)
