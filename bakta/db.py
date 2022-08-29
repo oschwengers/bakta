@@ -166,8 +166,9 @@ def main():
     parser_update.add_argument('--tmp-dir', '-t', action='store', dest='tmp_dir', default=Path.cwd(), help='Temporary directory to download & extract (default = current working directory)')
 
     args = parser.parse_args()
+    print(f'Bakta software version: {bakta.__version__}')
+    print(f'Required database schema version: {bakta.__db_schema_version__}\n')
     if(args.subcommand == 'list'):
-        print(f'Required database schema version: {bakta.__db_schema_version__}\n')
         versions = fetch_db_versions()
         if(not args.all):
             versions = [v for v in versions if v['major'] == bakta.__db_schema_version__]
