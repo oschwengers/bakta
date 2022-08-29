@@ -6,11 +6,22 @@ import bakta.features.cds as feat_cds
 import pytest
 
 
-@pytest.mark.parametrize('alignment, ref_alignment, expected_result', [
+@pytest.mark.parametrize('alignment, ref_alignment, cds, coordinates, expected_result', [
         (  # deletion
             'MKEGQFVGY/FKMKEQRKIPLTHIMIIGAFIFAFLQVVLLASLVHAVNVNNEIQEGLFQSGRIMVESLQHILSVQTGIH',
             'MKEGQFVGY-FKMKEQRKIPLTHIMIIGAFIFAFLQVVLLASLVHAVNVNNEIQEGLFQSGRIMVESLQHILSVQTGIN',
+            #            *
             {
+                'contig': 'foo',
+                'start': 37,
+                'stop': 100,
+                'strand': '+',
+                'rbs_motif': 'AGGA',
+                'edge': False
+            }, {
+                'up': -36,
+                'down': 0
+            }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: set(),
                 bc.PSEUDOGENE_CAUSE_DELETION: {28},
                 bc.PSEUDOGENE_CAUSE_MUTATION: set(),
@@ -25,6 +36,15 @@ import pytest
             'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKNVIWDYPKDFIAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL\\KIIA\\AVANNYMPGVASYAG',
             'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKDVIWDYPKDFMAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL-KIIA-PVANDYMPGVDSYAG',
             {
+                'contig': 'foo',
+                'start': 1,
+                'stop': 100,
+                'strand': '+',
+                'edge': False
+            }, {
+                'up': 0,
+                'down': 0
+            }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: {430, 443},
                 bc.PSEUDOGENE_CAUSE_DELETION: set(),
                 bc.PSEUDOGENE_CAUSE_MUTATION: set(),
@@ -32,13 +52,22 @@ import pytest
                 bc.PSEUDOGENE_EFFECT_STOP: set(),
                 bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
                 bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
-                'directions': {bc.FEATURE_END_5_PRIME}
+                'directions': {bc.FEATURE_END_3_PRIME}
             }
         ),
         (  # internal stop
             'MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
             'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASQGSWYNF',
-            {
+{
+                'contig': 'foo',
+                'start': 1,
+                'stop': 100,
+                'strand': '+',
+                'edge': False
+            }, {
+                'up': 0,
+                'down': 0
+            }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: set(),
                 bc.PSEUDOGENE_CAUSE_DELETION: set(),
                 bc.PSEUDOGENE_CAUSE_MUTATION: set(),  #{277},
@@ -46,13 +75,22 @@ import pytest
                 bc.PSEUDOGENE_EFFECT_STOP: {277},
                 bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
                 bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
-                'directions': {bc.FEATURE_END_5_PRIME}
+                'directions': {bc.FEATURE_END_3_PRIME}
             }
         ),
         (  # selenocysteine
             'MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
             'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASUGSWYNF',
             {
+                'contig': 'foo',
+                'start': 1,
+                'stop': 100,
+                'strand': '+',
+                'edge': False
+            }, {
+                'up': 0,
+                'down': 0
+            }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: set(),
                 bc.PSEUDOGENE_CAUSE_DELETION: set(),
                 bc.PSEUDOGENE_CAUSE_MUTATION: set(),
@@ -67,6 +105,15 @@ import pytest
             'MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
             'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASOGSWYNF',
             {
+                'contig': 'foo',
+                'start': 1,
+                'stop': 100,
+                'strand': '+',
+                'edge': False
+            }, {
+                'up': 0,
+                'down': 0
+            }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: set(),
                 bc.PSEUDOGENE_CAUSE_DELETION: set(),
                 bc.PSEUDOGENE_CAUSE_MUTATION: set(),
@@ -76,10 +123,129 @@ import pytest
                 bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: {277},
                 'directions': set()
             }
+        ),
+        (  # point mutation -> internal start codon
+            'MLSIQSNRDWLSMSIFSDYSSSSEMHNNLTIDYYLALSSTKGSGITNIISIILQQAQDYDVAKIT',
+            'MLSIQSNRDWLSASIFSDYSSSSEMHNNLTIDYYLALSSTKGSGITNIISIILQQAQDYDVAKIT',
+            {
+                'contig': 'foo',
+                'start': 40,
+                'stop': 100,
+                'strand': '+',
+                'rbs_motif': None,
+                'edge': False
+            }, {
+                'up': -39,
+                'down': 0
+            }, {
+                bc.PSEUDOGENE_CAUSE_INSERTION: set(),
+                bc.PSEUDOGENE_CAUSE_DELETION: set(),
+                bc.PSEUDOGENE_CAUSE_MUTATION: set(),
+                bc.PSEUDOGENE_EFFECT_START: {40},
+                bc.PSEUDOGENE_EFFECT_STOP: set(),
+                bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
+                bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
+                'directions': {bc.FEATURE_END_3_PRIME}
+            }
+        ),
+        (  # deletion
+            'MKEGQFVGY/FKMKEQRKIPLTHIMIIGAFIFAFLQVVLLASLVHAVNVNNEIQEGLFQSGRIMVESLQHILSVQTGIH',
+            'MKEGQFVGY-FKMKEQRKIPLTHIMIIGAFIFAFLQVVLLASLVHAVNVNNEIQEGLFQSGRIMVESLQHILSVQTGIN',
+            #            *
+            {
+                'contig': 'foo',
+                'start': 10,
+                'stop': 200,
+                'strand': '-',
+                'rbs_motif': 'AGGA',
+                'edge': False
+            }, {
+                'up': -36,
+                'down': 0
+            }, {
+                bc.PSEUDOGENE_CAUSE_INSERTION: set(),
+                bc.PSEUDOGENE_CAUSE_DELETION: {209},
+                bc.PSEUDOGENE_CAUSE_MUTATION: set(),
+                bc.PSEUDOGENE_EFFECT_START: set(),
+                bc.PSEUDOGENE_EFFECT_STOP: set(),
+                bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
+                bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
+                'directions': {bc.FEATURE_END_5_PRIME}
+            }
+        ),
+        (  # insertion
+            'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKNVIWDYPKDFIAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL\\KIIA\\AVANNYMPGVASYAG',
+            'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKDVIWDYPKDFMAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL-KIIA-PVANDYMPGVDSYAG',
+            {
+                'contig': 'foo',
+                'start': 1,
+                'stop': 500,
+                'strand': '-',
+                'edge': False
+            }, {
+                'up': 0,
+                'down': 0
+            }, {
+                bc.PSEUDOGENE_CAUSE_INSERTION: {71, 58},
+                bc.PSEUDOGENE_CAUSE_DELETION: set(),
+                bc.PSEUDOGENE_CAUSE_MUTATION: set(),
+                bc.PSEUDOGENE_EFFECT_START: set(),
+                bc.PSEUDOGENE_EFFECT_STOP: set(),
+                bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
+                bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
+                'directions': {bc.FEATURE_END_3_PRIME}
+            }
+        ),
+        (  # internal stop
+            'MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
+            'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASQGSWYNF',
+{
+                'contig': 'foo',
+                'start': 100,
+                'stop': 500,
+                'strand': '-',
+                'edge': False
+            }, {
+                'up': 0,
+                'down': 0
+            }, {
+                bc.PSEUDOGENE_CAUSE_INSERTION: set(),
+                bc.PSEUDOGENE_CAUSE_DELETION: set(),
+                bc.PSEUDOGENE_CAUSE_MUTATION: set(),  #{277},
+                bc.PSEUDOGENE_EFFECT_START: set(),
+                bc.PSEUDOGENE_EFFECT_STOP: {224},
+                bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
+                bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
+                'directions': {bc.FEATURE_END_3_PRIME}
+            }
+        ),
+        (  # point mutation -> internal start codon
+            'MLSIQSNRDWLSMSIFSDYSSSSEMHNNLTIDYYLALSSTKGSGITNIISIILQQAQDYDVAKIT',
+            'MLSIQSNRDWLSASIFSDYSSSSEMHNNLTIDYYLALSSTKGSGITNIISIILQQAQDYDVAKIT',
+            {
+                'contig': 'foo',
+                'start': 40,
+                'stop': 100,
+                'strand': '-',
+                'rbs_motif': None,
+                'edge': False
+            }, {
+                'up': -39,
+                'down': 0
+            }, {
+                bc.PSEUDOGENE_CAUSE_INSERTION: set(),
+                bc.PSEUDOGENE_CAUSE_DELETION: set(),
+                bc.PSEUDOGENE_CAUSE_MUTATION: set(),
+                bc.PSEUDOGENE_EFFECT_START: {100},
+                bc.PSEUDOGENE_EFFECT_STOP: set(),
+                bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
+                bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
+                'directions': {bc.FEATURE_END_3_PRIME}
+            }
         )
     ]
 )
-def test_compare_alignments(alignment, ref_alignment, expected_result):
+def test_compare_alignments(alignment, ref_alignment, cds, coordinates, expected_result):
     # Includes test_downstream_elongation
     observations = {
         bc.PSEUDOGENE_CAUSE_INSERTION: set(),
@@ -91,55 +257,8 @@ def test_compare_alignments(alignment, ref_alignment, expected_result):
         bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
         'directions': set()
     }
-    cds = {
-        'start': 1,
-        'contig': 'foo',
-        'stop': 100,
-        'strand': '+',
-        'edge': False
-    }
-    feat_cds.compare_alignments(observations, alignment, ref_alignment, cds, bc.FEATURE_END_5_PRIME)
-    assert observations == expected_result
 
-
-@pytest.mark.parametrize('alignment, ref_alignment, expected_result', [
-        (  # point mutation -> internal start codon
-            'MINWRKVGMTSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
-            'MINWRKVGATSSHHGPYDQGYTRATMAHTKRSDLARASGPHKVRRSPDWSLQLDSMKSESLVIVDQNATVNTFPGLVHTARHTMGVGCKRSR',
-            {
-                bc.PSEUDOGENE_CAUSE_INSERTION: set(),
-                bc.PSEUDOGENE_CAUSE_DELETION: set(),
-                bc.PSEUDOGENE_CAUSE_MUTATION: set(),
-                bc.PSEUDOGENE_EFFECT_START: {30},
-                bc.PSEUDOGENE_EFFECT_STOP: set(),
-                bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
-                bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
-                'directions': {bc.FEATURE_END_5_PRIME}
-            }
-        )
-    ]
-)
-def test_upstream_elongation(alignment, ref_alignment, expected_result):
-    observations = {
-        bc.PSEUDOGENE_CAUSE_INSERTION: set(),
-        bc.PSEUDOGENE_CAUSE_DELETION: set(),
-        bc.PSEUDOGENE_CAUSE_MUTATION: set(),
-        bc.PSEUDOGENE_EFFECT_START: set(),
-        bc.PSEUDOGENE_EFFECT_STOP: set(),
-        bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
-        bc.PSEUDOGENE_EXCEPTION_PYROLYSINE: set(),
-        'directions': set()
-    }
-    cds = {
-        'start': 30,
-        'stop': '',
-        'strand': '',
-        'contig': '',
-        'rbs_motif': None
-    }
-    extended_positions = {'start': 1}
-    elongated_edge = False
-    feat_cds.detect_pseudogenization_observations_upstream(observations, alignment, ref_alignment, 8, extended_positions, cds, elongated_edge)
+    feat_cds.compare_alignments(observations, alignment, ref_alignment, cds, coordinates, edge=False)
     assert observations == expected_result
 
 
@@ -159,7 +278,9 @@ def test_upstream_elongation(alignment, ref_alignment, expected_result):
               'start': 10,
               'stop': 670,
               'strand': '+',
-              'edge': False
+              'edge': False,
+              'elongation_up': 300,
+              'elongation_down': 300
             }
         ),
         (
@@ -177,7 +298,9 @@ def test_upstream_elongation(alignment, ref_alignment, expected_result):
               'start': 0,
               'stop': 200,
               'strand': '+',
-              'edge': False
+              'edge': False,
+              'elongation_up': 100,
+              'elongation_down': 10
             }
         ),
         (
@@ -185,7 +308,9 @@ def test_upstream_elongation(alignment, ref_alignment, expected_result):
               'start': 100,  # circular does not fit cutoff
               'stop': 190,
               'strand': '+',
-              'edge': True
+              'edge': True,
+              'elongation_up': 300,
+              'elongation_down': 300
             },
             {
               'sequence': 'ACGT' * 100,  # 400nt
@@ -195,10 +320,12 @@ def test_upstream_elongation(alignment, ref_alignment, expected_result):
               'start': 200,
               'stop': 90,
               'strand': '+',
-              'edge': True
+              'edge': True,
+              'elongation_up': 300,
+              'elongation_down': 300
             }
         )
     ]
 )
 def test_get_elongated_cds(cds, contig, expected_result):
-    assert feat_cds.get_elongated_cds(cds, contig) == expected_result
+    assert feat_cds.get_elongated_cds(cds, contig, offset=300) == expected_result
