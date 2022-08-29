@@ -71,22 +71,31 @@ def main():
         log.error('provided input annotation file not valid! path=%s', args.input)
         sys.exit(f'ERROR: input annotation file ({args.input}) not valid!')
     log.info('input-path=%s', annotation_path)
+    cfg.check_tmp_path(args)
 
     #Import Annotation Information
-    input = open(args.input)
-    annotation = json.load(input)
-    input.close()
+    try:
+        with open(args.input, 'r') as input:
+            annotation = json.load(input)
+    except:
+        log.error('wrong file format!')
+        sys.exit('ERROR: wrong file format!')
     features = annotation['features']
     contigs = annotation['sequences']
 
     #Import Configuration Information
-    with open(args.plot) as conf:
-        config = yaml.load(conf, Loader=yaml.FullLoader)
-        plots_string = config['plot']
-        plots = plots_string.replace('-', '')
-        plots = plots.replace("'", '')
-        plots = plots.replace('"', '')
-        plots = plots.split()
+    try:
+        with open(args.plot) as conf:
+            config = yaml.load(conf, Loader=yaml.FullLoader)
+    except:
+        log.error('wrong file format!')
+        sys.exit('ERROR: wrong file format!')
+
+    plots_string = config['plot']
+    plots = plots_string.replace('-', '')
+    plots = plots.replace("'", '')
+    plots = plots.replace('"', '')
+    plots = plots.split()
     plot_count = 1
     for p in plots:
         plot_contig = []
@@ -95,7 +104,7 @@ def main():
                 plot_contig.append(c)
                 break
 
-
+        print(f'drawing plot {plot_count}')
         write_plot(features,
                           plot_contig,
                           args.output,
@@ -107,6 +116,8 @@ def main():
                           config['pgcs'],
                           config['ngcs'])
         plot_count += 1
+
+    sys.exit('all plots are finished!')
 
 
 
