@@ -268,11 +268,9 @@ def write_plot(features,
 
     #write_karyotype_file
     karyotype_text = ""
-
-    colors = [ 'dgrey', 'grey', 'hgrey','red', 'black']
     for i, c in enumerate(contigs):
-        karyotype_text += f"chr - {c['id']} {i + 1} 0 {c['length']} {colors[i]}\n"
-
+        color = f'#{khp(str(hex(0x69 + (i%25)*0xA)))+khp(str(hex(0x69 + (i%25)*0xA)))+khp(str(hex(0x69 + (i%25)*0xA)))}'
+        karyotype_text += f"chr - {c['id']} {i + 1} 0 {c['length']} {color}\n"
     with open(karyotype_txt, 'w') as f:
         f.write(karyotype_text)
 
@@ -382,5 +380,8 @@ def hex_to_rgb(hex):
     rgb = rgb.replace(',','',1)
     return rgb
 
+def khp(hex_with_prefix):
+    hex_without_prefix = hex_with_prefix[2:]
+    return hex_without_prefix
 if __name__ == '__main__':
     main()
