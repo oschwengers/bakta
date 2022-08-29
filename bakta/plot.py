@@ -98,12 +98,11 @@ def main():
     plots = plots.split()
     plot_count = 1
     for p in plots:
+        p = p.split('/')
         plot_contig = []
         for c in contigs:
-            if c['id'] == p:
+            if c['id'] in p:
                 plot_contig.append(c)
-                break
-
         print(f'drawing plot {plot_count}')
         write_plot(features,
                           plot_contig,
@@ -118,8 +117,6 @@ def main():
         plot_count += 1
 
     sys.exit('all plots are finished!')
-
-
 
 def write_plot(features,
                contigs,
