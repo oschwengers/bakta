@@ -529,16 +529,16 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
             identity = float(identity) / 100
             if query_cov >= bc.MIN_PSEUDOGENE_QUERY_COVERAGE and identity >= bc.MIN_PSEUDOGENE_IDENTITY \
                     and bc.MIN_PSEUDOGENE_SUBJECT_COVERAGE <= subject_cov < bc.MIN_PSC_COVERAGE:
-                cds['pseudo-candidate'] = {
+                cds['pseudo-inference'] = {
                     DB_PSC_COL_UNIREF90: cluster_id,
                     'query-cov': query_cov,
                     'subject-cov': subject_cov,
                     'identity': identity,
-                    'pseudo_start': int(query_start),
-                    'pseudo_end': int(query_end),
-                    'cluster_start': int(subject_start),
-                    'cluster_end': int(subject_end),
-                    'cluster_sequence': subject_sequence
+                    'gene_start': int(query_start),
+                    'gene_end': int(query_end),
+                    'reference_start': int(subject_start),
+                    'reference_end': int(subject_end),
+                    'reference_sequence': subject_sequence
                 }
                 pseudo_candidates.append(cds)
                 log.debug(
@@ -561,7 +561,7 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
 
     # Write unique PSC cluster sequences to a FAA file
     with psc_references_faa_path.open(mode='w') as fh:
-        for cluster_id, faa_seq in {cds['pseudo-candidate'][DB_PSC_COL_UNIREF90]: cds['pseudo-candidate']['cluster_sequence'] for cds in candidates}.items():
+        for cluster_id, faa_seq in {cds['pseudo-inference'][DB_PSC_COL_UNIREF90]: cds['pseudo-inference']['reference_sequence'] for cds in candidates}.items():
             fh.write(f">{cluster_id}\n{faa_seq}\n")
 
     # Get extended cds sequences
@@ -626,7 +626,7 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
             extended_positions = candidates_extended_positions[aa_identifier]
             for hit in query.findall('./Iteration_hits/Hit'):
                 cluster_id = hit.find('Hit_id').text
-                if cluster_id == cds['pseudo-candidate'][DB_PSC_COL_UNIREF90]:
+                if cluster_id == cds['pseudo-inference'][DB_PSC_COL_UNIREF90]:
                     query_alignment = hit.find('Hit_hsps/Hsp/Hsp_qseq').text
                     ref_alignment = hit.find('Hit_hsps/Hsp/Hsp_hseq').text
                     query_alignment_start = int(hit.find('Hit_hsps/Hsp/Hsp_query-from').text)
@@ -655,7 +655,7 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
                             'start': positions['start'],
                             'stop': positions['stop'],
                             'observations': clean_observations(observations),
-                            'inference': cds['pseudo-candidate'],
+                            'inference': cds['pseudo-inference'],
                             'paralog': is_paralog(uniref90_by_hexdigest, aa_identifier, cluster_id)
                         }
 
@@ -707,7 +707,7 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
                         pass
 
     for cds in candidates:
-        cds.pop('pseudo-candidate')
+        cds.pop('pseudo-inference')
     log.info('found: pseudogenes=%i', len(pseudogenes))
     return pseudogenes
 
