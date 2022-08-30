@@ -115,7 +115,7 @@ def main():
         plots = plots.replace('"', '')
         plots = plots.split()
         plot_count = 1
-        plot_error_count = 0
+        contig_selection = False
         for p in plots:
             p = p.split('/')
             plot_contig = []
@@ -137,11 +137,8 @@ def main():
                     continue
                 if contig['id'] in p:
                     plot_contig.append(contig)
-            if len(plot_contig) == 0:
-                print(f'Plot {plot_count} not found! Please check your config file!')
-                plot_count += 1
-                plot_error_count += 1
-            else:
+                    contig_selection = True
+            if contig_selection == True:
                 print(f'drawing plot {plot_count}')
                 write_plot(features,
                                   plot_contig,
@@ -154,14 +151,8 @@ def main():
                                   pgcs,
                                   ngcs)
                 plot_count += 1
-        if plot_error_count == 0:
-            print('all plots are finished!')
-        elif plot_error_count == plot_count:
-            print('All Plots have failed! Please check your config file')
-        else:
-            print('''\t\tWere there losses on our way?
-            Sure, but at least we managed to save some thing!
-            And if you check your configuration, you can try again till it works!''')
+        print('all plots are finished!')
+
     except:
         plot_count = 0
         print('drawing plot')
