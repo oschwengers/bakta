@@ -15,12 +15,12 @@ import pytest
                 'contig': 'foo',
                 'start': 37,
                 'stop': 100,
-                'strand': '+',
+                'strand': bc.STRAND_FORWARD,
                 'rbs_motif': 'AGGA',
                 'edge': False
             }, {
-                'up': -36,
-                'down': 0
+                'upstream': -36,
+                'downstream': 0
             }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: set(),
                 bc.PSEUDOGENE_CAUSE_DELETION: {28},
@@ -39,11 +39,11 @@ import pytest
                 'contig': 'foo',
                 'start': 1,
                 'stop': 100,
-                'strand': '+',
+                'strand': bc.STRAND_FORWARD,
                 'edge': False
             }, {
-                'up': 0,
-                'down': 0
+                'upstream': 0,
+                'downstream': 0
             }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: {430, 443},
                 bc.PSEUDOGENE_CAUSE_DELETION: set(),
@@ -62,11 +62,11 @@ import pytest
                 'contig': 'foo',
                 'start': 1,
                 'stop': 100,
-                'strand': '+',
+                'strand': bc.STRAND_FORWARD,
                 'edge': False
             }, {
-                'up': 0,
-                'down': 0
+                'upstream': 0,
+                'downstream': 0
             }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: set(),
                 bc.PSEUDOGENE_CAUSE_DELETION: set(),
@@ -85,11 +85,11 @@ import pytest
                 'contig': 'foo',
                 'start': 1,
                 'stop': 100,
-                'strand': '+',
+                'strand': bc.STRAND_FORWARD,
                 'edge': False
             }, {
-                'up': 0,
-                'down': 0
+                'upstream': 0,
+                'downstream': 0
             }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: set(),
                 bc.PSEUDOGENE_CAUSE_DELETION: set(),
@@ -108,11 +108,11 @@ import pytest
                 'contig': 'foo',
                 'start': 1,
                 'stop': 100,
-                'strand': '+',
+                'strand': bc.STRAND_FORWARD,
                 'edge': False
             }, {
-                'up': 0,
-                'down': 0
+                'upstream': 0,
+                'downstream': 0
             }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: set(),
                 bc.PSEUDOGENE_CAUSE_DELETION: set(),
@@ -131,12 +131,12 @@ import pytest
                 'contig': 'foo',
                 'start': 40,
                 'stop': 100,
-                'strand': '+',
+                'strand': bc.STRAND_FORWARD,
                 'rbs_motif': None,
                 'edge': False
             }, {
-                'up': -39,
-                'down': 0
+                'upstream': -39,
+                'downstream': 0
             }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: set(),
                 bc.PSEUDOGENE_CAUSE_DELETION: set(),
@@ -156,12 +156,12 @@ import pytest
                 'contig': 'foo',
                 'start': 10,
                 'stop': 200,
-                'strand': '-',
+                'strand': bc.STRAND_REVERSE,
                 'rbs_motif': 'AGGA',
                 'edge': False
             }, {
-                'up': -36,
-                'down': 0
+                'upstream': -36,
+                'downstream': 0
             }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: set(),
                 bc.PSEUDOGENE_CAUSE_DELETION: {209},
@@ -180,11 +180,11 @@ import pytest
                 'contig': 'foo',
                 'start': 1,
                 'stop': 500,
-                'strand': '-',
+                'strand': bc.STRAND_REVERSE,
                 'edge': False
             }, {
-                'up': 0,
-                'down': 0
+                'upstream': 0,
+                'downstream': 0
             }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: {71, 58},
                 bc.PSEUDOGENE_CAUSE_DELETION: set(),
@@ -203,11 +203,11 @@ import pytest
                 'contig': 'foo',
                 'start': 100,
                 'stop': 500,
-                'strand': '-',
+                'strand': bc.STRAND_REVERSE,
                 'edge': False
             }, {
-                'up': 0,
-                'down': 0
+                'upstream': 0,
+                'downstream': 0
             }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: set(),
                 bc.PSEUDOGENE_CAUSE_DELETION: set(),
@@ -226,12 +226,12 @@ import pytest
                 'contig': 'foo',
                 'start': 40,
                 'stop': 100,
-                'strand': '-',
+                'strand': bc.STRAND_REVERSE,
                 'rbs_motif': None,
                 'edge': False
             }, {
-                'up': -39,
-                'down': 0
+                'upstream': -39,
+                'downstream': 0
             }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: set(),
                 bc.PSEUDOGENE_CAUSE_DELETION: set(),
@@ -267,7 +267,7 @@ def test_compare_alignments(alignment, ref_alignment, cds, coordinates, expected
             {
               'start': 310,  # linear fits cutoff
               'stop': 370,
-              'strand': '+',
+              'strand': bc.STRAND_FORWARD,
               'edge': False
             },
             {
@@ -277,17 +277,17 @@ def test_compare_alignments(alignment, ref_alignment, cds, coordinates, expected
             {
               'start': 10,
               'stop': 670,
-              'strand': '+',
+              'strand': bc.STRAND_FORWARD,
               'edge': False,
-              'elongation_up': 300,
-              'elongation_down': 300
+              'elongation_upstream': 300,
+              'elongation_downstream': 300
             }
         ),
         (
             {
               'start': 100,  # linear does not fit cutoff
               'stop': 190,
-              'strand': '+',
+              'strand': bc.STRAND_FORWARD,
               'edge': False
             },
             {
@@ -297,20 +297,20 @@ def test_compare_alignments(alignment, ref_alignment, cds, coordinates, expected
             {
               'start': 0,
               'stop': 200,
-              'strand': '+',
+              'strand': bc.STRAND_FORWARD,
               'edge': False,
-              'elongation_up': 100,
-              'elongation_down': 10
+              'elongation_upstream': 100,
+              'elongation_downstream': 10
             }
         ),
         (
             {
               'start': 100,  # circular does not fit cutoff
               'stop': 190,
-              'strand': '+',
+              'strand': bc.STRAND_FORWARD,
               'edge': True,
-              'elongation_up': 300,
-              'elongation_down': 300
+              'elongation_upstream': 300,
+              'elongation_downstream': 300
             },
             {
               'sequence': 'ACGT' * 100,  # 400nt
@@ -319,10 +319,10 @@ def test_compare_alignments(alignment, ref_alignment, cds, coordinates, expected
             {
               'start': 200,
               'stop': 90,
-              'strand': '+',
+              'strand': bc.STRAND_FORWARD,
               'edge': True,
-              'elongation_up': 300,
-              'elongation_down': 300
+              'elongation_upstream': 300,
+              'elongation_downstream': 300
             }
         )
     ]
