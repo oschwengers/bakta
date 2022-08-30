@@ -51,7 +51,7 @@ Bakta detects and annotates small proteins/short open reading frames (**sORF**) 
 To provide high quality annotations for certain proteins of higher interest, *e.g.* AMR & VF genes, Bakta includes & merges different expert annotation systems. Currently, Bakta uses NCBI's AMRFinderPlus for AMR gene annotations as well as an generalized protein sequence expert system with distinct coverage, identity and priority values for each sequence, currenlty comprising the [VFDB](http://www.mgc.ac.cn/VFs/main.htm) as well as NCBI's [BlastRules](https://ftp.ncbi.nih.gov/pub/blastrules/).
 
 - **Comprehensive workflow**
-Bakta annotates ncRNA cis-regulatory regions, oriC/oriV/oriT and assembly gaps as well as standard feature types: tRNA, tmRNA, rRNA, ncRNA genes, CRISPR, CDS.
+Bakta annotates ncRNA cis-regulatory regions, oriC/oriV/oriT and assembly gaps as well as standard feature types: tRNA, tmRNA, rRNA, ncRNA genes, CRISPR, CDS and pseudogenes.
 
 - **GFF3 & INSDC conform annotations**
 Bakta writes GFF3 and INSDC-compliant (Genbank & EMBL) annotation files ready for submission (checked via [GenomeTools GFF3Validator](http://genometools.org/cgi-bin/gff3validator.cgi), [table2asn_GFF](https://www.ncbi.nlm.nih.gov/genbank/genomes_gff/#run) and [ENA Webin-CLI](https://github.com/enasequence/webin-cli) for GFF3 and EMBL file formats, respectively for representative genomes of all ESKAPE species).
@@ -434,11 +434,15 @@ Conceptual terms:
 5. Sequence alignments of remainder via Diamond vs. PSC (query/subject coverage=0.8, identity=0.5)
 6. Assignment to UniRef90 or UniRef50 clusters if alignment hits achieve identities larger than 0.9 or 0.5, respectively
 7. Execution of expert systems:
-  - AMR: AMRFinderPlus
-  - Expert proteins: NCBI BlastRules, VFDB
-  - User proteins (optionally via `--proteins <Fasta/GenBank>`)
+   - AMR: AMRFinderPlus
+   - Expert proteins: NCBI BlastRules, VFDB
+   - User proteins (optionally via `--proteins <Fasta/GenBank>`)
 8. Prediction of signal peptides (optionally via `--gram <+/->`)
-9. Combination of IPS, PSC, PSCC and expert system information favouring more specific annotations and avoiding redundancy
+9. Detection of pseudogenes:
+   1. Search for reference PCSs using `hypothetical` CDS as seed sequences
+   2. Translated alignment (blastx) of reference PCSs against up-/downstream-elongated CDS regions
+   3. Analysis of translated alignments and detection of pseudogenization causes & effects
+10. Combination of IPS, PSC, PSCC and expert system information favouring more specific annotations and avoiding redundancy
 
 CDS without IPS or PSC hits as well as those without gene symbols or product descriptions different from `hypothetical` will be marked as `hypothetical`.
 
