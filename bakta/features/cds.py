@@ -781,37 +781,37 @@ def detect_pseudogenization_observations(alignment: str, ref_alignment: str, qst
         return observations, dict()
 
     if cds['strand'] == bc.STRAND_FORWARD:
-        coordinates = {
+        positions = {
             'upstream': -1 * (extended_positions['elongation_upstream'] - qstart + 1),  # index
             'downstream': (extended_positions['start'] + qstop) - cds['stop'] - 1 + 3  # index, stop codon
         }
-        coordinates['start'] = get_abs_position(cds, cds['start'], coordinates['upstream'], elongated_edge)
-        coordinates['stop'] = get_abs_position(cds, cds['stop'], coordinates['downstream'], elongated_edge)
+        positions['start'] = get_abs_position(cds, cds['start'], positions['upstream'], elongated_edge)
+        positions['stop'] = get_abs_position(cds, cds['stop'], positions['downstream'], elongated_edge)
     else:
-        coordinates = {
+        positions = {
             'upstream': -1 * (extended_positions['elongation_downstream'] - qstart + 1),   # index
             'downstream': qstop - (extended_positions['stop'] - cds['start']) - 1 + 3  # index, stop codon
         }
-        coordinates['start'] = get_abs_position(cds, cds['start'], coordinates['downstream'], elongated_edge)
-        coordinates['stop'] = get_abs_position(cds, cds['stop'], coordinates['upstream'], elongated_edge)
+        positions['start'] = get_abs_position(cds, cds['start'], positions['downstream'], elongated_edge)
+        positions['stop'] = get_abs_position(cds, cds['stop'], positions['upstream'], elongated_edge)
 
-    compare_alignments(observations, alignment, ref_alignment, cds, coordinates, elongated_edge)
+    compare_alignments(observations, alignment, ref_alignment, cds, positions, elongated_edge)
 
-    return observations, coordinates
+    return observations, positions
 
 
-def compare_alignments(observations: dict, alignment: str, ref_alignment: str, cds: dict, coordinates: dict, edge: bool):
+def compare_alignments(observations: dict, alignment: str, ref_alignment: str, cds: dict, positions: dict, edge: bool):
     """
     Compare the alignment and reference alignment to find the causes of pseudogenization.
     """
-    alignment_position = coordinates['upstream']
+    alignment_position = positions['upstream']
     start = cds['start'] if cds['strand'] == bc.STRAND_FORWARD else cds['stop']
     insertions = 0
     deletions = 0
 
     # Check for anomalous start codons
-    if coordinates['upstream'] < 0:
-        up_length = (-1 * coordinates['upstream']) // 3
+    if positions['upstream'] < 0:
+        up_length = (-1 * positions['upstream']) // 3
         if alignment[up_length-1] == 'M' and ref_alignment[up_length-1] != 'M':
             if cds['rbs_motif'] is None:  # point mutation -> internal start codon
                 genome_position = get_abs_position(cds, start, alignment_position + (up_length * 3), edge)
