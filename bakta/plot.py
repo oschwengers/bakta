@@ -313,6 +313,8 @@ def write_plot(features,
     # write configurationfiles
     ##############################
     #write main config
+    if plot_count == 0:
+        plot_count = ""
     main_config_text = f'''
     karyotype                   = {karyotype_txt}
     chromosomes_units           = {added_sequence_length}
