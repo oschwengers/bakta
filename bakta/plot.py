@@ -443,5 +443,7 @@ def hex_to_rgb(hex):
 def khp(hex_with_prefix):
     hex_without_prefix = hex_with_prefix[2:]
     return hex_without_prefix
+
+
 if __name__ == '__main__':
     main()

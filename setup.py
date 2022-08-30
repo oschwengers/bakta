@@ -36,7 +36,7 @@ setup(
             'bakta=bakta.main:main',
             'bakta_proteins=bakta.proteins:main',
             'bakta_db=bakta.db:main'
-            'bakta_plot=bakta.db:main'
+            'bakta_plot=bakta.plot:main'
         ]
     },
     classifiers=[
