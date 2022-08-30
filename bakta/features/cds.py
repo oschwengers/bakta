@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 
 from collections import OrderedDict
 from math import ceil
-from typing import Dict, Sequence, Set, Union
+from typing import Dict, Sequence, Set, Tuple, Union
 from pathlib import Path
 
 from Bio import SeqIO
@@ -760,7 +760,7 @@ def is_paralog(uniref90_by_hexdigest: Dict[str, str], aa_identifier: str, cluste
 
 
 def detect_pseudogenization_observations(alignment: str, ref_alignment: str, qstart: int, qstop: int, extended_positions: dict,
-                            cds: dict) -> tuple[Dict[str, Union[Set[int], bool]], Dict]:
+                            cds: dict) -> Tuple[Dict[str, Union[Set[int], bool]], Dict]:
     """
     Search for pseudogenization observations in the given alignments.
     """
@@ -796,6 +796,23 @@ def detect_pseudogenization_observations(alignment: str, ref_alignment: str, qst
         coordinates['stop'] = get_abs_position(cds, cds['stop'], coordinates['up'], elongated_edge)
 
     compare_alignments(observations, alignment, ref_alignment, cds, coordinates, elongated_edge)
+
+    # DEBUG
+    if observations['directions']:
+        print(alignment)
+        print(ref_alignment)
+        print((ceil((cds['start'] - (extended_positions['start'] + qstart - 1)) / 3)) * ' ' + cds['aa'])
+        print('Strang={}, cds_start={}, cor_start={}, cds_stop={}, cor_stop={}'.format(cds['strand'],
+                                                                                       cds['start'],
+                                                                                       coordinates['start'],
+                                                                                       cds['stop'],
+                                                                                       coordinates['stop']))
+        print('up={}, elong_up={}, down={}, elong_down={}, dir={}'.format(coordinates['up'],
+                                                                          extended_positions['elongation_up'],
+                                                                          coordinates['down'],
+                                                                          extended_positions['elongation_down'],
+                                                                          observations['directions']))
+        print('')
 
     return observations, coordinates
 
