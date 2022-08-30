@@ -97,26 +97,53 @@ def main():
     plots = plots.replace('"', '')
     plots = plots.split()
     plot_count = 1
+    plot_error_count = 0
     for p in plots:
         p = p.split('/')
         plot_contig = []
-        for c in contigs:
-            if c['id'] in p:
-                plot_contig.append(c)
-        print(f'drawing plot {plot_count}')
-        write_plot(features,
-                          plot_contig,
-                          args.output,
-                          args.tmp_dir,
-                          plot_count,
-                          args.prefix,
-                          config['pgcc'],
-                          config['ngcc'],
-                          config['pgcs'],
-                          config['ngcs'])
-        plot_count += 1
-
-    sys.exit('all plots are finished!')
+        for contig in contigs:
+            if 'all' in p:
+                plot_contig = [contig]
+                print(f'drawing plot {plot_count}')
+                write_plot(features,
+                           plot_contig,
+                           args.output,
+                           args.tmp_dir,
+                           plot_count,
+                           args.prefix,
+                           config['pgcc'],
+                           config['ngcc'],
+                           config['pgcs'],
+                           config['ngcs'])
+                plot_count += 1
+                continue
+            if contig['id'] in p:
+                plot_contig.append(contig)
+        if len(plot_contig) == 0:
+            print(f'Plot {plot_count} not found! Please check your config file!')
+            plot_count += 1
+            plot_error_count += 1
+        else:
+            print(f'drawing plot {plot_count}')
+            write_plot(features,
+                              plot_contig,
+                              args.output,
+                              args.tmp_dir,
+                              plot_count,
+                              args.prefix,
+                              config['pgcc'],
+                              config['ngcc'],
+                              config['pgcs'],
+                              config['ngcs'])
+            plot_count += 1
+    if plot_error_count == 0:
+        print('all plots are finished!')
+    elif plot_error_count == plot_count:
+        print('All Plots have failed! Please check your config file')
+    else:
+        print('''Were there losses on our way?
+        Sure, but at least we managed to save some thing!
+        And if you check your configuration, you can try again till it works!''')
 
 def write_plot(features,
                contigs,
