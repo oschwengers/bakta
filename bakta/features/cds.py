@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 
 from collections import OrderedDict
 from math import ceil
-from typing import Dict, Sequence, Set, Union
+from typing import Dict, Sequence, Set, Tuple, Union
 from pathlib import Path
 
 from Bio import SeqIO
@@ -640,7 +640,7 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
                         )
                         continue
 
-                    observations = detect_pseudogenization_observations(
+                    observations, positions = detect_pseudogenization_observations(
                         query_alignment,
                         ref_alignment,
                         query_alignment_start,
@@ -652,6 +652,8 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
                     directions = observations.get('directions', [])
                     if bc.FEATURE_END_5_PRIME in directions or bc.FEATURE_END_3_PRIME in directions:
                         pseudogene = {
+                            'start': positions['start'],
+                            'stop': positions['stop'],
                             'observations': clean_observations(observations),
                             'inference': cds['pseudo-candidate'],
                             'paralog': is_paralog(uniref90_by_hexdigest, aa_identifier, cluster_id)
@@ -659,10 +661,12 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
 
                         effects = []
                         if len(observations.get(bc.PSEUDOGENE_EFFECT_START, [])) > 0:
-                            effects.append('Internal start codon')
+                            start_codon = ', '.join(map(str, observations[bc.PSEUDOGENE_EFFECT_START]))
+                            effects.append(f'Internal start codon at {start_codon}')
                         if len(observations.get(bc.PSEUDOGENE_EFFECT_STOP, [])) > 0:
-                            effects.append('Internal stop codon')
-                        effects = ', '.join(effects)
+                            stop_codon = ', '.join(map(str, observations[bc.PSEUDOGENE_EFFECT_STOP]))
+                            effects.append(f'Internal stop codon at {stop_codon}')
+                        effects = '; '.join(effects)
 
                         causes = []
                         if len(observations.get(bc.PSEUDOGENE_CAUSE_INSERTION, [])) > 0:
@@ -717,6 +721,8 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
         'stop': cds['stop'],
         'strand': cds['strand'],
         'edge': cds.get('edge', False),
+        'elongation_upstream': offset,
+        'elongation_downstream': offset
     }
 
     contig_length = len(contig['sequence'])
@@ -725,6 +731,7 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
         elongated_cds['edge'] = True
     elif elongated_cds['start'] - offset < 0:
         elongated_cds['start'] = 0
+        elongated_cds['elongation_upstream'] = cds['start']
     else:
         elongated_cds['start'] = elongated_cds['start'] - offset
 
@@ -733,6 +740,7 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
         elongated_cds['edge'] = True
     elif elongated_cds['stop'] + offset > contig_length:
         elongated_cds['stop'] = contig_length
+        elongated_cds['elongation_downstream'] = contig_length - cds['stop']
     else:
         elongated_cds['stop'] = elongated_cds['stop'] + offset
 
@@ -752,7 +760,7 @@ def is_paralog(uniref90_by_hexdigest: Dict[str, str], aa_identifier: str, cluste
 
 
 def detect_pseudogenization_observations(alignment: str, ref_alignment: str, qstart: int, qstop: int, extended_positions: dict,
-                            cds: dict) -> Dict[str, Union[Set[int], bool]]:
+                            cds: dict) -> Tuple[Dict[str, Union[Set[int], bool]], Dict]:
     """
     Search for pseudogenization observations in the given alignments.
     """
@@ -770,93 +778,134 @@ def detect_pseudogenization_observations(alignment: str, ref_alignment: str, qst
     elongated_edge = False
     if extended_positions.get('edge', False):
         # TODO implement edge case
-        pass
+        return observations, dict()
 
-    detect_pseudogenization_observations_upstream(observations, alignment, ref_alignment, qstart, extended_positions, cds, elongated_edge=elongated_edge)
-    detect_pseudogenization_observations_downstream(observations, alignment, ref_alignment, qstop, extended_positions, cds, elongated_edge=elongated_edge)
-    return observations
+    if cds['strand'] == bc.STRAND_FORWARD:
+        positions = {
+            'upstream': -1 * (extended_positions['elongation_upstream'] - qstart + 1),  # index
+            'downstream': (extended_positions['start'] + qstop) - cds['stop'] - 1 + 3  # index, stop codon
+        }
+        positions['start'] = get_abs_position(cds, cds['start'], positions['upstream'], elongated_edge)
+        positions['stop'] = get_abs_position(cds, cds['stop'], positions['downstream'], elongated_edge)
+    else:
+        positions = {
+            'upstream': -1 * (extended_positions['elongation_downstream'] - qstart + 1),   # index
+            'downstream': qstop - (extended_positions['stop'] - cds['start']) - 1 + 3  # index, stop codon
+        }
+        positions['start'] = get_abs_position(cds, cds['start'], positions['downstream'], elongated_edge)
+        positions['stop'] = get_abs_position(cds, cds['stop'], positions['upstream'], elongated_edge)
+
+    compare_alignments(observations, alignment, ref_alignment, cds, positions, elongated_edge)
+
+    return observations, positions
 
 
-def compare_alignments(observations: Dict[str, Union[Set[str], Set[int]]], alignment: str, ref_alignment: str, cds: dict, direction: str):
+def compare_alignments(observations: dict, alignment: str, ref_alignment: str, cds: dict, positions: dict, edge: bool):
     """
     Compare the alignment and reference alignment to find the causes of pseudogenization.
     """
-    position = cds['start']
-    
-    for char, ref_char in zip(alignment, ref_alignment):
-        if char == '\\':  # insertion
-            observations[bc.PSEUDOGENE_CAUSE_INSERTION].add(position)
-            observations['directions'].add(direction)
-            position += 1
-            log.info(
-                'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, cause=insertion, postion=%i',
-                cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
-            )
-        elif char == '/':  # deletion
-            observations[bc.PSEUDOGENE_CAUSE_DELETION].add(position)
-            observations['directions'].add(direction)
-            log.info(
-                'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, cause=deletion, position=%i',
-                cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
-            )
-        elif char == '*':  # stop codon, selenocysteine, pyrolysine
-            if ref_char == 'U':  # selenocysteine
-                observations[bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE].add(position)
-                log.info(
-                    'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, exception=selenocysteine, position=%i',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
-                )
-            elif ref_char == 'O':  # pyrolysine
-                observations[bc.PSEUDOGENE_EXCEPTION_PYROLYSINE].add(position)
-                log.info(
-                    'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, exception=pyrolysin, position=%i',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
-                )
-            else:  # stop codon
-                # observations[bc.PSEUDOGENE_CAUSE_MUTATION].add(position)
-                observations[bc.PSEUDOGENE_EFFECT_STOP].add(position)
-                observations['directions'].add(direction)
-                log.info(
-                    'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, cause=mutation, position=%i',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + position
-                )
-            position += 3
-        else:
-            position += 3
+    alignment_position = positions['upstream']
+    start = cds['start'] if cds['strand'] == bc.STRAND_FORWARD else cds['stop']
+    insertions = 0
+    deletions = 0
 
-
-def detect_pseudogenization_observations_upstream(observations: Dict[str, Union[Set[str], Set[int]]], alignment: str, ref_alignment: str, qstart: int, extended_positions: dict, cds: dict, elongated_edge: bool):
-    """
-    Search for pseudogenization observations in the elongated upstream sequence of the CDS.
-    """
-    if cds['start'] > (extended_positions['start'] + qstart - 1) or elongated_edge:  # elongated alignment 5'
-        up_length = ceil((cds['start'] - (extended_positions['start'] + qstart - 1)) / 3)
-        compare_alignments(observations, alignment[:up_length], ref_alignment[:up_length], cds, direction=bc.FEATURE_END_5_PRIME)
-
-        if alignment[up_length] == 'M' and ref_alignment[up_length] != 'M':
+    # Check for anomalous start codons
+    if positions['upstream'] < 0:
+        up_length = (-1 * positions['upstream']) // 3
+        if alignment[up_length-1] == 'M' and ref_alignment[up_length-1] != 'M':
             if cds['rbs_motif'] is None:  # point mutation -> internal start codon
-                observations[bc.PSEUDOGENE_EFFECT_START].add(cds['start'])
-                observations['directions'].add(bc.FEATURE_END_5_PRIME)
+                genome_position = get_abs_position(cds, start, alignment_position + (up_length * 3), edge)
+                observations[bc.PSEUDOGENE_EFFECT_START].add(genome_position)
+                observations['directions'].add(bc.FEATURE_END_3_PRIME)
                 log.info(
                     'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, original start=%i',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + (up_length * 3)
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['start'] + genome_position
                 )
             else:  # RBS was predicted (protein iso-form) -> skip
                 pass
-        
+
         # TODO implement case: point mutation -> loss of original start codon
         if (alignment[0] == 'M' and ref_alignment[0] == 'M' and up_length != 0) and \
-                (alignment[up_length+1] == 'M' and ref_alignment[up_length+1] == 'M') and cds['rbs_motif'] is None:
+                (alignment[up_length + 1] == 'M' and ref_alignment[up_length + 1] == 'M') and cds['rbs_motif'] is None:
             # TODO correct structural annotation
             pass
 
+    # Check alignment
+    for char, ref_char in zip(alignment, ref_alignment):
+        if char == '-':
+            continue
+        elif char == '\\':  # insertion
+            insertions += 1
+            genome_position = get_abs_position(cds, start, alignment_position, edge)
+            observations[bc.PSEUDOGENE_CAUSE_INSERTION].add(genome_position)
+            observations['directions'].add(get_direction(alignment_position, edge))
+            log.info(
+                'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, cause=insertion, position=%i',
+                cds['contig'], cds['start'], cds['stop'], cds['strand'], genome_position
+            )
+            alignment_position += 1
+        elif char == '/':  # deletion
+            deletions += 1
+            genome_position = get_abs_position(cds, start, alignment_position, edge)
+            observations[bc.PSEUDOGENE_CAUSE_DELETION].add(genome_position)
+            observations['directions'].add(get_direction(alignment_position, edge))
+            log.info(
+                'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, cause=deletion, position=%i',
+                cds['contig'], cds['start'], cds['stop'], cds['strand'], genome_position
+            )
+        elif char == '*':  # stop codon, selenocysteine, pyrolysine
+            if ref_char == 'U':  # selenocysteine
+                genome_position = get_abs_position(cds, start, alignment_position, edge)
+                observations[bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE].add(genome_position)
+                log.info(
+                    'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, exception=selenocysteine, position=%i',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], genome_position
+                )
+            elif ref_char == 'O':  # pyrolysine
+                genome_position = get_abs_position(cds, start, alignment_position, edge)
+                observations[bc.PSEUDOGENE_EXCEPTION_PYROLYSINE].add(genome_position)
+                log.info(
+                    'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, exception=pyrolysin, position=%i',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], genome_position
+                )
+            else:  # stop codon
+                mutation = ''
+                genome_position = get_abs_position(cds, start, alignment_position, edge)
+                if abs(insertions - deletions) % 3 == 0:
+                    observations[bc.PSEUDOGENE_CAUSE_MUTATION].add(genome_position)
+                    mutation = ', cause=mutation'
+                observations[bc.PSEUDOGENE_EFFECT_STOP].add(genome_position)
+                observations['directions'].add(get_direction(alignment_position, edge))
+                log.info(
+                    'pseudogene observation: contig=%s, start=%i, stop=%i, strand=%s, effect=stop%s, position=%i',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], mutation, genome_position
+                )
+            alignment_position += 3
+        else:
+            alignment_position += 3
 
-def detect_pseudogenization_observations_downstream(observations: Dict[str, Union[Set[str], Set[int]]], alignment: str, ref_alignment: str, qstop: int, extended_positions: dict, cds: dict, elongated_edge: bool):
+
+def get_abs_position(cds, initial_position, movement, edge):
     """
-    Search for pseudogenization observations in the CDS and the elongated downstream sequence.
+    Return the absolute cds start position.
     """
-    if extended_positions['start'] + qstop - 1 > cds['stop'] or elongated_edge:  # elongated alignment 3'
-        compare_alignments(observations, alignment, ref_alignment, cds, direction=bc.FEATURE_END_3_PRIME)
+    if edge:
+        pass
+    else:
+        if cds['strand'] == bc.STRAND_FORWARD:
+            return initial_position + movement
+        else:
+            return initial_position - movement
+
+
+def get_direction(position: int, edge: bool) -> str:
+    if edge:
+        pass
+    else:
+        if position < 0:
+            return bc.FEATURE_END_5_PRIME
+        else:
+            return bc.FEATURE_END_3_PRIME
 
 
 def clean_observations(observations: dict) -> dict:
