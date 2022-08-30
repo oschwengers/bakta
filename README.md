@@ -71,14 +71,14 @@ In all cases a mandatory [database](#database-download) must be downloaded.
 ### BioConda
 
 ```bash
-$ conda install -c conda-forge -c bioconda bakta
+conda install -c conda-forge -c bioconda bakta
 ```
 
 ### Docker
 
 ```bash
-$ sudo docker pull oschwengers/bakta
-$ sudo docker run oschwengers/bakta --help
+sudo docker pull oschwengers/bakta
+sudo docker run oschwengers/bakta --help
 ```
 
 Installation instructions and get-started guides: Docker [docs](https://docs.docker.com)
@@ -86,14 +86,14 @@ Installation instructions and get-started guides: Docker [docs](https://docs.doc
 For further convenience, we provide a shell script (`bakta-docker.sh`) handling Docker related parameters (volume mounting, user IDs, etc):
 
 ```bash
-$ bakta-docker.sh --db <db-path> --output <output-path> <input>
+bakta-docker.sh --db <db-path> --output <output-path> <input>
 ```
 
 ### Singularity
 
 ```bash
-$ singularity build bakta.sif docker://oschwengers/bakta:latest
-$ singularity run bakta.sif --help
+singularity build bakta.sif docker://oschwengers/bakta:latest
+singularity run bakta.sif --help
 ```
 
 Installation instructions, get-started and guides: Singularity [docs](https://sylabs.io/docs)
@@ -101,7 +101,7 @@ Installation instructions, get-started and guides: Singularity [docs](https://sy
 ### Pip
 
 ```bash
-$ python3 -m pip install --user bakta
+python3 -m pip install --user bakta
 ```
 
 Bacta requires the following 3rd party software tools which must be installed and executable to use the full set of features:
@@ -125,14 +125,14 @@ Further information is provided in the [database](#database) section below.
 List available DB versions:
 
 ```bash
-$ bakta_db list
+bakta_db list
 ...
 ```
 
 Download the most recent compatible database version we recommend to use the internal database download & setup tool:
 
 ```bash
-$ bakta_db download --output <output-path>
+bakta_db download --output <output-path>
 ```
 
 Of course, the database can also be downloaded manually:
