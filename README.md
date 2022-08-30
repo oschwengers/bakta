@@ -138,10 +138,10 @@ $ bakta_db download --output <output-path>
 Of course, the database can also be downloaded manually:
 
 ```bash
-$ wget https://zenodo.org/record/7025248/files/db.tar.gz
-$ tar -xzf db.tar.gz
-$ rm db.tar.gz
-$ amrfinder_update --force_update --database db/amrfinderplus-db/
+wget https://zenodo.org/record/7025248/files/db.tar.gz
+tar -xzf db.tar.gz
+rm db.tar.gz
+amrfinder_update --force_update --database db/amrfinderplus-db/
 ```
 
 As an additional data repository backup, we provide the most recent database version via our institute servers [here](https://jlubox.uni-giessen.de/getlink/fiWhS6LJi8AizXvspaRxRzPN/db.tar.gz). However, the bandwith is limited. Hence, please use it with caution and only if Zenodo might be temporarily uncreachable or slow. In these cases, please also download the AMRFinderPlus database as indicated above.
@@ -149,22 +149,22 @@ As an additional data repository backup, we provide the most recent database ver
 Update an existing database:
 
 ```bash
-$ bakta_db update --db <existing-db-path> [--tmp-dir <tmp-directory>]
+bakta_db update --db <existing-db-path> [--tmp-dir <tmp-directory>]
 ```
 
 The database path can be provided either via parameter (`--db`) or environment variable (`BAKTA_DB`):
 
 ```bash
-$ bakta --db <db-path> genome.fasta
+bakta --db <db-path> genome.fasta
 
-$ export BAKTA_DB=<db-path>
-$ bakta genome.fasta
+export BAKTA_DB=<db-path>
+bakta genome.fasta
 ```
 
 For system-wide setups, the database can also be copied to the Bakta base directory:
 
 ```bash
-$ cp -r db/ <bakta-installation-dir>
+cp -r db/ <bakta-installation-dir>
 ```
 
 As Bakta takes advantage of AMRFinderPlus for the annotation of AMR genes, AMRFinder is required to setup its own internal databases in a `<amrfinderplus-db>` subfolder within the Bakta database `<db-path>`, once via `amrfinder_update --force_update --database <db-path>/amrfinderplus-db/`. To ease this process we recommend to use Bakta's internal download procedure.
@@ -174,13 +174,13 @@ As Bakta takes advantage of AMRFinderPlus for the annotation of AMR genes, AMRFi
 Simple:
 
 ```bash
-$ bakta --db <db-path> genome.fasta
+bakta --db <db-path> genome.fasta
 ```
 
 Expert: verbose output writing results to *results* directory with *ecoli123* file `prefix` and *eco634* `locus tag` using an existing prodigal training file, using additional replicon information and 8 threads:
 
 ```bash
-$ bakta --db <db-path> --verbose --output results/ --prefix ecoli123 --locus-tag eco634 --prodigal-tf eco.tf --replicons replicon.tsv --threads 8 genome.fasta
+bakta --db <db-path> --verbose --output results/ --prefix ecoli123 --locus-tag eco634 --prodigal-tf eco.tf --replicons replicon.tsv --threads 8 genome.fasta
 ```
 
 ## Input and Output
@@ -587,9 +587,9 @@ For the direct bulk annotation of protein sequences aside from the genome, Bakta
 Examples:
 
 ```bash
-$ bakta_proteins --db <db-path> input.fasta
+bakta_proteins --db <db-path> input.fasta
 
-$ bakta_proteins --db <db-path> --prefix test --output test --proteins special.faa --threads 8 input.fasta
+bakta_proteins --db <db-path> --prefix test --output test --proteins special.faa --threads 8 input.fasta
 ```
 
 ### Output
@@ -674,16 +674,16 @@ Bakta is *standing on the shoulder of giants* taking advantage of many great sof
 
 ## FAQ
 
-- __AMRFinder fails__
+- **AMRFinder fails**
 If AMRFinder constantly crashes even on fresh setups and Bakta's database was downloaded manually, then AMRFinder needs to setup its own internal database. This is required only once: `amrfinder_update --force_update --database <bakta-db>/amrfinderplus-db`. You could also try Bakta's internal database download logic automatically taking care of this: `bakta_db download --output <bakta-db>`
 
-- __DeepSig not found in Conda environment__
+- **DeepSig not found in Conda environment**
 For the prediction of signal predictions, Bakta uses DeepSig that is currently not available for MacOS. Therefore, we decided to exclude DeepSig from Bakta's default Conda dependencies because otherwise it would not be installable on MacOS systems. On Linux systems it can be installed via `conda install -c conda-forge -c bioconda python=3.8 deepsig`.
 
-- __Nice, but I'm mising XYZ...__
+- **Nice, but I'm mising XYZ...**
 Bakta is quite new and we're keen to constantly improve it and further expand its feature set. In case there's anything missing, please do not hesitate to open an issue and ask for it!
 
-- __Bakta is running too long without CPU load... why?__
+- **Bakta is running too long without CPU load... why?**
 Bakta takes advantage of an SQLite DB which results in high storage IO loads. If this DB is stored on a remote / network volume, the lookup of IPS/PSC annotations might take a long time. In these cases, please, consider moving the DB to a local volume or hard drive.
 
 ## Issues and Feature Requests
@@ -694,5 +694,5 @@ Therefore, please, execute bakta in verbose mode (`-v`) and do not hesitate to f
 - a detailed description of the issue
 - command line output
 - log file (`<prefix>.log`)
-- result file (`<prefix>.json`) _if possible_
-- a reproducible example of the issue with an input file that you can share _if possible_
+- result file (`<prefix>.json`) *if possible*
+- a reproducible example of the issue with an input file that you can share *if possible*
