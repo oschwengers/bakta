@@ -70,7 +70,7 @@ import pytest
             }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: set(),
                 bc.PSEUDOGENE_CAUSE_DELETION: set(),
-                bc.PSEUDOGENE_CAUSE_MUTATION: set(),  #{277},
+                bc.PSEUDOGENE_CAUSE_MUTATION: {277},
                 bc.PSEUDOGENE_EFFECT_START: set(),
                 bc.PSEUDOGENE_EFFECT_STOP: {277},
                 bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
@@ -211,7 +211,7 @@ import pytest
             }, {
                 bc.PSEUDOGENE_CAUSE_INSERTION: set(),
                 bc.PSEUDOGENE_CAUSE_DELETION: set(),
-                bc.PSEUDOGENE_CAUSE_MUTATION: set(),  #{277},
+                bc.PSEUDOGENE_CAUSE_MUTATION: {224},
                 bc.PSEUDOGENE_EFFECT_START: set(),
                 bc.PSEUDOGENE_EFFECT_STOP: {224},
                 bc.PSEUDOGENE_EXCEPTION_SELENOCYSTEINE: set(),
