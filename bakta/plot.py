@@ -141,7 +141,7 @@ def main():
     elif plot_error_count == plot_count:
         print('All Plots have failed! Please check your config file')
     else:
-        print('''Were there losses on our way?
+        print('''\t\tWere there losses on our way?
         Sure, but at least we managed to save some thing!
         And if you check your configuration, you can try again till it works!''')
 
@@ -304,8 +304,8 @@ def write_plot(features,
     #write_karyotype_file
     karyotype_text = ""
     for i, c in enumerate(contigs):
-        color = f'#{khp(str(hex(0x69 + (i%25)*0xA)))+khp(str(hex(0x69 + (i%25)*0xA)))+khp(str(hex(0x69 + (i%25)*0xA)))}'
-        karyotype_text += f"chr - {c['id']} {i + 1} 0 {c['length']} {color}\n"
+        color = f'#{khp(str(hex(0x69 + (i%6)*0x28)))+khp(str(hex(0x69 + (i%6)*0x28)))+khp(str(hex(0x69 + (i%6)*0x28)))}'
+        karyotype_text += f"chr - {c['id']} {i + 1} 0 {c['length']} {hex_to_rgb(color)}\n"
     with open(karyotype_txt, 'w') as f:
         f.write(karyotype_text)
 
