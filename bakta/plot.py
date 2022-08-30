@@ -91,6 +91,23 @@ def main():
         log.error('wrong file format!')
         sys.exit('ERROR: wrong file format!')
 
+    try:
+        pgcc = config['pgcc']
+    except:
+        pgcc = '#CC6458'
+    try:
+        ngcc = config['ngcc']
+    except:
+        ngcc = '#43CC85'
+    try:
+        pgcs = config['pgcs']
+    except:
+        pgcs = '#CCBE6C'
+    try:
+        ngcs = config['ngcs']
+    except:
+        ngcs = '#5A4ECC'
+
     plots_string = config['plot']
     plots = plots_string.replace('-', '')
     plots = plots.replace("'", '')
@@ -111,10 +128,10 @@ def main():
                            args.tmp_dir,
                            plot_count,
                            args.prefix,
-                           config['pgcc'],
-                           config['ngcc'],
-                           config['pgcs'],
-                           config['ngcs'])
+                           pgcc,
+                           ngcc,
+                           pgcs,
+                           ngcs)
                 plot_count += 1
                 continue
             if contig['id'] in p:
@@ -131,10 +148,10 @@ def main():
                               args.tmp_dir,
                               plot_count,
                               args.prefix,
-                              config['pgcc'],
-                              config['ngcc'],
-                              config['pgcs'],
-                              config['ngcs'])
+                              pgcc,
+                              ngcc,
+                              pgcs,
+                              ngcs)
             plot_count += 1
     if plot_error_count == 0:
         print('all plots are finished!')
