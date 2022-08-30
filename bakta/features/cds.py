@@ -683,7 +683,7 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
                         # if observations.get(bc.PSEUDOGENE_EXCEPTION_PYROLYSINE, None):  # only for pseudogenes with translation exception + other cause
                         #     causes.append('Translation exception: Pyrolysin around ' + ', '.join(map(str, observations[bc.PSEUDOGENE_EXCEPTION_PYROLYSINE])) + '.')
                         causes = ' '.join(causes)  # pseudogene cause
-                        pseudogene['description'] = f"{effects}. {causes}"
+                        pseudogene['description'] = f"{effects}. {causes}" if effects != '' else causes
 
                         if bc.FEATURE_END_5_PRIME in directions and bc.FEATURE_END_3_PRIME in directions:
                             truncation = bc.FEATURE_END_BOTH
