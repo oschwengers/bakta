@@ -74,22 +74,19 @@ def main():
     cfg.check_tmp_path(args)
 
     #Import Annotation Information
-    try:
-        with open(args.input, 'r') as input:
-            annotation = json.load(input)
-    except:
-        log.error('wrong file format!')
-        sys.exit('ERROR: wrong file format!')
+    with open(args.input, 'r') as input:
+        annotation = json.load(input)
     features = annotation['features']
     contigs = annotation['sequences']
 
     #Import Configuration Information
-    try:
-        with open(args.plot) as conf:
-            config = yaml.load(conf, Loader=yaml.FullLoader)
-    except:
-        log.error('wrong file format!')
-        sys.exit('ERROR: wrong file format!')
+    if args.plot != None:
+        try:
+            with open(args.plot) as conf:
+                config = yaml.load(conf, Loader=yaml.FullLoader)
+        except:
+            log.error('wrong configuration file format!')
+            sys.exit('ERROR: wrong configuration file format!')
 
     try:
         pgcc = config['pgcc']
