@@ -60,7 +60,7 @@ def main():
 
     log = logging.getLogger('PLOT')
 
-    #Check Input
+    # check and open annotation input file
     try:
         if (args.input == ''):
             raise ValueError('File path argument must be non-empty')
@@ -73,13 +73,12 @@ def main():
     log.info('input-path=%s', annotation_path)
     cfg.check_tmp_path(args)
 
-    #Import Annotation Information
     with open(args.input, 'r') as input:
         annotation = json.load(input)
     features = annotation['features']
     contigs = annotation['sequences']
 
-    #Import Configuration Information
+    # check and open configuration file
     if args.plot != None:
         try:
             with open(args.plot) as conf:
@@ -88,6 +87,7 @@ def main():
             log.error('wrong configuration file format!')
             sys.exit('ERROR: wrong configuration file format!')
 
+    # check for color customisation
     try:
         pgcc = config['pgcc']
     except:
@@ -105,6 +105,7 @@ def main():
     except:
         ngcs = '#5A4ECC'
 
+    # write plot according to plot configuration
     try:
         plots_string = config['plot']
         plots = plots_string.replace('-', '')
@@ -300,7 +301,7 @@ def write_plot(features,
     ##############################
     # write configurationfiles
     ##############################
-    #write main config
+    # write main config
     if plot_count == 0:
         plot_count = ""
     main_config_text = f'''
@@ -323,7 +324,7 @@ def write_plot(features,
     with open(main_conf, 'w') as f:
         f.write(main_config_text)
 
-    #write_karyotype_file
+    # write_karyotype_file
     karyotype_text = ""
     for i, c in enumerate(contigs):
         color = f'#{khp(str(hex(0x69 + (i%6)*0x28)))+khp(str(hex(0x69 + (i%6)*0x28)))+khp(str(hex(0x69 + (i%6)*0x28)))}'
@@ -331,7 +332,7 @@ def write_plot(features,
     with open(karyotype_txt, 'w') as f:
         f.write(karyotype_text)
 
-    #write_ideogram_config():
+    # write_ideogram_config():
     ideogram_text = '''
     <ideogram>
     <spacing>
@@ -345,7 +346,7 @@ def write_plot(features,
     with open(ideogram_conf, 'w') as f:
         f.write(ideogram_text)
 
-    #write_ticks_config:
+    # write_ticks_config:
     ticks_text = f'''
     show_ticks       = yes
     show_tick_labels = yes
