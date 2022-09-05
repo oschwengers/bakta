@@ -667,6 +667,7 @@ Bakta is *standing on the shoulder of giants* taking advantage of many great sof
 - UniProt: <https://doi.org/10.1093/nar/gky1049>
 - RefSeq: <https://doi.org/10.1093/nar/gkx1068>
 - COG: <https://doi.org/10.1093/bib/bbx117>
+- KEGG: <https://doi.org/10.1093/bioinformatics/btz859>
 - AMRFinder: <https://doi.org/10.1128/AAC.00483-19>
 - ISFinder: <https://doi.org/10.1093/nar/gkj014>
 - Pfam: <https://doi.org/10.1093/nar/gky995>
