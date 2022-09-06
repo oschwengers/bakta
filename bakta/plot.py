@@ -204,30 +204,12 @@ def write_plot(features,
 
     label_prefix = 'b'
     multiplier = 1
-    spacing_mod = 1
-
-    if added_sequence_length > 5000:
-        spacing_mod = 5
-        if added_sequence_length > 10000:
-            spacing_mod = 10
-            if added_sequence_length > 50000:
-                spacing_mod = 50
     if added_sequence_length > 100000:
         label_prefix = 'kb'
         multiplier = 0.001
-        spacing_mod = 100
-        if added_sequence_length > 500000:
-            spacing_mod = 500
-            if added_sequence_length > 1000000:
-                spacing_mod = 1000
-                if added_sequence_length > 5000000:
-                    spacing_mod = 5000
     if added_sequence_length > 10000000:
         label_prefix = 'mb'
         multiplier = 0.000001
-        spacing_mod = 10000
-        if added_sequence_length > 50000000:
-            spacing_mod = 50000
 
     ###########################
     # Config Paths
@@ -328,9 +310,10 @@ def write_plot(features,
     # write configurationfiles
     ##############################
     # write main config
+    chromosomes_units = round(added_sequence_length/(10**(len(str(added_sequence_length)) - 1)))*(10**(len(str(added_sequence_length)) - 1))
     main_config_text = f'''
     karyotype                   = {karyotype_txt}
-    chromosomes_units           = {added_sequence_length}
+    chromosomes_units           = {chromosomes_units}
     chromosomes_display_default = yes
     <plots>
     <<include {tracks_conf}>>
@@ -375,7 +358,7 @@ def write_plot(features,
     show_ticks       = yes
     show_tick_labels = yes       
     <ticks>
-    label_separation = 5p
+    label_separation = 20p
     tick_separation      = 2p 
     radius      = 1r
     color       = black
@@ -385,21 +368,21 @@ def write_plot(features,
     orientation = out
     format      = %d{label_prefix}
     <tick>
-    spacing      = {spacing_mod*100/added_sequence_length}u
+    spacing      = 0.1u
     show_label   = yes
     label_size   = 40   
     size         = 25p
     thickness    = 4p
     </tick>
     <tick>
-    spacing      = {spacing_mod*10/added_sequence_length}u
+    spacing      = 0.025u
     show_label   = yes
     label_size   = 20
     size         = 15p
     thickness    = 3p
     </tick>
     <tick>
-    spacing      = {spacing_mod/added_sequence_length}u
+    spacing      = 0.0025u
     size         = 5p
     </tick>
     </ticks>
