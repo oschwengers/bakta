@@ -196,7 +196,7 @@ def write_plot(features,
     for c in contigs:
         added_sequence_length += int(c['length'])
         added_sequences += c['sequence']
-    window_size = added_sequence_length/100 if added_sequence_length < 2000 else added_sequence_length/1000
+    window_size = added_sequence_length/100 if added_sequence_length < 10000 else added_sequence_length/1000
     window_size = 3 if window_size < 3 else window_size
     step_size = window_size * 0.2 if window_size >= 5 else 1
     track_radius = 1.0
