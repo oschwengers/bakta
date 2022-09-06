@@ -453,6 +453,11 @@ def write_plot(features,
     # run Circos
     #############
     sp.run(['circos', '-conf', main_conf], stdout=sp.DEVNULL, stderr=sp.STDOUT)
+    #control output
+    if Path(f'{outdir}/{prefix}{plot_nr}.png').is_file():
+        pass
+    else:
+        print('ERROR: Circos failed to draw your image! Please check your installation!')
     return
 
 
