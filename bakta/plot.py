@@ -89,19 +89,19 @@ def main():
     # check for color customisation
     try:
         pgcc = config['pgcc']
-    except KeyError:
+    except:
         pgcc = '#CC6458'
     try:
         ngcc = config['ngcc']
-    except KeyError:
+    except:
         ngcc = '#43CC85'
     try:
         pgcs = config['pgcs']
-    except KeyError:
+    except:
         pgcs = '#CCBE6C'
     try:
         ngcs = config['ngcs']
-    except KeyError:
+    except:
         ngcs = '#5A4ECC'
 
     # write plot according to plot configuration
@@ -150,7 +150,7 @@ def main():
                 plot_count += 1
         print('all plots are finished!')
 
-    except KeyError:
+    except:
         plot_count = 0
         print('drawing plot')
         write_plot(features,
@@ -194,10 +194,10 @@ def write_plot(features,
 
     label_prefix = 'b'
     multiplier = 1
-    if added_sequence_length > 1000:
+    if added_sequence_length > 1000000:
         label_prefix = 'kb'
         multiplier = 0.001
-    if added_sequence_length > 1000000:
+    if added_sequence_length > 1000000000:
         label_prefix = 'mb'
         multiplier = 0.000001
 
