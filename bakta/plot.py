@@ -46,7 +46,7 @@ def main():
     # parse options and arguments
     parser = bu.init_parser(sub_command='_plot')
     parser.add_argument('input', metavar='<input>', help='Bakta-Annotation in JSON-Format')
-    parser.add_argument('--conf', '-c', action='store', default=None, dest='plot',
+    parser.add_argument('--conf', '-c', action='store', default=None, dest='conf',
                         help='YAML configuration file for plot configuration')
     arg_group_io = parser.add_argument_group('Input / Output')
     arg_group_io.add_argument('--output', '-o', action='store', default=os.getcwd(),
@@ -55,6 +55,12 @@ def main():
                               help='Config directory (default = temporary directory')
     arg_group_io.add_argument('--prefix', '-p', action='store', default='Plot',
                               help='Prefix for output files')
+
+    arg_group_plot = parser.add_argument_group('Plotconfiguration')
+    arg_group_plot.add_argument('--plot', '-pl', action='store', default=None, nargs='+', help='...work in progress...')
+
+
+
     args = parser.parse_args()
 
     log = logging.getLogger('PLOT')
@@ -78,13 +84,13 @@ def main():
     contigs = annotation['sequences']
 
     # check and open configuration file
-    if args.plot is not None:
+    if args.conf is not None:
         try:
-            with open(args.plot) as conf:
+            with open(args.conf) as conf:
                 config = yaml.load(conf, Loader=yaml.FullLoader)
         except FileNotFoundError:
-            log.error(f'configuration file not found!, {args.plot}')
-            sys.exit(f'ERROR: please check your selected configuration file!, {args.plot}')
+            log.error(f'configuration file not found!, {args.conf}')
+            sys.exit(f'ERROR: please check your selected configuration file!, {args.conf}')
 
     # check for color customisation
     try:
@@ -104,60 +110,15 @@ def main():
     except:
         ngcs = '#5A4ECC'
 
-    # write plot according to plot configuration
-    try:
-        plots_string = config['plot']
-        plots = plots_string.replace('-', '')
-        plots = plots.replace("'", '')
-        plots = plots.replace('"', '')
-        plots = plots.split()
-        plot_count = 1
-        contig_selection = False
-        for p in plots:
-            p = p.split('/')
-            plot_contig = []
-            for contig in contigs:
-                if 'all' in p:
-                    plot_contig = [contig]
-                    print(f'drawing plot {plot_count}')
-                    write_plot(features,
-                               plot_contig,
-                               args.output,
-                               args.tmp_dir,
-                               plot_count,
-                               args.prefix,
-                               pgcc,
-                               ngcc,
-                               pgcs,
-                               ngcs)
-                    plot_count += 1
-                    continue
-                if contig['id'] in p:
-                    plot_contig.append(contig)
-                    contig_selection = True
-            if contig_selection is True:
-                print(f'drawing plot {plot_count}')
-                write_plot(features,
-                           plot_contig,
-                           args.output,
-                           args.tmp_dir,
-                           plot_count,
-                           args.prefix,
-                           pgcc,
-                           ngcc,
-                           pgcs,
-                           ngcs)
-                plot_count += 1
-        print('all plots are finished!')
 
-    except:
-        plot_count = 0
+    if args.plot is None:
+        plot_name = '_all_sequences'
         print('drawing plot')
         write_plot(features,
                    contigs,
                    args.output,
                    args.tmp_dir,
-                   plot_count,
+                   plot_name,
                    args.prefix,
                    pgcc,
                    ngcc,
@@ -165,12 +126,61 @@ def main():
                    ngcs)
         print('plot has been drawn!')
 
+    # write plot according to plot configuration
+    else:
+        plots = args.plot
+        for p in plots:
+            contig_selection = False
+            if 'all' in p:
+                plot_count = 1
+                for contig in contigs:
+                    plot_contig = [contig]
+                    plot_nr = f'_{plot_count}'
+                    print(f'drawing plot{plot_nr}')
+                    write_plot(features,
+                               plot_contig,
+                               args.output,
+                               args.tmp_dir,
+                               plot_nr,
+                               args.prefix,
+                               pgcc,
+                               ngcc,
+                               pgcs,
+                               ngcs)
+                    plot_count += 1
+
+            p = p.split('/')
+            plot_contig = []
+            for contig in contigs:
+                contig_nr = contig['id'][7:]
+                if contig_nr in p:
+                    plot_contig.append(contig)
+                    contig_selection = True
+            if contig_selection is True:
+                plot_nr = ''
+                for x in p:
+                    plot_nr += f'_{x}'
+                print(f'drawing plot{plot_nr}')
+                write_plot(features,
+                           plot_contig,
+                           args.output,
+                           args.tmp_dir,
+                           plot_nr,
+                           args.prefix,
+                           pgcc,
+                           ngcc,
+                           pgcs,
+                           ngcs)
+        print('all plots are finished!')
+
+
+
 
 def write_plot(features,
                contigs,
                outdir,
                config_dir=None,
-               plot_count=0,
+               plot_nr='',
                prefix=None,
                p_gc_content_color='#CC6458',
                n_gc_content_color='#43CC85',
@@ -300,8 +310,6 @@ def write_plot(features,
     # write configurationfiles
     ##############################
     # write main config
-    if plot_count == 0:
-        plot_count = ""
     main_config_text = f'''
     karyotype                   = {karyotype_txt}
     chromosomes_units           = {added_sequence_length}
@@ -311,7 +319,7 @@ def write_plot(features,
     </plots>
     <image>
     <<include image.conf>>
-    file*                       = {prefix}{plot_count}
+    file*                       = {prefix}{plot_nr}
     dir*                        = {outdir}
     </image> 
     <<include {ideogram_conf}>>
