@@ -204,12 +204,30 @@ def write_plot(features,
 
     label_prefix = 'b'
     multiplier = 1
-    if added_sequence_length > 1000000:
+    spacing_mod = 1
+
+    if added_sequence_length > 5000:
+        spacing_mod = 5
+        if added_sequence_length > 10000:
+            spacing_mod = 10
+            if added_sequence_length > 50000:
+                spacing_mod = 50
+    if added_sequence_length > 100000:
         label_prefix = 'kb'
         multiplier = 0.001
-    if added_sequence_length > 1000000000:
+        spacing_mod = 100
+        if added_sequence_length > 500000:
+            spacing_mod = 500
+            if added_sequence_length > 1000000:
+                spacing_mod = 1000
+                if added_sequence_length > 5000000:
+                    spacing_mod = 5000
+    if added_sequence_length > 10000000:
         label_prefix = 'mb'
         multiplier = 0.000001
+        spacing_mod = 10000
+        if added_sequence_length > 50000000:
+            spacing_mod = 50000
 
     ###########################
     # Config Paths
@@ -355,31 +373,33 @@ def write_plot(features,
     # write_ticks_config:
     ticks_text = f'''
     show_ticks       = yes
-    show_tick_labels = yes
+    show_tick_labels = yes       
     <ticks>
+    label_separation = 5p
+    tick_separation      = 2p 
     radius      = 1r
     color       = black
-    thickness   = 2p
+    thickness    = 4p
+    label_offset = 10p
     multiplier  = {multiplier}
     orientation = out
-    format      = %.01f{label_prefix}
+    format      = %d{label_prefix}
     <tick>
-    spacing      = 0.15u
+    spacing      = {spacing_mod*100/added_sequence_length}u
     show_label   = yes
-    label_size   = 35
-    label_offset = 10p
+    label_size   = 40   
     size         = 25p
     thickness    = 4p
     </tick>
     <tick>
-    spacing      = 0.015u
+    spacing      = {spacing_mod*10/added_sequence_length}u
     show_label   = yes
-    label_size   = 15
+    label_size   = 20
     size         = 15p
     thickness    = 3p
     </tick>
     <tick>
-    spacing      = 0.0015u
+    spacing      = {spacing_mod/added_sequence_length}u
     size         = 5p
     </tick>
     </ticks>
