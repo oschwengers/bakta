@@ -730,7 +730,7 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
         elongated_cds['start'] = contig_length + elongated_cds['start'] - offset
         elongated_cds['edge'] = True
     elif elongated_cds['start'] - offset < 0:
-        elongated_cds['start'] = 0
+        elongated_cds['start'] = 1
         elongated_cds['elongation_upstream'] = cds['start']
     else:
         elongated_cds['start'] = elongated_cds['start'] - offset

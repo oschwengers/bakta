@@ -295,7 +295,7 @@ def test_compare_alignments(alignment, ref_alignment, cds, coordinates, expected
               'topology': 'linear'
             },
             {
-              'start': 0,
+              'start': 1,
               'stop': 200,
               'strand': bc.STRAND_FORWARD,
               'edge': False,
