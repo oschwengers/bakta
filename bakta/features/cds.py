@@ -796,7 +796,7 @@ def detect_pseudogenization_observations(alignment: str, ref_alignment: str, qst
         positions['stop'] = get_abs_position(cds, cds['stop'], positions['upstream'], elongated_edge)
 
     # Skip pseudogenes with wrong blastx hsp hits
-    if not (positions['start'] <= cds['start']+3 <= positions['stop'] and positions['start'] <= cds['stop']-3 <= positions['stop']):
+    if not ((positions['start'] <= cds['start'] + 3 <= positions['stop']) and (positions['start'] <= cds['stop'] - 3 <= positions['stop'])):
         return observations, positions
 
     compare_alignments(observations, alignment, ref_alignment, cds, positions, elongated_edge)
