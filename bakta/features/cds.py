@@ -730,7 +730,7 @@ def get_elongated_cds(cds: dict, contig: dict, offset: int = bc.PSEUDOGENE_OFFSE
         elongated_cds['start'] = contig_length + elongated_cds['start'] - offset
         elongated_cds['edge'] = True
     elif elongated_cds['start'] - offset < 0:
-        elongated_cds['start'] = 0
+        elongated_cds['start'] = 1
         elongated_cds['elongation_upstream'] = cds['start']
     else:
         elongated_cds['start'] = elongated_cds['start'] - offset
@@ -796,7 +796,9 @@ def detect_pseudogenization_observations(alignment: str, ref_alignment: str, qst
         positions['stop'] = get_abs_position(cds, cds['stop'], positions['upstream'], elongated_edge)
 
     # Skip pseudogenes with wrong blastx hsp hits
-    if not ((positions['start'] <= cds['start'] + 3 <= positions['stop']) and (positions['start'] <= cds['stop'] - 3 <= positions['stop'])):
+    # either cds['start'] or cds['stop'] are not within the pseudogene positions and less than 80% of the cds are covered
+    if (not (positions['start'] <= cds['start'] + 3 <= positions['stop']) or not (positions['start'] <= cds['stop'] - 3 <= positions['stop'])) and \
+            len(range(max(cds['start'], positions['start']), min(cds['stop'], positions['stop']) + 1)) < int(len(cds['nt']) * 0.8):
         return observations, positions
 
     compare_alignments(observations, alignment, ref_alignment, cds, positions, elongated_edge)
