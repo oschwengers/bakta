@@ -35,4 +35,6 @@ RUN source /opt/conda/bashrc && micromamba activate \
     && echo 'bakta "$@"' >> /entrypoint.sh \
     && chmod +x /entrypoint.sh 
 
+ENV PATH=/opt/conda/bin:$PATH
+
 ENTRYPOINT ["/entrypoint.sh"]
