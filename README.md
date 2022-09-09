@@ -379,6 +379,7 @@ Workflow:
 General:
   --help, -h            Show this help message and exit
   --verbose, -v         Print verbose information
+  --debug               Run Bakta in debug mode. Temp data will not be removed.
   --threads THREADS, -t THREADS
                         Number of threads to use (default = number of available CPUs)
   --tmp-dir TMP_DIR     Location for temporary files (default = system dependent auto detection)
