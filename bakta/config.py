@@ -246,12 +246,23 @@ def check_content_size(file_name: str, file_path: Path):
 def check_threads(args: Namespace) -> int:
     global threads
     threads = args.threads
-    if(threads <= 0):
+
+    try:
+        max_threads = len(os.sched_getaffinity(0))
+        log.debug(f"max-threads={max_threads}")
+    except AttributeError:
+        max_threads = mp.cpu_count()
+        log.debug(f"scheduler affinity not availabe! max-threads={max_threads}")
+
+    if(threads == 0):
+        threads = max_threads
+        log.debug("request max threads.")
+    elif(threads < 0):
         log.error("wrong argument for 'threads' parameter! threads=%i", threads)
-        sys.exit(f"ERROR: wrong argument ({threads}) for 'threads' parameter! Value must be larger than 0.")
-    elif(threads > mp.cpu_count()):
-        log.error("wrong argument for 'threads' parameter! More threads requested than available: requested=%i, available=%i", threads, mp.cpu_count())
-        sys.exit(f"ERROR: wrong argument ({threads}) for 'threads' parameter! More threads requested ({threads}) than available ({mp.cpu_count()}).")
+        sys.exit(f"ERROR: wrong argument ({threads}) for 'threads' parameter! Value must be larger than/equal to 0.")
+    elif(threads > max_threads):
+        log.error("wrong argument for 'threads' parameter! More threads requested than available: requested=%i, available=%i", threads, max_threads)
+        sys.exit(f"ERROR: wrong argument ({threads}) for 'threads' parameter! More threads requested ({threads}) than available ({max_threads}).")
     log.info('threads=%i', threads)
     return threads
 

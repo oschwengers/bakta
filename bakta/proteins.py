@@ -1,6 +1,5 @@
 import atexit
 import logging
-import multiprocessing as mp
 import os
 import sys
 
@@ -44,7 +43,7 @@ def main():
     arg_group_general = parser.add_argument_group('Runtime & auxiliary options')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
     arg_group_general.add_argument('--verbose', '-v', action='store_true', help='Print verbose information')
-    arg_group_general.add_argument('--threads', '-t', action='store', type=int, default=mp.cpu_count(), help='Number of threads to use (default = number of available CPUs)')
+    arg_group_general.add_argument('--threads', '-t', action='store', type=int, default=0, help='Number of threads to use (default = number of available CPUs)')
     arg_group_general.add_argument('--tmp-dir', action='store', default=None, dest='tmp_dir', help='Location for temporary files (default = system dependent auto detection)')
     arg_group_general.add_argument('--version', '-V', action='version', version=f'%(prog)s {bakta.__version__}')
     args = parser.parse_args()

@@ -541,7 +541,6 @@ def test_threads_failing(parameters, tmpdir):
         (['--threads', '']),  # empty
         (['--threads', 'foo']),  # string
         (['--threads', '-1']),  # smaller than zero
-        (['--threads', '0']),  # zero
         (['--threads', '1.1']),  # float
         (['--threads', '1000'])  # larger than available threads
     ]
