@@ -66,6 +66,7 @@ def main():
         print(f'\tprefix: {cfg.prefix}')
         print(f'\ttmp directory: {cfg.tmp_path}')
         print(f'\t# threads: {cfg.threads}')
+        if(cfg.debug): print(f'\tdebug: {cfg.debug}')
         if(cfg.compliant): print(f'\tINSDC compliant: {cfg.compliant}')
         if(cfg.keep_contig_headers): print(f'\tkeep contig headers: {cfg.keep_contig_headers}')
         if(cfg.locus): print(f'\tlocus prefix: {cfg.locus}')
@@ -86,6 +87,11 @@ def main():
         if(cfg.skip_sorf): print(f'\tskip sORF: {cfg.skip_sorf}')
         if(cfg.skip_gap): print(f'\tskip gap: {cfg.skip_gap}')
         if(cfg.skip_ori): print(f'\tskip oriC/V/T: {cfg.skip_ori}')
+    
+    if(cfg.debug):
+        print(f"\nBakta runs in DEBUG mode! Temporary data will not be destroyed at: {cfg.tmp_path}")
+    else:
+        atexit.register(bu.cleanup, log, cfg.tmp_path)  # register cleanup exit hook
 
     ############################################################################
     # Import genome
@@ -93,7 +99,7 @@ def main():
     # - apply contig length filter
     # - rename contigs
     ############################################################################
-    print('parse genome sequences...')
+    print('\nparse genome sequences...')
     try:
         contigs = fasta.import_contigs(cfg.genome_path)
         log.info('imported sequences=%i', len(contigs))
