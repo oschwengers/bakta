@@ -691,7 +691,7 @@ Bakta takes advantage of an SQLite DB which results in high storage IO loads. If
 ## Issues and Feature Requests
 
 Bakta is new and like in every software, expect some bugs lurking around. So, if you run into any issues with Bakta, we'd be happy to hear about it.
-Therefore, please, execute bakta in verbose mode (`-v`) and do not hesitate to file an issue including as much information as possible:
+Therefore, please, execute bakta in debug mode (`--debug`) and do not hesitate to file an issue including as much information as possible:
 
 - a detailed description of the issue
 - command line output

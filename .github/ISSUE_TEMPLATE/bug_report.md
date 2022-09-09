@@ -13,5 +13,5 @@ To fix any bugs and issues and also to help other users who might face the same 
 Therefore, please provide us with at least the following information:
 
 - Which commandos have been executed and what exactly happened
-- Detailed logs (execute Bakta with `--verbose`)
-- How did you install Bakta: `BioConda`, `Pip`
+- Detailed logs (execute Bakta with `--debug`)
+- How did you install Bakta: `Conda`, `Pip`
