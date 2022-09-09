@@ -18,6 +18,7 @@ log = logging.getLogger('CONFIG')
 env = os.environ.copy()
 threads = None
 verbose = None
+debug = None
 
 # input / output configuration
 db_path = None
@@ -67,12 +68,16 @@ run_end = None
 def setup(args):
     """Test environment and build a runtime configuration."""
     # runtime configurations
-    global env, threads, verbose
+    global env, threads, verbose, debug
     env['BLAST_USAGE_REPORT'] = 'false'  # prevent BLAST from contacting NCBI
 
     threads = check_threads(args)
     verbose = args.verbose
     log.info('verbose=%s', verbose)
+    debug = args.debug
+    log.info('debug=%s', debug)
+    if(debug):
+        verbose = True
 
     # input / output path configurations
     global db_path, db_info, tmp_path, genome_path, min_contig_length, prefix, output_path
