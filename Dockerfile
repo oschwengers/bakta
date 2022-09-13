@@ -23,7 +23,7 @@ SHELL ["bash", "-l" ,"-c"]
 
 RUN source /opt/conda/bashrc && micromamba activate \
     && micromamba install -y -n base -f /tmp/environment.yml \
-    && rm -rf /opt/conda/pkgs
+    && micromamba clean --all --yes
 
 COPY . /tmp/source/
 
