@@ -54,7 +54,6 @@ def main():
     # - test binary dependencies
     ############################################################################
     cfg.setup(args)  # check parameters and prepare global configuration
-    atexit.register(bu.cleanup, log, cfg.tmp_path)  # register cleanup exit hook
     cfg.db_info = db.check(cfg.db_path)
     bu.test_dependencies()
     if(cfg.verbose):
