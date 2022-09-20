@@ -23,16 +23,30 @@ SHELL ["bash", "-l" ,"-c"]
 
 RUN source /opt/conda/bashrc && micromamba activate \
     && micromamba install -y -n base -f /tmp/environment.yml \
-    && rm -rf /opt/conda/pkgs
+    && micromamba clean --all --yes
 
 COPY . /tmp/source/
 
 RUN source /opt/conda/bashrc && micromamba activate \
     && python3 -m pip install --no-cache /tmp/source/ \
     && echo '#!/bin/bash' > /entrypoint.sh \
-    && echo 'source /opt/conda/bashrc' >> /entrypoint.sh \
-    && echo 'micromamba activate' >> /entrypoint.sh \
     && echo 'bakta "$@"' >> /entrypoint.sh \
-    && chmod +x /entrypoint.sh 
+    && chmod +x /entrypoint.sh \
+    \
+    # replace bash with a wrapper that initializes the micromamba env
+    # everytime it is not initialized.
+    # with this approach we can initialize the env automatically, even
+    # in non-interactive, no-login sessions, e.g. when nextflow uses
+    # containers
+    && mv /bin/bash /bin/bash.orig \
+    && echo '#!/bin/bash.orig' >> /bin/bash \
+    && echo 'if [[ -z $MAMBA_INITIALIZED ]]' >> /bin/bash \
+    && echo 'then' >> /bin/bash \
+    && echo 'source /opt/conda/bashrc' >> /bin/bash \
+    && echo 'micromamba activate' >> /bin/bash \
+    && echo 'export MAMBA_INITIALIZED=1' >> /bin/bash \
+    && echo 'fi' >> /bin/bash \
+    && echo '/bin/bash.orig "$@"' >> /bin/bash \
+    && chmod +x /bin/bash
 
 ENTRYPOINT ["/entrypoint.sh"]
