@@ -33,15 +33,14 @@ def predict(genome: dict, sequences_path: Path):
     trainings_info = None
     prodigal_metamode = genome['size'] < 20000
     if(prodigal_tf_path is None):
-        if(genome['size'] >= 20000):
-            prodigal_tf_path = cfg.tmp_path.joinpath('prodigal.tf')
-            log.info('create prodigal training file: file=%s', prodigal_tf_path)
-            closed = not genome['complete']
+        closed = not genome['complete']
+        if(not prodigal_metamode):
+            log.info('create prodigal training info object: meta=%s, closed=%s', prodigal_metamode, closed)
             orffinder = pyrodigal.OrfFinder(meta=prodigal_metamode, closed=closed)
             seqs = [c['sequence'] for c in genome['contigs']]
             trainings_info = orffinder.train(*seqs, translation_table=cfg.translation_table)
         else:
-            log.info('skip creation of prodigal training file: genome-size=%i', genome['size'])
+            log.info('skip creation of prodigal training info object: meta=%s, closed=%s', prodigal_metamode, closed)
     else:
         try:
             with prodigal_tf_path.open('rb') as fh_tf:
