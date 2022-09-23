@@ -1,21 +1,22 @@
+import concurrent.futures as cf
 import copy
 import logging
 import subprocess as sp
+import sys
 import xml.etree.ElementTree as ET
 
 from collections import OrderedDict
-from math import ceil
 from typing import Dict, Sequence, Set, Tuple, Union
 from pathlib import Path
 
-from Bio import SeqIO
+import pyrodigal
+
 from Bio.Seq import Seq
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.features.orf as orf
-import bakta.io.fasta as fasta
 import bakta.utils as bu
 import bakta.so as so
 
@@ -26,224 +27,141 @@ log = logging.getLogger('CDS')
 
 
 def predict(genome: dict, sequences_path: Path):
-    """Predict open reading frames with Prodigal."""
-    # create prodigal trainining file if not provided by the user
+    """Predict open reading frames with Pyrodigal."""
+    # create Pyrodigal trainining file if not provided by the user
     prodigal_tf_path = cfg.prodigal_tf
+    trainings_info = None
+    prodigal_metamode = genome['size'] < 20000
     if(prodigal_tf_path is None):
         if(genome['size'] >= 20000):
             prodigal_tf_path = cfg.tmp_path.joinpath('prodigal.tf')
             log.info('create prodigal training file: file=%s', prodigal_tf_path)
-            execute_prodigal(genome, sequences_path, prodigal_tf_path, train=True, complete=genome['complete'])
+            closed = not genome['complete']
+            orffinder = pyrodigal.OrfFinder(meta=prodigal_metamode, closed=closed)
+            seqs = [c['sequence'] for c in genome['contigs']]
+            trainings_info = orffinder.train(*seqs, translation_table=cfg.translation_table)
         else:
             log.info('skip creation of prodigal training file: genome-size=%i', genome['size'])
     else:
-        log.info('use provided prodigal training file: file=%s', prodigal_tf_path)
+        try:
+            with prodigal_tf_path.open('rb') as fh_tf:
+                trainings_info = pyrodigal.TrainingInfo.load(fh_tf)
+                log.info('use provided prodigal training file: file=%s', prodigal_tf_path)
+        except:
+            log.error('Cannot use provided prodigal training file: file=%s', prodigal_tf_path)
+            sys.exit(f'Error! Cannot use provided prodigal training file: file={prodigal_tf_path}')
 
-    sequences = {k['id']: k for k in genome['contigs']}
     cdss = []
+    # predict genes on linear sequences
+    linear_sequences = {c['id'] : c for c in genome['contigs'] if c['topology'] == bc.TOPOLOGY_LINEAR}
+    if(len(linear_sequences) > 0):
+        orffinder = pyrodigal.OrfFinder(trainings_info, meta=prodigal_metamode, closed=True, mask=True)
+        future_per_contig = {}
+        with cf.ProcessPoolExecutor(max_workers=cfg.threads) as tpe:
+            for id, sequence in linear_sequences.items():
+                future_per_contig[sequence['id']] = tpe.submit(orffinder.find_genes, sequence['sequence'])
+            for contig_id, future in future_per_contig.items():
+                sequence = linear_sequences[contig_id]
+                cdss_per_sequence = create_cdss(future.result(), sequence)
+                cdss.extend(cdss_per_sequence)
 
-    # execute prodigal for non-complete sequences (contigs)
-    contigs_path = cfg.tmp_path.joinpath('contigs.fasta')
-    contigs = [c for c in genome['contigs'] if not c['complete']]
-    if(len(contigs) > 0):
-        fasta.export_contigs(contigs, contigs_path)
-        log.debug('export contigs: # contigs=%i, path=%s', len(contigs), contigs_path)
-        proteins_contigs_path = cfg.tmp_path.joinpath('prodigal.contigs.faa')
-        gff_contigs_path = cfg.tmp_path.joinpath('prodigal.contigs.gff')
-        log.info('run prodigal: type=contigs, # sequences=%i', len(contigs))
-        execute_prodigal(genome, contigs_path, prodigal_tf_path, proteins_path=proteins_contigs_path, gff_path=gff_contigs_path, complete=False)
-        cds = parse_prodigal_output(genome, sequences, gff_contigs_path, proteins_contigs_path)
-        log.info('contig cds: predicted=%i', len(cds))
-        cdss.extend(cds)
-
-    # execute prodigal for complete replicons (chromosomes/plasmids)
-    replicons_path = cfg.tmp_path.joinpath('replicons.fasta')
-    replicons = [c for c in genome['contigs'] if c['complete']]
-    if(len(replicons) > 0):
-        fasta.export_contigs(replicons, replicons_path)
-        log.debug('export replicons: # sequences=%i, path=%s', len(replicons), replicons_path)
-        proteins_replicons_path = cfg.tmp_path.joinpath('prodigal.replicons.faa')
-        gff_replicons_path = cfg.tmp_path.joinpath('prodigal.replicons.gff')
-        log.info('run prodigal: type=replicons, # sequences=%i', len(replicons))
-        execute_prodigal(genome, replicons_path, prodigal_tf_path, proteins_path=proteins_replicons_path, gff_path=gff_replicons_path, complete=True)
-        cds = parse_prodigal_output(genome, sequences, gff_replicons_path, proteins_replicons_path)
-        log.info('replicon cds: predicted=%i', len(cds))
-        cdss.extend(cds)
+    # predict genes on circular replicons (chromosomes/plasmids)
+    circular_sequences = {c['id'] : c for c in genome['contigs'] if c['topology'] == bc.TOPOLOGY_CIRCULAR}
+    if(len(circular_sequences) > 0):
+        orffinder = pyrodigal.OrfFinder(trainings_info, meta=prodigal_metamode, closed=True, mask=True)
+        future_per_contig = {}
+        with cf.ProcessPoolExecutor(max_workers=cfg.threads) as tpe:
+            for id, sequence in circular_sequences.items():
+                future_per_contig[sequence['id']] = tpe.submit(orffinder.find_genes, sequence['sequence'])
+            for contig_id, future in future_per_contig.items():
+                sequence = circular_sequences[contig_id]
+                cdss_per_sequence = create_cdss(future.result(), sequence)
+                cdss.extend(cdss_per_sequence)
 
     log.info('predicted=%i', len(cdss))
     return cdss
 
 
-def execute_prodigal(genome: dict, contigs_path: Path, traininng_file_path: Path, proteins_path: Path=None, gff_path: Path=None, train: bool=False, complete: bool=False):
-    log.debug('execute-prodigal: contigs-path=%s, traininng-file-path=%s, proteins-path=%s, gff-path=%s, train=%s, complete=%s', contigs_path, traininng_file_path, proteins_path, gff_path, train, complete)
-    cmd = [
-        'prodigal',
-        '-i', str(contigs_path),
-        '-g', str(cfg.translation_table)  # set translation table
-    ]
-    if(not complete):
-        cmd.append('-c')  # closed ends
-    if(train):
-        cmd.append('-t')
-        cmd.append(str(traininng_file_path))
-    else:
-        if(genome['size'] < 20000):  # no trainings file provided and not enough sequence information available
-            cmd.append('-p')  # run prodigal in meta mode
-            cmd.append('meta')
-        elif(traininng_file_path):
-            cmd.append('-t')
-            cmd.append(str(traininng_file_path))
-        if(proteins_path):  # aa fasta output
-            cmd.append('-a')
-            cmd.append(str(proteins_path))
-        if(gff_path):  # GFF output
-            cmd.append('-f')
-            cmd.append('gff')
-            cmd.append('-o')
-            cmd.append(str(gff_path))
-
-    log.debug('cmd=%s', cmd)
-    proc = sp.run(
-        cmd,
-        cwd=str(cfg.tmp_path),
-        env=cfg.env,
-        stdout=sp.PIPE,
-        stderr=sp.PIPE,
-        universal_newlines=True
-    )
-    if(proc.returncode != 0):
-        log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
-        log.warning('ORFs failed! prodigal-error-code=%d', proc.returncode)
-        raise Exception(f'prodigal error! error code: {proc.returncode}')
-
-
-def parse_prodigal_output(genome: dict, sequences, gff_path: Path, proteins_path: Path):
-    log.debug('parse-prodigal-output: gff-path=%s, proteins-path=%s', gff_path, proteins_path)
-    cdss = {}
-    partial_cdss_per_record = {}
-    partial_cdss_per_contig = {k['id']: [] for k in genome['contigs']}
-    with gff_path.open() as fh:
-        for line in fh:
-            if(line[0] != '#'):
-                (contig_id, inference, _, start, stop, score, strand, _, annotations_raw) = line.strip().split('\t')
-                gff_annotations = split_gff_annotation(annotations_raw)
-                contig_orf_id = gff_annotations['ID'].split('_')[1]
-
-                cds = OrderedDict()
-                cds['type'] = bc.FEATURE_CDS
-                cds['contig'] = contig_id
-                cds['start'] = int(start)
-                cds['stop'] = int(stop)
-                cds['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
-                cds['gene'] = None
-                cds['product'] = None
-                cds['start_type'] = gff_annotations['start_type']
-                cds['rbs_motif'] = gff_annotations['rbs_motif'] if gff_annotations['rbs_motif'] != 'None' else None
-                cds['db_xrefs'] = [so.SO_CDS.id]
-
-                if(cds['strand'] == bc.STRAND_FORWARD):
-                    cds['frame'] = (cds['start'] - 1) % 3 + 1
-                else:
-                    cds['frame'] = (sequences[cds['contig']]['length'] - cds['stop']) % 3 + 1
-
-                if(gff_annotations['partial'] == '10'):
-                    cds['truncated'] = bc.FEATURE_END_5_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_3_PRIME
-                    partial_cdss_per_record[f"{cds['contig']}_{contig_orf_id}"] = cds
-                    partial_cdss_per_contig[cds['contig']].append(cds)
-                elif(gff_annotations['partial'] == '01'):
-                    cds['truncated'] = bc.FEATURE_END_3_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_5_PRIME
-                    partial_cdss_per_record[f"{cds['contig']}_{contig_orf_id}"] = cds
-                    partial_cdss_per_contig[cds['contig']].append(cds)
-                else:
-                    cdss[f"{cds['contig']}_{contig_orf_id}"] = cds
-
-                log.info(
-                    'contig=%s, start=%i, stop=%i, strand=%s, frame=%s, truncated=%s, start-type=%s, RBS-motif=%s',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame'], cds.get('truncated', 'no'), cds['start_type'], cds['rbs_motif']
-                )
-
-    # extract translated orf sequences
-    with proteins_path.open() as fh:
-        for record in SeqIO.parse(fh, 'fasta'):
-            cds = cdss.get(record.id, None)
-            if(cds):
-                aa = str(record.seq)[:-1]  # discard trailing asterisk
-                cds['aa'] = aa
-                cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
+def create_cdss(genes, contig):
+    partial_cdss_per_sequence = []
+    cdss_per_sequence = []
+    for gene in genes:
+        cds = OrderedDict()
+        cds['type'] = bc.FEATURE_CDS
+        cds['contig'] = contig['id']
+        cds['start'] = gene.begin
+        cds['stop'] = gene.end
+        cds['strand'] = bc.STRAND_FORWARD if gene.strand == 1 else bc.STRAND_REVERSE
+        cds['gene'] = None
+        cds['product'] = None
+        cds['start_type'] = gene.start_type
+        cds['rbs_motif'] = gene.rbs_motif
+        cds['db_xrefs'] = [so.SO_CDS.id]
+        if(cds['strand'] == bc.STRAND_FORWARD):
+            cds['frame'] = (cds['start'] - 1) % 3 + 1
+        else:
+            cds['frame'] = (contig['length'] - cds['stop']) % 3 + 1
+        
+        if gene.partial_begin:
+            cds['truncated'] = bc.FEATURE_END_5_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_3_PRIME
+            partial_cdss_per_sequence.append(cds)
+        elif gene.partial_end:
+            cds['truncated'] = bc.FEATURE_END_3_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_5_PRIME
+            partial_cdss_per_sequence.append(cds)
+        else:
+            cdss_per_sequence.append(cds)
+        aa = gene.translate(translation_table=cfg.translation_table).upper()
+        if('truncated' not in cds or cds['truncated'] == bc.FEATURE_END_5_PRIME):
+            aa = aa[:-1]  # discard trailing asterisk
+        cds['aa'] = aa
+        cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
+        log.info(
+            'contig=%s, start=%i, stop=%i, strand=%s, frame=%s, truncated=%s, start-type=%s, RBS-motif=%s',
+            cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame'], cds.get('truncated', 'no'), cds['start_type'], cds['rbs_motif']
+        )
+    if(contig['topology'] == bc.TOPOLOGY_CIRCULAR and len(partial_cdss_per_sequence) >= 2):
+        first_partial_cds = partial_cdss_per_sequence[0]  # first partial CDS per contig
+        last_partial_cds = partial_cdss_per_sequence[-1]  # last partial CDS per contig
+        # check if partial CDSs are on same strand and have opposite truncated edges
+        # and first starts at 1 and last ends at contig end (length)
+        if(first_partial_cds['strand'] == last_partial_cds['strand']
+            and first_partial_cds['truncated'] != last_partial_cds['truncated']
+            and first_partial_cds['start'] == 1
+            and last_partial_cds['stop'] == contig['length']
+            and contig['topology'] == bc.TOPOLOGY_CIRCULAR):
+            cds = last_partial_cds
+            cds['stop'] = first_partial_cds['stop']
+            if(last_partial_cds['truncated'] == bc.FEATURE_END_3_PRIME):
+                aa = last_partial_cds['aa'] + first_partial_cds['aa']  # merge sequence
             else:
-                partial_cds = partial_cdss_per_record.get(record.id, None)
-                if(partial_cds):
-                    aa = str(record.seq)
-                    if(partial_cds['truncated'] == bc.FEATURE_END_5_PRIME):
-                        aa = aa[:-1]  # discard trailing asterisk
-                    partial_cds['aa'] = aa
-                    partial_cds['aa_digest'], partial_cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
-                else:
-                    log.warning('unknown sequence detected! id=%s, sequence=%s', record.id, record.seq)
-    cdss = list(cdss.values())
-
-    # merge matching partial features on sequence edges
-    for partial_cdss in partial_cdss_per_contig.values():
-        if(len(partial_cdss) >= 2):  # skip unpaired edge features
-            first_partial_cds = partial_cdss[0]  # first partial CDS per contig
-            last_partial_cds = partial_cdss[-1]  # last partial CDS per contig
-            # check if partial CDSs are on same strand and have opposite truncated edges
-            # and firtst starts at 1 and last ends at contig end (length)
-            if(first_partial_cds['strand'] == last_partial_cds['strand']
-                and first_partial_cds['truncated'] != last_partial_cds['truncated']
-                and first_partial_cds['start'] == 1
-                and last_partial_cds['stop'] == sequences[last_partial_cds['contig']]['length']
-                and sequences[first_partial_cds['contig']]['topology'] == bc.TOPOLOGY_CIRCULAR):
-                cds = last_partial_cds
-                cds['stop'] = first_partial_cds['stop']
-                if(last_partial_cds['truncated'] == bc.FEATURE_END_3_PRIME):
-                    aa = last_partial_cds['aa'] + first_partial_cds['aa']  # merge sequence
-                else:
-                    aa = first_partial_cds['aa'] + last_partial_cds['aa']  # merge sequence
-                    cds['start_type'] = first_partial_cds['start_type']
-                    cds['rbs_motif'] = first_partial_cds['rbs_motif']
-                log.debug(f'trunc seq: seq-start={aa[:10]}, seq-end={aa[-10:]}')
-
-                cds['edge'] = True  # mark CDS as edge feature
-                cds.pop('truncated')
-
-                cds['aa'] = aa
-                cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
-                cdss.append(cds)
-                log.info(
-                    'edge CDS: contig=%s, start=%i, stop=%i, strand=%s, frame=%s, start-type=%s, RBS-motif=%s, aa-hexdigest=%s, aa=[%s..%s]',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame'], cds['start_type'], cds['rbs_motif'], cds['aa_hexdigest'], aa[:10], aa[-10:]
-                )
-                partial_cdss = partial_cdss[1:-1]
-        for partial_cds in partial_cdss:
-            cdss.append(partial_cds)
+                aa = first_partial_cds['aa'] + last_partial_cds['aa']  # merge sequence
+                cds['start_type'] = first_partial_cds['start_type']
+                cds['rbs_motif'] = first_partial_cds['rbs_motif']
+            log.debug(f'trunc seq: seq-start={aa[:10]}, seq-end={aa[-10:]}')
+            cds['edge'] = True  # mark CDS as edge feature
+            cds.pop('truncated')
+            cds['aa'] = aa
+            cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
+            cdss_per_sequence.append(cds)
             log.info(
-                'truncated CDS: contig=%s, start=%i, stop=%i, strand=%s, frame=%s, truncated=%s, start-type=%s, RBS-motif=%s, aa-hexdigest=%s, aa=[%s..%s]',
-                partial_cds['contig'], partial_cds['start'], partial_cds['stop'], partial_cds['strand'], partial_cds['frame'], partial_cds['truncated'], partial_cds['start_type'], partial_cds['rbs_motif'], partial_cds['aa_hexdigest'], partial_cds['aa'][:10], partial_cds['aa'][-10:]
+                'edge CDS: contig=%s, start=%i, stop=%i, strand=%s, frame=%s, start-type=%s, RBS-motif=%s, aa-hexdigest=%s, aa=[%s..%s]',
+                cds['contig'], cds['start'], cds['stop'], cds['strand'], cds['frame'], cds['start_type'], cds['rbs_motif'], cds['aa_hexdigest'], aa[:10], aa[-10:]
             )
-
-    contigs = {c['id']: c for c in genome['contigs']}
-    for cds in cdss:  # extract nt sequences
-        contig = contigs[cds['contig']]
+            partial_cdss_per_sequence = partial_cdss_per_sequence[1:-1]  # remove first/last partial CDS
+    for partial_cds in partial_cdss_per_sequence:
+        cdss_per_sequence.append(partial_cds)
+        log.info(
+            'truncated CDS: contig=%s, start=%i, stop=%i, strand=%s, frame=%s, truncated=%s, start-type=%s, RBS-motif=%s, aa-hexdigest=%s, aa=[%s..%s]',
+            partial_cds['contig'], partial_cds['start'], partial_cds['stop'], partial_cds['strand'], partial_cds['frame'], partial_cds['truncated'], partial_cds['start_type'], partial_cds['rbs_motif'], partial_cds['aa_hexdigest'], partial_cds['aa'][:10], partial_cds['aa'][-10:]
+        )
+    for cds in cdss_per_sequence:  # extract nt sequences
         nt = bu.extract_feature_sequence(cds, contig)
         cds['nt'] = nt
         log.info(
             'contig=%s, start=%i, stop=%i, strand=%s, nt=[%s..%s]',
             cds['contig'], cds['start'], cds['stop'], cds['strand'], nt[:10], nt[-10:]
         )
-    return cdss
-
-
-def split_gff_annotation(annotation_string: str) -> Dict[str, str]:
-    annotations = {}
-    for expr in annotation_string.split(';'):
-        if(expr != ''):
-            try:
-                key, value = expr.split('=')
-                annotations[key] = value
-            except:
-                log.error('expr=%s', expr)
-    return annotations
+    return cdss_per_sequence
 
 
 def predict_pfam(cdss: Sequence[dict]) -> Sequence[dict]:
