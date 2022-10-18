@@ -658,6 +658,7 @@ Bakta is *standing on the shoulder of giants* taking advantage of many great sof
 - HMMER <https://doi.org/10.1371/journal.pcbi.1002195>
 - AMRFinderPlus <https://doi.org/10.1038/s41598-021-91456-0>
 - DeepSig <https://doi.org/10.1093/bioinformatics/btx818>
+- Circos <https://doi.org/10.1101/gr.092759.109>
 
 ### Databases
 

@@ -48,6 +48,7 @@ DEPENDENCY_DIAMOND = (Version(2, 0, 14), Version(VERSION_MAX_DIGIT, VERSION_MAX_
 DEPENDENCY_DEEPSIG = (Version(1, 2, 5), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('deepsig', '--version'), ['--gram ?'])
 DEPENDENCY_BLASTN = (Version(2, 12, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('blastn', '-version'), ['--skip-ori'])
 DEPENDENCY_AMRFINDERPLUS = (Version(3, 10, 23), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('amrfinder', '--version'), ['--skip-cds'])
+DEPENDENCY_CIRCOS = (Version(0, 69, 8), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('circos', '--version'), [])
 
 
 def init_parser(sub_command: str=''):
@@ -244,6 +245,8 @@ def test_dependencies():
 
     if(cfg.skip_ori is not None and cfg.skip_ori is False):
         test_dependency(DEPENDENCY_BLASTN)
+    
+    test_dependency(DEPENDENCY_CIRCOS)
 
 
 def create_locus_tag_prefix(contigs: Sequence[dict], length: int=6) -> str:
