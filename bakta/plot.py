@@ -1,44 +1,47 @@
-import os
 import json
-import yaml
-import tempfile
-import sys
 import logging
+import os
 import subprocess as sp
+import sys
+import tempfile
 
 from pathlib import Path
+
+import yaml
+
 from Bio import SeqUtils
 
 import bakta.utils as bu
 import bakta.config as cfg
 import bakta.constants as bc
 
+
 cog_colors = {
-    'J':	'#ff0000',	    # Translation, ribosomal structure and biogenesis
-    'A':	'#c2af58',	    # RNA processing and modification
-    'K':	'#ff9900',	    # Transcription
-    'L':	'#ffff00',	    # Replication, recombination and repair
-    'B':	'#ffc600',	    # Chromatin structure and dynamics
-    'D':	'#99ff00',	    # Cell cycle control, cell division, chromosome partitioning
-    'Y':	'#493126',	    # Nuclear structure
-    'V':	'#ff008a',	    # Defense mechanisms
-    'T':	'#0000ff',	    # Signal transduction mechanisms
-    'M':	'#9ec928',	    # Cell wall/membrane/envelope biogenesis
-    'N':	'#006633',	    # Cell motility
-    'Z':	'#660099',	    # Cytoskeleton
-    'W':	'#336699',	    # Extracellular structures
-    'U':	'#33cc99',	    # Intracellular trafficking, secretion, and vesicular transport
-    'O':	'#00ffff',	    # Posttranslational modification, protein turnover, chaperones
-    'C':	'#9900ff',	    # Energy production and conversion
-    'G':	'#805642',	    # Carbohydrate transport and metabolism
-    'E':	'#ff00ff',	    # Amino acid transport and metabolism
-    'F':	'#99334d',	    # Nucleotide transport and metabolism
-    'H':	'#727dcc',	    # Coenzyme transport and metabolism
-    'I':	'#5c5a1b',	    # Lipid transport and metabolism
-    'P':	'#0099ff',	    # Inorganic ion transport and metabolism
-    'Q':	'#ffcc99',	    # Secondary metabolites biosynthesis, transport and catabolism
-    'R':	'#ff9999',	    # General function prediction only
-    'S':	'#d6aadf'	    # Function unknown
+    'J': '#ff0000',  # Translation, ribosomal structure and biogenesis
+    'A': '#c2af58',  # RNA processing and modification
+    'K': '#ff9900',  # Transcription
+    'L': '#ffff00',  # Replication, recombination and repair
+    'B': '#ffc600',  # Chromatin structure and dynamics
+    'D': '#99ff00',  # Cell cycle control, cell division, chromosome partitioning
+    'Y': '#493126',  # Nuclear structure
+    'V': '#ff008a',  # Defense mechanisms
+    'T': '#0000ff',  # Signal transduction mechanisms
+    'M': '#9ec928',  # Cell wall/membrane/envelope biogenesis
+    'N': '#006633',  # Cell motility
+    'Z': '#660099',  # Cytoskeleton
+    'W': '#336699',  # Extracellular structures
+    'U': '#33cc99',  # Intracellular trafficking, secretion, and vesicular transport
+    'O': '#00ffff',  # Posttranslational modification, protein turnover, chaperones
+    'C': '#9900ff',  # Energy production and conversion
+    'G': '#805642',  # Carbohydrate transport and metabolism
+    'E': '#ff00ff',  # Amino acid transport and metabolism
+    'F': '#99334d',  # Nucleotide transport and metabolism
+    'H': '#727dcc',  # Coenzyme transport and metabolism
+    'I': '#5c5a1b',  # Lipid transport and metabolism
+    'P': '#0099ff',  # Inorganic ion transport and metabolism
+    'Q': '#ffcc99',  # Secondary metabolites biosynthesis, transport and catabolism
+    'R': '#ff9999',  # General function prediction only
+    'S': '#d6aadf'	 #  Function unknown
     }
 
 
@@ -46,21 +49,15 @@ def main():
     # parse options and arguments
     parser = bu.init_parser(sub_command='_plot')
     parser.add_argument('input', metavar='<input>', help='Bakta-Annotation in JSON-Format')
-    parser.add_argument('--conf', '-c', action='store', default=None, dest='conf',
-                        help='YAML configuration file for plot configuration')
+    parser.add_argument('--conf', '-c', action='store', default=None, dest='conf', help='YAML configuration file for plot configuration')
+    
     arg_group_io = parser.add_argument_group('Input / Output')
-    arg_group_io.add_argument('--output', '-o', action='store', default=os.getcwd(),
-                              help='Output directory (default = current working directory)')
-    arg_group_io.add_argument('--tmp_dir', '-t', action='store', default=Path(tempfile.mkdtemp()).resolve(),
-                              help='Config directory (default = temporary directory')
-    arg_group_io.add_argument('--prefix', '-p', action='store', default='Plot',
-                              help='Prefix for output files')
+    arg_group_io.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
+    arg_group_io.add_argument('--tmp_dir', '-t', action='store', default=Path(tempfile.mkdtemp()).resolve(), help='Config directory (default = temporary directory')
+    arg_group_io.add_argument('--prefix', '-p', action='store', default='Plot', help='Prefix for output files')
 
     arg_group_plot = parser.add_argument_group('Plotconfiguration')
     arg_group_plot.add_argument('--plot', '-pl', action='store', default=None, nargs='+', help='...work in progress...')
-
-
-
     args = parser.parse_args()
 
     log = logging.getLogger('PLOT')
@@ -114,16 +111,7 @@ def main():
     if args.plot is None:
         plot_name = '_all_sequences'
         print('drawing plot')
-        write_plot(features,
-                   contigs,
-                   args.output,
-                   args.tmp_dir,
-                   plot_name,
-                   args.prefix,
-                   pgcc,
-                   ngcc,
-                   pgcs,
-                   ngcs)
+        write_plot(features, contigs, args.output, args.tmp_dir, plot_name, args.prefix, pgcc, ngcc, pgcs, ngcs)
         print('plot has been drawn!')
 
     # write plot according to plot configuration
@@ -137,16 +125,7 @@ def main():
                     plot_contig = [contig]
                     plot_nr = f'_{plot_count}'
                     print(f'drawing plot{plot_nr}')
-                    write_plot(features,
-                               plot_contig,
-                               args.output,
-                               args.tmp_dir,
-                               plot_nr,
-                               args.prefix,
-                               pgcc,
-                               ngcc,
-                               pgcs,
-                               ngcs)
+                    write_plot(features, plot_contig, args.output, args.tmp_dir, plot_nr, args.prefix, pgcc, ngcc, pgcs, ngcs)
                     plot_count += 1
 
             p = p.split('/')
@@ -161,38 +140,15 @@ def main():
                 for x in p:
                     plot_nr += f'_{x}'
                 print(f'drawing plot{plot_nr}')
-                write_plot(features,
-                           plot_contig,
-                           args.output,
-                           args.tmp_dir,
-                           plot_nr,
-                           args.prefix,
-                           pgcc,
-                           ngcc,
-                           pgcs,
-                           ngcs)
+                write_plot(features, plot_contig, args.output, args.tmp_dir, plot_nr, args.prefix, pgcc, ngcc, pgcs, ngcs)
         print('all plots are finished!')
 
 
-
-
-def write_plot(features,
-               contigs,
-               outdir,
-               config_dir=None,
-               plot_nr='',
-               prefix=None,
-               p_gc_content_color='#CC6458',
-               n_gc_content_color='#43CC85',
-               p_gc_skew_color='#CCBE6C',
-               n_gc_skew_color='#5A4ECC'):
-    #######################
-    # Define Variables
-    #######################
+def write_plot(features, contigs, outdir, config_dir=None, plot_nr='', prefix=None, p_gc_content_color='#CC6458', n_gc_content_color='#43CC85', p_gc_skew_color='#CCBE6C', n_gc_skew_color='#5A4ECC'):
     if prefix is None:
         prefix = cfg.prefix
     added_sequence_length = 0
-    added_sequences = ""
+    added_sequences = ''
     for c in contigs:
         added_sequence_length += int(c['length'])
         added_sequences += c['sequence']
@@ -211,9 +167,7 @@ def write_plot(features,
         label_prefix = 'mb'
         multiplier = 0.000001
 
-    ###########################
-    # Config Paths
-    ###########################
+    # config paths
     if config_dir is None:
         config_dir = cfg.tmp_path.joinpath(f'circos_config_files')
     Path(config_dir).mkdir(parents=True, exist_ok=True)
@@ -229,12 +183,10 @@ def write_plot(features,
     gc_content_file = f'{config_dir}/gc_content.txt'
     gc_skew_file = f'{config_dir}/gc_skew.txt'
 
-    #####################
     # write feature files
-    #####################
-    f_cds_contents = ""
-    r_cds_contents = ""
-    nc_contents = ""
+    f_cds_contents = ''
+    r_cds_contents = ''
+    nc_contents = ''
     for f in features:
         contig, start, stop, color = f['contig'], f['start'], f['stop'], '#888888'
         if f['type'] == 'cds':
@@ -262,11 +214,9 @@ def write_plot(features,
     with open(nc_file, 'w') as f:
         f.write(nc_contents)
 
-    #####################################
     # write gc content unf gc skew files
-    #####################################
-    gc_content_text = ""
-    gc_skew_text = ""
+    gc_content_text = ''
+    gc_skew_text = ''
     max_gc_content = 0
     max_gc_skew = 0
     gc_mean = SeqUtils.GC(added_sequences)
@@ -275,7 +225,6 @@ def write_plot(features,
         step_size = int(step_size)
         window_size = int(window_size)
         for w in range(0, len(seq), step_size):
-
             start = w - (window_size / 2)
             start = start + len(seq) if start < 0 else start
             stop = w + (window_size / 2)
@@ -306,9 +255,6 @@ def write_plot(features,
     with open(gc_skew_file, 'w') as f:
         f.write(gc_skew_text)
 
-    ##############################
-    # write configurationfiles
-    ##############################
     # write main config
     chromosomes_units = round(added_sequence_length/(10**(len(str(added_sequence_length)) - 1)))*(10**(len(str(added_sequence_length)) - 1))
     main_config_text = f'''
@@ -331,7 +277,7 @@ def write_plot(features,
     with open(main_conf, 'w') as f:
         f.write(main_config_text)
 
-    # write_karyotype_file
+    # write karyotype file
     karyotype_text = ""
     for i, c in enumerate(contigs):
         color = f'#{khp(str(hex(0x69 + (i%6)*0x28)))+khp(str(hex(0x69 + (i%6)*0x28)))+khp(str(hex(0x69 + (i%6)*0x28)))}'
@@ -339,7 +285,7 @@ def write_plot(features,
     with open(karyotype_txt, 'w') as f:
         f.write(karyotype_text)
 
-    # write_ideogram_config():
+    # write ideogram config
     ideogram_text = '''
     <ideogram>
     <spacing>
@@ -353,7 +299,7 @@ def write_plot(features,
     with open(ideogram_conf, 'w') as f:
         f.write(ideogram_text)
 
-    # write_ticks_config:
+    # write ticks config:
     ticks_text = f'''
     show_ticks       = yes
     show_tick_labels = yes       
@@ -390,8 +336,8 @@ def write_plot(features,
     with open(ticks_conf, 'w') as f:
         f.write(ticks_text)
 
-    # write trackconfiguration
-    tracks_text = ""
+    # write track configuration
+    tracks_text = ''
     feature_files = [f_cds_file, r_cds_file, nc_file]
     for feature in feature_files:
         tracks_text += f'''
@@ -428,15 +374,12 @@ def write_plot(features,
         orientation = out
         </plot>    
         '''
-
         track_radius -= gc_radius
     with open(tracks_conf, 'w') as f:
         f.write(tracks_text)
-    #############
+    
     # run Circos
-    #############
     sp.run(['circos', '-conf', main_conf], stdout=sp.DEVNULL, stderr=sp.STDOUT)
-    #control output
     if Path(f'{outdir}/{prefix}{plot_nr}.png').is_file():
         pass
     else:
