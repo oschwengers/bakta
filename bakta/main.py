@@ -530,8 +530,7 @@ def main():
     fasta.write_faa(features, faa_path)
 
     print('\tplot...')
-    plot_path = cfg.output_path
-    plot.write_plot(features, contigs, plot_path)
+    plot.write_plot(features, contigs, cfg.output_path)
 
     if(cfg.skip_cds is False):
         hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
