@@ -158,10 +158,7 @@ def write_plot(features, contigs, output_path, plot_name_suffix='', positive_gc_
     step_size = int(window_size * 0.2) if window_size >= 5 else 1
     track_radius = 1.0
     gc_radius = 0.2
-    if sequence_length > 10_000_000:
-        label_prefix = 'mbp'
-        multiplier = 0.000001
-    elif sequence_length > 100_000:
+    if sequence_length > 10_000:
         label_prefix = 'kbp'
         multiplier = 0.001
     else:
