@@ -203,12 +203,15 @@ def write_plot(features, contigs, output_path, plot_name_suffix='', positive_gc_
     cds_plus_path = circos_path.joinpath('cds-plus.txt')
     with cds_plus_path.open('w') as fh:
         fh.write('\n'.join(cds_plus_features))
+        fh.write('\n')
     cds_minus_path = circos_path.joinpath('cds-minus.txt')
     with cds_minus_path.open('w') as fh:
         fh.write('\n'.join(cds_minus_features))
+        fh.write('\n')
     nc_path = circos_path.joinpath('nc.txt')
     with nc_path.open('w') as fh:
         fh.write('\n'.join(noncoding_features))
+        fh.write('\n')
 
     # write gc content unf gc skew files
     gc_contents = []
@@ -248,9 +251,11 @@ def write_plot(features, contigs, output_path, plot_name_suffix='', positive_gc_
     gc_content_path = circos_path.joinpath('gc_content.txt')
     with gc_content_path.open('w') as fh:
         fh.write('\n'.join(gc_contents))
+        fh.write('\n')
     gc_skew_path = circos_path.joinpath('gc_skew.txt')
     with gc_skew_path.open('w') as fh:
         fh.write('\n'.join(gc_skews))
+        fh.write('\n')
 
     # write main config
     karyotype_path = circos_path.joinpath('karyotype.txt')
@@ -260,25 +265,26 @@ def write_plot(features, contigs, output_path, plot_name_suffix='', positive_gc_
     chromosomes_units = round(sequence_length/(10**(len(str(sequence_length)) - 1)))*(10**(len(str(sequence_length)) - 1))
     file_name = f'{cfg.prefix}_{plot_name_suffix}' if plot_name_suffix != '' else cfg.prefix
     main_config_text = f'''
-    karyotype                   = {karyotype_path}
-    chromosomes_units           = {chromosomes_units}
-    chromosomes_display_default = yes
-    <plots>
-    <<include {tracks_path}>>
-    </plots>
-    <image>
-    <<include image.conf>>
-    file*                       = {file_name}
-    dir*                        = {output_path}
-    </image> 
-    <<include {ideogram_path}>>
-    <<include {ticks_path}>>
-    <<include etc/colors_fonts_patterns.conf>>
-    <<include etc/housekeeping.conf>>
+karyotype                   = {karyotype_path}
+chromosomes_units           = {chromosomes_units}
+chromosomes_display_default = yes
+<plots>
+<<include {tracks_path}>>
+</plots>
+<image>
+<<include image.conf>>
+file*                       = {file_name}
+dir*                        = {output_path}
+</image> 
+<<include {ideogram_path}>>
+<<include {ticks_path}>>
+<<include etc/colors_fonts_patterns.conf>>
+<<include etc/housekeeping.conf>>
     '''
     main_conf = circos_path.joinpath('main.conf')
     with main_conf.open('w') as fh:
         fh.write(main_config_text)
+        fh.write('\n')
 
     # write karyotype file
     karyotypes = []
@@ -286,76 +292,79 @@ def write_plot(features, contigs, output_path, plot_name_suffix='', positive_gc_
         karyotypes.append(f"chr - {c['id']} {i + 1} 0 {c['length']} {hex_to_rgb(BACKBONE_COLOR)}")
     with karyotype_path.open('w') as fh:
         fh.write('\n'.join(karyotypes))
+        fh.write('\n')
 
     # write ideogram config
     ideogram_text = '''
-    <ideogram>
-    <spacing>
-    default = 0.01r
-    </spacing>
-    radius           = 0.85r
-    thickness        = 5p
-    fill             = yes
-    </ideogram>
+<ideogram>
+<spacing>
+default     = 0.01r
+</spacing>
+radius      = 0.85r
+thickness   = 5p
+fill        = yes
+</ideogram>
     '''
     with ideogram_path.open('w') as fh:
         fh.write(ideogram_text)
+        fh.write('\n')
 
     # write ticks config:
     ticks_text = f'''
-    show_ticks       = yes
-    show_tick_labels = yes       
-    <ticks>
-    label_separation = 20p
-    tick_separation      = 2p 
-    radius      = 1r
-    color       = black
-    thickness    = 4p
-    label_offset = 10p
-    multiplier  = {multiplier}
-    orientation = out
-    format      = %d {label_prefix}
-    <tick>
-    spacing      = 0.1u
-    show_label   = yes
-    label_size   = 40   
-    size         = 25p
-    thickness    = 4p
-    </tick>
-    <tick>
-    spacing      = 0.025u
-    show_label   = yes
-    label_size   = 20
-    size         = 15p
-    thickness    = 3p
-    </tick>
-    <tick>
-    spacing      = 0.0025u
-    size         = 5p
-    </tick>
-    </ticks>
+show_ticks       = yes
+show_tick_labels = yes       
+<ticks>
+label_separation = 20p
+tick_separation  = 2p 
+radius           = 1r
+color            = black
+thickness        = 4p
+label_offset     = 10p
+multiplier       = {multiplier}
+orientation      = out
+format           = %d {label_prefix}
+<tick>
+spacing          = 0.1u
+show_label       = yes
+label_size       = 40   
+size             = 25p
+thickness        = 4p
+</tick>
+<tick>
+spacing          = 0.025u
+show_label       = yes
+label_size       = 20
+size             = 15p
+thickness        = 3p
+</tick>
+<tick>
+spacing          = 0.0025u
+size             = 5p
+</tick>
+</ticks>
     '''
     with ticks_path.open('w') as fh:
         fh.write(ticks_text)
+        fh.write('\n')
 
     # write track configuration
     track_texts = []
     for feature in [cds_plus_path, cds_minus_path, nc_path]:
         track_text = f'''
-        <plot>
-        type             = tile
-        file             = {feature}
-        r1               = {track_radius}r
-        r0               = {track_radius - 0.1}r
-        orientation      = out
-        layers           = 1
-        margin           = 0.01u
-        thickness        = 100
-        padding          = 1
-        stroke_color     = black
-        stroke_thickness = 0
-        layers_overflow  = collapse
-        </plot>
+<plot>
+type             = tile
+file             = {feature}
+r1               = {track_radius}r
+r0               = {track_radius - 0.1}r
+orientation      = out
+layers           = 1
+margin           = 0.01u
+thickness        = 100
+padding          = 1
+stroke_color     = black
+stroke_thickness = 0
+layers_overflow  = collapse
+</plot>
         '''
         track_texts.append(track_text)
         track_radius -= 0.1
@@ -363,23 +372,24 @@ def write_plot(features, contigs, output_path, plot_name_suffix='', positive_gc_
         maximum = max_gc_content if gc_path == gc_content_path else max_gc_skew
         minimum = -maximum
         track_text = f'''
-        <plot>
-        type = histogram
-        file = {gc_path}
-        r1 = {track_radius}r
-        r0 = {track_radius-gc_radius}r
-        min = {minimum}
-        max = {maximum}
-        thickness = 0
-        orientation = out
-        </plot>    
+<plot>
+type        = histogram
+file        = {gc_path}
+r1          = {track_radius}r
+r0          = {track_radius-gc_radius}r
+min         = {minimum}
+max         = {maximum}
+thickness   = 0
+orientation = out
+</plot>    
         '''
         track_texts.append(track_text)
         track_radius -= gc_radius
     with tracks_path.open('w') as fh:
         fh.write('\n'.join(track_texts))
+        fh.write('\n')
     
-    # run Circos
+    # execute Circos
     cmd = [
         'circos',
         '-conf',
@@ -397,13 +407,6 @@ def write_plot(features, contigs, output_path, plot_name_suffix='', positive_gc_
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('Circos failed! circos-error-code=%d', proc.returncode)
         raise Exception(f'circos error! error code: {proc.returncode}')
-
-
-    # if Path(f'{output_path}/{cfg.prefix}{plot_nr}.png').is_file():
-    #     pass
-    # else:
-    #     print('ERROR: Circos failed to draw your image! Please check your installation!')
-    # return
 
 
 def hex_to_rgb(hex_string):
