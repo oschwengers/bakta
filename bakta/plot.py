@@ -46,13 +46,12 @@ COG_COLORS = {
     'R': '#ff9999',  # General function prediction only
     'S': '#d6aadf'	 # Function unknown
     }
-
 COG_DEFAULT_COLOR = '#000000'
-
 POSITIVE_GC_COLOR = '#CC6458'
 NEGATIVE_GC_COLOR = '#43CC85'
 POSITIVE_GC_SKEW_COLOR = '#CCBE6C'
 NEGATIVE_GC_SKEW_COLOR = '#5A4ECC'
+BACKBONE_COLOR = '#000000'
 
 
 log = logging.getLogger('PLOT')
@@ -291,8 +290,7 @@ def write_plot(features, contigs, output_path, plot_nr='', positive_gc_color=POS
     # write karyotype file
     karyotypes = []
     for i, c in enumerate(contigs):
-        color = f'#{str(hex(0x69 + (i%6)*0x28))[2:]}{str(hex(0x69 + (i%6)*0x28))[2:]}{str(hex(0x69 + (i%6)*0x28))[2:]}'
-        karyotypes.append(f"chr - {c['id']} {i + 1} 0 {c['length']} {hex_to_rgb(color)}")
+        karyotypes.append(f"chr - {c['id']} {i + 1} 0 {c['length']} {hex_to_rgb(BACKBONE_COLOR)}")
     with karyotype_path.open('w') as fh:
         fh.write('\n'.join(karyotypes))
 
