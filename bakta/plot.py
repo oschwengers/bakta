@@ -321,7 +321,7 @@ def write_plot(features, contigs, output_path, plot_nr='', positive_gc_color=POS
     label_offset = 10p
     multiplier  = {multiplier}
     orientation = out
-    format      = %d{label_prefix}
+    format      = %d {label_prefix}
     <tick>
     spacing      = 0.1u
     show_label   = yes
