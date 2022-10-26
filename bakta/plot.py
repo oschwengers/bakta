@@ -17,7 +17,8 @@ import bakta.config as cfg
 import bakta.constants as bc
 
 
-NT_FEATURE_COLOR = '#888888'
+NT_FEATURE_COLOR = '#666666'
+CDS_FEATURE_COLOR = '#cccccc'
 
 COG_COLORS = {
     'J': '#ff0000',  # Translation, ribosomal structure and biogenesis
@@ -179,19 +180,20 @@ def write_plot(features, contigs, output_path, plot_name_suffix='', positive_gc_
     cds_plus_features = []
     cds_minus_features = []
     noncoding_features = []
+    contig_ids = set([c['id'] for c in contigs])
     for feat in features:
+        if feat['contig'] not in contig_ids:
+            continue
         contig, start, stop, color = feat['contig'], feat['start'], feat['stop'], NT_FEATURE_COLOR
-        if feat['type'] == 'cds':
+        if feat['type'] == bc.FEATURE_CDS:
             psc = feat.get('psc', None)
-            if psc is None:
-                continue
-            cog = psc.get('cog_category', None)
-            if cog is None:
-                continue
-            if len(cog) != 1:
-                cog = cog[:1]
-            color = COG_COLORS.get(cog, COG_DEFAULT_COLOR)
-            
+            color = CDS_FEATURE_COLOR
+            if psc is not None:
+                cog = psc.get('cog_category', None)
+                if cog is not None:
+                    if len(cog) != 1:
+                        cog = cog[:1]
+                    color = COG_COLORS.get(cog.upper(), COG_DEFAULT_COLOR)
             if feat['strand'] == bc.STRAND_FORWARD:
                 cds_plus_features.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
             else:
