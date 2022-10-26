@@ -66,10 +66,10 @@ def main():
     
     arg_group_io = parser.add_argument_group('Input / Output')
     arg_group_io.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
-    arg_group_io.add_argument('--prefix', '-p', action='store', default='Plot', help='Prefix for output files')
+    arg_group_io.add_argument('--prefix', '-p', action='store', default=None, help='Prefix for output files')
 
     arg_group_plot = parser.add_argument_group('Plotting')
-    arg_group_plot.add_argument('--plots', action='store', default='all', nargs='+', help='Sequences to plot: no or name (default = all))')
+    arg_group_plot.add_argument('--sequences', action='store', default='all', help='Sequences to plot: comma separated number or name (default = all, numbers one-based))')
 
     arg_group_general = parser.add_argument_group('Runtime & auxiliary options')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
@@ -82,7 +82,7 @@ def main():
     ############################################################################
     # Setup logging
     ############################################################################
-    cfg.prefix = args.prefix if args.prefix else Path(args.genome).stem
+    cfg.prefix = args.prefix if args.prefix else Path(args.input).stem
     output_path = cfg.check_output_path(args)
     
     bu.setup_logger(output_path, cfg.prefix, args)
@@ -132,38 +132,25 @@ def main():
     positive_gc_skew_color = config.get('pgcs', POSITIVE_GC_SKEW_COLOR)
     negative_gc_skew_color = config.get('ngcs', NEGATIVE_GC_SKEW_COLOR)
 
-    if args.plots == 'all':  # 
-        plot_name = '_all_sequences'
-        print('draw plot...')
-        write_plot(features, contigs, output_path, plot_name, positive_gc_color, negative_gc_color, positive_gc_skew_color, negative_gc_skew_color)
-    else:  # write plot according to plot configuration
-        for p in args.plots:
-            contig_selection = False
-            if 'all' in p:
-                plot_count = 1
-                for contig in contigs:
-                    plot_contig = [contig]
-                    plot_nr = f'_{plot_count}'
-                    print(f'draw plot{plot_nr}...')
-                    write_plot(features, plot_contig, output_path, plot_nr, positive_gc_color, negative_gc_color, positive_gc_skew_color, negative_gc_skew_color)
-                    plot_count += 1
-
-            p = p.split('/')
-            plot_contig = []
-            for contig in contigs:
-                contig_nr = contig['id'][7:]
-                if contig_nr in p:
-                    plot_contig.append(contig)
-                    contig_selection = True
-            if contig_selection is True:
-                plot_nr = ''
-                for x in p:
-                    plot_nr += f'_{x}'
-                print(f'draw plot{plot_nr}...')
-                write_plot(features, plot_contig, output_path, plot_nr, positive_gc_color, negative_gc_color, positive_gc_skew_color, negative_gc_skew_color)
+    if args.sequences == 'all':  # write whole genome plot
+        print('draw circular genome plot containing all sequences...')
+        write_plot(features, contigs, output_path, positive_gc_color, negative_gc_color, positive_gc_skew_color, negative_gc_skew_color)
+    else:  # write genome plot containing provided sequences only
+        plot_contigs = []
+        sequence_numbers = []
+        for selected_sequence in args.sequences.split(','):
+            for i, contig in enumerate(contigs):
+                sequence_no = str(i + 1)
+                if selected_sequence == sequence_no or selected_sequence.lower() == contig['id'].lower():
+                    plot_contigs.append(contig)
+                    sequence_numbers.append(sequence_no)
+        if len(plot_contigs) > 0:
+            print(f'draw circular genome plot containing sequences: {sequence_numbers}...')
+            plot_name_suffix = '_'.join(sequence_numbers)
+            write_plot(features, plot_contigs, output_path, plot_name_suffix, positive_gc_color, negative_gc_color, positive_gc_skew_color, negative_gc_skew_color)
 
 
-def write_plot(features, contigs, output_path, plot_nr='', positive_gc_color=POSITIVE_GC_COLOR, negative_gc_color=NEGATIVE_GC_COLOR, positive_gc_skew_color=POSITIVE_GC_SKEW_COLOR, negative_gc_skew_color=NEGATIVE_GC_SKEW_COLOR):
+def write_plot(features, contigs, output_path, plot_name_suffix='', positive_gc_color=POSITIVE_GC_COLOR, negative_gc_color=NEGATIVE_GC_COLOR, positive_gc_skew_color=POSITIVE_GC_SKEW_COLOR, negative_gc_skew_color=NEGATIVE_GC_SKEW_COLOR):
     sequence_length = sum([c['length'] for c in contigs])
     sequences = ''.join([c['sequence'] for c in contigs])
     window_size = int(sequence_length/100) if sequence_length < 10000 else int(sequence_length/1000)
@@ -266,6 +253,7 @@ def write_plot(features, contigs, output_path, plot_nr='', positive_gc_color=POS
     ticks_path = circos_path.joinpath('ticks.conf')
     tracks_path = circos_path.joinpath('tracks.conf')
     chromosomes_units = round(sequence_length/(10**(len(str(sequence_length)) - 1)))*(10**(len(str(sequence_length)) - 1))
+    file_name = f'{cfg.prefix}_{plot_name_suffix}' if plot_name_suffix != '' else cfg.prefix
     main_config_text = f'''
     karyotype                   = {karyotype_path}
     chromosomes_units           = {chromosomes_units}
@@ -275,7 +263,7 @@ def write_plot(features, contigs, output_path, plot_nr='', positive_gc_color=POS
     </plots>
     <image>
     <<include image.conf>>
-    file*                       = {cfg.prefix}{plot_nr}
+    file*                       = {file_name}
     dir*                        = {output_path}
     </image> 
     <<include {ideogram_path}>>
