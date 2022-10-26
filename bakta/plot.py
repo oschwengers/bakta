@@ -137,16 +137,19 @@ def main():
         write_plot(features, contigs, output_path, positive_gc_color, negative_gc_color, positive_gc_skew_color, negative_gc_skew_color)
     else:  # write genome plot containing provided sequences only
         plot_contigs = []
-        sequence_numbers = []
+        sequence_identifiers = []
         for selected_sequence in args.sequences.split(','):
             for i, contig in enumerate(contigs):
                 sequence_no = str(i + 1)
-                if selected_sequence == sequence_no or selected_sequence.lower() == contig['id'].lower():
+                if selected_sequence == sequence_no:
                     plot_contigs.append(contig)
-                    sequence_numbers.append(sequence_no)
+                    sequence_identifiers.append(sequence_no)
+                elif selected_sequence.lower() == contig['id'].lower():
+                    plot_contigs.append(contig)
+                    sequence_identifiers.append(contig['id'])
         if len(plot_contigs) > 0:
-            print(f'draw circular genome plot containing sequences: {sequence_numbers}...')
-            plot_name_suffix = '_'.join(sequence_numbers)
+            print(f'draw circular genome plot containing sequences: {sequence_identifiers}...')
+            plot_name_suffix = '_'.join(sequence_identifiers)
             write_plot(features, plot_contigs, output_path, plot_name_suffix, positive_gc_color, negative_gc_color, positive_gc_skew_color, negative_gc_skew_color)
 
 
