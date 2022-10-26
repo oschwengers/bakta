@@ -106,6 +106,9 @@ def main():
     cfg.check_tmp_path(args)
     bu.test_dependencies()
 
+    cfg.debug = args.debug
+    log.info('debug=%s', cfg.debug)
+
     if(cfg.debug):
         print(f"\nBakta runs in DEBUG mode! Temporary data will not be destroyed at: {cfg.tmp_path}")
     else:
