@@ -375,6 +375,7 @@ Workflow:
   --skip-sorf           Skip sORF detection & annotation
   --skip-gap            Skip gap detection & annotation
   --skip-ori            Skip oriC/oriT detection & annotation
+  --skip-plot           Skip generation of circular genome plots
 
 General:
   --help, -h            Show this help message and exit

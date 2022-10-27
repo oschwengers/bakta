@@ -529,8 +529,11 @@ def main():
     faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.faa')
     fasta.write_faa(features, faa_path)
 
-    print('\tplot...')
-    plot.write_plot(features, contigs, cfg.output_path)
+    if(cfg.skip_plot):
+        print('\tskip generation of circular genome plot...')
+    else:
+        print('\tcircular genome plot...')
+        plot.write_plot(features, contigs, cfg.output_path)
 
     if(cfg.skip_cds is False):
         hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
