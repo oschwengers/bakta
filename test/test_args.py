@@ -254,6 +254,8 @@ def test_proteins_failiing(parameters, tmpdir):
         (['--locus', ' ']),  # whitespace only
         (['--locus', '  ']),  # whitespaces only
         (['--locus', 'fo o']),  # containing whitespace
+        (['--locus', 'A123:#']),  # containing colon (incompatible with circos)
+        (['--locus', 'A123#']),  # containing pound (incompatible with circos)
         (['--locus', 'ABCDEFGHIJKLMNOPQRSTU'])  # more than 20 characters
     ]
 )
@@ -274,7 +276,7 @@ def test_locus_failiing(parameters, tmpdir):
     [
         (['--locus', 'ABC']),
         (['--locus', 'ABCDEFGHIJKLMNOPQRST']),
-        (['--locus', 'A123_.:*#-'])
+        (['--locus', 'A123_.*-'])
     ]
 )
 def test_locus_ok(parameters, tmpdir):
