@@ -115,18 +115,27 @@ def main():
     else:
         atexit.register(bu.cleanup, log, cfg.tmp_path)  # register cleanup exit hook
 
+    # load genome annotations
     with annotation_path.open('r') as fh:
         annotation = json.load(fh)
     features = annotation['features']
     contigs = annotation['sequences']
 
-    if args.config is not None:  # check and open configuration file
+    # check and open configuration file
+    if args.config is not None:
+        config_path = None
         try:
-            with open(args.config) as conf:
-                config = yaml.load(conf, Loader=yaml.FullLoader)
-        except FileNotFoundError:
-            log.error(f'configuration file not found!, {args.config}')
-            sys.exit(f'ERROR: please check your selected configuration file!, {args.config}')
+            if(args.config == ''):
+                raise ValueError('File path argument must be non-empty')
+            config_path = Path(args.config).resolve()
+            cfg.check_readability('config', config_path)
+            cfg.check_content_size('config', config_path)
+            log.info('config=%s', config_path)
+            with config_path.open() as fh:
+                config = yaml.load(fh, Loader=yaml.FullLoader)
+        except:
+            log.error('provided config file not valid! path=%s', args.config)
+            sys.exit(f'ERROR: config file ({args.config}) not valid!')
     else:
         config = {}
 
