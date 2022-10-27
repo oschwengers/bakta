@@ -46,7 +46,7 @@ COG_COLORS = {
     'Q': '#ffcc99',  # Secondary metabolites biosynthesis, transport and catabolism
     'R': '#ff9999',  # General function prediction only
     'S': '#d6aadf'	 # Function unknown
-    }
+}
 COG_DEFAULT_COLOR = '#000000'
 POSITIVE_GC_COLOR = '#CC6458'
 NEGATIVE_GC_COLOR = '#43CC85'
@@ -157,7 +157,7 @@ def main():
             write_plot(features, plot_contigs, output_path, plot_name_suffix, positive_gc_color, negative_gc_color, positive_gc_skew_color, negative_gc_skew_color)
 
 
-def write_plot(features, contigs, output_path, plot_name_suffix='', positive_gc_color=POSITIVE_GC_COLOR, negative_gc_color=NEGATIVE_GC_COLOR, positive_gc_skew_color=POSITIVE_GC_SKEW_COLOR, negative_gc_skew_color=NEGATIVE_GC_SKEW_COLOR):
+def write_plot(features, contigs, output_path, plot_name_suffix=None, positive_gc_color=POSITIVE_GC_COLOR, negative_gc_color=NEGATIVE_GC_COLOR, positive_gc_skew_color=POSITIVE_GC_SKEW_COLOR, negative_gc_skew_color=NEGATIVE_GC_SKEW_COLOR):
     sequence_length = sum([c['length'] for c in contigs])
     sequences = ''.join([c['sequence'] for c in contigs])
     window_size = int(sequence_length/100) if sequence_length < 10000 else int(sequence_length/1000)
@@ -184,10 +184,10 @@ def write_plot(features, contigs, output_path, plot_name_suffix='', positive_gc_
     for feat in features:
         if feat['contig'] not in contig_ids:
             continue
-        contig, start, stop, color = feat['contig'], feat['start'], feat['stop'], NT_FEATURE_COLOR
+        contig, start, stop = feat['contig'], feat['start'], feat['stop']
         if feat['type'] == bc.FEATURE_CDS:
-            psc = feat.get('psc', None)
             color = CDS_FEATURE_COLOR
+            psc = feat.get('psc', None)
             if psc is not None:
                 cog = psc.get('cog_category', None)
                 if cog is not None:
@@ -199,7 +199,7 @@ def write_plot(features, contigs, output_path, plot_name_suffix='', positive_gc_
             else:
                 cds_minus_features.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
         else:
-            noncoding_features.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
+            noncoding_features.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(NT_FEATURE_COLOR)}")
     cds_plus_path = circos_path.joinpath('cds-plus.txt')
     with cds_plus_path.open('w') as fh:
         fh.write('\n'.join(cds_plus_features))
@@ -263,7 +263,7 @@ def write_plot(features, contigs, output_path, plot_name_suffix='', positive_gc_
     ticks_path = circos_path.joinpath('ticks.conf')
     tracks_path = circos_path.joinpath('tracks.conf')
     chromosomes_units = round(sequence_length/(10**(len(str(sequence_length)) - 1)))*(10**(len(str(sequence_length)) - 1))
-    file_name = f'{cfg.prefix}_{plot_name_suffix}' if plot_name_suffix != '' else cfg.prefix
+    file_name = f'{cfg.prefix}_{plot_name_suffix}' if plot_name_suffix is not None else cfg.prefix
     main_config_text = f'''
 karyotype                   = {karyotype_path}
 chromosomes_units           = {chromosomes_units}
