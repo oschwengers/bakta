@@ -13,7 +13,9 @@ FILES = [
     'test.gbff',
     'test.embl',
     'test.fna',
-    'test.faa'
+    'test.faa',
+    'test.png',
+    'test.svg'
 ]
 
 SKIP_PARAMETERS = [
