@@ -1,0 +1,42 @@
+colors:
+  backbone: "#000000"
+  gc-positive: "#33a02c"
+  gc-negative: "#e31a1c"
+  gc-skew-positive: "#fdbf6f"
+  gc-skew-negative: "#1f78b4"
+  features:
+    cds: "#cccccc"
+    trna: "#b2df8a"
+    rrna: "#fb8072"
+    ncrna: "#fdb462"
+    ncrna-region: "#80b1d3"
+    crispr: "#bebada"
+    gap: "#000000"
+    misc: "#666666"
+  cog-classes:
+    A: "#c5000b"  # RNA processing and modification
+    B: "#6a3d9a"  # Chromatin structure and dynamics
+    C: "#bebada"  # Energy production and conversion
+    D: "#ff7f00"  # Cell cycle control, cell division, chromosome partitioning
+    E: "#ffffb3"  # Amino acid transport and metabolism
+    F: "#e31a1c"  # Nucleotide transport and metabolism
+    G: "#fb8072"  # Carbohydrate transport and metabolism
+    H: "#b2df8a"  # Coenzyme transport and metabolism
+    I: "#ccebc5"  # Lipid transport and metabolism
+    J: "#a6cee3"  # Translation, ribosomal structure and biogenesis
+    K: "#b3de69"  # Transcription
+    L: "#80b1d3"  # Replication, recombination and repair
+    M: "#bc80bd"  # Cell wall/membrane/envelope biogenesis
+    N: "#cab2d6"  # Cell motility
+    O: "#33a02c"  # Posttranslational modification, protein turnover, chaperones
+    P: "#fccde5"  # Inorganic ion transport and metabolism
+    Q: "#1f78b4"  # Secondary metabolites biosynthesis, transport and catabolism
+    R: "#8dd3c7"  # General function prediction only
+    S: "#222222"  # Function unknown
+    T: "#fdb462"  # Signal transduction mechanisms
+    U: "#fdbf6f"  # Intracellular trafficking, secretion, and vesicular transport
+    V: "#fb9a99"  # Defense mechanisms
+    W: "#0084d1"  # Extracellular structures
+    X: "#d9d9d9"  # Mobilome: prophages, transposons
+    Y: "#ffff38"  # Nuclear structure
+    Z: "#ffff99"  # Cytoskeleton

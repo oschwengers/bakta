@@ -17,43 +17,51 @@ import bakta.config as cfg
 import bakta.constants as bc
 
 
-NT_FEATURE_COLOR = '#666666'
-CDS_FEATURE_COLOR = '#cccccc'
-
-COG_COLORS = {
-    'A': '#c5000b',  # RNA processing and modification
-    'B': '#6a3d9a',  # Chromatin structure and dynamics
-    'C': '#bebada',  # Energy production and conversion
-    'D': '#ff7f00',  # Cell cycle control, cell division, chromosome partitioning
-    'E': '#ffffb3',  # Amino acid transport and metabolism
-    'F': '#e31a1c',  # Nucleotide transport and metabolism
-    'G': '#fb8072',  # Carbohydrate transport and metabolism
-    'H': '#b2df8a',  # Coenzyme transport and metabolism
-    'I': '#ccebc5',  # Lipid transport and metabolism
-    'J': '#a6cee3',  # Translation, ribosomal structure and biogenesis
-    'K': '#b3de69',  # Transcription
-    'L': '#80b1d3',  # Replication, recombination and repair
-    'M': '#bc80bd',  # Cell wall/membrane/envelope biogenesis
-    'N': '#cab2d6',  # Cell motility
-    'O': '#33a02c',  # Posttranslational modification, protein turnover, chaperones
-    'P': '#fccde5',  # Inorganic ion transport and metabolism
-    'Q': '#1f78b4',  # Secondary metabolites biosynthesis, transport and catabolism
-    'R': '#8dd3c7',  # General function prediction only
-    'S': '#222222',	 # Function unknown
-    'T': '#fdb462',  # Signal transduction mechanisms
-    'U': '#fdbf6f',  # Intracellular trafficking, secretion, and vesicular transport
-    'V': '#fb9a99',  # Defense mechanisms
-    'W': '#0084d1',  # Extracellular structures
-    'X': '#d9d9d9',  # Mobilome: prophages, transposons
-    'Y': '#ffff38',  # Nuclear structure
-    'Z': '#ffff99',  # Cytoskeleton
+COLORS = {
+    'backbone': '#000000',
+    'gc-positive': '#33a02c',
+    'gc-negative': '#e31a1c',
+    'gc-skew-positive': '#fdbf6f',
+    'gc-skew-negative': '#1f78b4',
+    'features': {  # feature type colors
+        'cds': 'cccccc',
+        'trna': '#b2df8a',
+        'rrna': '#fb8072',
+        'ncrna': '#fdb462',
+        'ncrna-region' : '#80b1d3',
+        'crispr': '#bebada',
+        'gap': '#000000',
+        'misc': '#666666'
+    },
+    'cog-classes': {
+        'A': '#c5000b',  # RNA processing and modification
+        'B': '#6a3d9a',  # Chromatin structure and dynamics
+        'C': '#bebada',  # Energy production and conversion
+        'D': '#ff7f00',  # Cell cycle control, cell division, chromosome partitioning
+        'E': '#ffffb3',  # Amino acid transport and metabolism
+        'F': '#e31a1c',  # Nucleotide transport and metabolism
+        'G': '#fb8072',  # Carbohydrate transport and metabolism
+        'H': '#b2df8a',  # Coenzyme transport and metabolism
+        'I': '#ccebc5',  # Lipid transport and metabolism
+        'J': '#a6cee3',  # Translation, ribosomal structure and biogenesis
+        'K': '#b3de69',  # Transcription
+        'L': '#80b1d3',  # Replication, recombination and repair
+        'M': '#bc80bd',  # Cell wall/membrane/envelope biogenesis
+        'N': '#cab2d6',  # Cell motility
+        'O': '#33a02c',  # Posttranslational modification, protein turnover, chaperones
+        'P': '#fccde5',  # Inorganic ion transport and metabolism
+        'Q': '#1f78b4',  # Secondary metabolites biosynthesis, transport and catabolism
+        'R': '#8dd3c7',  # General function prediction only
+        'S': '#222222',  # Function unknown
+        'T': '#fdb462',  # Signal transduction mechanisms
+        'U': '#fdbf6f',  # Intracellular trafficking, secretion, and vesicular transport
+        'V': '#fb9a99',  # Defense mechanisms
+        'W': '#0084d1',  # Extracellular structures
+        'X': '#d9d9d9',  # Mobilome: prophages, transposons
+        'Y': '#ffff38',  # Nuclear structure
+        'Z': '#ffff99'   # Cytoskeleton
+    }
 }
-COG_DEFAULT_COLOR = '#222222'
-POSITIVE_GC_COLOR = '#33a02c' #  '#CC6458'
-NEGATIVE_GC_COLOR = '#e31a1c' #  '#43CC85'
-POSITIVE_GC_SKEW_COLOR = '#fdbf6f' #  '#CCBE6C'
-NEGATIVE_GC_SKEW_COLOR = '#1f78b4' # '#5A4ECC'
-BACKBONE_COLOR = '#000000'
 
 
 log = logging.getLogger('PLOT')
@@ -141,14 +149,14 @@ def main():
         config = {}
 
     # load colors if specified
-    positive_gc_color = config.get('pgcc', POSITIVE_GC_COLOR)
-    negative_gc_color = config.get('ngcc', NEGATIVE_GC_COLOR)
-    positive_gc_skew_color = config.get('pgcs', POSITIVE_GC_SKEW_COLOR)
-    negative_gc_skew_color = config.get('ngcs', NEGATIVE_GC_SKEW_COLOR)
+    colors = COLORS
+    conf_colors = config.get('colors', None)
+    if conf_colors is not None:
+        colors = {**colors, **conf_colors}
 
     if args.sequences == 'all':  # write whole genome plot
         print('draw circular genome plot containing all sequences...')
-        write_plot(features, contigs, output_path, positive_gc_color=positive_gc_color, negative_gc_color=negative_gc_color, positive_gc_skew_color=positive_gc_skew_color, negative_gc_skew_color=negative_gc_skew_color)
+        write_plot(features, contigs, output_path, colors)
     else:  # write genome plot containing provided sequences only
         plot_contigs = []
         sequence_identifiers = []
@@ -164,10 +172,10 @@ def main():
         if len(plot_contigs) > 0:
             print(f'draw circular genome plot containing sequences: {sequence_identifiers}...')
             plot_name_suffix = '_'.join(sequence_identifiers)
-            write_plot(features, plot_contigs, output_path, plot_name_suffix=plot_name_suffix, positive_gc_color=positive_gc_color, negative_gc_color=negative_gc_color, positive_gc_skew_color=positive_gc_skew_color, negative_gc_skew_color=negative_gc_skew_color)
+            write_plot(features, plot_contigs, output_path, colors, plot_name_suffix=plot_name_suffix)
 
 
-def write_plot(features, contigs, output_path, plot_name_suffix=None, positive_gc_color=POSITIVE_GC_COLOR, negative_gc_color=NEGATIVE_GC_COLOR, positive_gc_skew_color=POSITIVE_GC_SKEW_COLOR, negative_gc_skew_color=NEGATIVE_GC_SKEW_COLOR):
+def write_plot(features, contigs, output_path, colors, plot_name_suffix=None):
     sequence_length = sum([c['length'] for c in contigs])
     sequences = ''.join([c['sequence'] for c in contigs])
     window_size = int(sequence_length/100) if sequence_length < 10000 else int(sequence_length/1000)
@@ -196,20 +204,20 @@ def write_plot(features, contigs, output_path, plot_name_suffix=None, positive_g
             continue
         contig, start, stop = feat['contig'], feat['start'], feat['stop']
         if feat['type'] == bc.FEATURE_CDS:
-            color = CDS_FEATURE_COLOR
+            color = colors['features']['cds']
             psc = feat.get('psc', None)
             if psc is not None:
                 cog = psc.get('cog_category', None)
                 if cog is not None:
                     if len(cog) != 1:
                         cog = cog[:1]
-                    color = COG_COLORS.get(cog.upper(), COG_DEFAULT_COLOR)
+                    color = colors['cog-classes'].get(cog.upper(), colors['cog-classes']['S'])
             if feat['strand'] == bc.STRAND_FORWARD:
                 cds_plus_features.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
             else:
                 cds_minus_features.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
         else:
-            noncoding_features.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(NT_FEATURE_COLOR)}")
+            noncoding_features.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(colors['features']['misc'])}")
     cds_plus_path = circos_path.joinpath('cds-plus.txt')
     with cds_plus_path.open('w') as fh:
         fh.write('\n'.join(cds_plus_features))
@@ -245,7 +253,7 @@ def write_plot(features, contigs, output_path, plot_name_suffix=None, positive_g
             gc_value = gc_mean - SeqUtils.GC(subseq)
             if max_gc_content < abs(gc_value):
                 max_gc_content = abs(gc_value)
-            gc_color = positive_gc_color if gc_value >= 0 else negative_gc_color
+            gc_color = colors['gc-positive'] if gc_value >= 0 else colors['gc-negative']
             gc_contents.append(f"{contig['id']} {w} {w} {gc_value} fill_color={hex_to_rgb(gc_color)}")
             g = subseq.count('G')
             c = subseq.count('C')
@@ -255,7 +263,7 @@ def write_plot(features, contigs, output_path, plot_name_suffix=None, positive_g
                 gc_skew = 0.0
             if max_gc_skew < abs(gc_skew):
                 max_gc_skew = abs(gc_skew)
-            gc_skew_color = positive_gc_skew_color if gc_skew >= 0 else negative_gc_skew_color
+            gc_skew_color = colors['gc-skew-positive'] if gc_skew >= 0 else colors['gc-skew-negative']
             gc_skews.append(f"{contig['id']} {w} {w} {gc_skew} fill_color={hex_to_rgb(gc_skew_color)}")
 
     gc_content_path = circos_path.joinpath('gc_content.txt')
@@ -299,7 +307,7 @@ dir*                        = {output_path}
     # write karyotype file
     karyotypes = []
     for i, c in enumerate(contigs):
-        karyotypes.append(f"chr - {c['id']} {i + 1} 0 {c['length']} {hex_to_rgb(BACKBONE_COLOR)}")
+        karyotypes.append(f"chr - {c['id']} {i + 1} 0 {c['length']} {hex_to_rgb(colors['backbone'])}")
     with karyotype_path.open('w') as fh:
         fh.write('\n'.join(karyotypes))
         fh.write('\n')
