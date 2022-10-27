@@ -39,15 +39,16 @@ COG_COLORS = {
     'P': '#fccde5',  # Inorganic ion transport and metabolism
     'Q': '#1f78b4',  # Secondary metabolites biosynthesis, transport and catabolism
     'R': '#8dd3c7',  # General function prediction only
-    'S': '#d9d9d9',	 # Function unknown
+    'S': '#222222',	 # Function unknown
     'T': '#fdb462',  # Signal transduction mechanisms
     'U': '#fdbf6f',  # Intracellular trafficking, secretion, and vesicular transport
     'V': '#fb9a99',  # Defense mechanisms
     'W': '#0084d1',  # Extracellular structures
+    'X': '#d9d9d9',  # Mobilome: prophages, transposons
     'Y': '#ffff38',  # Nuclear structure
     'Z': '#ffff99',  # Cytoskeleton
 }
-COG_DEFAULT_COLOR = '#000000'
+COG_DEFAULT_COLOR = '#222222'
 POSITIVE_GC_COLOR = '#33a02c' #  '#CC6458'
 NEGATIVE_GC_COLOR = '#e31a1c' #  '#43CC85'
 POSITIVE_GC_SKEW_COLOR = '#fdbf6f' #  '#CCBE6C'
