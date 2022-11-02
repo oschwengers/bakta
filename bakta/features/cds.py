@@ -31,7 +31,7 @@ def predict(genome: dict, sequences_path: Path):
     # create Pyrodigal trainining file if not provided by the user
     prodigal_tf_path = cfg.prodigal_tf
     trainings_info = None
-    prodigal_metamode = genome['size'] < 100000
+    prodigal_metamode = genome['size'] < pyrodigal.MIN_SINGLE_GENOME  # 20_000 bp
     if(prodigal_tf_path is None):
         closed = not genome['complete']
         if(not prodigal_metamode):
