@@ -67,7 +67,7 @@ def predict(genome: dict, sequences_path: Path):
     # predict genes on circular replicons (chromosomes/plasmids)
     circular_sequences = {c['id'] : c for c in genome['contigs'] if c['topology'] == bc.TOPOLOGY_CIRCULAR}
     if(len(circular_sequences) > 0):
-        orffinder = pyrodigal.OrfFinder(trainings_info, meta=prodigal_metamode, closed=True, mask=True)
+        orffinder = pyrodigal.OrfFinder(trainings_info, meta=prodigal_metamode, closed=False, mask=True)
         future_per_contig = {}
         with cf.ProcessPoolExecutor(max_workers=cfg.threads) as tpe:
             for id, sequence in circular_sequences.items():
