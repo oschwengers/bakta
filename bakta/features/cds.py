@@ -126,8 +126,7 @@ def create_cdss(genes, contig):
         if(first_partial_cds['strand'] == last_partial_cds['strand']
             and first_partial_cds['truncated'] != last_partial_cds['truncated']
             and first_partial_cds['start'] == 1
-            and last_partial_cds['stop'] == contig['length']
-            and contig['topology'] == bc.TOPOLOGY_CIRCULAR):
+            and last_partial_cds['stop'] == contig['length']):
             cds = last_partial_cds
             cds['stop'] = first_partial_cds['stop']
             if(last_partial_cds['truncated'] == bc.FEATURE_END_3_PRIME):
