@@ -106,7 +106,7 @@ def test_bakta_genome(tmpdir):
 
     output_path = tmpdir_path.joinpath('test.tsv')
     feature_count, feature_counts = count_features(output_path)
-    assert feature_count == 5549
+    assert feature_count == 5551
     feature_counts_expected = {
         'tRNA': 107,
         'tmRNA': 1,
@@ -118,7 +118,7 @@ def test_bakta_genome(tmpdir):
         'oriV': 0,
         'oriC': 0,
         'oriT': 0,
-        'cds': 5373
+        'cds': 5375
     }
     for type in feature_counts:
         assert feature_counts[type] == feature_counts_expected[type]
