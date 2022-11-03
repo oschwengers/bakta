@@ -120,7 +120,6 @@ def predict_t_rnas(genome: dict, contigs_path: Path):
         for record in SeqIO.parse(fh, 'fasta'):
             trna = trnas[record.id]
             nt = str(record.seq).upper()
-            assert trna['nt'] == nt
             if('anti_codon' in trna and trna['amino_acid'].lower() not in ['fmet', 'ile2', 'sec', 'sup']):  # exclude fMet, Ile2 and Sec (INSDC wrong anticodon issue)
                 anticodon_pos = trna['nt'].lower().find(trna['anti_codon'])
                 if(anticodon_pos > -1):
