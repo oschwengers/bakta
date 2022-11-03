@@ -175,7 +175,7 @@ def main():
             write_plot(features, plot_contigs, output_path, colors, plot_name_suffix=plot_name_suffix)
 
 
-def write_plot(features, contigs, output_path, colors, plot_name_suffix=None):
+def write_plot(features, contigs, output_path, colors=COLORS, plot_name_suffix=None):
     sequence_length = sum([c['length'] for c in contigs])
     sequences = ''.join([c['sequence'] for c in contigs])
     window_size = int(sequence_length/100) if sequence_length < 10000 else int(sequence_length/1000)
