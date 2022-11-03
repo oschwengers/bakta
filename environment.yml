@@ -8,11 +8,11 @@ dependencies:
   - xopen>=1.1.0
   - requests>=2.25.1
   - alive-progress==1.6.2
+  - pyrodigal>=2.0.2
   - trnascan-se>=2.0.11
   - aragorn>=1.2.38
   - infernal>=1.1.4
   - piler-cr
-  - prodigal>=2.6.3
   - hmmer>=3.3.2
   - diamond>=2.0.14
   - blast>=2.12.0
