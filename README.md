@@ -104,13 +104,13 @@ Installation instructions, get-started and guides: Singularity [docs](https://sy
 python3 -m pip install --user bakta
 ```
 
-Bacta requires the following 3rd party software tools which must be installed and executable to use the full set of features:
+Bakta requires the following 3rd party software tools which must be installed and executable to use the full set of features:
 
 - tRNAscan-SE (2.0.8) <https://doi.org/10.1101/614032> <http://lowelab.ucsc.edu/tRNAscan-SE>
 - Aragorn (1.2.38) <http://dx.doi.org/10.1093/nar/gkh152> <http://130.235.244.92/ARAGORN>
 - INFERNAL (1.1.4) <https://dx.doi.org/10.1093%2Fbioinformatics%2Fbtt509> <http://eddylab.org/infernal>
 - PILER-CR (1.06) <https://doi.org/10.1186/1471-2105-8-18> <http://www.drive5.com/pilercr>
-- Prodigal (2.6.3) <https://dx.doi.org/10.1186%2F1471-2105-11-119> <https://github.com/hyattpd/Prodigal>
+- Pyrodigal (2.0.2) <https://doi.org/10.21105/joss.04296> <https://github.com/althonos/pyrodigal>
 - Hmmer (3.3.2) <https://doi.org/10.1093/nar/gkt263> <http://hmmer.org>
 - Diamond (2.0.14) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
 - Blast+ (2.12.0) <https://www.ncbi.nlm.nih.gov/pubmed/2231712> <https://blast.ncbi.nlm.nih.gov>
@@ -416,7 +416,7 @@ ncRNA (cis-regulatory) region types:
 
 ### Coding sequences
 
-The structural prediction is conducted via Prodigal and complemented by a custom detection of sORF < 30 aa.
+The structural prediction is conducted via Pyrodigal and complemented by a custom detection of sORF < 30 aa.
 
 To rapidly identify known protein sequences with exact sequence matches and to conduct a comprehensive annotations, Bakta utilizes a compact read-only SQLite database comprising protein sequence digests and pre-assigned annotations for millions of known protein sequences and clusters.
 
@@ -429,7 +429,7 @@ Conceptual terms:
 
 **CDS**:
 
-1. Prediction via Prodigal respecting sequences' completeness (distinct prediction for complete replicons and uncompleted contigs)
+1. Prediction via Pyrodigal respecting sequences' completeness (distinct prediction for complete replicons and uncompleted contigs)
 2. Discard spurious CDS via AntiFam
 3. Detect translational exceptions (selenocysteines)
 4. Detection of UPSs via MD5 digests and lookup of related IPS and PCS
@@ -653,7 +653,7 @@ Bakta is *standing on the shoulder of giants* taking advantage of many great sof
 - Aragorn <https://doi.org/10.1093/nar/gkh152>
 - Infernal <https://doi.org/10.1093/bioinformatics/btt509>
 - PilerCR <https://doi.org/10.1186/1471-2105-8-18>
-- Prodigal <https://doi.org/10.1186/1471-2105-11-119>
+- Pyrodigal <https://doi.org/10.21105/joss.04296>
 - Diamond <https://doi.org/10.1038/s41592-021-01101-x>
 - BLAST+ <https://doi.org/10.1186/1471-2105-10-421>
 - HMMER <https://doi.org/10.1371/journal.pcbi.1002195>
