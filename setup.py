@@ -30,7 +30,7 @@ setup(
         'xopen >= 1.1.0',
         'requests >= 2.25.1',
         'alive-progress == 1.6.2',
-        'PyYAML >= 6.0'
+        'PyYAML >= 6.0',
         'pyrodigal >= 2.0.2'
     ],
     entry_points={
