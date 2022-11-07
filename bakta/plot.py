@@ -413,6 +413,7 @@ orientation = out
         '-conf',
         main_conf
     ]
+    log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
         cwd=str(cfg.tmp_path),
