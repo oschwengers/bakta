@@ -119,7 +119,7 @@ def setup_logger(output_path: Path, prefix: str, args: Namespace):
         filemode='w',
         format='%(asctime)s.%(msecs)03d - %(levelname)s - %(name)s - %(message)s',
         datefmt='%H:%M:%S',
-        level=logging.DEBUG if args.verbose else logging.INFO
+        level=logging.DEBUG if args.debug else logging.INFO
     )
     log.info('version=%s', bakta.__version__)
     log.info('developer: Oliver Schwengers, github.com/oschwengers')
