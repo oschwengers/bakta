@@ -281,7 +281,8 @@ def write_plot(features, contigs, output_path, colors=COLORS, plot_name_suffix=N
     ticks_path = circos_path.joinpath('ticks.conf')
     tracks_path = circos_path.joinpath('tracks.conf')
     chromosomes_units = round(sequence_length/(10**(len(str(sequence_length)) - 1)))*(10**(len(str(sequence_length)) - 1))
-    file_name = f'{cfg.prefix}_{plot_name_suffix}' if plot_name_suffix is not None else cfg.prefix
+    file_name = cfg.prefix if plot_name_suffix is None else f'{cfg.prefix}_{plot_name_suffix}'
+    log.debug('write plot: file-name=%s, output-dir=%s', file_name, output_path)
     main_config_text = f'''
 karyotype                   = {karyotype_path}
 chromosomes_units           = {chromosomes_units}
@@ -426,6 +427,7 @@ orientation = out
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('Circos failed! circos-error-code=%d', proc.returncode)
         raise Exception(f'circos error! error code: {proc.returncode}')
+    log.info('wrote circular genome plot: file-name=%s, output-dir=%s', file_name, output_path)
 
 
 def hex_to_rgb(hex_string):
