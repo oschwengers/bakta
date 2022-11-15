@@ -79,7 +79,7 @@ def main():
     arg_group_io.add_argument('--prefix', '-p', action='store', default=None, help='Prefix for output files')
 
     arg_group_plot = parser.add_argument_group('Plotting')
-    arg_group_plot.add_argument('--sequences', action='store', default='all', help='Sequences to plot: comma separated number or name (default = all, numbers one-based))')
+    arg_group_plot.add_argument('--sequences', action='store', default='all', help='Sequences to plot: comma separated number or name (default = all, numbers one-based)')
 
     arg_group_general = parser.add_argument_group('General')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
@@ -283,7 +283,6 @@ def write_plot(features, contigs, output_path, colors=COLORS, plot_name_suffix=N
     chromosomes_units = round(sequence_length/(10**(len(str(sequence_length)) - 1)))*(10**(len(str(sequence_length)) - 1))
     file_name = cfg.prefix if plot_name_suffix is None else f'{cfg.prefix}_{plot_name_suffix}'
     log.debug('write plot: file-name=%s, output-dir=%s', file_name, output_path)
-    print(f'WRITE PLOT: file-name={file_name}, output-dir={output_path}')
     main_config_text = f'''
 karyotype                   = {karyotype_path}
 chromosomes_units           = {chromosomes_units}
@@ -424,8 +423,6 @@ orientation = out
         stderr=sp.PIPE,
         universal_newlines=True
     )
-    print(f'CIRCOS STDOUT={proc.stdout}')
-    print(f'CIRCOS STDERR={proc.stderr}')
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('Circos failed! circos-error-code=%d', proc.returncode)
@@ -440,11 +437,6 @@ def hex_to_rgb(hex_string):
     for i in (0, 2, 4):
         rgb.append(str(int(hex_string[i:i+2], 16)))
     return ','.join(rgb)
-
-
-def khp(hex_with_prefix):
-    hex_without_prefix = hex_with_prefix[2:]
-    return hex_without_prefix
 
 
 if __name__ == '__main__':
