@@ -29,7 +29,7 @@ jobs:
         auto-update-conda: false
         python-version: ${{ matrix.python-version }}
         miniconda-version: "latest"
-        mamba-version: "*"
+        mamba-version: "0.27"
         channels: conda-forge,bioconda
         channel-priority: true
         auto-activate-base: false
