@@ -19,4 +19,3 @@ dependencies:
   - blast>=2.12.0
   - ncbi-amrfinderplus>=3.10.42
   - circos>=0.69.8
-  - perl==5.26
