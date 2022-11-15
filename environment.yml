@@ -10,6 +10,7 @@ dependencies:
   - alive-progress==1.6.2
   - pyyaml>=6.0
   - pyrodigal>=2.0.2
+  - trnascan-se>=2.0.11
   - aragorn>=1.2.38
   - infernal>=1.1.4
   - piler-cr
