@@ -46,5 +46,6 @@ jobs:
         conda list
         conda config --show
         printenv | sort
+        circos -modules
     - name: Run PyTest
       run: pytest
