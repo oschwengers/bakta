@@ -24,13 +24,15 @@ COLORS = {
     'gc-skew-positive': '#fdbf6f',
     'gc-skew-negative': '#1f78b4',
     'features': {  # feature type colors
-        'cds': 'cccccc',
-        'trna': '#b2df8a',
-        'rrna': '#fb8072',
-        'ncrna': '#fdb462',
-        'ncrna-region' : '#80b1d3',
-        'crispr': '#bebada',
-        'gap': '#000000',
+        bc.FEATURE_CDS: 'cccccc',
+        bc.FEATURE_SORF: 'cccccc',
+        bc.FEATURE_T_RNA: '#b2df8a',
+        bc.FEATURE_TM_RNA: '#b2df8a',
+        bc.FEATURE_R_RNA: '#fb8072',
+        bc.FEATURE_NC_RNA: '#fdb462',
+        bc.FEATURE_NC_RNA_REGION : '#80b1d3',
+        bc.FEATURE_CRISPR: '#bebada',
+        bc.FEATURE_GAP: '#000000',
         'misc': '#666666'
     },
     'cog-classes': {
@@ -426,7 +428,7 @@ def setup_plot_features(features, contigs, circos_path, colors):
         if feat['contig'] not in contig_ids:
             continue
         contig, start, stop, type = feat['contig'], feat['start'], feat['stop'], feat['type']
-        color = colors['features'].get(type.lower(), colors['features']['misc'])
+        color = colors['features'].get(type, colors['features']['misc'])
         if feat['strand'] == bc.STRAND_FORWARD:
             features_plus.append(f"{contig} {start} {stop} {bc.STRAND_FORWARD} color={hex_to_rgb(color)}")
         else:
@@ -452,7 +454,7 @@ def setup_plot_cog(features, contigs, circos_path, colors):
             continue
         contig, start, stop = feat['contig'], feat['start'], feat['stop']
         if feat['type'] == bc.FEATURE_CDS:
-            color = colors['features']['cds']
+            color = colors['features'][bc.FEATURE_CDS]
             psc = feat.get('psc', None)
             if psc is not None:
                 cog = psc.get('cog_category', None)
