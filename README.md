@@ -266,6 +266,8 @@ Annotation results are provided in standard bioinformatics file formats:
 - `<prefix>.hypotheticals.tsv`: further information on hypothetical protein CDS as simple human readble tab separated values
 - `<prefix>.hypotheticals.faa`: hypothetical protein CDS amino acid sequences as FASTA
 - `<prefix>.txt`: summary as TXT
+- `<prefix>.png`: circular genome annotation plot as PNG
+- `<prefix>.svg`: circular genome annotation plot as SVG
 
 The `<prefix>` can be set via `--prefix <prefix>`. If no prefix is set, Bakta uses the input file prefix.
 
@@ -322,7 +324,7 @@ usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH] [--prefix PREFIX]
              [--complete] [--prodigal-tf PRODIGAL_TF] [--translation-table {11,4}] [--gram {+,-,?}] [--locus LOCUS]
              [--locus-tag LOCUS_TAG] [--keep-contig-headers] [--replicons REPLICONS] [--compliant] [--proteins PROTEINS]
              [--skip-trna] [--skip-tmrna] [--skip-rrna] [--skip-ncrna] [--skip-ncrna-region]
-             [--skip-crispr] [--skip-cds] [--skip-sorf] [--skip-gap] [--skip-ori]
+             [--skip-crispr] [--skip-cds] [--skip-sorf] [--skip-gap] [--skip-ori] [--skip-plot]
              [--help] [--verbose] [--threads THREADS] [--tmp-dir TMP_DIR] [--version]
              <genome>
 

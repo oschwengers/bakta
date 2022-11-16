@@ -138,6 +138,10 @@ inputs:
     id: skip_ori
     inputBinding: {prefix: --skip-ori}
     type: boolean
+  - doc: Skip genome plotting
+    id: skip_plot
+    inputBinding: {prefix: --skip-plot}
+    type: boolean
   - doc: Directory for temporary files (default = system dependent auto detection)
     id: tmp_dir
     inputBinding: {prefix: --tmp-dir}
@@ -203,6 +207,16 @@ outputs:
     type: File
     format: edam:format_2200
     outputBinding: {glob: '*.faa'}
+  - doc: Circular genome plot as PNG
+    id: plot_png
+    type: File
+    format: edam:format_3603
+    outputBinding: {glob: '*.png'}
+  - doc: Circular genome plot as SVG
+    id: plot_svg
+    type: File
+    format: edam:format_3604
+    outputBinding: {glob: '*.svg'}
 
 s:author:
   - class: s:Person
