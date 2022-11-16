@@ -22,6 +22,7 @@ Bakta is a tool for the rapid & standardized annotation of bacterial genomes and
 - [Database](#database)
 - [Genome Submission](#genome-submission)
 - [Protein bulk annotation](#protein-bulk-annotation)
+- [Genome plots](#genome-plots)
 - [Web version](#web-version)
 - [Citation](#citation)
 - [FAQ](#faq)
@@ -632,6 +633,54 @@ Runtime & auxiliary options:
                         Number of threads to use (default = number of available CPUs)
   --tmp-dir TMP_DIR     Location for temporary files (default = system dependent auto detection)
   --version, -V         show program's version number and exit
+```
+
+## Genome plots
+
+Bakta allows the creation of circular genome plots via [Circos](http://circos.ca). Plots are generated as part of the default workflow and saved as `PNG` and `SVG` files. In addition to the default workflow, Bakta provides a dedicated CLI entry point `bakta_plot`:
+
+Examples:
+
+```bash
+bakta_plot input.json
+
+bakta_plot --output test --prefix test --config config.yaml --sequences 1,2 input.json
+```
+
+It accepts the results of a former annotation process in JSON format and allows the selection of distinct sequences, either denoted by their `FASTA` identifiers or sequential number starting by 1. Colors for each feature type can be adopted via a simple configuration file in `YAML` format, *e.g.* [config.yaml](config.yaml). Currently, two default plot types are supported, *i.e.* `features` and `cog`. Examples for chromosomes and plasmids are provided in [here](examples/)
+
+### Usage
+
+```bash
+usage: bakta_plot [--config CONFIG] [--output OUTPUT] [--prefix PREFIX] [--sequences SEQUENCES] [--type {features,cog}] [--help] [--verbose] [--debug] [--tmp-dir TMP_DIR] [--version] <input>
+
+Rapid & standardized annotation of bacterial genomes, MAGs & plasmids
+
+positional arguments:
+  <input>               Bakta annotations in JSON format
+
+options:
+  --config CONFIG, -c CONFIG
+                        Plotting configuration in YAML format
+
+Input / Output:
+  --output OUTPUT, -o OUTPUT
+                        Output directory (default = current working directory)
+  --prefix PREFIX, -p PREFIX
+                        Prefix for output files
+
+Plotting:
+  --sequences SEQUENCES
+                        Sequences to plot: comma separated number or name (default = all, numbers one-based)
+  --type {features,cog}
+                        Plot type: feature/cog (default = features)
+
+General:
+  --help, -h            Show this help message and exit
+  --verbose, -v         Print verbose information
+  --debug               Run Bakta in debug mode. Temp data will not be removed.
+  --tmp-dir TMP_DIR     Location for temporary files (default = system dependent auto detection)
+  --version             show program's version number and exit
 ```
 
 ## Web version
