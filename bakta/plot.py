@@ -177,6 +177,8 @@ def main():
         if len(plot_contigs) > 0:
             print(f'draw circular genome plot (type={plot_type}) containing sequences: {sequence_identifiers}...')
             plot_name_suffix = '_'.join(sequence_identifiers)
+            plot_contig_ids = [c['id'] for c in plot_contigs]
+            features = [feat for feat in features if feat['contig'] in plot_contig_ids]
             write_plot(features, plot_contigs, output_path, colors, plot_name_suffix=plot_name_suffix, plot_type=plot_type)
 
 
