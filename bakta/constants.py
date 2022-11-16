@@ -191,12 +191,23 @@ TOPOLOGY_LINEAR = 'linear'
 
 
 ############################################################################
-# Miscellaneous constants
+# Plot types
+############################################################################
+PLOT_FEATURES = 'features'
+PLOT_COG = 'cog'
+
+
+############################################################################
+# Discard types
 ############################################################################
 DISCARD_TYPE_SPURIOUS = 'spurious'
 DISCARD_TYPE_OVERLAP = 'overlap'
 DISCARD_TYPE_RECODING = 'recoding'
 
+
+############################################################################
+# Miscellaneous constants
+############################################################################
 DB_VERSIONS_URL = 'https://raw.githubusercontent.com/oschwengers/bakta/master/db-versions.json'
 
 BAKTA_DOI = '10.1099/mgen.0.000685'

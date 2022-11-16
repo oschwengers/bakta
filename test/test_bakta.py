@@ -34,7 +34,7 @@ def test_deepsig():
 def test_bakta_mock_skipped_features(parameters, tmpdir):
     # fast test skipping all feature detections
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--proteins', 'test/data/user-proteins.faa'] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--proteins', 'test/data/user-proteins.faa'] +
         ['--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1'] +
         SKIP_PARAMETERS +
         parameters
@@ -60,7 +60,7 @@ def test_bakta_mock_skipped_features(parameters, tmpdir):
 def test_bakta_plasmid(parameters, tmpdir):
     # full test on plasmid
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--complete', '--gram', '-', '--proteins', 'test/data/user-proteins.faa'] +
+        ['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--complete', '--gram', '-', '--proteins', 'test/data/user-proteins.faa'] +
         ['--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1'] +
         parameters
     )
@@ -95,7 +95,7 @@ def test_bakta_plasmid(parameters, tmpdir):
 @pytest.mark.slow
 def test_bakta_genome(tmpdir):
     # full test on complete genome in compliant mode
-    proc = run(['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--tmp-dir', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--complete', '--compliant', '--proteins', 'test/data/user-proteins.faa', '--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1', 'test/data/GCF_000008865.2.fna.gz'])
+    proc = run(['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--complete', '--compliant', '--proteins', 'test/data/user-proteins.faa', '--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1', 'test/data/GCF_000008865.2.fna.gz'])
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)

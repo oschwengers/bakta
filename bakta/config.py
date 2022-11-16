@@ -60,6 +60,7 @@ skip_pseudo = None
 skip_sorf = None
 skip_gap = None
 skip_ori = None
+skip_plot = None
 
 run_start = datetime.now()
 run_end = None
@@ -211,7 +212,7 @@ def setup(args):
     
 
     # workflow configurations
-    global skip_trna, skip_tmrna, skip_rrna, skip_ncrna, skip_ncrna_region, skip_crispr, skip_cds, skip_pseudo, skip_sorf, skip_gap, skip_ori
+    global skip_trna, skip_tmrna, skip_rrna, skip_ncrna, skip_ncrna_region, skip_crispr, skip_cds, skip_pseudo, skip_sorf, skip_gap, skip_ori, skip_plot
     skip_trna = args.skip_trna
     log.info('skip-tRNA=%s', skip_trna)
     skip_tmrna = args.skip_tmrna
@@ -234,6 +235,8 @@ def setup(args):
     log.info('skip-gap=%s', skip_gap)
     skip_ori = args.skip_ori
     log.info('skip-ori=%s', skip_ori)
+    skip_plot = args.skip_plot
+    log.info('skip-plot=%s', skip_plot)
 
 
 def check_readability(file_name: str, file_Path: Path):

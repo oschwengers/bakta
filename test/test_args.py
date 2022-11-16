@@ -24,7 +24,7 @@ from .conftest import FILES, SKIP_PARAMETERS
 def test_genome_failing(parameters, tmpdir):
     # test genome arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         SKIP_PARAMETERS +
         parameters
     )
@@ -34,7 +34,7 @@ def test_genome_failing(parameters, tmpdir):
 def test_genome_ok(tmpdir):
     # test genome arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         SKIP_PARAMETERS +
         ['test/data/valid.fasta']
     )
@@ -55,7 +55,7 @@ def test_genome_ok(tmpdir):
 def test_database_failing_parameter(parameters, tmpdir):
     # test database arguments
     proc = run(
-        ['bin/bakta', '--output', tmpdir] +
+        ['bin/bakta', '--output', tmpdir, '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -79,7 +79,9 @@ def test_database_failing_environment(env_key, env_value, tmpdir):
     env = os.environ
     env[env_key] = env_value
     proc = run(
-        ['bin/bakta', '--output', tmpdir, 'test/data/NC_002127.1.fna'],
+        ['bin/bakta', '--output', tmpdir, '--skip-plot'] +
+        SKIP_PARAMETERS +
+        ['test/data/NC_002127.1.fna'],
         env=env
     )
     assert proc.returncode != 0
@@ -90,7 +92,7 @@ def test_database_ok(tmpdir):
 
     # parameter OK
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
     )
@@ -100,7 +102,7 @@ def test_database_ok(tmpdir):
     env = os.environ
     env['BAKTA_DB'] = 'test/db'
     proc = run(
-        ['bin/bakta', '--output', tmpdir] +
+        ['bin/bakta', '--output', tmpdir, '--skip-plot'] +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
         , env=env
@@ -111,7 +113,9 @@ def test_database_ok(tmpdir):
 def test_output_failing():
     # test database arguments
     proc = run(
-        ['bin/bakta', '--output', '/', 'test/data/draft-w-plasmids.fna']
+        ['bin/bakta', '--db', 'test/db', '--output', '/', '--skip-plot'] +
+        SKIP_PARAMETERS +
+        ['test/data/NC_002127.1.fna']
     )
     assert proc.returncode != 0
 
@@ -128,7 +132,7 @@ def test_output_failing():
 def test_tmp_dir_failiing(parameters, tmpdir):
     # test tmp dir arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -139,7 +143,7 @@ def test_tmp_dir_failiing(parameters, tmpdir):
 def test_tmp_dir_ok(tmpdir):
     # test tmp dir arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--tmp-dir', ''] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--tmp-dir', '', '--skip-plot'] +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
     )
@@ -160,7 +164,7 @@ def test_prodigal_tf_failiing(parameters, tmpdir):
     proc = run(
         ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
         parameters +
-        ['--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-sorf', '--skip-ori', '--skip-gap'] +
+        ['--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-sorf', '--skip-ori', '--skip-gap', '--skip-plot'] +
         ['test/data/NC_002127.1.fna']
     )
     assert proc.returncode != 0
@@ -194,7 +198,7 @@ def test_prodigal_tf_ok(tmpdir):
 def test_replicons_failiing(parameters, tmpdir):
     # test replicons file arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -240,7 +244,7 @@ def test_proteins_failiing(parameters, tmpdir):
     proc = run(
         ['bin/bakta', '--db', 'test/db', '--output', tmpdir] + 
         parameters + 
-        ['--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-sorf', '--skip-ori', '--skip-gap'] +
+        ['--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-sorf', '--skip-ori', '--skip-gap', '--skip-plot'] +
         ['test/data/NC_002127.1.fna']
     )
     assert proc.returncode != 0
@@ -254,6 +258,8 @@ def test_proteins_failiing(parameters, tmpdir):
         (['--locus', ' ']),  # whitespace only
         (['--locus', '  ']),  # whitespaces only
         (['--locus', 'fo o']),  # containing whitespace
+        (['--locus', 'A123:']),  # containing colon (incompatible with circos)
+        (['--locus', 'A123#']),  # containing pound (incompatible with circos)
         (['--locus', 'ABCDEFGHIJKLMNOPQRSTU'])  # more than 20 characters
     ]
 )
@@ -274,7 +280,7 @@ def test_locus_failiing(parameters, tmpdir):
     [
         (['--locus', 'ABC']),
         (['--locus', 'ABCDEFGHIJKLMNOPQRST']),
-        (['--locus', 'A123_.:*#-'])
+        (['--locus', 'A123_.*-'])
     ]
 )
 def test_locus_ok(parameters, tmpdir):
@@ -314,7 +320,7 @@ def test_locus_ok(parameters, tmpdir):
 def test_locustag_failiing(parameters, tmpdir):
     # test locus-tag prefix arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -341,7 +347,7 @@ def test_locustag_failiing(parameters, tmpdir):
 def test_locustag_ok(parameters, tmpdir):
     # test locus-tag prefix arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -382,7 +388,7 @@ def test_locustag_ok(parameters, tmpdir):
 def test_locustag_compliant_failiing(parameters, tmpdir):
     # test locus-tag prefix arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--compliant'] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--compliant', '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -403,7 +409,7 @@ def test_locustag_compliant_failiing(parameters, tmpdir):
 def test_locustag_compliant_ok(parameters, tmpdir):
     # test locus-tag prefix arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--compliant'] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--compliant', '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -423,7 +429,7 @@ def test_locustag_compliant_ok(parameters, tmpdir):
 def test_genus_failiing(parameters, tmpdir):
     # test genus prefix arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -444,7 +450,7 @@ def test_genus_failiing(parameters, tmpdir):
 def test_species_ok(parameters, tmpdir):
     # test species prefix arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -464,7 +470,7 @@ def test_species_ok(parameters, tmpdir):
 def test_species_failiing(parameters, tmpdir):
     # test species prefix arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -484,7 +490,7 @@ def test_species_failiing(parameters, tmpdir):
 def test_strain_ok(parameters, tmpdir):
     # test strain prefix arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -504,7 +510,7 @@ def test_strain_ok(parameters, tmpdir):
 def test_strain_failiing(parameters, tmpdir):
     # test strain prefix arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -526,7 +532,7 @@ def test_strain_failiing(parameters, tmpdir):
 def test_threads_failing(parameters, tmpdir):
     # test gram arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -548,7 +554,7 @@ def test_threads_failing(parameters, tmpdir):
 def test_threads_failing(parameters, tmpdir):
     # test threads arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -570,7 +576,7 @@ def test_threads_failing(parameters, tmpdir):
 def test_min_contig_length_failing(parameters, tmpdir):
     # test min-contig-length arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
@@ -592,7 +598,7 @@ def test_min_contig_length_failing(parameters, tmpdir):
 def test_min_contig_length_failing(parameters, tmpdir):
     # test min-contig-length arguments
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir] +
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']

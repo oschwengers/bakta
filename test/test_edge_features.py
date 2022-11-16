@@ -14,7 +14,7 @@ def test_bakta_edge_features(tmpdir):
     proc = run(
         [
             'bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test',
-            '--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-sorf', '--skip-ori', '--skip-gap',
+            '--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-sorf', '--skip-ori', '--skip-gap', '--skip-plot',
             '--keep-contig-headers', '--complete', 'test/data/cds.fna'
         ]
     )

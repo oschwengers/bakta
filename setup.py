@@ -30,13 +30,15 @@ setup(
         'xopen >= 1.1.0',
         'requests >= 2.25.1',
         'alive-progress == 1.6.2',
+        'PyYAML >= 6.0',
         'pyrodigal >= 2.0.2'
     ],
     entry_points={
         'console_scripts': [
             'bakta=bakta.main:main',
             'bakta_proteins=bakta.proteins:main',
-            'bakta_db=bakta.db:main'
+            'bakta_db=bakta.db:main',
+            'bakta_plot=bakta.plot:main'
         ]
     },
     classifiers=[

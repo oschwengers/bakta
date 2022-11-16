@@ -35,7 +35,7 @@ Version.__str__ = print_version
 
 VERSION_MIN_DIGIT = -1
 VERSION_MAX_DIGIT = 1000000000000
-VERSION_REGEX = re.compile(r'(\d+)\.(\d+)(?:\.(\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
+VERSION_REGEX = re.compile(r'(\d+)\.(\d+)(?:[\.-](\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
 
 # List of dependencies: tuples for: min version, max version, tool name & command line parameter, dependency check exclusion options
 DEPENDENCY_TRNASCAN = (Version(2, 0, 8), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('tRNAscan-SE', '-h'), ['--skip-trna'])
@@ -47,6 +47,7 @@ DEPENDENCY_DIAMOND = (Version(2, 0, 14), Version(VERSION_MAX_DIGIT, VERSION_MAX_
 DEPENDENCY_DEEPSIG = (Version(1, 2, 5), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('deepsig', '--version'), ['--gram ?'])
 DEPENDENCY_BLASTN = (Version(2, 12, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('blastn', '-version'), ['--skip-ori'])
 DEPENDENCY_AMRFINDERPLUS = (Version(3, 10, 23), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('amrfinder', '--version'), ['--skip-cds'])
+DEPENDENCY_CIRCOS = (Version(0, 69, 8), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('circos', '--version'), ['--skip-plot'])
 
 
 def init_parser(sub_command: str=''):
@@ -100,6 +101,7 @@ def parse_arguments():
     arg_group_workflow.add_argument('--skip-sorf', action='store_true', dest='skip_sorf', help='Skip sORF detection & annotation')
     arg_group_workflow.add_argument('--skip-gap', action='store_true', dest='skip_gap', help='Skip gap detection & annotation')
     arg_group_workflow.add_argument('--skip-ori', action='store_true', dest='skip_ori', help='Skip oriC/oriT detection & annotation')
+    arg_group_workflow.add_argument('--skip-plot', action='store_true', dest='skip_plot', help='Skip generation of circular genome plots')
 
     arg_group_general = parser.add_argument_group('General')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
@@ -117,7 +119,7 @@ def setup_logger(output_path: Path, prefix: str, args: Namespace):
         filemode='w',
         format='%(asctime)s.%(msecs)03d - %(levelname)s - %(name)s - %(message)s',
         datefmt='%H:%M:%S',
-        level=logging.DEBUG if args.verbose else logging.INFO
+        level=logging.DEBUG if args.debug else logging.INFO
     )
     log.info('version=%s', bakta.__version__)
     log.info('developer: Oliver Schwengers, github.com/oschwengers')
@@ -242,6 +244,9 @@ def test_dependencies():
 
     if(cfg.skip_ori is not None and cfg.skip_ori is False):
         test_dependency(DEPENDENCY_BLASTN)
+    
+    if(cfg.skip_plot is not None and cfg.skip_plot is False):
+        test_dependency(DEPENDENCY_CIRCOS)
 
 
 def create_locus_tag_prefix(contigs: Sequence[dict], length: int=6) -> str:

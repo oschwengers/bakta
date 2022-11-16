@@ -22,6 +22,7 @@ Bakta is a tool for the rapid & standardized annotation of bacterial genomes and
 - [Database](#database)
 - [Genome Submission](#genome-submission)
 - [Protein bulk annotation](#protein-bulk-annotation)
+- [Genome plots](#genome-plots)
 - [Web version](#web-version)
 - [Citation](#citation)
 - [FAQ](#faq)
@@ -266,6 +267,8 @@ Annotation results are provided in standard bioinformatics file formats:
 - `<prefix>.hypotheticals.tsv`: further information on hypothetical protein CDS as simple human readble tab separated values
 - `<prefix>.hypotheticals.faa`: hypothetical protein CDS amino acid sequences as FASTA
 - `<prefix>.txt`: summary as TXT
+- `<prefix>.png`: circular genome annotation plot as PNG
+- `<prefix>.svg`: circular genome annotation plot as SVG
 
 The `<prefix>` can be set via `--prefix <prefix>`. If no prefix is set, Bakta uses the input file prefix.
 
@@ -322,7 +325,7 @@ usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH] [--prefix PREFIX]
              [--complete] [--prodigal-tf PRODIGAL_TF] [--translation-table {11,4}] [--gram {+,-,?}] [--locus LOCUS]
              [--locus-tag LOCUS_TAG] [--keep-contig-headers] [--replicons REPLICONS] [--compliant] [--proteins PROTEINS]
              [--skip-trna] [--skip-tmrna] [--skip-rrna] [--skip-ncrna] [--skip-ncrna-region]
-             [--skip-crispr] [--skip-cds] [--skip-sorf] [--skip-gap] [--skip-ori]
+             [--skip-crispr] [--skip-cds] [--skip-sorf] [--skip-gap] [--skip-ori] [--skip-plot]
              [--help] [--verbose] [--threads THREADS] [--tmp-dir TMP_DIR] [--version]
              <genome>
 
@@ -375,6 +378,7 @@ Workflow:
   --skip-sorf           Skip sORF detection & annotation
   --skip-gap            Skip gap detection & annotation
   --skip-ori            Skip oriC/oriT detection & annotation
+  --skip-plot           Skip generation of circular genome plots
 
 General:
   --help, -h            Show this help message and exit
@@ -631,6 +635,54 @@ Runtime & auxiliary options:
   --version, -V         show program's version number and exit
 ```
 
+## Genome plots
+
+Bakta allows the creation of circular genome plots via [Circos](http://circos.ca). Plots are generated as part of the default workflow and saved as `PNG` and `SVG` files. In addition to the default workflow, Bakta provides a dedicated CLI entry point `bakta_plot`:
+
+Examples:
+
+```bash
+bakta_plot input.json
+
+bakta_plot --output test --prefix test --config config.yaml --sequences 1,2 input.json
+```
+
+It accepts the results of a former annotation process in JSON format and allows the selection of distinct sequences, either denoted by their `FASTA` identifiers or sequential number starting by 1. Colors for each feature type can be adopted via a simple configuration file in `YAML` format, *e.g.* [config.yaml](config.yaml). Currently, two default plot types are supported, *i.e.* `features` and `cog`. Examples for chromosomes and plasmids are provided in [here](examples/)
+
+### Usage
+
+```bash
+usage: bakta_plot [--config CONFIG] [--output OUTPUT] [--prefix PREFIX] [--sequences SEQUENCES] [--type {features,cog}] [--help] [--verbose] [--debug] [--tmp-dir TMP_DIR] [--version] <input>
+
+Rapid & standardized annotation of bacterial genomes, MAGs & plasmids
+
+positional arguments:
+  <input>               Bakta annotations in JSON format
+
+options:
+  --config CONFIG, -c CONFIG
+                        Plotting configuration in YAML format
+
+Input / Output:
+  --output OUTPUT, -o OUTPUT
+                        Output directory (default = current working directory)
+  --prefix PREFIX, -p PREFIX
+                        Prefix for output files
+
+Plotting:
+  --sequences SEQUENCES
+                        Sequences to plot: comma separated number or name (default = all, numbers one-based)
+  --type {features,cog}
+                        Plot type: feature/cog (default = features)
+
+General:
+  --help, -h            Show this help message and exit
+  --verbose, -v         Print verbose information
+  --debug               Run Bakta in debug mode. Temp data will not be removed.
+  --tmp-dir TMP_DIR     Location for temporary files (default = system dependent auto detection)
+  --version             show program's version number and exit
+```
+
 ## Web version
 
 For further convenience, we developed an accompanying web application available at https://bakta.computational.bio.
@@ -658,6 +710,7 @@ Bakta is *standing on the shoulder of giants* taking advantage of many great sof
 - HMMER <https://doi.org/10.1371/journal.pcbi.1002195>
 - AMRFinderPlus <https://doi.org/10.1038/s41598-021-91456-0>
 - DeepSig <https://doi.org/10.1093/bioinformatics/btx818>
+- Circos <https://doi.org/10.1101/gr.092759.109>
 
 ### Databases
 
