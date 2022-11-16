@@ -80,6 +80,7 @@ def main():
 
     arg_group_plot = parser.add_argument_group('Plotting')
     arg_group_plot.add_argument('--sequences', action='store', default='all', help='Sequences to plot: comma separated number or name (default = all, numbers one-based)')
+    arg_group_plot.add_argument('--type', action='store', type=str, default=bc.PLOT_FEATURES, choices=[bc.PLOT_FEATURES, bc.PLOT_COG], help=f'Plot type: feature/cog (default = {bc.PLOT_FEATURES})')
 
     arg_group_general = parser.add_argument_group('General')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
@@ -118,6 +119,8 @@ def main():
 
     cfg.debug = args.debug
     log.info('debug=%s', cfg.debug)
+    plot_type = args.type
+    log.info('plot-type=%s', plot_type)
 
     if(cfg.debug):
         print(f"\nBakta runs in DEBUG mode! Temporary data will not be destroyed at: {cfg.tmp_path}")
@@ -155,8 +158,8 @@ def main():
         colors = {**colors, **conf_colors}
 
     if args.sequences == 'all':  # write whole genome plot
-        print('draw circular genome plot containing all sequences...')
-        write_plot(features, contigs, output_path, colors)
+        print(f'draw circular genome plot (type={plot_type}) containing all sequences...')
+        write_plot(features, contigs, output_path, colors, plot_type=plot_type)
     else:  # write genome plot containing provided sequences only
         plot_contigs = []
         sequence_identifiers = []
@@ -170,12 +173,12 @@ def main():
                     plot_contigs.append(contig)
                     sequence_identifiers.append(contig['id'])
         if len(plot_contigs) > 0:
-            print(f'draw circular genome plot containing sequences: {sequence_identifiers}...')
+            print(f'draw circular genome plot (type={plot_type}) containing sequences: {sequence_identifiers}...')
             plot_name_suffix = '_'.join(sequence_identifiers)
-            write_plot(features, plot_contigs, output_path, colors, plot_name_suffix=plot_name_suffix)
+            write_plot(features, plot_contigs, output_path, colors, plot_name_suffix=plot_name_suffix, plot_type=plot_type)
 
 
-def write_plot(features, contigs, output_path, colors=COLORS, plot_name_suffix=None):
+def write_plot(features, contigs, output_path, colors=COLORS, plot_name_suffix=None, plot_type=bc.PLOT_FEATURES):
     sequence_length = sum([c['length'] for c in contigs])
     sequences = ''.join([c['sequence'] for c in contigs])
     window_size = int(sequence_length/100) if sequence_length < 10000 else int(sequence_length/1000)
@@ -195,41 +198,10 @@ def write_plot(features, contigs, output_path, colors=COLORS, plot_name_suffix=N
     circos_path.mkdir(parents=True, exist_ok=True)
 
     # write feature files
-    cds_plus_features = []
-    cds_minus_features = []
-    noncoding_features = []
-    contig_ids = set([c['id'] for c in contigs])
-    for feat in features:
-        if feat['contig'] not in contig_ids:
-            continue
-        contig, start, stop = feat['contig'], feat['start'], feat['stop']
-        if feat['type'] == bc.FEATURE_CDS:
-            color = colors['features']['cds']
-            psc = feat.get('psc', None)
-            if psc is not None:
-                cog = psc.get('cog_category', None)
-                if cog is not None:
-                    if len(cog) != 1:
-                        cog = cog[:1]
-                    color = colors['cog-classes'].get(cog.upper(), colors['cog-classes']['S'])
-            if feat['strand'] == bc.STRAND_FORWARD:
-                cds_plus_features.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
-            else:
-                cds_minus_features.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
-        else:
-            noncoding_features.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(colors['features']['misc'])}")
-    cds_plus_path = circos_path.joinpath('cds-plus.txt')
-    with cds_plus_path.open('w') as fh:
-        fh.write('\n'.join(cds_plus_features))
-        fh.write('\n')
-    cds_minus_path = circos_path.joinpath('cds-minus.txt')
-    with cds_minus_path.open('w') as fh:
-        fh.write('\n'.join(cds_minus_features))
-        fh.write('\n')
-    nc_path = circos_path.joinpath('nc.txt')
-    with nc_path.open('w') as fh:
-        fh.write('\n'.join(noncoding_features))
-        fh.write('\n')
+    if plot_type == bc.PLOT_COG:
+        features_path = setup_plot_cog(features, contigs, circos_path, colors)
+    else:
+        features_path = setup_plot_features(features, contigs, circos_path, colors)
 
     # write gc content unf gc skew files
     gc_contents = []
@@ -368,7 +340,7 @@ size             = 5p
 
     # write track configuration
     track_texts = []
-    for feature in [cds_plus_path, cds_minus_path, nc_path]:
+    for feature in features_path:
         track_text = f'''
 <plot>
 type             = tile
@@ -429,6 +401,69 @@ orientation = out
         raise Exception(f'circos error! error code: {proc.returncode}')
     log.info('wrote circular genome plot: file-name=%s, output-dir=%s', file_name, output_path)
     assert Path.exists(output_path.joinpath(f'{file_name}.png'))
+
+
+def setup_plot_features(features, contigs, circos_path, colors):
+    features_plus = []
+    features_minus = []
+    contig_ids = set([c['id'] for c in contigs])
+    for feat in features:
+        if feat['contig'] not in contig_ids:
+            continue
+        contig, start, stop, type = feat['contig'], feat['start'], feat['stop'], feat['type']
+        color = colors['features'].get(type.lower(), colors['features']['misc'])
+        if feat['strand'] == bc.STRAND_FORWARD:
+            features_plus.append(f"{contig} {start} {stop} {bc.STRAND_FORWARD} color={hex_to_rgb(color)}")
+        else:
+            features_minus.append(f"{contig} {start} {stop} {bc.STRAND_REVERSE} color={hex_to_rgb(color)}")
+    features_plus_path = circos_path.joinpath('features-plus.txt')
+    with features_plus_path.open('w') as fh:
+        fh.write('\n'.join(features_plus))
+        fh.write('\n')
+    features_minus_path = circos_path.joinpath('features-minus.txt')
+    with features_minus_path.open('w') as fh:
+        fh.write('\n'.join(features_minus))
+        fh.write('\n')
+    return [features_plus_path, features_minus_path]
+
+
+def setup_plot_cog(features, contigs, circos_path, colors):
+    features_plus = []
+    features_minus = []
+    features_extra = []
+    contig_ids = set([c['id'] for c in contigs])
+    for feat in features:
+        if feat['contig'] not in contig_ids:
+            continue
+        contig, start, stop = feat['contig'], feat['start'], feat['stop']
+        if feat['type'] == bc.FEATURE_CDS:
+            color = colors['features']['cds']
+            psc = feat.get('psc', None)
+            if psc is not None:
+                cog = psc.get('cog_category', None)
+                if cog is not None:
+                    if len(cog) != 1:
+                        cog = cog[:1]
+                    color = colors['cog-classes'].get(cog.upper(), colors['cog-classes']['S'])
+            if feat['strand'] == bc.STRAND_FORWARD:
+                features_plus.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
+            else:
+                features_minus.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
+        else:
+            features_extra.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(colors['features']['misc'])}")
+    features_plus_path = circos_path.joinpath('features-plus.txt')
+    with features_plus_path.open('w') as fh:
+        fh.write('\n'.join(features_plus))
+        fh.write('\n')
+    features_minus_path = circos_path.joinpath('features-minus.txt')
+    with features_minus_path.open('w') as fh:
+        fh.write('\n'.join(features_minus))
+        fh.write('\n')
+    features_extra_path = circos_path.joinpath('features-extra.txt')
+    with features_extra_path.open('w') as fh:
+        fh.write('\n'.join(features_extra))
+        fh.write('\n')
+    return [features_plus_path, features_minus_path, features_extra_path]
 
 
 def hex_to_rgb(hex_string):
