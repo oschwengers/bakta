@@ -397,6 +397,7 @@ orientation = out
         fh.write('\n')
     
     # execute Circos
+    log.info('write circular genome plot: file-name=%s, output-dir=%s', file_name, output_path)
     cmd = [
         'circos',
         '-conf',
@@ -415,8 +416,6 @@ orientation = out
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('Circos failed! circos-error-code=%d', proc.returncode)
         raise Exception(f'circos error! error code: {proc.returncode}')
-    log.info('wrote circular genome plot: file-name=%s, output-dir=%s', file_name, output_path)
-    assert Path.exists(output_path.joinpath(f'{file_name}.png'))
 
 
 def setup_plot_features(features, contigs, circos_path, colors):
