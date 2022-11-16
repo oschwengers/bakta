@@ -197,6 +197,22 @@ def write_plot(features, contigs, output_path, colors=COLORS, plot_name_suffix=N
     circos_path = cfg.tmp_path.joinpath(f'circos')
     circos_path.mkdir(parents=True, exist_ok=True)
 
+    # fix edge features because Circos cannot handle them correctly
+    non_edge_features = [feat for feat in features if not feat.get('edge', False)]
+    contigs_by_id = {c['id']: c for c in contigs}
+    for feat in [feat for feat in features if feat.get('edge', False)]:
+        contig = contigs_by_id[feat['contig']]
+        log.info('split edge feature: contig=%s, start=%i, stop=%i, strand=%s, edge=%s', contig['id'], feat['start'], feat['stop'], feat['strand'], feat['edge'])
+        feat_1 = feat.copy()
+        feat_1['stop'] = contig['length']
+        feat_1['edge'] = False
+        non_edge_features.append(feat_1)
+        feat_2 = feat.copy()
+        feat_2['start'] = 1
+        feat_2['edge'] = False
+        non_edge_features.append(feat_2)
+    features = non_edge_features
+
     # write feature files
     if plot_type == bc.PLOT_COG:
         features_path = setup_plot_cog(features, contigs, circos_path, colors)
