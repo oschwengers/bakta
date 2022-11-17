@@ -72,11 +72,10 @@ log = logging.getLogger('PLOT')
 def main():
     # parse options and arguments
     parser = bu.init_parser(sub_command='_plot')
-
     parser.add_argument('input', metavar='<input>', help='Bakta annotations in JSON format')
-    parser.add_argument('--config', '-c', action='store', default=None, help='Plotting configuration in YAML format')
     
     arg_group_io = parser.add_argument_group('Input / Output')
+    arg_group_io.add_argument('--config', '-c', action='store', default=None, help='Plotting configuration in YAML format')
     arg_group_io.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
     arg_group_io.add_argument('--prefix', '-p', action='store', default=None, help='Prefix for output files')
 

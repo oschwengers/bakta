@@ -659,11 +659,9 @@ Rapid & standardized annotation of bacterial genomes, MAGs & plasmids
 positional arguments:
   <input>               Bakta annotations in JSON format
 
-options:
+Input / Output:
   --config CONFIG, -c CONFIG
                         Plotting configuration in YAML format
-
-Input / Output:
   --output OUTPUT, -o OUTPUT
                         Output directory (default = current working directory)
   --prefix PREFIX, -p PREFIX
