@@ -81,7 +81,7 @@ def main():
 
     arg_group_plot = parser.add_argument_group('Plotting')
     arg_group_plot.add_argument('--sequences', action='store', default='all', help='Sequences to plot: comma separated number or name (default = all, numbers one-based)')
-    arg_group_plot.add_argument('--type', action='store', type=str, default=bc.PLOT_FEATURES, choices=[bc.PLOT_FEATURES, bc.PLOT_COG], help=f'Plot type: feature/cog (default = {bc.PLOT_FEATURES})')
+    arg_group_plot.add_argument('--type', action='store', type=str, default=bc.PLOT_FEATURES, choices=[bc.PLOT_FEATURES, bc.PLOT_COG], help=f'Plot type (default = {bc.PLOT_FEATURES})')
 
     arg_group_general = parser.add_argument_group('General')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
@@ -182,17 +182,6 @@ def main():
 
 
 def write_plot(features, contigs, output_path, colors=COLORS, plot_name_suffix=None, plot_type=bc.PLOT_FEATURES):
-    sequence_length = sum([c['length'] for c in contigs])
-    
-    track_radius = 1.0
-    gc_radius = 0.2
-    if sequence_length > 10_000:
-        label_prefix = 'kbp'
-        multiplier = 0.001
-    else:
-        label_prefix = 'bp'
-        multiplier = 1
-    
     # config paths
     circos_path = cfg.tmp_path.joinpath(f'circos')
     circos_path.mkdir(parents=True, exist_ok=True)
@@ -215,192 +204,26 @@ def write_plot(features, contigs, output_path, colors=COLORS, plot_name_suffix=N
 
     # write feature files
     if plot_type == bc.PLOT_COG:
-        features_path = setup_plot_cog(features, contigs, circos_path, colors)
+        feature_paths = write_features_type_cog(features, contigs, circos_path, colors)
     else:
-        features_path = setup_plot_features(features, contigs, circos_path, colors)
+        feature_paths = write_features_type_feature(features, contigs, circos_path, colors)
 
     # write gc content and gc skew files
-    step_size = int(sequence_length / 3600)  # 10 * 360°
-    if step_size < 3:
-        step_size = 3
-    window_size = 2 * step_size
-    if window_size < 50:
-        window_size = 50
-    gc_contents = []
-    gc_skews = []
-    max_gc_content = 0
-    max_gc_skew = 0
-    gc_mean = SeqUtils.GC(''.join([c['sequence'] for c in contigs]))
-    for contig in contigs:
-        seq = contig['sequence']
-        for w in range(0, len(seq), step_size):
-            start = w - window_size
-            if start < 0:
-                start += len(seq)
-            stop = w + window_size
-            if stop > len(seq):
-                stop -= len(seq)
-            subseq = seq[start:stop] if start < stop else seq[start:] + seq[:stop]
-            gc_value = gc_mean - SeqUtils.GC(subseq)
-            if max_gc_content < abs(gc_value):
-                max_gc_content = abs(gc_value)
-            gc_color = colors['gc-positive'] if gc_value >= 0 else colors['gc-negative']
-            gc_contents.append(f"{contig['id']} {w} {w} {gc_value} fill_color={hex_to_rgb(gc_color)}")
-            g, c = subseq.count('G'), subseq.count('C')
-            gc_skew = gc_skew = (g - c) / float(g + c) if (g + c) > 0 else 0.0
-            if max_gc_skew < abs(gc_skew):
-                max_gc_skew = abs(gc_skew)
-            gc_skew_color = colors['gc-skew-positive'] if gc_skew >= 0 else colors['gc-skew-negative']
-            gc_skews.append(f"{contig['id']} {w} {w} {gc_skew} fill_color={hex_to_rgb(gc_skew_color)}")
-
-    gc_content_path = circos_path.joinpath('gc_content.txt')
-    with gc_content_path.open('w') as fh:
-        fh.write('\n'.join(gc_contents))
-        fh.write('\n')
-    gc_skew_path = circos_path.joinpath('gc_skew.txt')
-    with gc_skew_path.open('w') as fh:
-        fh.write('\n'.join(gc_skews))
-        fh.write('\n')
+    tracks_path = circos_path.joinpath('tracks.conf')
+    
+    gc_content_path, max_gc, gc_skew_path, max_gc_skew = write_gc_content_skew(contigs, circos_path, colors)
+    write_tracks(tracks_path, feature_paths, gc_content_path, max_gc, gc_skew_path, max_gc_skew)
 
     # write main config
-    karyotype_path = circos_path.joinpath('karyotype.txt')
-    ideogram_path = circos_path.joinpath('ideogram.conf')
-    ticks_path = circos_path.joinpath('ticks.conf')
-    tracks_path = circos_path.joinpath('tracks.conf')
-    chromosomes_units = round(sequence_length/(10**(len(str(sequence_length)) - 1)))*(10**(len(str(sequence_length)) - 1))
     file_name = cfg.prefix if plot_name_suffix is None else f'{cfg.prefix}_{plot_name_suffix}'
-    log.debug('write plot: file-name=%s, output-dir=%s', file_name, output_path)
-    main_config_text = f'''
-karyotype                   = {karyotype_path}
-chromosomes_units           = {chromosomes_units}
-chromosomes_display_default = yes
-<plots>
-<<include {tracks_path}>>
-</plots>
-<image>
-<<include image.conf>>
-file*                       = {file_name}
-dir*                        = {output_path}
-</image> 
-<<include {ideogram_path}>>
-<<include {ticks_path}>>
-<<include etc/colors_fonts_patterns.conf>>
-<<include etc/housekeeping.conf>>
-    '''
-    main_conf = circos_path.joinpath('main.conf')
-    with main_conf.open('w') as fh:
-        fh.write(main_config_text)
-        fh.write('\n')
-
-    # write karyotype file
-    karyotypes = []
-    for i, c in enumerate(contigs):
-        karyotypes.append(f"chr - {c['id']} {i + 1} 0 {c['length']} {hex_to_rgb(colors['backbone'])}")
-    with karyotype_path.open('w') as fh:
-        fh.write('\n'.join(karyotypes))
-        fh.write('\n')
-
-    # write ideogram config
-    ideogram_text = '''
-<ideogram>
-<spacing>
-default     = 0.01r
-</spacing>
-radius      = 0.85r
-thickness   = 5p
-fill        = yes
-</ideogram>
-    '''
-    with ideogram_path.open('w') as fh:
-        fh.write(ideogram_text)
-        fh.write('\n')
-
-    # write ticks config:
-    ticks_text = f'''
-show_ticks       = yes
-show_tick_labels = yes       
-<ticks>
-label_separation = 20p
-tick_separation  = 2p 
-radius           = 1r
-color            = black
-thickness        = 4p
-label_offset     = 10p
-multiplier       = {multiplier}
-orientation      = out
-format           = %d {label_prefix}
-<tick>
-spacing          = 0.1u
-show_label       = yes
-label_size       = 40   
-size             = 25p
-thickness        = 4p
-</tick>
-<tick>
-spacing          = 0.025u
-show_label       = yes
-label_size       = 20
-size             = 15p
-thickness        = 3p
-</tick>
-<tick>
-spacing          = 0.0025u
-size             = 5p
-</tick>
-</ticks>
-    '''
-    with ticks_path.open('w') as fh:
-        fh.write(ticks_text)
-        fh.write('\n')
-
-    # write track configuration
-    track_texts = []
-    for feature in features_path:
-        track_text = f'''
-<plot>
-type             = tile
-file             = {feature}
-r1               = {track_radius}r
-r0               = {track_radius - 0.1}r
-orientation      = out
-layers           = 1
-margin           = 0.01u
-thickness        = 100
-padding          = 1
-stroke_color     = black
-stroke_thickness = 0
-layers_overflow  = collapse
-</plot>
-        '''
-        track_texts.append(track_text)
-        track_radius -= 0.1
-    for gc_path in [gc_content_path, gc_skew_path]:
-        maximum = max_gc_content if gc_path == gc_content_path else max_gc_skew
-        minimum = -maximum
-        track_text = f'''
-<plot>
-type        = histogram
-file        = {gc_path}
-r1          = {track_radius}r
-r0          = {track_radius-gc_radius}r
-min         = {minimum}
-max         = {maximum}
-thickness   = 0
-orientation = out
-</plot>    
-        '''
-        track_texts.append(track_text)
-        track_radius -= gc_radius
-    with tracks_path.open('w') as fh:
-        fh.write('\n'.join(track_texts))
-        fh.write('\n')
+    main_conf_path = write_main_config(circos_path, output_path, tracks_path, contigs, file_name, colors)
     
     # execute Circos
     log.info('write circular genome plot: file-name=%s, output-dir=%s', file_name, output_path)
     cmd = [
         'circos',
         '-conf',
-        main_conf
+        main_conf_path
     ]
     log.debug('cmd=%s', cmd)
     proc = sp.run(
@@ -417,7 +240,7 @@ orientation = out
         raise Exception(f'circos error! error code: {proc.returncode}')
 
 
-def setup_plot_features(features, contigs, circos_path, colors):
+def write_features_type_feature(features, contigs, circos_path, colors):
     features_plus = []
     features_minus = []
     contig_ids = set([c['id'] for c in contigs])
@@ -441,7 +264,7 @@ def setup_plot_features(features, contigs, circos_path, colors):
     return [features_plus_path, features_minus_path]
 
 
-def setup_plot_cog(features, contigs, circos_path, colors):
+def write_features_type_cog(features, contigs, circos_path, colors):
     features_plus = []
     features_minus = []
     features_extra = []
@@ -480,12 +303,189 @@ def setup_plot_cog(features, contigs, circos_path, colors):
     return [features_plus_path, features_minus_path, features_extra_path]
 
 
+def write_gc_content_skew(contigs, circos_path, colors):
+    sequence_length = sum([c['length'] for c in contigs])
+    step_size = int(sequence_length / 3600)  # 10 * 360°
+    if step_size < 3:
+        step_size = 3
+    window_size = 2 * step_size
+    if window_size < 50:
+        window_size = 50
+    gc_contents = []
+    gc_skews = []
+    max_gc = 0
+    max_gc_skew = 0
+    gc_mean = SeqUtils.GC(''.join([c['sequence'] for c in contigs]))
+    for contig in contigs:
+        seq = contig['sequence']
+        for w in range(0, len(seq), step_size):
+            start = w - window_size
+            if start < 0:
+                start += len(seq)
+            stop = w + window_size
+            if stop > len(seq):
+                stop -= len(seq)
+            subseq = seq[start:stop] if start < stop else seq[start:] + seq[:stop]
+            gc_value = gc_mean - SeqUtils.GC(subseq)
+            if max_gc < abs(gc_value):
+                max_gc = abs(gc_value)
+            gc_color = colors['gc-positive'] if gc_value >= 0 else colors['gc-negative']
+            gc_contents.append(f"{contig['id']} {w} {w} {gc_value} fill_color={hex_to_rgb(gc_color)}")
+            g, c = subseq.count('G'), subseq.count('C')
+            gc_skew = gc_skew = (g - c) / float(g + c) if (g + c) > 0 else 0.0
+            if max_gc_skew < abs(gc_skew):
+                max_gc_skew = abs(gc_skew)
+            gc_skew_color = colors['gc-skew-positive'] if gc_skew >= 0 else colors['gc-skew-negative']
+            gc_skews.append(f"{contig['id']} {w} {w} {gc_skew} fill_color={hex_to_rgb(gc_skew_color)}")
+
+    log.debug('write gc config: seq-length=%i, step-size=%i, window-size=%i, max-gc=%i, max-gc-skew=%i', sequence_length, step_size, window_size, max_gc, max_gc_skew)
+    gc_content_path = circos_path.joinpath('gc_content.txt')
+    with gc_content_path.open('w') as fh:
+        fh.write('\n'.join(gc_contents))
+        fh.write('\n')
+    gc_skew_path = circos_path.joinpath('gc_skew.txt')
+    with gc_skew_path.open('w') as fh:
+        fh.write('\n'.join(gc_skews))
+        fh.write('\n')
+    return gc_content_path, max_gc, gc_skew_path, max_gc_skew
+
+
+def write_tracks(tracks_path, feature_paths, gc_content_path, max_gc, gc_skew_path, max_gc_skew):  # write track configuration
+    track_radius = 1.0
+    track_texts = []
+    for feature in feature_paths:
+        track_text = f'''
+<plot>
+type             = tile
+file             = {feature}
+r1               = {track_radius}r
+r0               = {track_radius - 0.1}r
+orientation      = out
+layers           = 1
+margin           = 0.01u
+thickness        = 100
+padding          = 1
+stroke_color     = black
+stroke_thickness = 0
+layers_overflow  = collapse
+</plot>
+        '''
+        track_texts.append(track_text)
+        track_radius -= 0.1
+    gc_radius = 0.2
+    for gc_path, maximum in [(gc_content_path, max_gc), (gc_skew_path, max_gc_skew)]:
+        minimum = -maximum
+        track_text = f'''
+<plot>
+type        = histogram
+file        = {gc_path}
+r1          = {track_radius}r
+r0          = {track_radius-gc_radius}r
+min         = {minimum}
+max         = {maximum}
+thickness   = 0
+orientation = out
+</plot>    
+        '''
+        track_texts.append(track_text)
+        track_radius -= gc_radius
+    with tracks_path.open('w') as fh:
+        fh.write('\n'.join(track_texts))
+        fh.write('\n')
+        
+
 def hex_to_rgb(hex_string):
     hex_string = hex_string.replace('#', '')
     rgb = []
     for i in (0, 2, 4):
         rgb.append(str(int(hex_string[i:i+2], 16)))
     return ','.join(rgb)
+
+
+def write_main_config(circos_path, output_path, tracks_path, contigs, file_name, colors):
+    karyotype_path = circos_path.joinpath('karyotype.txt')
+    sequence_length = sum([c['length'] for c in contigs])
+    chromosomes_units = round(sequence_length/(10**(len(str(sequence_length)) - 1)))*(10**(len(str(sequence_length)) - 1))
+
+    if sequence_length > 10_000:
+        label_prefix = 'kbp'
+        multiplier = 0.001
+    else:
+        label_prefix = 'bp'
+        multiplier = 1
+    
+    log.debug('write main config: file-name=%s, output-dir=%s, multiplier=%s, label-prefix%s', file_name, output_path, multiplier, label_prefix)
+    main_config_text = f'''
+karyotype                   = {karyotype_path}
+chromosomes_units           = {chromosomes_units}
+chromosomes_display_default = yes
+<plots>
+<<include {tracks_path}>>
+</plots>
+<image>
+<<include image.conf>>
+file*                       = {file_name}
+dir*                        = {output_path}
+</image> 
+
+<ideogram>
+<spacing>
+default     = 0.01r
+</spacing>
+radius      = 0.85r
+thickness   = 5p
+fill        = yes
+</ideogram>
+
+show_ticks       = yes
+show_tick_labels = yes       
+<ticks>
+label_separation = 20p
+tick_separation  = 2p 
+radius           = 1r
+color            = black
+thickness        = 4p
+label_offset     = 10p
+multiplier       = {multiplier}
+orientation      = out
+format           = %d {label_prefix}
+<tick>
+spacing          = 0.1u
+show_label       = yes
+label_size       = 40   
+size             = 25p
+thickness        = 4p
+</tick>
+<tick>
+spacing          = 0.025u
+show_label       = yes
+label_size       = 20
+size             = 15p
+thickness        = 3p
+</tick>
+<tick>
+spacing          = 0.0025u
+size             = 5p
+</tick>
+</ticks>
+
+<<include etc/colors_fonts_patterns.conf>>
+<<include etc/housekeeping.conf>>
+    '''
+    main_conf_path = circos_path.joinpath('main.conf')
+    with main_conf_path.open('w') as fh:
+        fh.write(main_config_text)
+        fh.write('\n')
+
+    # write karyotype file
+    karyotypes = []
+    for i, c in enumerate(contigs):
+        karyotypes.append(f"chr - {c['id']} {i + 1} 0 {c['length']} {hex_to_rgb(colors['backbone'])}")
+    with karyotype_path.open('w') as fh:
+        fh.write('\n'.join(karyotypes))
+        fh.write('\n')
+
+    return main_conf_path
 
 
 if __name__ == '__main__':
