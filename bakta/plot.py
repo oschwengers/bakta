@@ -183,10 +183,7 @@ def main():
 
 def write_plot(features, contigs, output_path, colors=COLORS, plot_name_suffix=None, plot_type=bc.PLOT_FEATURES):
     sequence_length = sum([c['length'] for c in contigs])
-    sequences = ''.join([c['sequence'] for c in contigs])
-    window_size = int(sequence_length/100) if sequence_length < 10000 else int(sequence_length/1000)
-    window_size = 3 if window_size < 3 else window_size
-    step_size = int(window_size * 0.2) if window_size >= 5 else 1
+    
     track_radius = 1.0
     gc_radius = 0.2
     if sequence_length > 10_000:
@@ -222,36 +219,35 @@ def write_plot(features, contigs, output_path, colors=COLORS, plot_name_suffix=N
     else:
         features_path = setup_plot_features(features, contigs, circos_path, colors)
 
-    # write gc content unf gc skew files
+    # write gc content and gc skew files
+    step_size = int(sequence_length / 3600)  # 10 * 360°
+    if step_size < 3:
+        step_size = 3
+    window_size = 2 * step_size
+    if window_size < 50:
+        window_size = 50
     gc_contents = []
     gc_skews = []
     max_gc_content = 0
     max_gc_skew = 0
-    gc_mean = SeqUtils.GC(sequences)
+    gc_mean = SeqUtils.GC(''.join([c['sequence'] for c in contigs]))
     for contig in contigs:
         seq = contig['sequence']
         for w in range(0, len(seq), step_size):
-            start = int(w - (window_size / 2))
+            start = w - window_size
             if start < 0:
                 start += len(seq)
-            stop = int(w + (window_size / 2))
+            stop = w + window_size
             if stop > len(seq):
                 stop -= len(seq)
-            if start < stop:
-                subseq = seq[start:stop]
-            else:
-                subseq = seq[start:] + seq[:stop]
+            subseq = seq[start:stop] if start < stop else seq[start:] + seq[:stop]
             gc_value = gc_mean - SeqUtils.GC(subseq)
             if max_gc_content < abs(gc_value):
                 max_gc_content = abs(gc_value)
             gc_color = colors['gc-positive'] if gc_value >= 0 else colors['gc-negative']
             gc_contents.append(f"{contig['id']} {w} {w} {gc_value} fill_color={hex_to_rgb(gc_color)}")
-            g = subseq.count('G')
-            c = subseq.count('C')
-            if (g + c) > 0:
-                gc_skew = (g - c) / float(g + c)
-            else:
-                gc_skew = 0.0
+            g, c = subseq.count('G'), subseq.count('C')
+            gc_skew = gc_skew = (g - c) / float(g + c) if (g + c) > 0 else 0.0
             if max_gc_skew < abs(gc_skew):
                 max_gc_skew = abs(gc_skew)
             gc_skew_color = colors['gc-skew-positive'] if gc_skew >= 0 else colors['gc-skew-negative']
