@@ -114,25 +114,15 @@ def main():
     except:
         log.error('provided annotation file not valid! path=%s', args.input)
         sys.exit(f'ERROR: annotation file ({args.input}) not valid!')
+    
     log.info('input-path=%s', annotation_path)
     cfg.check_tmp_path(args)
-    bu.test_dependencies()
-
     cfg.debug = args.debug
     log.info('debug=%s', cfg.debug)
+    cfg.verbose = True if cfg.debug else args.verbose
+    log.info('verbose=%s', cfg.verbose)
     plot_type = args.type
     log.info('plot-type=%s', plot_type)
-
-    if(cfg.debug):
-        print(f"\nBakta runs in DEBUG mode! Temporary data will not be destroyed at: {cfg.tmp_path}")
-    else:
-        atexit.register(bu.cleanup, log, cfg.tmp_path)  # register cleanup exit hook
-
-    # load genome annotations
-    with annotation_path.open('r') as fh:
-        annotation = json.load(fh)
-    features = annotation['features']
-    contigs = annotation['sequences']
 
     # check and open configuration file
     if args.config is not None:
@@ -151,6 +141,31 @@ def main():
             sys.exit(f'ERROR: config file ({args.config}) not valid!')
     else:
         config = {}
+
+    bu.test_dependencies()
+    if(cfg.verbose):
+        print(f'Bakta v{bakta.__version__}')
+        print('Options and arguments:')
+        print(f'\tinput: {annotation_path}')
+        print(f'\tconfig: {config_path}')
+        print(f'\toutput: {cfg.output_path}')
+        print(f'\tprefix: {cfg.prefix}')
+        print(f'\ttmp directory: {cfg.tmp_path}')
+
+    if(cfg.debug):
+        print(f"\nBakta runs in DEBUG mode! Temporary data will not be destroyed at: {cfg.tmp_path}")
+    else:
+        atexit.register(bu.cleanup, log, cfg.tmp_path)  # register cleanup exit hook
+
+    ############################################################################
+    # Write plots
+    ############################################################################
+
+    # load genome annotations
+    with annotation_path.open('r') as fh:
+        annotation = json.load(fh)
+    features = annotation['features']
+    contigs = annotation['sequences']
 
     # load colors if specified
     colors = COLORS

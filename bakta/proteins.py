@@ -52,11 +52,11 @@ def main():
     ############################################################################
     # Setup logging
     ############################################################################
-    prefix = args.prefix if args.prefix else Path(args.input).stem
+    cfg.prefix = args.prefix if args.prefix else Path(args.input).stem
     output_path = cfg.check_output_path(args)
     
-    bu.setup_logger(output_path, prefix, args)
-    log.info('prefix=%s', prefix)
+    bu.setup_logger(output_path, cfg.prefix, args)
+    log.info('prefix=%s', cfg.prefix)
     log.info('output=%s', output_path)
 
     ############################################################################
@@ -82,12 +82,29 @@ def main():
     cfg.check_user_proteins(args)
     cfg.check_threads(args)
     cfg.skip_cds = False  # circumvent main config setup
-
+    cfg.debug = args.debug
+    log.info('debug=%s', cfg.debug)
+    cfg.verbose = True if cfg.debug else args.verbose
+    log.info('verbose=%s', cfg.verbose)
+    
     bu.test_dependencies()
-    atexit.register(bu.cleanup, log, cfg.tmp_path)  # register cleanup exit hook
+    if(cfg.verbose):
+        print(f'Bakta v{bakta.__version__}')
+        print('Options and arguments:')
+        print(f'\tinput: {aa_path}')
+        print(f"\tdb: {cfg.db_path}, version {cfg.db_info['major']}.{cfg.db_info['minor']}")
+        print(f'\toutput: {cfg.output_path}')
+        print(f'\tprefix: {cfg.prefix}')
+        print(f'\ttmp directory: {cfg.tmp_path}')
+        print(f'\t# threads: {cfg.threads}')
+    
+    if(cfg.debug):
+        print(f"\nBakta runs in DEBUG mode! Temporary data will not be destroyed at: {cfg.tmp_path}")
+    else:
+        atexit.register(bu.cleanup, log, cfg.tmp_path)  # register cleanup exit hook
 
     ############################################################################
-    # Setup logging
+    # Import proteins
     ############################################################################
     try:
         aas = fasta.import_contigs(aa_path, False, False)
@@ -111,16 +128,16 @@ def main():
     annotate_aa(aas)
     
     print('write results...')
-    annotations_path = output_path.joinpath(f'{prefix}.tsv')
+    annotations_path = output_path.joinpath(f'{cfg.prefix}.tsv')
     header_columns = ['ID', 'Length', 'Gene', 'Product', 'EC', 'GO', 'COG', 'RefSeq', 'UniParc', 'UniRef']
     print(f'\tfull annotations (TSV): {annotations_path}')
     tsv.write_features(aas, header_columns, map_aa_columns, annotations_path)
-    hypotheticals_path = output_path.joinpath(f'{prefix}.hypotheticals.tsv')
+    hypotheticals_path = output_path.joinpath(f'{cfg.prefix}.hypotheticals.tsv')
     header_columns = ['ID', 'Length', 'Mol Weight [kDa]', 'Iso El. Point', 'Pfam hits']
     hypotheticals = hypotheticals = [aa for aa in aas if 'hypothetical' in aa]
     print(f'\tinformation on hypotheticals (TSV): {hypotheticals_path}')
     tsv.write_features(hypotheticals, header_columns, map_hypothetical_columns, hypotheticals_path)
-    aa_output_path = output_path.joinpath(f'{prefix}.faa')
+    aa_output_path = output_path.joinpath(f'{cfg.prefix}.faa')
     print(f'\tannotated sequences (Fasta): {aa_output_path}')
     fasta.write_faa(aas, aa_output_path)
 
