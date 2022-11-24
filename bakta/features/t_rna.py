@@ -96,7 +96,6 @@ def predict_t_rnas(genome: dict, contigs_path: Path):
                 trna['anti_codon'] = anti_codon.lower()
 
             if('pseudo' in note):
-                trna['product'] = f"(pseudo) {trna['product']}"
                 trna['pseudo'] = True
 
             trna['score'] = float(score)
