@@ -91,12 +91,11 @@ def predict_t_rnas(genome: dict, contigs_path: Path):
             trna['product'] = 'tRNA-Xxx'
             if(trna_type != 'Undet' and trna_type != 'Sup'):
                 trna['gene'] = f'{trna_type}_trna'
-                trna['product'] = f'tRNA-{trna_type}'
+                trna['product'] = f'tRNA-{trna_type}({anti_codon.lower()})'
                 trna['amino_acid'] = trna_type
                 trna['anti_codon'] = anti_codon.lower()
 
             if('pseudo' in note):
-                trna['product'] = f"(pseudo) {trna['product']}"
                 trna['pseudo'] = True
 
             trna['score'] = float(score)

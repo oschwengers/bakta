@@ -27,12 +27,7 @@ def write_tsv(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_
                     feat_type = bc.INSDC_FEATURE_ASSEMBLY_GAP if feat['length'] >= 100 else bc.INSDC_FEATURE_GAP
 
                 gene = feat['gene'] if feat.get('gene', None) else ''
-
-                if feat.get('pseudo', False):
-                    pseudogene: str = '(pseudo) '
-                else:
-                    pseudogene: str = ''
-
+                product = f"(pseudo) {feat.get('product', '')}" if feat.get('pseudo', False) else feat.get('product', '')
                 fh.write('\t'.join([feat['contig'],
                                     feat_type,
                                     str(feat['start']),
@@ -40,7 +35,7 @@ def write_tsv(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_
                                     feat['strand'],
                                     feat.get('locus', ''),
                                     gene,
-                                    f"{pseudogene}{feat.get('product', '')}",
+                                    product,
                                     ', '.join(sorted(feat.get('db_xrefs', [])))]))
                 fh.write('\n')
     return

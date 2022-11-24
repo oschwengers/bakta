@@ -62,6 +62,10 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         annotations['gene'] = feat['gene']
                     if(feat.get('pseudo', False)):
                         annotations['pseudo'] = True
+                    if(feat.get('anti_codon', False)):
+                        annotations['anti_codon'] = feat['anti_codon']
+                    if(feat.get('amino_acid', False)):
+                        annotations['amino_acid'] = feat['amino_acid']
                     if(cfg.compliant):
                         gene_id = f"{feat['locus']}_gene"
                         annotations['Parent'] = gene_id
