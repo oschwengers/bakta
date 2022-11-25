@@ -147,7 +147,7 @@ def main():
         print(f'Bakta v{bakta.__version__}')
         print('Options and arguments:')
         print(f'\tinput: {annotation_path}')
-        print(f'\tconfig: {config_path}')
+        if(args.config): print(f'\tconfig: {args.config}')
         print(f'\toutput: {cfg.output_path}')
         print(f'\tprefix: {cfg.prefix}')
         print(f'\ttmp directory: {cfg.tmp_path}')
