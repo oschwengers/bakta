@@ -486,6 +486,7 @@ size             = 5p
 
 <<include etc/colors_fonts_patterns.conf>>
 <<include etc/housekeeping.conf>>
+max_ideograms*   = 10000
     '''
     main_conf_path = circos_path.joinpath('main.conf')
     with main_conf_path.open('w') as fh:
