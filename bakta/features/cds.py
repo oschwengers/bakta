@@ -32,6 +32,7 @@ def predict(genome: dict, sequences_path: Path):
     prodigal_tf_path = cfg.prodigal_tf
     trainings_info = None
     prodigal_metamode = genome['size'] < pyrodigal.MIN_SINGLE_GENOME  # 20_000 bp
+    log.debug('prodigal mode: meta=%s', prodigal_metamode)
     if(prodigal_tf_path is None):
         closed = not genome['complete']
         if(not prodigal_metamode):
@@ -45,7 +46,8 @@ def predict(genome: dict, sequences_path: Path):
         try:
             with prodigal_tf_path.open('rb') as fh_tf:
                 trainings_info = pyrodigal.TrainingInfo.load(fh_tf)
-                log.info('use provided prodigal training file: file=%s', prodigal_tf_path)
+                prodigal_metamode = False
+                log.info('use provided prodigal training info: file=%s, meta mode=%s', prodigal_tf_path, prodigal_metamode)
         except:
             log.error('Cannot use provided prodigal training file: file=%s', prodigal_tf_path)
             sys.exit(f'Error! Cannot use provided prodigal training file: file={prodigal_tf_path}')
