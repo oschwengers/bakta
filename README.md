@@ -685,14 +685,14 @@ General:
 
 Currently, there are two types of plots: `features` (the default) and `cog`. In default mode (`features`), all features are plotted on two rings representing the forward and reverse strand from outer to inner, respectively using the following feature colors:
 
-- CDS: ![](https://via.placeholder.com/10/cccccc/000000?text=+) `#cccccc`
-- tRNA/tmRNA: ![](https://via.placeholder.com/10/b2df8a/000000?text=+) `#b2df8a`
-- rRNA: ![](https://via.placeholder.com/10/fb8072/000000?text=+) `#fb8072`
-- ncRNA: ![](https://via.placeholder.com/10/fdb462/000000?text=+) `#fdb462`
-- ncRNA-region: ![](https://via.placeholder.com/10/80b1d3/000000?text=+) `#80b1d3`
-- CRISPR: ![](https://via.placeholder.com/10/bebada/000000?text=+) `#bebada`
-- Gap: ![](https://via.placeholder.com/10/000000/000000?text=+) `#000000`
-- Misc: ![](https://via.placeholder.com/10/666666/000000?text=+) `#666666`
+- CDS: ![#cccccc](https://via.placeholder.com/10/cccccc/000000?text=+) `#cccccc`
+- tRNA/tmRNA: ![#b2df8a](https://via.placeholder.com/10/b2df8a/000000?text=+) `#b2df8a`
+- rRNA: ![#fb8072](https://via.placeholder.com/10/fb8072/000000?text=+) `#fb8072`
+- ncRNA: ![#fdb462](https://via.placeholder.com/10/fdb462/000000?text=+) `#fdb462`
+- ncRNA-region: ![#80b1d3](https://via.placeholder.com/10/80b1d3/000000?text=+) `#80b1d3`
+- CRISPR: ![#bebada](https://via.placeholder.com/10/bebada/000000?text=+) `#bebada`
+- Gap: ![#000000](https://via.placeholder.com/10/000000/000000?text=+) `#000000`
+- Misc: ![#666666](https://via.placeholder.com/10/666666/000000?text=+) `#666666`
 
 In the `cog` mode, all protein-coding genes (CDS) are colored due to assigned COG functional categories. To better distinguish non-coding genes, these are plotted on an additional 3rd ring.
 
