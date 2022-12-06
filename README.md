@@ -685,18 +685,18 @@ General:
 
 Currently, there are two types of plots: `features` (the default) and `cog`. In default mode (`features`), all features are plotted on two rings representing the forward and reverse strand from outer to inner, respectively using the following feature colors:
 
-- CDS: ![#cccccc](https://via.placeholder.com/10/cccccc/000000?text=+) `#cccccc`
-- tRNA/tmRNA: ![#b2df8a](https://via.placeholder.com/10/b2df8a/000000?text=+) `#b2df8a`
-- rRNA: ![#fb8072](https://via.placeholder.com/10/fb8072/000000?text=+) `#fb8072`
-- ncRNA: ![#fdb462](https://via.placeholder.com/10/fdb462/000000?text=+) `#fdb462`
-- ncRNA-region: ![#80b1d3](https://via.placeholder.com/10/80b1d3/000000?text=+) `#80b1d3`
-- CRISPR: ![#bebada](https://via.placeholder.com/10/bebada/000000?text=+) `#bebada`
-- Gap: ![#000000](https://via.placeholder.com/10/000000/000000?text=+) `#000000`
-- Misc: ![#666666](https://via.placeholder.com/10/666666/000000?text=+) `#666666`
+- CDS: `#cccccc`
+- tRNA/tmRNA: `#b2df8a`
+- rRNA: `#fb8072`
+- ncRNA: `#fdb462`
+- ncRNA-region: `#80b1d3`
+- CRISPR: `#bebada`
+- Gap: `#000000`
+- Misc: `#666666`
 
 In the `cog` mode, all protein-coding genes (CDS) are colored due to assigned COG functional categories. To better distinguish non-coding genes, these are plotted on an additional 3rd ring.
 
-In addition, both plot types share two innermost GC content and GC skew rings. The first represents the GC content per sliding window over the entire sequence(s) with green and red representing GC above and below average, respectively. The 2nd represents the GC skew - a common plot giving hints on a replicon's replication bubble and hence, on the completeness of the assembly. On a complete & circular bacterial chromosome, you normally see two inflection points at the origin of replication and at its opposite region -> [Wikipedia](https://en.wikipedia.org/wiki/GC_skew)
+In addition, both plot types share two innermost GC content and GC skew rings. The first ring represents the GC content per sliding window over the entire sequence(s) in green (`#33a02c`) and red `#e31a1c` representing GC above and below average, respectively. The 2nd ring represents the GC skew in orange (`#fdbf6f`) and blue (`#1f78b4`). The GC skew gives hints on a replicon's replication bubble and hence, on the completeness of the assembly. On a complete & circular bacterial chromosome, you normally see two inflection points at the origin of replication and at its opposite region -> [Wikipedia](https://en.wikipedia.org/wiki/GC_skew)
 
 ## Web version
 
