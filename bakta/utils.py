@@ -14,6 +14,7 @@ from argparse import Namespace
 from datetime import datetime
 from typing import Dict, Sequence, Tuple
 from pathlib import Path
+from pkg_resources import resource_filename
 
 from Bio.Seq import Seq
 
@@ -66,7 +67,7 @@ def parse_arguments():
     parser.add_argument('genome', metavar='<genome>', help='Genome sequences in (zipped) fasta format')
 
     arg_group_io = parser.add_argument_group('Input / Output')
-    arg_group_io.add_argument('--db', '-d', action='store', default=None, help='Database path (default = <bakta_path>/db). Can also be provided as BAKTA_DB environment variable.')
+    arg_group_io.add_argument('--db', '-d', action='store', default=resource_filename('bakta', 'db'), help='Database path (default = <bakta_path>/db). Can also be provided as BAKTA_DB environment variable.')
     arg_group_io.add_argument('--min-contig-length', '-m', action='store', type=int, default=1, dest='min_contig_length', help='Minimum contig size (default = 1; 200 in compliant mode)')
     arg_group_io.add_argument('--prefix', '-p', action='store', default=None, help='Prefix for output files')
     arg_group_io.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
@@ -244,7 +245,7 @@ def test_dependencies():
 
     if(cfg.skip_ori is not None and cfg.skip_ori is False):
         test_dependency(DEPENDENCY_BLASTN)
-    
+
     if(cfg.skip_plot is not None and cfg.skip_plot is False):
         test_dependency(DEPENDENCY_CIRCOS)
 
@@ -404,7 +405,7 @@ def qc_contigs(contigs: Sequence[dict], replicons: Dict[str, dict]) -> Tuple[Seq
                 contig['complete'] = True
                 contig['topology'] = bc.TOPOLOGY_CIRCULAR
                 log.debug('qc: detected complete replicon via description: id=%s, description=%s', contig['id'], contig['description'])
-            
+
             if('chromosome' in contig_description):
                 contig['type'] = bc.REPLICON_CHROMOSOME
                 log.debug('qc: detected chromosome replicon type via description: id=%s, description=%s', contig['id'], contig['description'])
