@@ -322,7 +322,7 @@ def check_db_path(args: Namespace) -> Path:
         except:
             sys.exit(f'ERROR: wrong database path! BAKTA_DB={db_dir}')
     else:
-        base_dir = Path(__file__).parent.parent
+        base_dir = Path(__file__).parent
         db_tmp_path = base_dir.joinpath('db')
         log.debug('test base_dir db: db_tmp=%s', db_tmp_path)
         if(db_tmp_path.is_dir()):
