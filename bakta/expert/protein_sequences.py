@@ -76,11 +76,11 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
                     'model_cov': model_cov,
                     'identity': identity,
                     'evalue': evalue,
-                    'bitscore': bitscore
+                    'bitscore': bitscore,
+                    'db_xrefs': [] if dbxrefs == '' else dbxrefs.split(',')
                 }
-                dbxrefs = None if dbxrefs == '' else dbxrefs.split(',')
-                if(dbxrefs is not None):
-                    expert_hit['db_xrefs'] = dbxrefs
+                if(expert_system == 'user_proteins'):
+                    expert_hit['db_xrefs'].append(f'UserProtein:{model_id}')
                 if('expert' not in cds):
                     cds['expert'] = {}
                 cds['expert'][expert_system] = expert_hit

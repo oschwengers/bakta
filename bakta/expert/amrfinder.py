@@ -58,7 +58,6 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path):
                 cds = cds_by_hexdigest[aa_identifier]
                 expert_hit = {
                     'rank': 95,
-                    'id': accession_closest_seq,
                     'gene': gene if gene != '' else None,
                     'product': product,
                     'method': method
@@ -69,11 +68,13 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path):
                     expert_hit['model_cov'] = model_cov
                     identity = float(ident_ref_seq) / 100
                     expert_hit['identity'] = identity
+                    expert_hit['id'] = accession_closest_seq
                     expert_hit['db_xrefs'] = [f'{bc.DB_XREF_NCBI_PROTEIN}:{accession_closest_seq}']
                 else:
-                    identity = 0
                     model_cov = 0
-                    # expert_hit['db_xrefs'] = []  # ToDo: hold back until NCBIFam dbxref prefix is solved.
+                    identity = 0
+                    expert_hit['id'] = hmm_id
+                    expert_hit['db_xrefs'] = [f'{bc.DB_XREF_NCBI_FAMILIES}:{hmm_id}']
 
                 if('expert' not in cds):
                     cds['expert'] = {}

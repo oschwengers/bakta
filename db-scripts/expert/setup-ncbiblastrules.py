@@ -58,6 +58,7 @@ with blastrule_tsv_path.open(encoding='windows-1252') as fh:
             else:
                 br['rank'] = 1
             for refseq_acc in br['refseq_accs']:
+                br['dbxref'].append(f'BlastRules:{refseq_acc}')
                 blast_rules[refseq_acc] = br
 print(f'\tstored BlastRule ids: {len(blast_rules)}')
 
