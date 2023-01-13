@@ -58,7 +58,7 @@ def check(db_path: Path) -> dict:
 
     if(db_path is None):
         log.error('directory neither provided nor detected!')
-        sys.exit('ERROR: database directory not provided nor detected! Please provide a valid path to the database directory.')
+        sys.exit('ERROR: database directory not provided nor detected!\nPlease provide a valid path to the database directory.')
 
     if(not os.access(str(db_path), os.R_OK & os.X_OK)):
         log.error('directory (%s) not readable/accessible!', db_path)
@@ -67,7 +67,7 @@ def check(db_path: Path) -> dict:
     version_path = db_path.joinpath('version.json')
     if(not os.access(str(version_path), os.R_OK) or not version_path.is_file()):
         log.error('version file not readable!')
-        sys.exit('ERROR: database version file (version.json) not readable!')
+        sys.exit(f'ERROR: database version file (version.json) not readable!\nPlease check if {db_path} is the correct path. Maybe there is another \'db\' subdirectory?')
 
     try:
         with version_path.open() as fh:
