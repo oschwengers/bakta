@@ -58,6 +58,7 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path):
                 cds = cds_by_hexdigest[aa_identifier]
                 expert_hit = {
                     'rank': 95,
+                    'id': accession_closest_seq,
                     'gene': gene if gene != '' else None,
                     'product': product,
                     'method': method
