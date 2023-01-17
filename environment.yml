@@ -7,7 +7,7 @@ dependencies:
   - biopython>=1.78
   - xopen>=1.1.0
   - requests>=2.25.1
-  - alive-progress==1.6.2
+  - alive-progress>=3.0.1
   - pyyaml>=6.0
   - pyrodigal>=2.0.2
   - trnascan-se>=2.0.11
