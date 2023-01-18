@@ -199,11 +199,13 @@ def test_dependency(dependency):
     """Test the proper installation of the required 3rd party executable."""
     version = read_tool_output(dependency)
     check_result = check_version(version, dependency[0], dependency[1])
+    tool_name = dependency[3][0]
     if (not check_result):
-        log.error('wrong dependency version for %s: installed=%s, minimum=%s', dependency[3][0], version, dependency[0])
-        sys.exit(f'ERROR: Wrong {dependency[3][0]} version installed. Please, either install {dependency[3][0]} version {dependency[0]} or use {dependency[4]}!')
+        log.error('wrong dependency version for %s: installed=%s, minimum=%s', tool_name, version, dependency[0])
+        sys.exit(f'ERROR: Wrong {tool_name} version installed. Please, either install {tool_name} version {dependency[0]} or use {dependency[4]}!')
     else:
-        log.info('dependency: tool=%s, version=%s', dependency[3][0], version)
+        tool_path = shutil.which(tool_name)
+        log.info('dependency: tool=%s, version=%s, path=%s', tool_name, version, tool_path)
 
 
 def test_dependencies():
