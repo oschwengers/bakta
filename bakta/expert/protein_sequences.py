@@ -85,7 +85,7 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
                     cds['expert'] = {}
                 cds['expert'][expert_system] = expert_hit
                 log.debug(
-                    'hit: contig=%s, start=%i, stop=%i, strand=%s, source=%sm, rank=%i, query-cov=%0.3f, model-cov=%0.3f, identity=%0.3f, gene=%s, product=%s, evalue=%1.1e, bitscore=%f',
+                    'hit: contig=%s, start=%i, stop=%i, strand=%s, source=%s, rank=%i, query-cov=%0.3f, model-cov=%0.3f, identity=%0.3f, gene=%s, product=%s, evalue=%1.1e, bitscore=%f',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], source, rank, query_cov, model_cov, identity, gene, product, evalue, bitscore
                 )
                 cds_found.add(aa_identifier)
