@@ -8,6 +8,7 @@ from Bio import SeqIO
 
 
 FASTA_HEADER_PATTERN = re.compile(r"(VFG\d{6})(?:\(gb\|[\w\.]+?\))? \(([\w\/\.\-\\']{2,20})\) (.+)\[(.+)\(([A-Z]{2,3}\d{3,4})\)\] (?:\[.+\])")
+GENE_PATTERN = re.compile(r"[a-z]{3}[A-Z]?\d?")
 VFDB_RANK = 75
 VFDB_MIN_IDENTITY = 90
 VFDB_MIN_QUERY_COV = 90
@@ -44,7 +45,11 @@ with proteins_path.open() as fh_in, expert_sequences_path.open('a') as fh_out:
             print(f"pattern is none: {record.description}")
             continue
         vfdb_id = m.group(1)
-        gene = m.group(2).strip()
+        genes = []
+        for gene_raw in m.group(2).strip().split('/'):
+            if GENE_PATTERN.match(gene_raw):
+                genes.append(gene_raw)
+        gene = ','.join(genes)
         product = m.group(3).strip()
         vfdb_category_id = m.group(5)
         seq = str(record.seq).upper()
