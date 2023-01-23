@@ -37,7 +37,7 @@ jobs:
         activate-environment: bakta
     - name: Install DeepSig
       if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: conda install deepsig
+      run: conda install numpy=1.23 keras=2.4.3 tensorflow=2.2.0 chardet deepsig
     - name: Install PyTest
       run: conda install pytest
     - name: Conda info
