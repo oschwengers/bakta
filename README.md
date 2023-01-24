@@ -491,8 +491,9 @@ IPS & PSC have been comprehensively pre-annotated integrating annotations & data
 - NCBI COG db (PSC: 3,424,142)
 - KEGG Kofams (PSC: 17,787,347)
 - SwissProt EC/GO terms (PSC: 336,030)
-- NCBI AMRFinderPlus (IPS: 7,009)
 - NCBI NCBIfams (PSC: 13,466,827)
+- PHROG (PSC: 0)
+- NCBI AMRFinderPlus (IPS: 7,009)
 - ISFinder db (IPS: 53,341, PSC: 11,412)
 - Pfam families (PSC: 3,917,555)
 
@@ -737,6 +738,7 @@ Bakta is *standing on the shoulder of giants* taking advantage of many great sof
 - RefSeq: <https://doi.org/10.1093/nar/gkx1068>
 - COG: <https://doi.org/10.1093/bib/bbx117>
 - KEGG: <https://doi.org/10.1093/bioinformatics/btz859>
+- PHROG: <https://doi.org/10.1093/nargab/lqab067>
 - AMRFinder: <https://doi.org/10.1128/AAC.00483-19>
 - ISFinder: <https://doi.org/10.1093/nar/gkj014>
 - Pfam: <https://doi.org/10.1093/nar/gky995>
