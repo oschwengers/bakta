@@ -237,9 +237,10 @@ cat FAA_phrog/*.faa >> phrogs-raw.faa
 python3 ${BAKTA_DB_SCRIPTS}/extract-phrogs.py --annotation phrog_annot_v4.tsv --proteins phrogs-raw.faa --filtered-proteins phrogs.faa
 diamond makedb --in phrogs.faa --db phrog
 printf "\n15/19: annotate PSCs...\n"
-nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db phrog.dmnd --block 1000000 --id 90 --qcov 80 --scov 80 --out diamond.phrog.psc.tsv
-python3 ${BAKTA_DB_SCRIPTS}/annotate-phrogs.py --db bakta.db --psc-alignments diamond-phrog.psc.tsv
-rm -r FAA_phrog phrogs-raw.faa phrogs.faa phrog.dmnd 
+python3 ${BAKTA_DB_SCRIPTS}/extract-hypotheticals.py --psc psc.faa --db bakta.db --hypotheticals hypotheticals.faa
+nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in hypotheticals.faa --db phrog.dmnd --block 1000000 --id 90 --qcov 80 --scov 80 --out diamond.phrog.psc.tsv
+python3 ${BAKTA_DB_SCRIPTS}/annotate-phrogs.py --db bakta.db --psc-alignments diamond.phrog.psc.tsv
+rm -r FAA_phrog.tar.gz phrog_annot_v4.tsv FAA_phrog phrogs-raw.faa phrogs.faa phrog.dmnd hypotheticals.faa
 
 
 ############################################################################
