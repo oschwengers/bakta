@@ -44,21 +44,26 @@ def combine_annotation(feature: dict):
     expert = feature.get('expert', None)
 
     gene = None
+    genes = set()
     product = None
     db_xrefs = set()
     if(pseudogene_pscc):
-        pscc_gene = pseudogene_pscc.get('gene', None)
-        if(pscc_gene):
-            gene = pscc_gene
+        pseudogene_pscc_genes = pseudogene_pscc.get('gene', None)
+        if(pseudogene_pscc_genes):
+            pseudogene_pscc_genes = pseudogene_pscc_genes.replace('/', ',').split(',')
+            genes.update(pseudogene_pscc_genes)
+            gene = pseudogene_pscc_genes[0]
         pscc_product = pseudogene_pscc.get('product', None)
         if(pscc_product):
             product = pscc_product
         for db_xref in pseudogene_pscc['db_xrefs']:
             db_xrefs.add(db_xref)
     if(pseudogene_psc):
-        psc_gene = pseudogene_psc.get('gene', None)
-        if(psc_gene):
-            gene = psc_gene
+        pseudogene_psc_genes = pseudogene_psc.get('gene', None)
+        if(pseudogene_psc_genes):
+            pseudogene_psc_genes = pseudogene_psc_genes.replace('/', ',').split(',')
+            genes.update(pseudogene_psc_genes)
+            gene = pseudogene_psc_genes[0]
         psc_product = pseudogene_psc.get('product', None)
         if(psc_product):
             product = psc_product
@@ -71,9 +76,11 @@ def combine_annotation(feature: dict):
         for db_xref in pscc['db_xrefs']:
             db_xrefs.add(db_xref)
     if(psc and psc.get('valid', True)):
-        psc_gene = psc.get('gene', None)
-        if(psc_gene):
-            gene = psc_gene
+        psc_genes = psc.get('gene', None)
+        if(psc_genes):
+            psc_genes = psc_genes.replace('/', ',').split(',')
+            genes.update(psc_genes)
+            gene = psc_genes[0]
         psc_product = psc.get('product', None)
         if(psc_product):
             product = psc_product
@@ -83,9 +90,11 @@ def combine_annotation(feature: dict):
         for db_xref in ups['db_xrefs']:
             db_xrefs.add(db_xref)
     if(ips):
-        ips_gene = ips.get('gene', None)
-        if(ips_gene):
-            gene = ips_gene
+        ips_genes = ips.get('gene', None)
+        if(ips_genes):
+            ips_genes = ips_genes.replace('/', ',').split(',')
+            genes.update(ips_genes)
+            gene = ips_genes[0]
         ips_product = ips.get('product', None)
         if(ips_product):
             product = ips_product
@@ -96,7 +105,11 @@ def combine_annotation(feature: dict):
         for expert_system, expert_hit in expert.items():
             expert_rank = expert_hit['rank']
             if(expert_rank > rank):
-                gene = expert_hit.get('gene', None)
+                expert_genes = expert_hit.get('gene', None)
+                if(expert_genes):
+                    expert_genes = expert_genes.replace('/', ',').split(',')
+                    genes.update(expert_genes)
+                    gene = expert_genes[0]
                 product = expert_hit.get('product', None)
                 expert_db_xrefs = expert_hit.get('db_xrefs', None)
                 if(expert_db_xrefs):
@@ -105,8 +118,9 @@ def combine_annotation(feature: dict):
                 rank = expert_rank
 
     feature['gene'] = gene
+    feature['genes'] = sorted(list(genes))
     if(gene):
-        revise_cds_gene_symbol(feature)
+        revise_cds_gene_symbols(feature)
 
     if(product):
         feature['product'] = product
@@ -396,11 +410,8 @@ def calc_sorf_annotation_score(sorf: dict) -> int:
     return score
 
 
-def revise_cds_gene_symbol(feature: dict):
-    raw_gene = feature.get('gene', '')
-
-    raw_genes = raw_gene.replace('/', ',').split(',')  # replace slashes and split raw genes
-
+def revise_cds_gene_symbols(feature: dict):
+    raw_genes = feature.get('genes', [])
     revised_genes = []
     for gene in raw_genes:
         old_gene = gene
@@ -449,10 +460,10 @@ def revise_cds_gene_symbol(feature: dict):
 
     if(len(revised_genes) == 0):
         feature['gene'] =  None
-    elif(len(revised_genes) == 1):
+        feature['genes'] =  []
+    elif(len(revised_genes) >= 1):
         feature['gene'] = revised_genes[0]
-    else:
-        feature['gene'] = ','.join(revised_genes)
+        feature['genes'] = revised_genes
 
 
 def revise_cds_product(feature: dict):
