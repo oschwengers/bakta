@@ -125,6 +125,9 @@ def combine_annotation(feature: dict):
                 product = insdc.revise_product_insdc(product)
             feature['product'] = product
         
+            protein_gene_symbol = extract_protein_gene_symbol(product)
+            if(protein_gene_symbol):
+                genes.add(protein_gene_symbol)
             revised_genes = revise_cds_gene_symbols(genes)
             revised_gene = None if gene is None else revise_cds_gene_symbols([gene])  # special treatment for selected gene symbol
             if(revised_gene is None  and  len(revised_genes) >= 1):  # select first from gene symbol list if no symbol was selected before
@@ -410,21 +413,26 @@ def calc_sorf_annotation_score(sorf: dict) -> int:
 
 
 def extract_protein_gene_symbol(product: str) -> str:
+    gene_symbols = []
     for part in product.split(' '):  # try to extract valid gene symbols
         m = RE_GENE_SYMBOL.fullmatch(part)
         if(m):
             symbol = m[0]
             log.info('fix gene: extract symbol from protein name. symbol=%s', symbol)
-            return symbol
+            gene_symbols.add(symbol)
         else:
             m = RE_PROTEIN_SYMBOL.fullmatch(part)  # extract protein names
             if(m):
                 symbol = m[0]
                 symbol = symbol[0].lower() + symbol[1:]
                 log.info('fix gene: extract symbol from protein name. symbol=%s', symbol)
-                return symbol
-    return None
-
+                gene_symbols.add(symbol)
+    if(len(gene_symbols) == 0):  # None found
+        return None
+    elif(len(gene_symbols) == 1):  # found 1
+        return gene_symbols[0]
+    else:  # found more than one, take the 2nd as the 1st often describes a broader gene family like "xyz family trancsriptional regulator ..."
+        return gene_symbols[1]
 
 def revise_cds_gene_symbols(raw_genes: Sequence[str]):
     revised_genes = set()
