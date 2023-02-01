@@ -6,6 +6,7 @@ import bakta.config as cfg
 import bakta.constants as bc
 import bakta.io.insdc as insdc
 
+from typing import Sequence
 
 log = logging.getLogger('ANNOTATION')
 
@@ -117,26 +118,24 @@ def combine_annotation(feature: dict):
                         db_xrefs.add(expert_db_xref)
                 rank = expert_rank
 
-    feature['gene'] = gene
-    feature['genes'] = sorted(list(genes))
-    if(gene):
-        revise_cds_gene_symbols(feature)
-
     if(product):
-        feature['product'] = product
-        revise_cds_product(feature)
-        if(cfg.compliant and not feature.get('hypothetical', False)):
-            insdc.revise_product_insdc(feature)
-    else:
-        feature['product'] = bc.HYPOTHETICAL_PROTEIN
-        feature['hypothetical'] = True
+        product = revise_cds_product(product)
+        if(product):
+            if(cfg.compliant):
+                product = insdc.revise_product_insdc(product)
+            feature['product'] = product
+        
+            revised_genes = revise_cds_gene_symbols(genes)
+            revised_gene = None if gene is None else revise_cds_gene_symbols([gene])  # special treatment for selected gene symbol
+            if(revised_gene is None  and  len(revised_genes) >= 1):  # select first from gene symbol list if no symbol was selected before
+                revised_gene = revised_genes[0]
 
-    if(gene and feature.get('hypothetical', False)):
-        feature['gene'] = None
-        log.info(
-            'remove gene symbol of hypothetical protein: contig=%s, start=%i, stop=%i, strand=%s, gene=%s',
-            feature['contig'], feature['start'], feature['stop'], feature['strand'], gene
-        )
+            feature['gene'] = revised_gene
+            feature['genes'] = sorted(revised_genes)
+        else:
+            mark_as_hypothetical(feature)
+    else:
+        mark_as_hypothetical(feature)
 
     feature['db_xrefs'] = sorted(list(db_xrefs))
 
@@ -410,9 +409,25 @@ def calc_sorf_annotation_score(sorf: dict) -> int:
     return score
 
 
-def revise_cds_gene_symbols(feature: dict):
-    raw_genes = feature.get('genes', [])
-    revised_genes = []
+def extract_protein_gene_symbol(product: str) -> str:
+    for part in product.split(' '):  # try to extract valid gene symbols
+        m = RE_GENE_SYMBOL.fullmatch(part)
+        if(m):
+            symbol = m[0]
+            log.info('fix gene: extract symbol from protein name. symbol=%s', symbol)
+            return symbol
+        else:
+            m = RE_PROTEIN_SYMBOL.fullmatch(part)  # extract protein names
+            if(m):
+                symbol = m[0]
+                symbol = symbol[0].lower() + symbol[1:]
+                log.info('fix gene: extract symbol from protein name. symbol=%s', symbol)
+                return symbol
+    return None
+
+
+def revise_cds_gene_symbols(raw_genes: Sequence[str]):
+    revised_genes = set()
     for gene in raw_genes:
         old_gene = gene
         if(RE_GENE_SUSPECT_CHARS.search(gene)):  # check for suspect characters -> remove gene symbol
@@ -441,34 +456,17 @@ def revise_cds_gene_symbols(feature: dict):
 
         if(len(gene) >= 3):
             if(len(gene) <= 12):
-                revised_genes.append(gene)
+                revised_genes.add(gene)
             else:
                 old_gene = gene
-                for part in gene.split(' '):  # try to extract valid gene symbols
-                    m = RE_GENE_SYMBOL.fullmatch(part)
-                    if(m):
-                        symbol = m[0]
-                        revised_genes.append(symbol)
-                        log.info('fix gene: extract symbol from protein name. new=%s, old=%s', symbol, old_gene)
-                    else:
-                        m = RE_PROTEIN_SYMBOL.fullmatch(part)  # extract protein names
-                        if(m):
-                            symbol = m[0]
-                            symbol = symbol[0].lower() + symbol[1:]
-                            revised_genes.append()
-                            log.info('fix gene: extract symbol from protein name. new=%s, old=%s', symbol, old_gene)
-
-    if(len(revised_genes) == 0):
-        feature['gene'] =  None
-        feature['genes'] =  []
-    elif(len(revised_genes) >= 1):
-        feature['gene'] = revised_genes[0]
-        feature['genes'] = revised_genes
+                gene = extract_protein_gene_symbol(gene)
+                if(gene):
+                    revised_genes.add(gene)
+    return list(revised_genes)
 
 
-def revise_cds_product(feature: dict):
+def revise_cds_product(product: str):
     """Revise product name for INSDC compliant submissions"""
-    product = feature['product']
     
     old_product = product
     product = RE_PROTEIN_WEIGHT.sub(' ', product)  # remove protein weight in (k)Da
@@ -533,16 +531,24 @@ def revise_cds_product(feature: dict):
             log.info('fix product: replace domain name underscores. new=%s, old=%s', product, old_product)
 
     old_product = product
-
-
     if(
         RE_PROTEIN_CONTIG.search(product) or  # protein containing 'contig'
         RE_PROTEIN_NODE.search(product) or  # potential contig name (SPAdes)
         RE_PROTEIN_POTENTIAL_CONTIG_NAME.search(product) or  # potential contig name (SPAdes)
         RE_PROTEIN_NO_LETTERS.fullmatch(product)  # no letters -> set to Hypothetical
         ):  # remove suspect products and mark as hypothetical
-        product = bc.HYPOTHETICAL_PROTEIN
-        feature['hypothetical'] = True
+        product = None
         log.info('remove product: mark proteins with suspect products as hypothetical. old=%s', old_product)
 
-    feature['product'] = product
+    return product
+
+
+def mark_as_hypothetical(feature: dict):
+    log.info(
+        'marked as hypothetical: contig=%s, start=%i, stop=%i, strand=%s',
+        feature['contig'], feature['start'], feature['stop'], feature['strand']
+    )
+    feature['hypothetical'] = True
+    feature['gene'] = None
+    feature['genes'] = []
+    feature['product'] = bc.HYPOTHETICAL_PROTEIN
