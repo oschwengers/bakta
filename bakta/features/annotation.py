@@ -434,6 +434,7 @@ def extract_protein_gene_symbol(product: str) -> str:
     else:  # found more than one, take the 2nd as the 1st often describes a broader gene family like "xyz family trancsriptional regulator ..."
         return gene_symbols[1]
 
+
 def revise_cds_gene_symbols(raw_genes: Sequence[str]):
     revised_genes = set()
     for gene in raw_genes:
