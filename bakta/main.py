@@ -460,6 +460,14 @@ def main():
             locus_tag_nr += 5
 
     ############################################################################
+    # Improve annotations
+    # - select CDS/sORF gene symbols based on adjacent genes
+    ############################################################################
+    print('improve annotations...')
+    genes_with_improved_symbols = anno.select_gene_symbols([feature for feature in features if feature['type'] in [bc.FEATURE_CDS, bc.FEATURE_SORF]])
+    print(f'\trevised gene symbols: {len(genes_with_improved_symbols)}')
+
+    ############################################################################
     # Print summary
     # - genome stats
     # - annotation stats

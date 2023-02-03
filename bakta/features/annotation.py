@@ -129,7 +129,10 @@ def combine_annotation(feature: dict):
             if(protein_gene_symbol):
                 genes.add(protein_gene_symbol)
             revised_genes = revise_cds_gene_symbols(genes)
-            revised_gene = None if gene is None else revise_cds_gene_symbols([gene])  # special treatment for selected gene symbol
+            revised_gene = None
+            if gene is not None:
+                revised_gene = revise_cds_gene_symbols([gene])  # special treatment for selected gene symbol
+                revised_gene = revised_gene[0] if len(revised_gene) > 0 else None
             if(revised_gene is None  and  len(revised_genes) >= 1):  # select first from gene symbol list if no symbol was selected before
                 revised_gene = revised_genes[0]
 
@@ -419,14 +422,14 @@ def extract_protein_gene_symbol(product: str) -> str:
         if(m):
             symbol = m[0]
             log.info('fix gene: extract symbol from protein name. symbol=%s', symbol)
-            gene_symbols.add(symbol)
+            gene_symbols.append(symbol)
         else:
             m = RE_PROTEIN_SYMBOL.fullmatch(part)  # extract protein names
             if(m):
                 symbol = m[0]
                 symbol = symbol[0].lower() + symbol[1:]
                 log.info('fix gene: extract symbol from protein name. symbol=%s', symbol)
-                gene_symbols.add(symbol)
+                gene_symbols.append(symbol)
     if(len(gene_symbols) == 0):  # None found
         return None
     elif(len(gene_symbols) == 1):  # found 1
@@ -561,3 +564,67 @@ def mark_as_hypothetical(feature: dict):
     feature['gene'] = None
     feature['genes'] = []
     feature['product'] = bc.HYPOTHETICAL_PROTEIN
+
+
+def get_adjacent_genes(feature: dict, features: Sequence[dict], neighbors=3):
+    for idx, feat in enumerate(features):
+        if feat['locus'] == feature['locus']:
+            log.debug(
+                'extract neighbor genes: contig=%s, start=%i, stop=%i, gene=%s, product=%s',
+                feat['contig'], feat['start'], feat['stop'], feat.get('gene', '-'), feat.get('product', '-')
+            )
+            upstream_genes = features[idx-neighbors:idx]  # TODO: catch corner cases
+            for upstream_gene in upstream_genes:
+                log.debug(
+                    'extracted upstream genes: contig=%s, start=%i, stop=%i, gene=%s, product=%s',
+                    upstream_gene['contig'], upstream_gene['start'], upstream_gene['stop'], upstream_gene.get('gene', '-'), upstream_gene.get('product', '-')
+                )
+            downstream_genes = features[idx+1:idx+1+neighbors]  # TODO: catch corner cases
+            for downstream_gene in downstream_genes:
+                log.debug(
+                    'extracted downstream genes: contig=%s, start=%i, stop=%i, gene=%s, product=%s',
+                    downstream_gene['contig'], downstream_gene['start'], downstream_gene['stop'], downstream_gene.get('gene', '-'), downstream_gene.get('product', '-')
+                )
+            upstream_genes.extend(downstream_genes)
+            return upstream_genes
+    return []
+
+
+def select_gene_symbols(features: Sequence[dict]):
+    improved_genes = []
+    for feat in [f for f in features if len(f.get('genes', [])) > 1]:  # all CDS/sORF with multiple gene symbols
+        gene_symbol_prefices = set([symbol[:3] for symbol in feat.get['genes'] if len(symbol) > 3])
+        if(len(gene_symbol_prefices) > 1 ):
+            log.debug(
+                'select gene symbol: contig=%s, start=%i, stop=%i, gene=%s, genes=%s, product=%s',
+                feat['contig'], feat['start'], feat['stop'], feat.get('gene', '-'), ','.join(feat.get('genes', [])), feat.get('product', '-')
+            )
+            old_gene_symbol = feat['gene']
+            adjacent_genes = get_adjacent_genes(feat, features, neighbors=3)
+            gene_symbol_lists = [gene.get('genes', []) for gene in adjacent_genes]
+            gene_symbols = [item for sublist in gene_symbol_lists for item in sublist]  # flatten lists
+            gene_symbol_prefixes = [gene_symbol[:3] for gene_symbol in gene_symbols if len(gene_symbol) > 3]  # extract gene symbol prefixes, e.g. tra for traI, traX, traM
+            log.debug('neighbor gene symbol prefixes: %s', gene_symbol_prefixes)
+            gene_symbol_prefix_counts = {}
+            for gene_symbol_prefix in gene_symbol_prefixes:
+                if gene_symbol_prefix in gene_symbol_prefix_counts:
+                    gene_symbol_prefix_counts[gene_symbol_prefix] += 1
+                else:
+                    gene_symbol_prefix_counts[gene_symbol_prefix] = 1
+            log.debug('neighbor gene symbol prefix counts: %s', gene_symbol_prefix_counts)
+            count = 0
+            selected_gene_symbol = old_gene_symbol
+            for gene_symbol in feat['genes']:
+                gene_symbol_prefix = gene_symbol[:3]
+                gene_symbol_count = gene_symbol_prefix_counts.get(gene_symbol_prefix, 0)
+                if gene_symbol_count > count:
+                    selected_gene_symbol = gene_symbol
+                    count = gene_symbol_count
+            if(selected_gene_symbol != old_gene_symbol):
+                feat['gene'] = selected_gene_symbol
+                log.info(
+                    'gene symbol selection: contig=%s, start=%i, stop=%i, new-gene=%s, old-gene=%s, genes=%s, product=%s',
+                    feat['contig'], feat['start'], feat['stop'], selected_gene_symbol, old_gene_symbol, feat['genes'], feat['product']
+                )
+                improved_genes.append(feat)
+    return improved_genes
