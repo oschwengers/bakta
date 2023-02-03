@@ -593,42 +593,49 @@ def get_adjacent_genes(feature: dict, features: Sequence[dict], neighbors=3):
 def select_gene_symbols(features: Sequence[dict]):
     improved_genes = []
     for feat in [f for f in features if len(f.get('genes', [])) > 1]:  # all CDS/sORF with multiple gene symbols
-        gene_symbol_prefices = set([symbol[:3] for symbol in feat['genes'] if len(symbol) > 3])
-        if(len(gene_symbol_prefices) > 1 ):
+        old_gene_symbol = feat['gene']
+        gene_symbol_prefixes = set([symbol[:3] for symbol in feat['genes'] if len(symbol) > 3])
+        if(len(gene_symbol_prefixes) == 1 ):  # multiple gene symbols of the same prefix: 
+            product_parts = feat.get('product', '').split()
+            for gene_symbol in feat['genes']:
+                protein_symbol = gene_symbol[0].upper() + gene_symbol[1:]
+                if(protein_symbol == product_parts[-1]):  # gene symbol is last part of product description which often is a specific gene/protein name
+                    if(gene_symbol != old_gene_symbol):
+                        feat['gene'] = gene_symbol
+                        log.info(
+                            'gene product symbol selection: contig=%s, start=%i, stop=%i, new-gene=%s, old-gene=%s, genes=%s, product=%s',
+                            feat['contig'], feat['start'], feat['stop'], gene_symbol, old_gene_symbol, ','.join(feat['genes']), feat.get('product', '-')
+                        )
+                        improved_genes.append(feat)
+        else:  # multiple gene symbols of varying prefixes are available, e.g. acrS, envR
             log.debug(
                 'select gene symbol: contig=%s, start=%i, stop=%i, gene=%s, genes=%s, product=%s',
                 feat['contig'], feat['start'], feat['stop'], feat.get('gene', '-'), ','.join(feat['genes']), feat.get('product', '-')
             )
-            old_gene_symbol = feat['gene']
             adjacent_genes = get_adjacent_genes(feat, features, neighbors=3)
-            gene_symbol_lists = [gene.get('genes', []) for gene in adjacent_genes]
-            gene_symbols = [item for sublist in gene_symbol_lists for item in sublist]  # flatten lists
-            gene_symbol_prefixes = [gene_symbol[:3] for gene_symbol in gene_symbols if len(gene_symbol) > 3]  # extract gene symbol prefixes, e.g. tra for traI, traX, traM
-            gene_symbol_prefix_counts = {}
-            for gene_symbol_prefix in gene_symbol_prefixes:
-                if gene_symbol_prefix in gene_symbol_prefix_counts:
-                    gene_symbol_prefix_counts[gene_symbol_prefix] += 1
+            adjacent_gene_symbol_lists = [gene.get('genes', []) for gene in adjacent_genes]
+            adjacent_gene_symbols = [item for sublist in adjacent_gene_symbol_lists for item in sublist]  # flatten lists
+            adjacent_gene_symbol_prefixes = [gene_symbol[:3] for gene_symbol in adjacent_gene_symbols if len(gene_symbol) > 3]  # extract gene symbol prefixes, e.g. tra for traI, traX, traM
+            adjacent_gene_symbol_prefix_counts = {}
+            for gene_symbol_prefix in adjacent_gene_symbol_prefixes:
+                if gene_symbol_prefix in adjacent_gene_symbol_prefix_counts:
+                    adjacent_gene_symbol_prefix_counts[gene_symbol_prefix] += 1
                 else:
-                    gene_symbol_prefix_counts[gene_symbol_prefix] = 1
-            log.debug('neighbor gene symbol prefix counts: %s', gene_symbol_prefix_counts)
+                    adjacent_gene_symbol_prefix_counts[gene_symbol_prefix] = 1
+            log.debug('neighbor gene symbol prefix counts: %s', adjacent_gene_symbol_prefix_counts)
             count = 0
             selected_gene_symbol = old_gene_symbol
             for gene_symbol in feat['genes']:
                 gene_symbol_prefix = gene_symbol[:3]
-                gene_symbol_count = gene_symbol_prefix_counts.get(gene_symbol_prefix, 0)
-                if gene_symbol_count > count:
+                gene_symbol_count = adjacent_gene_symbol_prefix_counts.get(gene_symbol_prefix, 0)
+                if gene_symbol_count > count:  # select symbol if its prefix is dominant in the gene neighborhood (neihboorhood of 3 genes up-/downstream as operon proxy)
                     selected_gene_symbol = gene_symbol
                     count = gene_symbol_count
             if(selected_gene_symbol != old_gene_symbol):
                 feat['gene'] = selected_gene_symbol
                 log.info(
-                    'gene symbol selection: contig=%s, start=%i, stop=%i, new-gene=%s, old-gene=%s, genes=%s, product=%s',
-                    feat['contig'], feat['start'], feat['stop'], selected_gene_symbol, old_gene_symbol, ','.join(feat['genes']), feat['product']
+                    'gene neighborhood symbol selection: contig=%s, start=%i, stop=%i, new-gene=%s, old-gene=%s, genes=%s, product=%s',
+                    feat['contig'], feat['start'], feat['stop'], selected_gene_symbol, old_gene_symbol, ','.join(feat['genes']), feat.get('product', '-')
                 )
                 improved_genes.append(feat)
-        else:
-            log.warn(
-                'multiple gene symbols with common prefix: contig=%s, start=%i, stop=%i, gene=%s, genes=%s, product=%s',
-                feat['contig'], feat['start'], feat['stop'], feat.get('gene', None), ','.join(feat['genes']), feat['product']
-            )
     return improved_genes
