@@ -569,23 +569,24 @@ def mark_as_hypothetical(feature: dict):
 def get_adjacent_genes(feature: dict, features: Sequence[dict], neighbors=3):
     for idx, feat in enumerate(features):
         if feat['locus'] == feature['locus']:
-            log.debug(
-                'extract neighbor genes: contig=%s, start=%i, stop=%i, gene=%s, product=%s',
-                feat['contig'], feat['start'], feat['stop'], feat.get('gene', '-'), feat.get('product', '-')
-            )
-            upstream_genes = features[idx-neighbors:idx]  # TODO: catch corner cases
-            for upstream_gene in upstream_genes:
-                log.debug(
-                    'extracted upstream genes: contig=%s, start=%i, stop=%i, gene=%s, product=%s',
-                    upstream_gene['contig'], upstream_gene['start'], upstream_gene['stop'], upstream_gene.get('gene', '-'), upstream_gene.get('product', '-')
-                )
-            downstream_genes = features[idx+1:idx+1+neighbors]  # TODO: catch corner cases
-            for downstream_gene in downstream_genes:
-                log.debug(
-                    'extracted downstream genes: contig=%s, start=%i, stop=%i, gene=%s, product=%s',
-                    downstream_gene['contig'], downstream_gene['start'], downstream_gene['stop'], downstream_gene.get('gene', '-'), downstream_gene.get('product', '-')
-                )
+            upstream_genes = []
+            if(idx >= 1):
+                start = idx - neighbors
+                if(start < 0 ):
+                    start = 0
+                upstream_genes = features[start:idx]
+            downstream_genes = []
+            if(idx + 1 < len(features)):
+                end = idx + 1 + neighbors
+                if(end > len(features)):
+                    end = len(features)
+                downstream_genes = features[idx+1:end]
             upstream_genes.extend(downstream_genes)
+            for gene in upstream_genes:
+                log.debug(
+                    'extracted neighbor genes: contig=%s, start=%i, stop=%i, gene=%s, product=%s',
+                    gene['contig'], gene['start'], gene['stop'], gene.get('gene', '-'), gene.get('product', '-')
+                )
             return upstream_genes
     return []
 
