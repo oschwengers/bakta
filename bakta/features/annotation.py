@@ -593,18 +593,17 @@ def get_adjacent_genes(feature: dict, features: Sequence[dict], neighbors=3):
 def select_gene_symbols(features: Sequence[dict]):
     improved_genes = []
     for feat in [f for f in features if len(f.get('genes', [])) > 1]:  # all CDS/sORF with multiple gene symbols
-        gene_symbol_prefices = set([symbol[:3] for symbol in feat.get['genes'] if len(symbol) > 3])
+        gene_symbol_prefices = set([symbol[:3] for symbol in feat['genes'] if len(symbol) > 3])
         if(len(gene_symbol_prefices) > 1 ):
             log.debug(
                 'select gene symbol: contig=%s, start=%i, stop=%i, gene=%s, genes=%s, product=%s',
-                feat['contig'], feat['start'], feat['stop'], feat.get('gene', '-'), ','.join(feat.get('genes', [])), feat.get('product', '-')
+                feat['contig'], feat['start'], feat['stop'], feat.get('gene', '-'), ','.join(feat['genes']), feat.get('product', '-')
             )
             old_gene_symbol = feat['gene']
             adjacent_genes = get_adjacent_genes(feat, features, neighbors=3)
             gene_symbol_lists = [gene.get('genes', []) for gene in adjacent_genes]
             gene_symbols = [item for sublist in gene_symbol_lists for item in sublist]  # flatten lists
             gene_symbol_prefixes = [gene_symbol[:3] for gene_symbol in gene_symbols if len(gene_symbol) > 3]  # extract gene symbol prefixes, e.g. tra for traI, traX, traM
-            log.debug('neighbor gene symbol prefixes: %s', gene_symbol_prefixes)
             gene_symbol_prefix_counts = {}
             for gene_symbol_prefix in gene_symbol_prefixes:
                 if gene_symbol_prefix in gene_symbol_prefix_counts:
@@ -624,7 +623,12 @@ def select_gene_symbols(features: Sequence[dict]):
                 feat['gene'] = selected_gene_symbol
                 log.info(
                     'gene symbol selection: contig=%s, start=%i, stop=%i, new-gene=%s, old-gene=%s, genes=%s, product=%s',
-                    feat['contig'], feat['start'], feat['stop'], selected_gene_symbol, old_gene_symbol, feat['genes'], feat['product']
+                    feat['contig'], feat['start'], feat['stop'], selected_gene_symbol, old_gene_symbol, ','.join(feat['genes']), feat['product']
                 )
                 improved_genes.append(feat)
+        else:
+            log.warn(
+                'multiple gene symbols with common prefix: contig=%s, start=%i, stop=%i, gene=%s, genes=%s, product=%s',
+                feat['contig'], feat['start'], feat['stop'], feat.get('gene', None), ','.join(feat['genes']), feat['product']
+            )
     return improved_genes
