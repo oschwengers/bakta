@@ -51,18 +51,17 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
             length = int(length)
             qcov = length / int(qlen)
             scov = length / int(slen)
-            if(qcov >= 0.9 and scov >= 0.95 and float(pident) >= 98. and float(evalue) < 1e-6):
-                descriptions = stitle.split(' ', 1)[1][3:-3].split('~~~')
-                if(descriptions[1].lower() == 'transposase'):
-                    descriptions = descriptions[0].split('_')
-                    is_name = descriptions[0]
-                    is_group = descriptions[1]
-                    is_family = descriptions[2]
-                    product = f"{is_family} family {is_name} transposase"
-                    gene = f'tnp-{is_name}'
-                    conn.execute('UPDATE ips SET gene=?, product=? WHERE uniref100_id=?', (gene, product, uniref100_id))
-                    log_ips.info('UPDATE ips SET gene=%s, product=%s WHERE uniref100_id=%s', gene, product, uniref100_id)
-                    ips_updated += 1
+            if(qcov >= 0.90 and scov >= 0.90 and float(pident) >= 95. and float(evalue) < 1e-6):
+                (is_name, is_group, is_family, is_orf) = sseqid[0].split('_')
+                gene = 'tnp'
+                product = f"{is_family} family {is_name} transposase"
+                if(is_orf == 'ORFA'):
+                    product = f"{product} ORF A"
+                elif(is_orf == 'ORFB'):
+                    product = f"{product} ORF B"
+                conn.execute('UPDATE ips SET gene=?, product=? WHERE uniref100_id=?', (gene, product, uniref100_id))
+                log_ips.info('UPDATE ips SET gene=%s, product=%s WHERE uniref100_id=%s', gene, product, uniref100_id)
+                ips_updated += 1
             ips_processed += 1
             if((ips_processed % 10000) == 0):
                 conn.commit()
@@ -81,17 +80,16 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
             qcov = length / int(qlen)
             scov = length / int(slen)
             if(qcov >= 0.80 and scov >= 0.80 and float(pident) >= 90. and float(evalue) < 1e-6):
-                descriptions = stitle.split(' ', 1)[1][3:-3].split('~~~')
-                if(descriptions[1].lower() == 'transposase'):
-                    descriptions = descriptions[0].split('_')
-                    is_name = descriptions[0]
-                    is_group = descriptions[1]
-                    is_family = descriptions[2]
-                    product = f"{is_family} family transposase"
-                    gene = f'tnp-{is_family}'
-                    conn.execute('UPDATE psc SET gene=?, product=? WHERE uniref90_id=?', (gene, product, uniref90_id))
-                    log_psc.info('UPDATE psc SET gene=%s, product=%s WHERE uniref90_id=%s', gene, product, uniref90_id)
-                    psc_updated += 1
+                (is_name, is_group, is_family, is_orf) = sseqid[0].split('_')
+                gene = 'tnp'
+                product = f"{is_family} family transposase"
+                if(is_orf == 'ORFA'):
+                    product = f"{product} ORF A"
+                elif(is_orf == 'ORFB'):
+                    product = f"{product} ORF B"
+                conn.execute('UPDATE psc SET gene=?, product=? WHERE uniref90_id=?', (gene, product, uniref90_id))
+                log_psc.info('UPDATE psc SET gene=%s, product=%s WHERE uniref90_id=%s', gene, product, uniref90_id)
+                psc_updated += 1
             psc_processed += 1
             if((psc_processed % 10000) == 0):
                 conn.commit()
