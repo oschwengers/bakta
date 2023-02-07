@@ -249,7 +249,7 @@ diamond makedb --in is.transposase.faa --db is
 nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in ips.faa --db is.dmnd --block 1000000 --id 95 --qcov 90 --scov 90 --out diamond.is.ips.tsv
 nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db is.dmnd --block 1000000 --id 90 --qcov 80 --scov 80 --out diamond.is.psc.tsv
 python3 ${BAKTA_DB_SCRIPTS}/annotate-is.py --db bakta.db --ips-alignments diamond.is.ips.tsv --psc-alignments diamond.is.psc.tsv
-rm IS.faa is.transposase.faa is.dmnd diamond.is.ips.tsv diamond.is.psc.tsv
+rm is.transposase.faa is.dmnd diamond.is.ips.tsv diamond.is.psc.tsv
 
 
 ############################################################################
@@ -277,18 +277,20 @@ rm pfam-families* pfam *.tsv Pfam* hmmsearch.pfam-families.tblout
 
 ############################################################################
 # Setup expert protein sequences
+# - import IS sequences
 # - import NCBI BlastRules models
 # - import VFDB sequences
 ############################################################################
 printf "\n18/18: download AA sequences for expert annotation system ...\n"
 wget https://ftp.ncbi.nlm.nih.gov/pub/blastrules/4.2.2.tgz
 tar -xzf 4.2.2.tgz
-python3 ${BAKTA_DB_SCRIPTS}/expert/setup-ncbiblastrules.py --expert-sequence expert-protein-sequences.faa --ncbi-blastrule-tsv 4.2.2/data/blast-rules_4.2.2.tsv --proteins 4.2.2/data/proteins.fasta
-wget http://www.mgc.ac.cn/VFs/Down/VFDB_setA_pro.fas.gz
 gunzip VFDB_setA_pro.fas.gz
+wget http://www.mgc.ac.cn/VFs/Down/VFDB_setA_pro.fas.gz
+python3 ${BAKTA_DB_SCRIPTS}/expert/setup-is.py --expert-sequence expert-protein-sequences.faa --proteins IS.faa
+python3 ${BAKTA_DB_SCRIPTS}/expert/setup-ncbiblastrules.py --expert-sequence expert-protein-sequences.faa --ncbi-blastrule-tsv 4.2.2/data/blast-rules_4.2.2.tsv --proteins 4.2.2/data/proteins.fasta
 python3 ${BAKTA_DB_SCRIPTS}/expert/setup-vfdb.py --expert-sequence expert-protein-sequences.faa --proteins VFDB_setA_pro.fas
 diamond makedb --in expert-protein-sequences.faa --db expert-protein-sequences
-rm -r 4.2.2/ 4.2.2.tgz VFDB_setA_pro.fas expert-protein-sequences.faa
+rm -r 4.2.2/ 4.2.2.tgz IS.faa VFDB_setA_pro.fas expert-protein-sequences.faa
 
 # Cleanup
 ls -l bakta.db
