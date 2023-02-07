@@ -52,7 +52,7 @@ with blastrule_tsv_path.open(encoding='windows-1252') as fh:
             elif(rule_type == 'BlastRuleException'):
                 br['rank'] = 80
             elif(rule_type == 'BlastRuleIS'):
-                br['rank'] = 90
+                br['rank'] = 95
             elif(rule_type == 'BlastRuleExact'):
                 br['rank'] = 99
             else:
