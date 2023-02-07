@@ -482,9 +482,9 @@ def main():
     print(f"\tCRISPR arrays: {len([f for f in features if f['type'] == bc.FEATURE_CRISPR])}")
     cdss = [f for f in features if f['type'] == bc.FEATURE_CDS]
     print(f"\tCDSs: {len(cdss)}")
-    print(f"\t  hypotheticals: {len([cds for cds in cdss if 'hypothetical' in cds])}")
-    print(f"\t  pseudogenes: {len([cds for cds in cdss if 'pseudogene' in cds])}")
-    print(f"\t  signal peptides: {len([cds for cds in cdss if bc.FEATURE_SIGNAL_PEPTIDE in cds])}")
+    print(f"\t\thypotheticals: {len([cds for cds in cdss if 'hypothetical' in cds])}")
+    print(f"\t\tpseudogenes: {len([cds for cds in cdss if 'pseudogene' in cds])}")
+    print(f"\t\tsignal peptides: {len([cds for cds in cdss if bc.FEATURE_SIGNAL_PEPTIDE in cds])}")
     print(f"\tsORFs: {len([f for f in features if f['type'] == bc.FEATURE_SORF])}")
     print(f"\tgaps: {len([f for f in features if f['type'] == bc.FEATURE_GAP])}")
     print(f"\toriCs/oriVs: {len([f for f in features if (f['type'] == bc.FEATURE_ORIC or f['type'] == bc.FEATURE_ORIV)])}")
