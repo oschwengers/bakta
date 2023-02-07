@@ -302,9 +302,8 @@ def select_regulatory_class(feature: dict) -> str:
         return bc.INSDC_FEATURE_REGULATORY_CLASS_OTHER
 
 
-def revise_product_insdc(feature: dict):
+def revise_product_insdc(product: str):
     """Revise product name for INSDC compliant submissions"""
-    product = feature['product']
 
     old_product = product
     if(re.search(r'(uncharacteri[sz]ed)', product, flags=re.IGNORECASE)):  # replace putative synonyms)
@@ -321,7 +320,7 @@ def revise_product_insdc(feature: dict):
         product = product.replace('[', '').replace(']', '')  # ToDo: find and replace only legend bracket
         log.info('fix product: remove unbalanced brackets. new=%s, old=%s', product, old_product)
 
-    feature['product'] = product
+    return product
 
 
 def revise_dbxref_insdc(dbxrefs: Sequence[str]) -> Tuple[Sequence[str], Sequence[str]]:

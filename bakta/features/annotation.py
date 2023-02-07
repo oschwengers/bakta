@@ -6,6 +6,7 @@ import bakta.config as cfg
 import bakta.constants as bc
 import bakta.io.insdc as insdc
 
+from typing import Sequence
 
 log = logging.getLogger('ANNOTATION')
 
@@ -44,21 +45,26 @@ def combine_annotation(feature: dict):
     expert = feature.get('expert', None)
 
     gene = None
+    genes = set()
     product = None
     db_xrefs = set()
     if(pseudogene_pscc):
-        pscc_gene = pseudogene_pscc.get('gene', None)
-        if(pscc_gene):
-            gene = pscc_gene
+        pseudogene_pscc_genes = pseudogene_pscc.get('gene', None)
+        if(pseudogene_pscc_genes):
+            pseudogene_pscc_genes = pseudogene_pscc_genes.replace('/', ',').split(',')
+            genes.update(pseudogene_pscc_genes)
+            gene = pseudogene_pscc_genes[0]
         pscc_product = pseudogene_pscc.get('product', None)
         if(pscc_product):
             product = pscc_product
         for db_xref in pseudogene_pscc['db_xrefs']:
             db_xrefs.add(db_xref)
     if(pseudogene_psc):
-        psc_gene = pseudogene_psc.get('gene', None)
-        if(psc_gene):
-            gene = psc_gene
+        pseudogene_psc_genes = pseudogene_psc.get('gene', None)
+        if(pseudogene_psc_genes):
+            pseudogene_psc_genes = pseudogene_psc_genes.replace('/', ',').split(',')
+            genes.update(pseudogene_psc_genes)
+            gene = pseudogene_psc_genes[0]
         psc_product = pseudogene_psc.get('product', None)
         if(psc_product):
             product = psc_product
@@ -71,9 +77,11 @@ def combine_annotation(feature: dict):
         for db_xref in pscc['db_xrefs']:
             db_xrefs.add(db_xref)
     if(psc and psc.get('valid', True)):
-        psc_gene = psc.get('gene', None)
-        if(psc_gene):
-            gene = psc_gene
+        psc_genes = psc.get('gene', None)
+        if(psc_genes):
+            psc_genes = psc_genes.replace('/', ',').split(',')
+            genes.update(psc_genes)
+            gene = psc_genes[0]
         psc_product = psc.get('product', None)
         if(psc_product):
             product = psc_product
@@ -83,9 +91,11 @@ def combine_annotation(feature: dict):
         for db_xref in ups['db_xrefs']:
             db_xrefs.add(db_xref)
     if(ips):
-        ips_gene = ips.get('gene', None)
-        if(ips_gene):
-            gene = ips_gene
+        ips_genes = ips.get('gene', None)
+        if(ips_genes):
+            ips_genes = ips_genes.replace('/', ',').split(',')
+            genes.update(ips_genes)
+            gene = ips_genes[0]
         ips_product = ips.get('product', None)
         if(ips_product):
             product = ips_product
@@ -96,7 +106,11 @@ def combine_annotation(feature: dict):
         for expert_system, expert_hit in expert.items():
             expert_rank = expert_hit['rank']
             if(expert_rank > rank):
-                gene = expert_hit.get('gene', None)
+                expert_genes = expert_hit.get('gene', None)
+                if(expert_genes):
+                    expert_genes = expert_genes.replace('/', ',').split(',')
+                    genes.update(expert_genes)
+                    gene = expert_genes[0]
                 product = expert_hit.get('product', None)
                 expert_db_xrefs = expert_hit.get('db_xrefs', None)
                 if(expert_db_xrefs):
@@ -104,25 +118,30 @@ def combine_annotation(feature: dict):
                         db_xrefs.add(expert_db_xref)
                 rank = expert_rank
 
-    feature['gene'] = gene
-    if(gene):
-        revise_cds_gene_symbol(feature)
-
     if(product):
-        feature['product'] = product
-        revise_cds_product(feature)
-        if(cfg.compliant and not feature.get('hypothetical', False)):
-            insdc.revise_product_insdc(feature)
-    else:
-        feature['product'] = bc.HYPOTHETICAL_PROTEIN
-        feature['hypothetical'] = True
+        product = revise_cds_product(product)
+        if(product):
+            if(cfg.compliant):
+                product = insdc.revise_product_insdc(product)
+            feature['product'] = product
+        
+            protein_gene_symbol = extract_protein_gene_symbol(product)
+            if(protein_gene_symbol):
+                genes.add(protein_gene_symbol)
+            revised_genes = revise_cds_gene_symbols(genes)
+            revised_gene = None
+            if gene is not None:
+                revised_gene = revise_cds_gene_symbols([gene])  # special treatment for selected gene symbol
+                revised_gene = revised_gene[0] if len(revised_gene) > 0 else None
+            if(revised_gene is None  and  len(revised_genes) >= 1):  # select first from gene symbol list if no symbol was selected before
+                revised_gene = revised_genes[0]
 
-    if(gene and feature.get('hypothetical', False)):
-        feature['gene'] = None
-        log.info(
-            'remove gene symbol of hypothetical protein: contig=%s, start=%i, stop=%i, strand=%s, gene=%s',
-            feature['contig'], feature['start'], feature['stop'], feature['strand'], gene
-        )
+            feature['gene'] = revised_gene
+            feature['genes'] = sorted(revised_genes)
+        else:
+            mark_as_hypothetical(feature)
+    else:
+        mark_as_hypothetical(feature)
 
     feature['db_xrefs'] = sorted(list(db_xrefs))
 
@@ -396,12 +415,31 @@ def calc_sorf_annotation_score(sorf: dict) -> int:
     return score
 
 
-def revise_cds_gene_symbol(feature: dict):
-    raw_gene = feature.get('gene', '')
+def extract_protein_gene_symbol(product: str) -> str:
+    gene_symbols = []
+    for part in product.split(' '):  # try to extract valid gene symbols
+        m = RE_GENE_SYMBOL.fullmatch(part)
+        if(m):
+            symbol = m[0]
+            log.info('fix gene: extract symbol from protein name. symbol=%s', symbol)
+            gene_symbols.append(symbol)
+        else:
+            m = RE_PROTEIN_SYMBOL.fullmatch(part)  # extract protein names
+            if(m):
+                symbol = m[0]
+                symbol = symbol[0].lower() + symbol[1:]
+                log.info('fix gene: extract symbol from protein name. symbol=%s', symbol)
+                gene_symbols.append(symbol)
+    if(len(gene_symbols) == 0):  # None found
+        return None
+    elif(len(gene_symbols) == 1):  # found 1
+        return gene_symbols[0]
+    else:  # found more than one, take the 2nd as the 1st often describes a broader gene family like "xyz family trancsriptional regulator ..."
+        return gene_symbols[1]
 
-    raw_genes = raw_gene.replace('/', ',').split(',')  # replace slashes and split raw genes
 
-    revised_genes = []
+def revise_cds_gene_symbols(raw_genes: Sequence[str]):
+    revised_genes = set()
     for gene in raw_genes:
         old_gene = gene
         if(RE_GENE_SUSPECT_CHARS.search(gene)):  # check for suspect characters -> remove gene symbol
@@ -430,34 +468,17 @@ def revise_cds_gene_symbol(feature: dict):
 
         if(len(gene) >= 3):
             if(len(gene) <= 12):
-                revised_genes.append(gene)
+                revised_genes.add(gene)
             else:
                 old_gene = gene
-                for part in gene.split(' '):  # try to extract valid gene symbols
-                    m = RE_GENE_SYMBOL.fullmatch(part)
-                    if(m):
-                        symbol = m[0]
-                        revised_genes.append(symbol)
-                        log.info('fix gene: extract symbol from protein name. new=%s, old=%s', symbol, old_gene)
-                    else:
-                        m = RE_PROTEIN_SYMBOL.fullmatch(part)  # extract protein names
-                        if(m):
-                            symbol = m[0]
-                            symbol = symbol[0].lower() + symbol[1:]
-                            revised_genes.append()
-                            log.info('fix gene: extract symbol from protein name. new=%s, old=%s', symbol, old_gene)
-
-    if(len(revised_genes) == 0):
-        feature['gene'] =  None
-    elif(len(revised_genes) == 1):
-        feature['gene'] = revised_genes[0]
-    else:
-        feature['gene'] = ','.join(revised_genes)
+                gene = extract_protein_gene_symbol(gene)
+                if(gene):
+                    revised_genes.add(gene)
+    return list(revised_genes)
 
 
-def revise_cds_product(feature: dict):
+def revise_cds_product(product: str):
     """Revise product name for INSDC compliant submissions"""
-    product = feature['product']
     
     old_product = product
     product = RE_PROTEIN_WEIGHT.sub(' ', product)  # remove protein weight in (k)Da
@@ -522,16 +543,100 @@ def revise_cds_product(feature: dict):
             log.info('fix product: replace domain name underscores. new=%s, old=%s', product, old_product)
 
     old_product = product
-
-
     if(
         RE_PROTEIN_CONTIG.search(product) or  # protein containing 'contig'
         RE_PROTEIN_NODE.search(product) or  # potential contig name (SPAdes)
         RE_PROTEIN_POTENTIAL_CONTIG_NAME.search(product) or  # potential contig name (SPAdes)
         RE_PROTEIN_NO_LETTERS.fullmatch(product)  # no letters -> set to Hypothetical
         ):  # remove suspect products and mark as hypothetical
-        product = bc.HYPOTHETICAL_PROTEIN
-        feature['hypothetical'] = True
+        product = None
         log.info('remove product: mark proteins with suspect products as hypothetical. old=%s', old_product)
 
-    feature['product'] = product
+    return product
+
+
+def mark_as_hypothetical(feature: dict):
+    log.info(
+        'marked as hypothetical: contig=%s, start=%i, stop=%i, strand=%s',
+        feature['contig'], feature['start'], feature['stop'], feature['strand']
+    )
+    feature['hypothetical'] = True
+    feature['gene'] = None
+    feature['genes'] = []
+    feature['product'] = bc.HYPOTHETICAL_PROTEIN
+
+
+def get_adjacent_genes(feature: dict, features: Sequence[dict], neighbors=3):
+    for idx, feat in enumerate(features):
+        if feat['locus'] == feature['locus']:
+            upstream_genes = []
+            if(idx >= 1):
+                start = idx - neighbors
+                if(start < 0 ):
+                    start = 0
+                upstream_genes = features[start:idx]
+            downstream_genes = []
+            if(idx + 1 < len(features)):
+                end = idx + 1 + neighbors
+                if(end > len(features)):
+                    end = len(features)
+                downstream_genes = features[idx+1:end]
+            upstream_genes.extend(downstream_genes)
+            for gene in upstream_genes:
+                log.debug(
+                    'extracted neighbor genes: contig=%s, start=%i, stop=%i, gene=%s, product=%s',
+                    gene['contig'], gene['start'], gene['stop'], gene.get('gene', '-'), gene.get('product', '-')
+                )
+            return upstream_genes
+    return []
+
+
+def select_gene_symbols(features: Sequence[dict]):
+    improved_genes = []
+    for feat in [f for f in features if len(f.get('genes', [])) > 1]:  # all CDS/sORF with multiple gene symbols
+        old_gene_symbol = feat['gene']
+        gene_symbol_prefixes = set([symbol[:3] for symbol in feat['genes'] if len(symbol) > 3])
+        if(len(gene_symbol_prefixes) == 1 ):  # multiple gene symbols of the same prefix: 
+            product_parts = feat.get('product', '').split()
+            for gene_symbol in feat['genes']:
+                protein_symbol = gene_symbol[0].upper() + gene_symbol[1:]
+                if(protein_symbol == product_parts[-1]):  # gene symbol is last part of product description which often is a specific gene/protein name
+                    if(gene_symbol != old_gene_symbol):
+                        feat['gene'] = gene_symbol
+                        log.info(
+                            'gene product symbol selection: contig=%s, start=%i, stop=%i, new-gene=%s, old-gene=%s, genes=%s, product=%s',
+                            feat['contig'], feat['start'], feat['stop'], gene_symbol, old_gene_symbol, ','.join(feat['genes']), feat.get('product', '-')
+                        )
+                        improved_genes.append(feat)
+        else:  # multiple gene symbols of varying prefixes are available, e.g. acrS, envR
+            log.debug(
+                'select gene symbol: contig=%s, start=%i, stop=%i, gene=%s, genes=%s, product=%s',
+                feat['contig'], feat['start'], feat['stop'], feat.get('gene', '-'), ','.join(feat['genes']), feat.get('product', '-')
+            )
+            adjacent_genes = get_adjacent_genes(feat, features, neighbors=3)
+            adjacent_gene_symbol_lists = [gene.get('genes', []) for gene in adjacent_genes]
+            adjacent_gene_symbols = [item for sublist in adjacent_gene_symbol_lists for item in sublist]  # flatten lists
+            adjacent_gene_symbol_prefixes = [gene_symbol[:3] for gene_symbol in adjacent_gene_symbols if len(gene_symbol) > 3]  # extract gene symbol prefixes, e.g. tra for traI, traX, traM
+            adjacent_gene_symbol_prefix_counts = {}
+            for gene_symbol_prefix in adjacent_gene_symbol_prefixes:
+                if gene_symbol_prefix in adjacent_gene_symbol_prefix_counts:
+                    adjacent_gene_symbol_prefix_counts[gene_symbol_prefix] += 1
+                else:
+                    adjacent_gene_symbol_prefix_counts[gene_symbol_prefix] = 1
+            log.debug('neighbor gene symbol prefix counts: %s', adjacent_gene_symbol_prefix_counts)
+            count = 0
+            selected_gene_symbol = old_gene_symbol
+            for gene_symbol in feat['genes']:
+                gene_symbol_prefix = gene_symbol[:3]
+                gene_symbol_count = adjacent_gene_symbol_prefix_counts.get(gene_symbol_prefix, 0)
+                if gene_symbol_count > count:  # select symbol if its prefix is dominant in the gene neighborhood (neihboorhood of 3 genes up-/downstream as operon proxy)
+                    selected_gene_symbol = gene_symbol
+                    count = gene_symbol_count
+            if(selected_gene_symbol != old_gene_symbol):
+                feat['gene'] = selected_gene_symbol
+                log.info(
+                    'gene neighborhood symbol selection: contig=%s, start=%i, stop=%i, new-gene=%s, old-gene=%s, genes=%s, product=%s',
+                    feat['contig'], feat['start'], feat['stop'], selected_gene_symbol, old_gene_symbol, ','.join(feat['genes']), feat.get('product', '-')
+                )
+                improved_genes.append(feat)
+    return improved_genes
