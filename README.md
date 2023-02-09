@@ -323,10 +323,10 @@ Exemplary annotation result files for several genomes (mostly ESKAPE species) ar
 usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH] [--prefix PREFIX] [--output OUTPUT]
              [--genus GENUS] [--species SPECIES] [--strain STRAIN] [--plasmid PLASMID]
              [--complete] [--prodigal-tf PRODIGAL_TF] [--translation-table {11,4}] [--gram {+,-,?}] [--locus LOCUS]
-             [--locus-tag LOCUS_TAG] [--keep-contig-headers] [--replicons REPLICONS] [--compliant] [--proteins PROTEINS]
+             [--locus-tag LOCUS_TAG] [--keep-contig-headers] [--replicons REPLICONS] [--compliant] [--proteins PROTEINS] [--meta]
              [--skip-trna] [--skip-tmrna] [--skip-rrna] [--skip-ncrna] [--skip-ncrna-region]
-             [--skip-crispr] [--skip-cds] [--skip-sorf] [--skip-gap] [--skip-ori] [--skip-plot]
-             [--help] [--verbose] [--threads THREADS] [--tmp-dir TMP_DIR] [--version]
+             [--skip-crispr] [--skip-cds] [--skip-pseudo] [--skip-sorf] [--skip-gap] [--skip-ori] [--skip-plot]
+             [--help] [--verbose] [--debug] [--threads THREADS] [--tmp-dir TMP_DIR] [--version]
              <genome>
 
 Rapid & standardized annotation of bacterial genomes, MAGs & plasmids
@@ -365,6 +365,7 @@ Annotation:
                         Replicon information table (tsv/csv)
   --compliant           Force Genbank/ENA/DDJB compliance
   --proteins PROTEINS   Fasta file of trusted protein sequences for CDS annotation
+  --meta                Run in metagenome mode. This only affects CDS prediction.
 
 Workflow:
   --skip-trna           Skip tRNA detection & annotation

@@ -72,6 +72,7 @@ def main():
         if(cfg.keep_contig_headers): print(f'\tkeep contig headers: {cfg.keep_contig_headers}')
         if(cfg.replicons): print(f'\treplicon table: {cfg.replicons}')
         if(cfg.prodigal_tf): print(f'\tprodigal training file: {cfg.prodigal_tf}')
+        if(cfg.meta): print(f'\tmeta mode: {cfg.meta}')
         print(f'\ttranslation table: {cfg.translation_table}')
         if(cfg.taxon): print(f'\ttaxon: {cfg.taxon}')
         if(cfg.gram != '?'): print(f'\tgram: {cfg.gram}')

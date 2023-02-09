@@ -94,6 +94,10 @@ inputs:
     id: proteins
     inputBinding: {prefix: --proteins}
     type: File
+  - doc: Run in metagenome mode
+    id: meta
+    inputBinding: {prefix: --meta}
+    type: boolean
   - doc: Skip tRNA detection & annotation
     id: skip_tRNA
     inputBinding: {prefix: --skip-trna}
