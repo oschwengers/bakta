@@ -179,7 +179,7 @@ rm -rf profiles ko_list.gz kofam* hmmsearch.kofam.* hmms*
 printf "\n12/19: download RefSeq nonredundant proteins and clusters ...\n"
 wget https://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_proteins.txt
 wget https://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_clusters.txt
-for i in {1..1573}; do
+for i in {1..360}; do
     wget https://ftp.ncbi.nlm.nih.gov/refseq/release/bacteria/bacteria.nonredundant_protein.${i}.protein.faa.gz
     pigz -dc bacteria.nonredundant_protein.${i}.protein.faa.gz | seqtk seq -CU >> refseq-bacteria-nrp.trimmed.faa
     rm bacteria.nonredundant_protein.${i}.protein.faa.gz
