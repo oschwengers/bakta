@@ -110,7 +110,12 @@ def predict_r_rnas(genome: dict, contigs_path: Path):
                     rrna['start'] = start
                     rrna['stop'] = stop
                     rrna['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
-                    rrna['gene'] = f'{rrna_tag}_rrna'
+                    if(accession == 'RF00001'):
+                        rrna['gene'] = 'rrf'
+                    elif(accession == 'RF00177'):
+                        rrna['gene'] = 'rrs'
+                    elif(accession == 'RF02541'):
+                        rrna['gene'] = 'rrl'
 
                     if(truncated is None):
                         rrna['product'] = f'{rrna_tag} ribosomal RNA'
