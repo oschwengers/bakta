@@ -74,18 +74,18 @@ def predict_r_rnas(genome: dict, contigs_path: Path):
                 else:
                     truncated = None
 
-                db_xrefs = ['GO:0005840', 'GO:0003735']
+                db_xrefs = [f'{bc.DB_XREF_GO}:0005840', f'{bc.DB_XREF_GO}:0003735']
                 if(accession == 'RF00001'):
                     rrna_tag = '5S'
-                    db_xrefs += ['RFAM:RF00001', so.SO_RRNA_5S.id]
+                    db_xrefs += [f'{bc.DB_XREF_RFAM}:RF00001', f'{bc.DB_XREF_KOFAM}:K01985', so.SO_RRNA_5S.id]
                     consensus_length = 119
                 elif(accession == 'RF00177'):
                     rrna_tag = '16S'
-                    db_xrefs += ['RFAM:RF00177', so.SO_RRNA_16S.id]
+                    db_xrefs += [f'{bc.DB_XREF_RFAM}:RF00177', f'{bc.DB_XREF_KOFAM}:K01977', so.SO_RRNA_16S.id]
                     consensus_length = 1533
                 elif(accession == 'RF02541'):
                     rrna_tag = '23S'
-                    db_xrefs += ['RFAM:RF02541', so.SO_RRNA_23S.id]
+                    db_xrefs += [f'{bc.DB_XREF_RFAM}:RF02541', f'{bc.DB_XREF_KOFAM}:K01980', so.SO_RRNA_23S.id]
                     consensus_length = 2925
                 else:
                     log.warning(
