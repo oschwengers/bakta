@@ -15,30 +15,30 @@ import bakta.utils as bu
 log = logging.getLogger('T_RNA')
 
 
-SO_TERMS = {
-    'ala': so.SO_TRNA_ALA,
-    'gln': so.SO_TRNA_GLN,
-    'glu': so.SO_TRNA_GLU,
-    'gly': so.SO_TRNA_GLY,
-    'pro': so.SO_TRNA_PRO,
-    'met': so.SO_TRNA_MET,
-    'fmet': so.SO_TRNA_MET,
-    'asp': so.SO_TRNA_ASP,
-    'thr': so.SO_TRNA_THR,
-    'val': so.SO_TRNA_VAL,
-    'tyr': so.SO_TRNA_TYR,
-    'cys': so.SO_TRNA_CYS,
-    'ile': so.SO_TRNA_ILE,
-    'ile2': so.SO_TRNA_ILE,
-    'ser': so.SO_TRNA_SER,
-    'leu': so.SO_TRNA_LEU,
-    'trp': so.SO_TRNA_TRP,
-    'lys': so.SO_TRNA_LYS,
-    'asn': so.SO_TRNA_ASN,
-    'arg': so.SO_TRNA_ARG,
-    'his': so.SO_TRNA_HIS,
-    'phe': so.SO_TRNA_PHE,
-    'sec': so.SO_TRNA_SELCYS
+AMINO_ACID_DICT = {
+    'ala': ('A', so.SO_TRNA_ALA),
+    'gln': ('Q', so.SO_TRNA_GLN),
+    'glu': ('E', so.SO_TRNA_GLU),
+    'gly': ('G', so.SO_TRNA_GLY),
+    'pro': ('P', so.SO_TRNA_PRO),
+    'met': ('M', so.SO_TRNA_MET),
+    'fmet':('fM', so.SO_TRNA_MET),
+    'asp': ('D', so.SO_TRNA_ASP),
+    'thr': ('T', so.SO_TRNA_THR),
+    'val': ('V', so.SO_TRNA_VAL),
+    'tyr': ('Y', so.SO_TRNA_TYR),
+    'cys': ('C', so.SO_TRNA_CYS),
+    'ile': ('I', so.SO_TRNA_ILE),
+    'ile2':('I', so.SO_TRNA_ILE),
+    'ser': ('S', so.SO_TRNA_SER),
+    'leu': ('L', so.SO_TRNA_LEU),
+    'trp': ('W', so.SO_TRNA_TRP),
+    'lys': ('K', so.SO_TRNA_LYS),
+    'asn': ('N', so.SO_TRNA_ASN),
+    'arg': ('R', so.SO_TRNA_ARG),
+    'his': ('H', so.SO_TRNA_HIS),
+    'phe': ('F', so.SO_TRNA_PHE),
+    'sec': ('U', so.SO_TRNA_SELCYS)
 }
 
 
@@ -90,7 +90,8 @@ def predict_t_rnas(genome: dict, contigs_path: Path):
             trna['gene'] = None
             trna['product'] = 'tRNA-Xxx'
             if(trna_type != 'Undet' and trna_type != 'Sup'):
-                trna['gene'] = f'{trna_type}_trna'
+                aa_code = AMINO_ACID_DICT.get(trna_type.lower(), ('', None))[0]
+                trna['gene'] = f'trn{aa_code}'
                 trna['product'] = f'tRNA-{trna_type}({anti_codon.lower()})'
                 trna['amino_acid'] = trna_type
                 trna['anti_codon'] = anti_codon.lower()
@@ -104,7 +105,7 @@ def predict_t_rnas(genome: dict, contigs_path: Path):
             trna['nt'] = nt
 
             trna['db_xrefs'] = []
-            so_term = SO_TERMS.get(trna_type.lower(), None)
+            so_term = AMINO_ACID_DICT.get(trna_type.lower(), ('', None))[1]
             if(so_term):
                 trna['db_xrefs'].append(so_term.id)
 
