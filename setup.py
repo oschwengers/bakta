@@ -26,7 +26,7 @@ setup(
     include_package_data=False,
     zip_safe=False,
     install_requires=[
-        'biopython >= 1.78',
+        'biopython >= 1.80',
         'xopen >= 1.1.0',
         'requests >= 2.25.1',
         'alive-progress >= 3.0.1',
