@@ -330,7 +330,7 @@ def write_gc_content_skew(contigs, circos_path, colors):
     gc_skews = []
     max_gc = 0
     max_gc_skew = 0
-    gc_mean = SeqUtils.GC(''.join([c['sequence'] for c in contigs]))
+    gc_mean = SeqUtils.gc_fraction(''.join([c['sequence'] for c in contigs]))
     for contig in contigs:
         seq = contig['sequence']
         for w in range(0, len(seq), step_size):
@@ -341,7 +341,7 @@ def write_gc_content_skew(contigs, circos_path, colors):
             if stop > len(seq):
                 stop -= len(seq)
             subseq = seq[start:stop] if start < stop else seq[start:] + seq[:stop]
-            gc_value = gc_mean - SeqUtils.GC(subseq)
+            gc_value = gc_mean - SeqUtils.gc_fraction(subseq)
             if max_gc < abs(gc_value):
                 max_gc = abs(gc_value)
             gc_color = colors['gc-positive'] if gc_value >= 0 else colors['gc-negative']
