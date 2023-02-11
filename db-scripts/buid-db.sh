@@ -67,7 +67,7 @@ tar -xvzf data.tar.gz
 mv data/orit.fas ./orit.fna
 rm -r data/ data.tar.gz
 printf "\n5/19: download and extract oriC sequences from DoriC ...\n"
-wget http://tubic.org/doric/public/static/download/doric10.rar
+wget https://tubic.org/doric10/public/static/download/doric10.rar
 unrar e doric10.rar
 python3 ${BAKTA_DB_SCRIPTS}/extract-ori.py --doric tubic_bacteria.csv --fasta oric.chromosome.fna
 python3 ${BAKTA_DB_SCRIPTS}/extract-ori.py --doric tubic_plasmid.csv --fasta oric.plasmid.fna
