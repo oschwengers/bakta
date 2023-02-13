@@ -7,7 +7,7 @@ from pathlib import Path
 parser = argparse.ArgumentParser(
     description='Extract oriC sequences from DoriC.'
 )
-parser.add_argument('--doric', action='store', help='Path to oriC DoriC file.')
+parser.add_argument('--doric', action='store', help='Path to DoriC ori file.')
 parser.add_argument('--fasta', action='store', help='Path to oriC fasta file.')
 args = parser.parse_args()
 
@@ -28,10 +28,10 @@ log = logging.getLogger('ORI')
 oris = 0
 with doric_path.open() as fh_doric, fasta_path.open('w') as fh_fasta:
     for line in fh_doric:
-        if(line.startswith('ORI') or line.startswith('pORI')):
-            cols = line.strip().split(',')
-            ori_id = cols[0]
-            sequence = cols[-1].upper()
+        cols = line.strip().split(',')
+        ori_id = cols[2]
+        sequence = cols[-1].upper()
+        if 'ORI' in ori_id:
             fh_fasta.write(f'>{ori_id}\n{sequence}\n')
             oris += 1
 

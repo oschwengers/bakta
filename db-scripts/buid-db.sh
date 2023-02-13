@@ -66,14 +66,21 @@ wget https://zenodo.org/record/3786915/files/data.tar.gz
 tar -xvzf data.tar.gz
 mv data/orit.fas ./orit.fna
 rm -r data/ data.tar.gz
-printf "\n5/19: download and extract oriC sequences from DoriC ...\n"
-wget https://tubic.org/doric10/public/static/download/doric10.rar
-unrar e doric10.rar
-python3 ${BAKTA_DB_SCRIPTS}/extract-ori.py --doric tubic_bacteria.csv --fasta oric.chromosome.fna
-python3 ${BAKTA_DB_SCRIPTS}/extract-ori.py --doric tubic_plasmid.csv --fasta oric.plasmid.fna
-cat oric.plasmid.fna >> oric.chromosome.fna
-mv oric.chromosome.fna oric.fna
-rm doric10.rar tubic* oric.plasmid.fna
+printf "\n5/19: download oriC/V sequences from DoriC ...\n"
+curl 'https://tubic.org/doric/search/bacteria' \
+  -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundaryBDBZTWpS3orCjS0m' \
+  --data-raw $'------WebKitFormBoundaryBDBZTWpS3orCjS0m\r\nContent-Disposition: form-data; name="assembly_level"\r\n\r\nComplete\r\n------WebKitFormBoundaryBDBZTWpS3orCjS0m\r\nContent-Disposition: form-data; name="topology"\r\n\r\nAll\r\n------WebKitFormBoundaryBDBZTWpS3orCjS0m\r\nContent-Disposition: form-data; name="chromosome_type"\r\n\r\nAll\r\n------WebKitFormBoundaryBDBZTWpS3orCjS0m\r\nContent-Disposition: form-data; name="oric_type"\r\n\r\nSingle\r\n------WebKitFormBoundaryBDBZTWpS3orCjS0m\r\nContent-Disposition: form-data; name="organism"\r\n\r\n\r\n------WebKitFormBoundaryBDBZTWpS3orCjS0m\r\nContent-Disposition: form-data; name="lineage"\r\n\r\n\r\n------WebKitFormBoundaryBDBZTWpS3orCjS0m\r\nContent-Disposition: form-data; name="download1"\r\n\r\nDownload\r\n------WebKitFormBoundaryBDBZTWpS3orCjS0m--\r\n' \
+  --compressed > oric.csv
+curl 'https://tubic.org/doric/search/plasmid' \
+  -H 'content-type: multipart/form-data; boundary=----WebKitFormBoundaryMu32WgFUyqC7TO0d' \
+  --data-raw $'------WebKitFormBoundaryMu32WgFUyqC7TO0d\r\nContent-Disposition: form-data; name="topology"\r\n\r\nAll\r\n------WebKitFormBoundaryMu32WgFUyqC7TO0d\r\nContent-Disposition: form-data; name="organism"\r\n\r\n\r\n------WebKitFormBoundaryMu32WgFUyqC7TO0d\r\nContent-Disposition: form-data; name="lineage"\r\n\r\n\r\n------WebKitFormBoundaryMu32WgFUyqC7TO0d\r\nContent-Disposition: form-data; name="download1"\r\n\r\nDownload\r\n------WebKitFormBoundaryMu32WgFUyqC7TO0d--\r\n' \
+  --compressed > oriv.csv
+python3 ${BAKTA_DB_SCRIPTS}/extract-ori.py --doric oric.csv --fasta ori.chromosome.fna
+python3 ${BAKTA_DB_SCRIPTS}/extract-ori.py --doric oriv.csv --fasta ori.plasmid.fna
+cat ori.chromosome.fna > oric.raw.fna
+cat ori.plasmid.fna >> oric.raw.fna
+cd-hit-est -i oric.raw.fna -o oric.fna -c 0.99 -s 0.99 -aS 0.99 -g 1 -r 1
+rm *.csv ori.*.fna
 
 
 # download NCBI Taxonomy DB
