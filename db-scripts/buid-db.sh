@@ -80,7 +80,7 @@ python3 ${BAKTA_DB_SCRIPTS}/extract-ori.py --doric oriv.csv --fasta ori.plasmid.
 cat ori.chromosome.fna > oric.raw.fna
 cat ori.plasmid.fna >> oric.raw.fna
 cd-hit-est -i oric.raw.fna -o oric.fna -c 0.99 -s 0.99 -aS 0.99 -g 1 -r 1
-rm *.csv ori.*.fna
+rm *.csv ori.*.fna oric.raw.fna oric.fna.clstr
 
 
 # download NCBI Taxonomy DB
