@@ -103,7 +103,7 @@ python3 ${BAKTA_DB_SCRIPTS}/init-db.py --db bakta.db
 printf "\n8/19: download UniProt UniRef90 ...\n"
 wget https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref90/uniref90.xml.gz
 wget https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref50/uniref50.xml.gz
-wget https://ftp.uniprot.org/pub/databases/uniprot/current_release/uniparc/uniparc_active.fasta.gz
+wget https://ftp.expasy.org/databases/uniprot/current_release/uniparc/uniparc_active.fasta.gz
 printf "\n8/19: read UniRef90 entries and build Protein Sequence Cluster sequence and information databases:\n"
 python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --uniref90 uniref90.xml.gz --uniref50 uniref50.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --psc psc.faa --sorf sorf.faa
 printf "\n8/19: build PSC Diamond db ...\n"
