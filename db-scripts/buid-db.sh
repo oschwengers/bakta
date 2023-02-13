@@ -261,10 +261,10 @@ rm ReferenceGeneCatalog.txt
 # - extract IS transposase sequences and mark ORF A/B transposases
 # - annotate IPSs/PCSs with IS info
 ############################################################################
-printf "\n17/19: download ISfinder protein sequences ...\n"
+printf "\n17/19: download & extract ISfinder protein sequences ...\n"
 wget https://github.com/oschwengers/ISfinder-sequences/raw/2e9162bd5e3448c86ec1549a55315e498bef72fc/IS.faa
-printf "\n17/19: annotate IPSs ...\n"
-grep -A 1 ~~~Transposase~~~ IS.faa | tr -d - | tr -s "\n" > is.transposase.faa
+python3 ${BAKTA_DB_SCRIPTS}/extract-is.py --input IS.faa --output is.transposase.faa
+printf "\n17/19: annotate IPSs/PCSs ...\n"
 diamond makedb --in is.transposase.faa --db is
 nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in ips.faa --db is.dmnd --block 1000000 --id 95 --qcov 90 --scov 90 --out diamond.is.ips.tsv
 nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db is.dmnd --block 1000000 --id 90 --qcov 80 --scov 80 --out diamond.is.psc.tsv
