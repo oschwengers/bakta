@@ -196,7 +196,7 @@ rm refseq-bacteria-nrp.trimmed.faa PCLA_proteins.txt PCLA_clusters.txt
 # - annotate IPSs if IPS have no PSC UniRef90 identifier (seq -> hash -> UPS -> IPS)
 ############################################################################
 printf "\n13/19: download UniProt/SwissProt ...\n"
-wget https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
+wget https://ftp.expasy.org/databases/swiss-prot/release/uniprot_sprot.xml.gz
 printf "\n13/19: annotate IPSs and PSCs ...\n"
 python3 ${BAKTA_DB_SCRIPTS}/annotate-swissprot.py --taxonomy nodes.dmp --xml uniprot_sprot.xml.gz --db bakta.db
 rm uniprot_sprot.xml.gz
