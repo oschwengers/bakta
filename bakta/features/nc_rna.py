@@ -4,6 +4,7 @@ import subprocess as sp
 from collections import OrderedDict
 from pathlib import Path
 
+import bakta.features.annotation as ba
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.so as so
@@ -101,7 +102,12 @@ def predict_nc_rnas(genome: dict, contigs_path: Path):
                     ncrna['start'] = start
                     ncrna['stop'] = stop
                     ncrna['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
-                    ncrna['gene'] = subject
+                    
+                    gene = subject
+                    if(ba.RE_PROTEIN_SYMBOL.fullmatch(gene)):
+                        gene = gene[0].lower() + gene[1:]
+                        log.debug('fix gene: lowercase first char. new=%s, old=%s', gene, subject)
+                    ncrna['gene'] = gene
 
                     if(truncated is None):
                         ncrna['product'] = description
