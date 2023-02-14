@@ -311,8 +311,8 @@ rm pfam-families* pfam *.tsv Pfam* hmmsearch.pfam-families.tblout
 printf "\n19/19: download AA sequences for expert annotation system ...\n"
 wget https://ftp.ncbi.nlm.nih.gov/pub/blastrules/4.2.2.tgz
 tar -xzf 4.2.2.tgz
-gunzip VFDB_setA_pro.fas.gz
 wget http://www.mgc.ac.cn/VFs/Down/VFDB_setA_pro.fas.gz
+gunzip VFDB_setA_pro.fas.gz
 python3 ${BAKTA_DB_SCRIPTS}/expert/setup-is.py --expert-sequence expert-protein-sequences.faa --proteins IS.faa
 python3 ${BAKTA_DB_SCRIPTS}/expert/setup-ncbiblastrules.py --expert-sequence expert-protein-sequences.faa --ncbi-blastrule-tsv 4.2.2/data/blast-rules_4.2.2.tsv --proteins 4.2.2/data/proteins.fasta
 python3 ${BAKTA_DB_SCRIPTS}/expert/setup-vfdb.py --expert-sequence expert-protein-sequences.faa --proteins VFDB_setA_pro.fas
