@@ -8,6 +8,4 @@ RF01851	Gene;	Cyanobacteria transfer-messenger RNA
 RF01855	Gene;	Plant signal recognition particle RNA
 RF01856	Gene;	Protozoan signal recognition particle RNA
 RF01857	Gene;	Archaeal signal recognition particle RNA
-RF02034	Gene;	IMES-1 RNA motif
-RF02035	Gene;	IMES-2 RNA motif
 RF02598	Gene;	Epstein-Barr virus stable intronic sequence RNA 2
