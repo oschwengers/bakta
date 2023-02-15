@@ -1,7 +1,6 @@
 RF00017	Gene;	Metazoan signal recognition particle RNA
 RF00023	Gene;	transfer-messenger RNA
 RF00199	Gene;	SL2 RNA
-RF01067	Gene;	ATPC RNA motif
 RF01071	Gene;	Ornate Large Extremophilic RNA
 RF01383	Gene;	GRIK4 3 prime UTR element
 RF01849	Gene;	Alphaproteobacteria transfer-messenger RNA
