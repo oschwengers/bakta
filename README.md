@@ -535,21 +535,22 @@ $ bakta --db <db-path> -v --genus Escherichia --species "coli O157:H7" --strain 
 
 ### GenBank
 
-Genomes are submitted to GenBank via Fasta (`.fna`) and SQN files. Therefore, `.sqn` files can be created via `.gff3` files and NCBI's new [table2asn_GFF](https://www.ncbi.nlm.nih.gov/genbank/genomes_gff) tool.
-Please have all additional files (template.txt) prepared:
+Genomes are submitted to GenBank via Fasta (`.fna`) and SQN files. Therefore, `.sqn` files can be created with NCBI's new [table2asn](https://ftp.ncbi.nlm.nih.gov/asn1-converters/by_program/table2asn/) tool via Bakta's `.gff3` files.
+Please, have a look at the [documentation]((https://www.ncbi.nlm.nih.gov/genbank/genomes_gff)) and have all additional files (template.txt) prepared:
 
 ```bash
-# download table2asn_GFF for Linux
-$ wget https://ftp.ncbi.nih.gov/toolbox/ncbi_tools/converters/by_program/table2asn_GFF/linux64.table2asn_GFF.gz
-$ gunzip linux64.table2asn_GFF.gz
+# download table2asn for Linux
+$ wget https://ftp.ncbi.nlm.nih.gov/asn1-converters/by_program/table2asn/linux64.table2asn.gz
+$ gunzip linux64.table2asn.gz
 
 # or MacOS
-$ https://ftp.ncbi.nih.gov/toolbox/ncbi_tools/converters/by_program/table2asn_GFF/mac.table2asn_GFF.gz
-$ gunzip mac.table2asn_GFF.gz
-$ chmod 755 linux64.table2asn_GFF.gz mac.table2asn_GFF.gz
+$ wget https://ftp.ncbi.nlm.nih.gov/asn1-converters/by_program/table2asn/mac.table2asn.gz
+$ gunzip mac.table2asn.gz
+
+$ chmod 755 linux64.table2asn.gz mac.table2asn.gz
 
 # create the SQN file:
-$ linux64.table2asn_GFF -M n -J -c w -t template.txt -V vbt -l paired-ends -i GCF_000008865.2.fna -f GCF_000008865.2.gff3 -o GCF_000008865.2.sqn -Z
+$ linux64.table2asn -M n -J -c w -t template.txt -V vbt -l paired-ends -i GCF_000008865.2.fna -f GCF_000008865.2.gff3 -o GCF_000008865.2.sqn -Z
 ```
 
 ### ENA
