@@ -51,6 +51,8 @@ with proteins_path.open() as fh_in, expert_sequences_path.open('a') as fh_out:
                 genes.append(gene_raw)
         gene = ','.join(genes)
         product = m.group(3).strip()
+        if(product.lower() == 'hypothetical protein'):
+            product = None
         vfdb_category_id = m.group(5)
         seq = str(record.seq).upper()
         dbxrefs = [
