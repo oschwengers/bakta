@@ -52,7 +52,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
             qcov = length / int(qlen)
             scov = length / int(slen)
             if(qcov >= 0.90 and scov >= 0.90 and float(pident) >= 95. and float(evalue) < 1e-6):
-                (is_name, is_group, is_family, is_orf) = sseqid[0].split('_')
+                (is_name, is_group, is_family, is_orf) = sseqid.split('_')
                 gene = 'tnp'
                 product = f"{is_family} family {is_name} transposase"
                 if(is_orf == 'ORFA'):
@@ -80,7 +80,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
             qcov = length / int(qlen)
             scov = length / int(slen)
             if(qcov >= 0.80 and scov >= 0.80 and float(pident) >= 90. and float(evalue) < 1e-6):
-                (is_name, is_group, is_family, is_orf) = sseqid[0].split('_')
+                (is_name, is_group, is_family, is_orf) = sseqid.split('_')
                 gene = 'tnp'
                 product = f"{is_family} family transposase"
                 if(is_orf == 'ORFA'):
