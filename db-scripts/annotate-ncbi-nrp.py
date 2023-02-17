@@ -46,7 +46,7 @@ with pcla_clusters_path.open() as fh, alive_bar() as bar:
         product = product.strip().replace('"', '')
         if(gene == ''):
             gene = None
-        if(product == ''):
+        if(product == '' or product.lower() == 'hypothetical protein' or product.lower() == 'uncharacterized protein' or product.lower() == 'uncharacterized conserved protein'):
             product = None
         pcla_cluster_annotations[id] = (gene, product)
     bar()
@@ -107,9 +107,11 @@ with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='
                             log_psc.info('UPDATE psc SET gene=%s WHERE uniref90_id=%s', gene, rec_ips['uniref90_id'])
                             psc_updated_gene += 1
                         if(product is not None):
-                            conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (product, rec_ips['uniref90_id']))
-                            log_psc.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', product, rec_ips['uniref90_id'])
-                            psc_updated_product += 1
+                            rec_psc = conn.execute('SELECT * FROM psc WHERE uniref90_id=?', (rec_ips['uniref90_id'],)).fetchone()
+                            if(rec_psc is not None and rec_psc['product'] is None):
+                                conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (product, rec_ips['uniref90_id']))
+                                log_psc.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', product, rec_ips['uniref90_id'])
+                                psc_updated_product += 1
                 else:
                     nrps_wo_ips += 1
             else:
