@@ -164,8 +164,8 @@ rm cognames2003-2015.tab cog2003-2015.csv prot2003-2015.fa.gz diamond.cog.tsv co
 printf "\n11/19: download KEGG kofams HMM models...\n"
 wget https://www.genome.jp/ftp/db/kofam/ko_list.gz
 wget https://www.genome.jp/ftp/db/kofam/profiles.tar.gz
-zcat ko_list.gz | grep full | awk '{ if($5>=0.77) print $0}' > hmms.selected.tsv
-cut -f1 hmms.selected.tsv > hmms.ids.txt
+zcat ko_list.gz | grep full | awk '{ if($5>=0.77) print $0}' > hmms.kofam.selected.tsv
+cut -f1 hmms.kofam.selected.tsv > hmms.ids.txt
 tar -I pigz -xf profiles.tar.gz
 for kofam in `cat profiles/prokaryote.hal`; do cat profiles/$kofam >> kofam-prok; done
 hmmfetch -f -o kofams kofam-prok hmms.ids.txt
@@ -173,7 +173,7 @@ hmmpress kofams
 printf "\n11/19: annotate PSCs...\n"
 mkdir -p work/tblout work/domtblout
 nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in psc.faa --db kofams --no_tc --out hmmsearch.kofam.tblout
-python3 ${BAKTA_DB_SCRIPTS}/annotate-kofams.py --db bakta.db --hmms hmms.selected.tsv --hmm-results hmmsearch.kofam.tblout
+python3 ${BAKTA_DB_SCRIPTS}/annotate-kofams.py --db bakta.db --hmms hmms.kofam.selected.tsv --hmm-results hmmsearch.kofam.tblout
 rm -rf profiles ko_list.gz kofam* hmmsearch.kofam.* hmms*
 
 
@@ -218,15 +218,15 @@ printf "\n14/19: download NCBIfams HMM models...\n"
 wget https://ftp.ncbi.nlm.nih.gov/hmm/current/hmm_PGAP.LIB
 wget https://ftp.ncbi.nlm.nih.gov/hmm/current/hmm_PGAP.tsv
 grep -v "(Provisional)" hmm_PGAP.tsv > hmms.non-prov.tsv
-grep exception hmms.non-prov.tsv > hmms.selected.tsv
-grep equivalog hmms.non-prov.tsv >> hmms.selected.tsv
-cut -f1 hmms.selected.tsv > hmms.ids.txt
+grep exception hmms.non-prov.tsv > hmms.ncbi.selected.tsv
+grep equivalog hmms.non-prov.tsv >> hmms.ncbi.selected.tsv
+cut -f1 hmms.ncbi.selected.tsv > hmms.ids.txt
 hmmfetch -f -o ncbifams hmm_PGAP.LIB hmms.ids.txt
 hmmpress ncbifams
 printf "\n14/19: annotate PSCs...\n"
 mkdir -p work/tblout work/domtblout
 nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in psc.faa --db ncbifams --out hmmsearch.ncbifams.tblout
-python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-fams.py --db bakta.db --hmms hmms.selected.tsv --hmm-results hmmsearch.ncbifams.tblout
+python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-fams.py --db bakta.db --hmms hmms.ncbi.selected.tsv --hmm-results hmmsearch.ncbifams.tblout
 rm ncbifams* hmms.* hmm_PGAP.* hmmsearch.ncbifams.tblout
 
 
@@ -246,7 +246,7 @@ diamond makedb --in phrogs.faa --db phrog
 printf "\n15/19: annotate PSCs...\n"
 python3 ${BAKTA_DB_SCRIPTS}/extract-hypotheticals.py --psc psc.faa --db bakta.db --hypotheticals hypotheticals.faa
 nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in hypotheticals.faa --db phrog.dmnd --block 1000000 --id 90 --qcov 80 --scov 80 --out diamond.phrog.psc.tsv
-python3 ${BAKTA_DB_SCRIPTS}/annotate-phrogs.py --db bakta.db --psc-alignments diamond.phrog.psc.tsv
+python3 ${BAKTA_DB_SCRIPTS}/annotate-phrogs.py --db bakta.db --annotation phrog_annot_v4.tsv --psc-alignments diamond.phrog.psc.tsv
 rm -r FAA_phrog.tar.gz phrog_annot_v4.tsv FAA_phrog phrogs-raw.faa phrogs.faa phrog.dmnd hypotheticals.faa
 
 
