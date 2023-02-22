@@ -237,7 +237,7 @@ def test_dependencies():
             ], capture_output=True)
         if('No valid AMRFinder database found' in process.stderr.decode()):
             log.error('AMRFinderPlus database not installed')
-            sys.exit(f"ERROR: AMRFinderPlus database not installed! Please, install AMRFinderPlus's internal database by executing: 'amrfinder_update --database ${amrfinderplus_db_path}'. This must be done only once.")
+            sys.exit(f"ERROR: AMRFinderPlus database not installed! Please, install AMRFinderPlus's internal database by executing: 'amrfinder_update --database {amrfinderplus_db_path}'. This must be done only once.")
 
     if((cfg.skip_cds is not None and cfg.skip_cds is False) or (cfg.skip_sorf is not None and cfg.skip_sorf is False)):
         test_dependency(DEPENDENCY_HMMSEARCH)
