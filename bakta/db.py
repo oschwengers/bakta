@@ -208,7 +208,7 @@ def main():
 
         tarball_path = output_path.joinpath(f"{'db-light' if args.type == 'light' else 'db'}.tar.gz")
         db_url = f"https://zenodo.org/record/{required_version['record']}/files/{'db-light' if args.type == 'light' else 'db'}.tar.gz"
-        print(f"download database: v{required_version['major']}.{required_version['minor']}, type={db_old_info['type']}, {required_version['date']}, DOI: {required_version['doi']}, URL: {db_url}...")
+        print(f"download database: v{required_version['major']}.{required_version['minor']}, type={args.type}, {required_version['date']}, DOI: {required_version['doi']}, URL: {db_url}...")
         download(db_url, tarball_path)
         print('\t... done')
 
