@@ -196,15 +196,6 @@ def main():
         else:
             compatible_sorted = sorted(compatible_versions, key=lambda v: v['minor'], reverse=True)
             required_version = compatible_sorted[0]
-        # required_version = {
-        #     "date": "2023-02-20",
-        #     "major": 5,
-        #     "minor": 0,
-        #     "doi": "10.5281/zenodo.test",
-        #     "record": "test",
-        #     "md5": "",
-        #     "md5-light": "a1a4137ea1bb5e35b86d64edc1988ce7"
-        # }
 
         tarball_path = output_path.joinpath(f"{'db-light' if args.type == 'light' else 'db'}.tar.gz")
         db_url = f"https://zenodo.org/record/{required_version['record']}/files/{'db-light' if args.type == 'light' else 'db'}.tar.gz"
