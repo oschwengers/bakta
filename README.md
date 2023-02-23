@@ -527,7 +527,7 @@ Since this taxonomic-untargeted database is fairly demanding regarding storage c
 Latest database version 5.0:
 
 - `full`: 31 Gb zipped, 60 Gb unzipped
-- `light`: 1.3 Gb zipped, 3.2 Gb unzipped
+- `light`: 1.2 Gb zipped, 2.8 Gb unzipped
 
 All database releases are hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
 
