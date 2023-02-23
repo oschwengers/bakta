@@ -11,7 +11,7 @@ dependencies:
   - pyyaml>=6.0
   - pyrodigal>=2.0.2
   - trnascan-se>=2.0.11
-  - aragorn>=1.2.38
+  - aragorn>=1.2.41
   - infernal>=1.1.4
   - piler-cr
   - hmmer>=3.3.2
