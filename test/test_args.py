@@ -31,12 +31,22 @@ def test_genome_failing(parameters, tmpdir):
     assert proc.returncode != 0
 
 
-def test_genome_ok(tmpdir):
+@pytest.mark.parametrize(
+    'genome',
+    [
+        (['test/data/NC_002127.1.fna']),  # Linux/Unix format
+        (['test/data/NC_002127.1.fna.gz']),  # Linux/Unix format
+        (['test/data/NC_002127.1-win.fna']),  # Windows format (\r\n)
+        (['test/data/NC_002127.1-win.fna.gz']),  # Windows format (\r\n)
+        (['test/data/valid.fasta'])  # valid minimal DNA sequences
+    ]
+)
+def test_genome_ok(genome, tmpdir):
     # test genome arguments
     proc = run(
         ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         SKIP_PARAMETERS +
-        ['test/data/valid.fasta']
+        genome
     )
     assert proc.returncode == 0
 
@@ -87,12 +97,19 @@ def test_database_failing_environment(env_key, env_value, tmpdir):
     assert proc.returncode != 0
 
 
-def test_database_ok(tmpdir):
+@pytest.mark.parametrize(
+    'db',
+    [
+        ('db'),  # full DB
+        ('db-light')  # light DB
+    ]
+)
+def test_database_ok(db, tmpdir):
     # test database arguments
 
     # parameter OK
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
+        ['bin/bakta', '--db', f'test/{db}', '--output', tmpdir, '--skip-plot'] +
         SKIP_PARAMETERS +
         ['test/data/NC_002127.1.fna']
     )
@@ -100,7 +117,7 @@ def test_database_ok(tmpdir):
 
     # environment OK
     env = os.environ
-    env['BAKTA_DB'] = 'test/db'
+    env['BAKTA_DB'] = f'test/{db}'
     proc = run(
         ['bin/bakta', '--output', tmpdir, '--skip-plot'] +
         SKIP_PARAMETERS +

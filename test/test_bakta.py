@@ -9,7 +9,7 @@ import pytest
 from .conftest import FILES, SKIP_PARAMETERS
 
 
-def test_deepsig():
+def check_deepsig():
     command = ('deepsig', '--version')
     is_available = False
     try:
@@ -23,25 +23,19 @@ def test_deepsig():
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    'plasmid,db',
+    'db',
     [
-        (['test/data/NC_002127.1.fna'], 'db'),  # Linux/Unix format
-        (['test/data/NC_002127.1.fna.gz'], 'db'),  # Linux/Unix format
-        (['test/data/NC_002127.1-win.fna'], 'db'),  # Windows format (\r\n)
-        (['test/data/NC_002127.1-win.fna.gz'], 'db'),  # Windows format (\r\n)
-        (['test/data/NC_002127.1.fna'], 'db-light'),  # Linux/Unix format
-        (['test/data/NC_002127.1.fna.gz'], 'db-light'),  # Linux/Unix format
-        (['test/data/NC_002127.1-win.fna'], 'db-light'),  # Windows format (\r\n)
-        (['test/data/NC_002127.1-win.fna.gz'], 'db-light')  # Windows format (\r\n)
+        ('db'),  # full DB
+        ('db-light')  # light DB
     ]
 )
-def test_bakta_mock_skipped_features(plasmid, db, tmpdir):
-    # fast test skipping all feature detections
+def test_bakta_mock_skipped_features(db, tmpdir):
+    # fast test full features
     proc = run(
         ['bin/bakta', '--db', f'test/{db}', '--output', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--proteins', 'test/data/user-proteins.faa'] +
         ['--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1'] +
         SKIP_PARAMETERS +
-        plasmid
+        ['test/data/NC_002127.1.fna']
     )
     assert proc.returncode == 0
 
@@ -51,22 +45,12 @@ def test_bakta_mock_skipped_features(plasmid, db, tmpdir):
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize(
-    'parameters',
-    [
-        (['test/data/NC_002127.1.fna']),  # Linux/Unix format
-        (['test/data/NC_002127.1.fna.gz']),  # Linux/Unix format
-        (['test/data/NC_002127.1-win.fna']),  # Windows format (\r\n)
-        (['test/data/NC_002127.1-win.fna.gz'])  # Windows format (\r\n)
-    ]
-)
-@pytest.mark.skipif(test_deepsig() == False, reason=f'Skip on unavailable DeepSig')
-def test_bakta_plasmid(parameters, tmpdir):
+@pytest.mark.skipif(check_deepsig() == False, reason=f'Skip on unavailable DeepSig')
+def test_bakta_plasmid(tmpdir):
     # full test on plasmid
     proc = run(
         ['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--complete', '--gram', '-', '--proteins', 'test/data/user-proteins.faa'] +
-        ['--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1'] +
-        parameters
+        ['--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1', 'test/data/NC_002127.1.fna.gz']
     )
     assert proc.returncode == 0
 
