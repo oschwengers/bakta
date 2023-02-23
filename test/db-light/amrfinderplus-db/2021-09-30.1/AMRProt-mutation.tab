@@ -1,0 +1,2 @@
+#taxgroup	accession_version	mutation_position	mutation_symbol	class	subclass	mutated_protein_name
+Escherichia	WP_000019358.1	12	soxS_A12S	MULTIDRUG	AMPICILLIN/CHLORAMPHENICOL/QUINOLONE/RIFAMPIN/TETRACYCLINE	Escherichia_ampicillin/chloramphenicol/quinolone/rifampin/tetracycline_resistant_SoxS

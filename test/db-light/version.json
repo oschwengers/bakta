@@ -2,7 +2,7 @@
   "date": "2023-02-20",
   "major": 5,
   "minor": 0,
-  "type": "full",
+  "type": "light",
   "dependencies": [
     {
       "name": "AMRFinderPlus",
