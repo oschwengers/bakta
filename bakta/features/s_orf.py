@@ -13,6 +13,7 @@ import bakta.constants as bc
 import bakta.features.orf as orf
 import bakta.utils as bu
 import bakta.psc as psc
+import bakta.pscc as pscc
 import bakta.so as so
 
 
@@ -283,6 +284,12 @@ def annotation_filter(sorfs: Sequence[dict]) -> Sequence[dict]:
             if(tmp != ''):
                 product = tmp
 
+        pscc = sorf.get('pscc', None)
+        if(pscc is not None):
+            tmp = pscc.get('product', '')
+            if(tmp != ''):
+                product = tmp
+
         if(gene is None and product is None):
             sorf['hypothetical'] = True
         else:
@@ -292,6 +299,16 @@ def annotation_filter(sorfs: Sequence[dict]) -> Sequence[dict]:
 
 
 def search_pscs(sorfs: Sequence[dict]):
+    """Conduct homology search of sORFs against the full db PSCs"""
+    return search(sorfs, 'full')
+
+
+def search_psccs(sorfs: Sequence[dict]):
+    """Conduct homology search of sORFs against the light db PSCCs"""
+    return search(sorfs, 'light')
+
+
+def search(sorfs: Sequence[dict], cluster_type: str):
     """Conduct homology search of sORFs against sORF db."""
     sorf_aa_path = cfg.tmp_path.joinpath('sorf.faa')
     orf.write_internal_faa(sorfs, sorf_aa_path)
@@ -337,22 +354,23 @@ def search_pscs(sorfs: Sequence[dict]):
             query_cov = int(alignment_length) / len(sorf['aa'])
             identity = float(identity) / 100
             if(query_cov >= bc.MIN_SORF_COVERAGE and identity >= bc.MIN_SORF_IDENTITY):
-                sorf['psc'] = {
-                    psc.DB_PSC_COL_UNIREF90: cluster_id,
+                result = {
                     'query_cov': query_cov,
                     'identity': identity
                 }
+                result[psc.DB_PSC_COL_UNIREF90 if cluster_type == 'full' else pscc.DB_PSCC_COL_UNIREF50] = cluster_id
+                sorf['psc' if cluster_type == 'full' else 'pscc'] = result
                 log.info(
                     'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, UniRef90=%s',
                     sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], len(sorf['aa']), query_cov, identity, cluster_id
                 )
 
-    pscs_found = []
-    pscs_not_found = []
+    sorfs_found = []
+    sorfs_not_found = []
     for sorf in sorfs:
-        if('psc' in sorf):
-            pscs_found.append(sorf)
+        if('psc' in sorf  or  'pscc' in sorf):
+            sorfs_found.append(sorf)
         else:
-            pscs_not_found.append(sorf)
-    log.info('found=%i', len(pscs_found))
-    return pscs_found, pscs_not_found
+            sorfs_not_found.append(sorf)
+    log.info('found=%i', len(sorfs_found))
+    return sorfs_found, sorfs_not_found

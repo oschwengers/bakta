@@ -242,8 +242,8 @@ def main():
         if(len(cdss) > 0):
             log.debug('lookup CDS UPS/IPS')
             cdss_ups, cdss_not_found = ups.lookup(cdss)
-            cdss_ips, tmp = ips.lookup(cdss_ups)
-            cdss_not_found.extend(tmp)
+            cdss_ips, sorf_pscs = ips.lookup(cdss_ups)
+            cdss_not_found.extend(sorf_pscs)
             print(f'\tdetected IPSs: {len(cdss_ips)}')
 
             if(len(cdss_not_found) > 0):
@@ -348,17 +348,26 @@ def main():
         sorfs_not_found.extend(tmp)
         print(f'\tdetected IPSs: {len(sorf_ipss)}')
 
-        sorf_pscs = []
-        if(len(sorfs_not_found) > 0  and  cfg.db_info['type'] == 'full'):
-            log.debug('search sORF PSC')
-            tmp, sorfs_not_found = s_orf.search_pscs(sorfs_not_found)
-            sorf_pscs.extend(tmp)
-            print(f'\tfound PSCs: {len(sorf_pscs)}')
+        sorf_pscs_psccs = []
+        if(len(sorfs_not_found) > 0):
+            if(cfg.db_info['type'] == 'full'):
+                log.debug('search sORF PSC')
+                sorf_pscs, sorfs_not_found = s_orf.search_pscs(sorfs_not_found)
+                sorf_pscs_psccs.extend(sorf_pscs)
+                print(f'\tfound PSCs: {len(sorf_pscs_psccs)}')
+            else:
+                log.debug('search sORF PSCC')
+                sorf_psccs, sorfs_not_found = s_orf.search_psccs(sorfs_not_found)
+                sorf_pscs_psccs.extend(sorf_psccs)
+                print(f'\tfound PSCCs: {len(sorf_pscs_psccs)}')
+
 
         print("\tlookup annotations...")
         log.debug('lookup sORF PSCs')
-        sorf_pscs.extend(sorf_ipss)
-        psc.lookup(sorf_pscs)  # lookup PSC info
+        sorf_pscs_psccs.extend(sorf_ipss)
+        psc.lookup(sorf_pscs_psccs)  # lookup PSC info
+        log.debug('lookup sORF PSCCs')
+        pscc.lookup(sorf_pscs_psccs)  # lookup PSC info
         print('\tfilter and combine annotations...')
         log.debug('filter sORF by annotations')
         sorfs_filtered = s_orf.annotation_filter(sorfs)
