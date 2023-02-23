@@ -121,7 +121,7 @@ Bakta requires the following 3rd party software tools which must be installed an
 ### Database download
 
 Bakta requires a mandatory database which is publicly hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
-Further information is provided in the [database](#database) section below.
+We provide 2 versions: `full` and `light`. To get best annotation results and to use all features, we recommend using the default (`full`). If you seek for maximum runtime performance or if download time/storage requirements are an issue, please try the `light` version. Further information is provided in the [database](#database) section below.
 
 List available DB versions:
 
@@ -130,22 +130,22 @@ bakta_db list
 ...
 ```
 
-Download the most recent compatible database version we recommend to use the internal database download & setup tool:
+To download the most recent compatible database version we recommend to use the internal database download & setup tool:
 
 ```bash
-bakta_db download --output <output-path>
+bakta_db download --output <output-path> --type light
 ```
 
 Of course, the database can also be downloaded manually:
 
 ```bash
-wget https://zenodo.org/record/7025248/files/db.tar.gz
-tar -xzf db.tar.gz
-rm db.tar.gz
-amrfinder_update --force_update --database db/amrfinderplus-db/
+wget https://zenodo.org/record/7025248/files/db-light.tar.gz
+tar -xzf db-light.tar.gz
+rm db-light.tar.gz
+amrfinder_update --force_update --database db-light/amrfinderplus-db/
 ```
 
-As an additional data repository backup, we provide the most recent database version via our institute servers [here](https://jlubox.uni-giessen.de/getlink/fiWhS6LJi8AizXvspaRxRzPN/db.tar.gz). However, the bandwith is limited. Hence, please use it with caution and only if Zenodo might be temporarily uncreachable or slow. In these cases, please also download the AMRFinderPlus database as indicated above.
+As an additional data repository backup, we provide the most recent database version via our institute servers: [full](https://jlubox.uni-giessen.de/getlink/fiWhS6LJi8AizXvspaRxRzPN/db.tar.gz), [light](https://jlubox.uni-giessen.de/getlink/fiWhS6LJi8AizXvspaRxRzPN/db-light.tar.gz). However, the bandwith is limited. Hence, please use it with caution and only if Zenodo might be temporarily uncreachable or slow. In these cases, please also download the AMRFinderPlus database as indicated above.
 
 Update an existing database:
 
@@ -522,7 +522,14 @@ ori sequences:
 
 To provide FAIR annotations, the database releases are SemVer versioned (w/o patch level), *i.e.* `<major>.<minor>`. For each version we provide a comprehensive log file tracking all imported sequences as well as annotations thereof. The db schema is represented by the `<major>` digit and automatically checked at runtime by Bakta in order to ensure compatibility. Content updates are tracked by the `<minor>` digit.
 
-All database releases (latest 4.0, 31 Gb zipped, 59 Gb unzipped) are hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
+Since this taxonomic-untargeted database is fairly demanding regarding storage consumption, we provide a lightweight version providing all non-coding feature information but only PSCC information from UniRef50 clusters for CDS. If download bandwiths or storage requirements are an issue or if faster runtimes for less-specific annotation are favored, the `light` database will do the job!
+
+Latest database version 5.0:
+
+- `full`: 31 Gb zipped, 60 Gb unzipped
+- `light`: 1.2 Gb zipped, 2.8 Gb unzipped
+
+All database releases are hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
 
 ## Genome Submission
 

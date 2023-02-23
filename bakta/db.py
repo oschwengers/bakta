@@ -43,7 +43,6 @@ FILE_NAMES = [
         'pfam.h3i',
         'pfam.h3m',
         'pfam.h3p',
-        'psc.dmnd',
         'rfam-go.tsv',
         'rRNA.i1f',
         'rRNA.i1i',
@@ -76,12 +75,12 @@ def check(db_path: Path) -> dict:
         log.exception('could not parse database version file!')
         sys.exit('ERROR: could not parse database version file!')
 
-    for key in ['date', 'major', 'minor']:
+    for key in ['date', 'major', 'minor', 'type']:
         if(key not in db_info):
             log.error('wrong db version info file content! missed key=%s', key)
             sys.exit(f"ERROR: wrong db version info file format! Missed key '{key}' in JSON structure.")
 
-    log.info('detected: major=%i, minor=%i, date=%s', db_info['major'], db_info['minor'], db_info['date'])
+    log.info('detected: major=%i, minor=%i, type=%s, date=%s', db_info['major'], db_info['minor'], db_info['type'], db_info['date'])
     if(db_info['major'] < bakta.__db_schema_version__):
         log.error('wrong database version detected! required=%i, detected=%i', bakta.__db_schema_version__, db_info['major'])
         sys.exit(f"ERROR: wrong database version detected!\nBakta version {bakta.__version__} requires database version {bakta.__db_schema_version__}.x, but {db_info['major']}.{db_info['minor']} was detected. Please, update the database from https://doi.org/10.5281/zenodo.4247253")
@@ -89,7 +88,9 @@ def check(db_path: Path) -> dict:
         log.error('wrong database version detected! required=%i, detected=%i', bakta.__db_schema_version__, db_info['major'])
         sys.exit(f"ERROR: wrong database version detected!\nBakta version {bakta.__version__} requires database version {bakta.__db_schema_version__}.x, but {db_info['major']}.{db_info['minor']} was detected. Please, update Bakta or download a compatible database version from https://doi.org/10.5281/zenodo.4247253")
 
-    for file_name in FILE_NAMES:
+    required_db_files = FILE_NAMES
+    required_db_files.append('psc.dmnd' if db_info['type'] == 'full' else 'pscc.dmnd')
+    for file_name in required_db_files:
         path = db_path.joinpath(file_name)
         if(not os.access(str(path), os.R_OK) or not path.is_file()):
             log.error('file not readable! file=%s', file_name)
@@ -155,6 +156,7 @@ def main():
     parser_download = subparsers.add_parser('download', help='Download a database')  # add download sub-command options
     parser_download.add_argument('--output', '-o', action='store', default=Path.cwd(), help='output directory (default = current working directory)')
     parser_download.add_argument('--minor', '-n', action='store', type=int, default=0, help='Database minor version (default = most recent db minor version)')
+    parser_download.add_argument('--type', choices=['full', 'light'], default='full', help='Database type (defaut = full)')
 
     parser_update = subparsers.add_parser('update', help='Update an existing database to the most recent compatible version')  # add download sub-command options
     parser_update.add_argument('--db', '-d', action='store', default=None, help='Current database path (default = <bakta_path>/db). Can also be provided as BAKTA_DB environment variable.')
@@ -195,31 +197,35 @@ def main():
             compatible_sorted = sorted(compatible_versions, key=lambda v: v['minor'], reverse=True)
             required_version = compatible_sorted[0]
 
-        tarball_path = output_path.joinpath('db.tar.gz')
-        db_url = f"https://zenodo.org/record/{required_version['record']}/files/db.tar.gz"
-        print(f"download database: v{required_version['major']}.{required_version['minor']}, {required_version['date']}, DOI: {required_version['doi']}, URL: {db_url}...")
+        tarball_path = output_path.joinpath(f"{'db-light' if args.type == 'light' else 'db'}.tar.gz")
+        db_url = f"https://zenodo.org/record/{required_version['record']}/files/{'db-light' if args.type == 'light' else 'db'}.tar.gz"
+        print(f"download database: v{required_version['major']}.{required_version['minor']}, type={args.type}, {required_version['date']}, DOI: {required_version['doi']}, URL: {db_url}...")
         download(db_url, tarball_path)
         print('\t... done')
 
         print('check MD5 sum...')
         md5_sum = calc_md5_sum(tarball_path)
-        if(md5_sum == required_version['md5']):
+        required_md5 = required_version['md5-light' if args.type == 'light' else 'md5']
+        if(md5_sum == required_md5):
             print(f'\t...database file OK: {md5_sum}')
         else:
-            sys.exit(f"Error: corrupt database file! MD5 should be '{required_version['md5']}' but is '{md5_sum}'")
+            sys.exit(f"Error: corrupt database file! MD5 should be '{required_md5}' but is '{md5_sum}'")
 
         print(f'extract DB tarball: file={tarball_path}, output={output_path}')
         untar(tarball_path, output_path)
         tarball_path.unlink()
 
-        db_path = output_path.joinpath('db')
+        db_path = output_path.joinpath('db-light' if args.type == 'light' else 'db')
         db_info = check(db_path)
         if(db_info['major'] != required_version['major']):
             sys.exit(f"ERROR: wrong major db detected! required={required_version['major']}, detected={db_info['major']}")
         elif(db_info['minor'] != required_version['minor']):
             sys.exit(f"ERROR: wrong minor db detected! required={required_version['minor']}, detected={db_info['minor']}")
+        elif(db_info['type'] != args.type == 'light'):
+            sys.exit(f"ERROR: wrong db type detected! required={args.type}, detected={db_info['type']}")
         print('successfully downloaded Bakta database!')
         print(f"\tversion: {required_version['major']}.{required_version['minor']}")
+        print(f"\tType: {args.type}")
         print(f"\tDOI: {required_version['doi']}")
         print(f'\tpath: {db_path}')
 
@@ -240,7 +246,7 @@ def main():
         tmp_path = cfg.check_tmp_path(args)
         db_old_path = cfg.check_db_path(args)
         db_old_info = check(db_old_path)
-        print(f"existing database: v{db_old_info['major']}.{db_old_info['minor']}")
+        print(f"existing database: v{db_old_info['major']}.{db_old_info['minor']}, type={db_old_info['type']}")
         print('fetch DB versions...')
         versions = fetch_db_versions()
         compatible_versions = [v for v in versions if v['major'] == bakta.__db_schema_version__]
@@ -255,31 +261,35 @@ def main():
             sys.exit()
         required_version = compatible_sorted[0]
 
-        tarball_path = tmp_path.joinpath('db.tar.gz')
-        db_url = f"https://zenodo.org/record/{required_version['record']}/files/db.tar.gz"
-        print(f"download database: v{required_version['major']}.{required_version['minor']}, {required_version['date']}, DOI: {required_version['doi']}, URL: {db_url}...")
+        tarball_path = output_path.joinpath(f"{'db-light' if args.type == 'light' else 'db'}.tar.gz")
+        db_url = f"https://zenodo.org/record/{required_version['record']}/files/{'db-light' if args.type == 'light' else 'db'}.tar.gz"
+        print(f"download database: v{required_version['major']}.{required_version['minor']}, type={db_old_info['type']}, {required_version['date']}, DOI: {required_version['doi']}, URL: {db_url}...")
         download(db_url, tarball_path)
         print('\t... done')
 
         print('check MD5 sum...')
         md5_sum = calc_md5_sum(tarball_path)
-        if(md5_sum == required_version['md5']):
+        required_md5 = required_version['md5-light' if args.type == 'light' else 'md5']
+        if(md5_sum == required_md5):
             print(f'\t...database file OK: {md5_sum}')
         else:
-            sys.exit(f"Error: corrupt database file! MD5 should be '{required_version['md5']}' but is '{md5_sum}'")
+            sys.exit(f"Error: corrupt database file! MD5 should be '{required_md5}' but is '{md5_sum}'")
 
         print(f'extract DB tarball: file={tarball_path}, output-directory={tmp_path}')
         untar(tarball_path, tmp_path)
         tarball_path.unlink()
 
-        db_new_path = tmp_path.joinpath('db')
+        db_new_path = tmp_path.joinpath('db-light' if args.type == 'light' else 'db')
         db_new_info = check(db_new_path)
         if(db_new_info['major'] != required_version['major']):
             sys.exit(f"ERROR: wrong major db detected! required={required_version['major']}, detected={db_new_info['major']}")
         elif(db_new_info['minor'] != required_version['minor']):
             sys.exit(f"ERROR: wrong minor db detected! required={required_version['minor']}, detected={db_new_info['minor']}")
+        elif(db_new_info['type'] != args.type == 'light'):
+            sys.exit(f"ERROR: wrong db type detected! required={args.type}, detected={db_new_info['type']}")
         print('successfully downloaded Bakta DB:')
         print(f"\tversion: {required_version['major']}.{required_version['minor']}")
+        print(f"\tType: {args.type}")
         print(f"\tDOI: {required_version['doi']}")
         print(f'\tpath: {db_new_path}')
         print('remove old database...')

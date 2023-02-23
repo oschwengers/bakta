@@ -23,21 +23,25 @@ def test_deepsig():
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    'parameters',
+    'plasmid,db',
     [
-        (['test/data/NC_002127.1.fna']),  # Linux/Unix format
-        (['test/data/NC_002127.1.fna.gz']),  # Linux/Unix format
-        (['test/data/NC_002127.1-win.fna']),  # Windows format (\r\n)
-        (['test/data/NC_002127.1-win.fna.gz'])  # Windows format (\r\n)
+        (['test/data/NC_002127.1.fna'], 'db'),  # Linux/Unix format
+        (['test/data/NC_002127.1.fna.gz'], 'db'),  # Linux/Unix format
+        (['test/data/NC_002127.1-win.fna'], 'db'),  # Windows format (\r\n)
+        (['test/data/NC_002127.1-win.fna.gz'], 'db'),  # Windows format (\r\n)
+        (['test/data/NC_002127.1.fna'], 'db-light'),  # Linux/Unix format
+        (['test/data/NC_002127.1.fna.gz'], 'db-light'),  # Linux/Unix format
+        (['test/data/NC_002127.1-win.fna'], 'db-light'),  # Windows format (\r\n)
+        (['test/data/NC_002127.1-win.fna.gz'], 'db-light')  # Windows format (\r\n)
     ]
 )
-def test_bakta_mock_skipped_features(parameters, tmpdir):
+def test_bakta_mock_skipped_features(plasmid, db, tmpdir):
     # fast test skipping all feature detections
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--proteins', 'test/data/user-proteins.faa'] +
+        ['bin/bakta', '--db', f'test/{db}', '--output', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--proteins', 'test/data/user-proteins.faa'] +
         ['--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1'] +
         SKIP_PARAMETERS +
-        parameters
+        plasmid
     )
     assert proc.returncode == 0
 
@@ -93,9 +97,16 @@ def test_bakta_plasmid(parameters, tmpdir):
 
 
 @pytest.mark.slow
-def test_bakta_genome(tmpdir):
+@pytest.mark.parametrize(
+    'db',
+    [
+        ('db'),  # full DB
+        ('db-light')  # light DB
+    ]
+)
+def test_bakta_genome(db, tmpdir):
     # full test on complete genome in compliant mode
-    proc = run(['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--complete', '--compliant', '--proteins', 'test/data/user-proteins.faa', '--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1', 'test/data/GCF_000008865.2.fna.gz'])
+    proc = run(['bin/bakta', '--db', f'test/{db}', '--verbose', '--output', tmpdir, '--prefix', 'test', '--min-contig-length', '200', '--complete', '--compliant', '--proteins', 'test/data/user-proteins.faa', '--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1', 'test/data/GCF_000008865.2.fna.gz'])
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)

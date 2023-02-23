@@ -1,0 +1,2 @@
+#taxgroup	gene_symbol	accession_version	resistance_cutoff	class	subclass	resistance_protein_name
+Streptococcus_pneumoniae	pbp1a	WP_001040013.1	           99.000000	BETA-LACTAM	BETA-LACTAM	Streptococcus_pneumoniae_beta-lactam_resistant_PBP1A

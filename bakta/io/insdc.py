@@ -148,7 +148,7 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                     psc_subject_id = feature['psc']['uniref90_id']
                     inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIREF}:{psc_subject_id}')
                 elif('uniref50_id' in feature.get('pscc', {})):
-                    pscc_subject_id = feature['psc']['uniref50_id']
+                    pscc_subject_id = feature['pscc']['uniref50_id']
                     inference.append(f'similar to AA sequence:{bc.DB_XREF_UNIREF}:{pscc_subject_id}')
                 qualifiers['inference'] = inference
                 if(cfg.compliant):

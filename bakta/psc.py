@@ -28,10 +28,10 @@ log = logging.getLogger('PSC')
 
 
 def search(cdss: Sequence[dict]) -> Tuple[Sequence[dict], Sequence[dict], Sequence[dict]]:
-    """Conduct homology search of CDSs against PCS db."""
+    """Conduct homology search of CDSs against PSC db."""
     cds_aa_path = cfg.tmp_path.joinpath('cds.psc.faa')
     orf.write_internal_faa(cdss, cds_aa_path)
-    diamond_output_path = cfg.tmp_path.joinpath('diamond.cds.tsv')
+    diamond_output_path = cfg.tmp_path.joinpath('diamond.psc.tsv')
     diamond_db_path = cfg.db_path.joinpath('psc.dmnd')
     cmd = [
         'diamond',
