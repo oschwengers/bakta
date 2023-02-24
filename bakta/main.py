@@ -552,7 +552,7 @@ def main():
     faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.faa')
     fasta.write_faa(features, faa_path)
 
-    if(cfg.skip_plot):
+    if(cfg.skip_plot  or  cfg.meta):
         print('\tskip generation of circular genome plot...')
     else:
         print('\tcircular genome plot...')
