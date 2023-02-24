@@ -88,6 +88,7 @@ def main():
         if(cfg.skip_sorf): print(f'\tskip sORF: {cfg.skip_sorf}')
         if(cfg.skip_gap): print(f'\tskip gap: {cfg.skip_gap}')
         if(cfg.skip_ori): print(f'\tskip oriC/V/T: {cfg.skip_ori}')
+        if(cfg.skip_plot): print(f'\tskip plot: {cfg.skip_plot}')
     
     if(cfg.debug):
         print(f"\nBakta runs in DEBUG mode! Temporary data will not be destroyed at: {cfg.tmp_path}")
