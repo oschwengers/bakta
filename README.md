@@ -139,13 +139,13 @@ bakta_db download --output <output-path> --type light
 Of course, the database can also be downloaded manually:
 
 ```bash
-wget https://zenodo.org/record/7025248/files/db-light.tar.gz
+wget https://zenodo.org/record/7669534/files/db-light.tar.gz
 tar -xzf db-light.tar.gz
 rm db-light.tar.gz
 amrfinder_update --force_update --database db-light/amrfinderplus-db/
 ```
 
-As an additional data repository backup, we provide the most recent database version via our institute servers: [full](https://jlubox.uni-giessen.de/getlink/fiWhS6LJi8AizXvspaRxRzPN/db.tar.gz), [light](https://jlubox.uni-giessen.de/getlink/fiWhS6LJi8AizXvspaRxRzPN/db-light.tar.gz). However, the bandwith is limited. Hence, please use it with caution and only if Zenodo might be temporarily uncreachable or slow. In these cases, please also download the AMRFinderPlus database as indicated above.
+As an additional data repository backup, we provide the most recent database version via our institute servers: [full](https://jlubox.uni-giessen.de/dl/fiKeyT1huWv9vW5cXKYkZXYB/db.tar.gz), [light](https://jlubox.uni-giessen.de/dl/fiG6AHmHA94t4v2r2vwW91WB/db-light.tar.gz). However, the bandwith is limited. Hence, please use it with caution and only if Zenodo might be temporarily uncreachable or slow. In these cases, please also download the AMRFinderPlus database as indicated above.
 
 Update an existing database:
 
@@ -480,23 +480,23 @@ Due due to uncertain nature of sORF prediction, only those identified via IPS / 
 The Bakta database comprises a set of AA & DNA sequence databases as well as HMM & covariance models.
 At its core Bakta utilizes a compact read-only SQLite db storing protein sequence digests, lengths, pre-assigned annotations and dbxrefs of UPS, IPS and PSC from:
 
-- **UPS**: UniParc / UniProtKB (241,116,844)
-- **IPS**: UniProt UniRef100 (223,313,098)
-- **PSC**: UniProt UniRef90 (99,555,646)
-- **PSCC**: UniProt UniRef50 (13,398,956)
+- **UPS**: UniParc / UniProtKB (246,384,812)
+- **IPS**: UniProt UniRef100 (228,759,203)
+- **PSC**: UniProt UniRef90 (100,315,337)
+- **PSCC**: UniProt UniRef50 (23,959,577)
 
 This allows the exact protein sequences identification via MD5 digests & sequence lengths as well as the rapid subsequent lookup of related information. Protein sequence digests are checked for hash collisions while the db creation process.
 IPS & PSC have been comprehensively pre-annotated integrating annotations & database *dbxrefs* from:
 
-- NCBI nonredundant proteins (IPS: 183,797,372)
-- NCBI COG db (PSC: 3,424,142)
-- KEGG Kofams (PSC: 17,787,347)
-- SwissProt EC/GO terms (PSC: 336,030)
-- NCBI NCBIfams (PSC: 13,466,827)
-- PHROG (PSC: 0)
-- NCBI AMRFinderPlus (IPS: 7,009)
-- ISFinder db (IPS: 53,341, PSC: 11,412)
-- Pfam families (PSC: 3,917,555)
+- NCBI nonredundant proteins (IPS: 192,288,757)
+- NCBI COG db (PSC: 3,428,564)
+- KEGG Kofams (PSC: 16,776,225)
+- SwissProt EC/GO terms (PSC: 336,187)
+- NCBI NCBIfams (PSC: 14,391,965)
+- PHROG (PSC: 4,379)
+- NCBI AMRFinderPlus (IPS: 7,235)
+- ISFinder db (IPS: 125,967, PSC: 11,800)
+- Pfam families (PSC: 248,169)
 
 To provide high quality annotations for distinct protein sequences of high importance (AMR, VF, *etc*) which cannot sufficiently be covered by the IPS/PSC approach, Bakta provides additional expert systems. For instance, AMR genes, are annotated via NCBI's AMRFinderPlus.
 An expandable alignment-based expert system supports the incorporation of high quality annotations from multiple sources. This currenlty comprises NCBI's BlastRules as well as VFDB and will be complemented with more expert annotation sources over time. Internally, this expert system is based on a Diamond DB comprising the following information in a standardized format:
@@ -512,22 +512,22 @@ An expandable alignment-based expert system supports the incorporation of high q
 
 Rfam covariance models:
 
-- ncRNA: 798
+- ncRNA: 802
 - ncRNA cis-regulatory regions: 270
 
 ori sequences:
 
-- oriC/V: 10,878
+- oriC/V: 6,690
 - oriT: 502
 
 To provide FAIR annotations, the database releases are SemVer versioned (w/o patch level), *i.e.* `<major>.<minor>`. For each version we provide a comprehensive log file tracking all imported sequences as well as annotations thereof. The db schema is represented by the `<major>` digit and automatically checked at runtime by Bakta in order to ensure compatibility. Content updates are tracked by the `<minor>` digit.
 
-Since this taxonomic-untargeted database is fairly demanding regarding storage consumption, we provide a lightweight version providing all non-coding feature information but only PSCC information from UniRef50 clusters for CDS. If download bandwiths or storage requirements are an issue or if faster runtimes for less-specific annotation are favored, the `light` database will do the job!
+As this taxonomic-untargeted database is fairly demanding regarding storage consumption, we provide a lightweight version providing all non-coding feature information but only PSCC information from UniRef50 clusters for CDS. If download bandwiths or storage requirements become an issue or if shorter runtimes are favored over more-specific annotation, the `light` database will do the job.
 
 Latest database version 5.0:
 
-- `full`: 31 Gb zipped, 60 Gb unzipped
-- `light`: 1.2 Gb zipped, 2.8 Gb unzipped
+- `light`: 1.2 Gb zipped, 2.8 Gb unzipped, MD5: a40e680b4aab7871102f31aaac91838b
+- `full`: 31 Gb zipped, 60 Gb unzipped, MD5: 3200136a0a32b3c33d1cb348ab6b87de
 
 All database releases are hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
 
