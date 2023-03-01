@@ -38,7 +38,7 @@ VERSION_MAX_DIGIT = 1000000000000
 VERSION_REGEX = re.compile(r'(\d+)\.(\d+)(?:[\.-](\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
 
 # List of dependencies: tuples for: min version, max version, tool name & command line parameter, dependency check exclusion options
-DEPENDENCY_TRNASCAN = (Version(2, 0, 8), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('tRNAscan-SE', '-h'), ['--skip-trna'])
+DEPENDENCY_TRNASCAN = (Version(2, 0, 11), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('tRNAscan-SE', '-h'), ['--skip-trna'])
 DEPENDENCY_ARAGORN = (Version(1, 2, 41), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('aragorn', '-h'), ['skip-tmrna'])
 DEPENDENCY_CMSCAN = (Version(1, 1, 4), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('cmscan', '-h'), ['--skip-rrna', '--skip-ncrna', '--skip-ncrna-region'])
 DEPENDENCY_PILERCR = (Version(1, 6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('pilercr', '-options'), ['--skip-crispr'])
