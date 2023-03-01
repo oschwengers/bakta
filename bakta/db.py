@@ -173,11 +173,16 @@ def main():
         print('Available DB versions:')
         for v in sorted(versions, key=lambda v: (v['major'], v['minor'])):
             print(f"{v['major']}.{v['minor']}\t{v['date']}\t{v['doi']}")
+        
+        print("\nRun 'bakta_db download --type <TYPE>' to download the most recent version either as type 'full' (default) or 'light'.")
+        print("Run 'bakta_db download --minor <MINOR>' to download a specific minor version (either as type 'full' or 'light').")
+        print("\nType 'bakta_db download --help' for further details")
     elif(args.subcommand == 'download'):
         bu.test_dependency(bu.DEPENDENCY_AMRFINDERPLUS)
         output_path = cfg.check_output_path(args)
 
-        print('fetch DB versions...')
+        print(f'Selected DB type: {args.type}\n')
+        print('Fetch DB versions...')
         versions = fetch_db_versions()
         compatible_versions = [v for v in versions if v['major'] == bakta.__db_schema_version__]
         if(len(compatible_versions) == 0):
@@ -199,11 +204,11 @@ def main():
 
         tarball_path = output_path.joinpath(f"{'db-light' if args.type == 'light' else 'db'}.tar.gz")
         db_url = f"https://zenodo.org/record/{required_version['record']}/files/{'db-light' if args.type == 'light' else 'db'}.tar.gz"
-        print(f"download database: v{required_version['major']}.{required_version['minor']}, type={args.type}, {required_version['date']}, DOI: {required_version['doi']}, URL: {db_url}...")
+        print(f"Download database: v{required_version['major']}.{required_version['minor']}, type={args.type}, {required_version['date']}, DOI: {required_version['doi']}, URL: {db_url}...")
         download(db_url, tarball_path)
         print('\t... done')
 
-        print('check MD5 sum...')
+        print('Check MD5 sum...')
         md5_sum = calc_md5_sum(tarball_path)
         required_md5 = required_version['md5-light' if args.type == 'light' else 'md5']
         if(md5_sum == required_md5):
@@ -211,7 +216,7 @@ def main():
         else:
             sys.exit(f"Error: corrupt database file! MD5 should be '{required_md5}' but is '{md5_sum}'")
 
-        print(f'extract DB tarball: file={tarball_path}, output={output_path}')
+        print(f'Extract DB tarball: file={tarball_path}, output={output_path}')
         untar(tarball_path, output_path)
         tarball_path.unlink()
 
@@ -223,7 +228,7 @@ def main():
             sys.exit(f"ERROR: wrong minor db detected! required={required_version['minor']}, detected={db_info['minor']}")
         elif(db_info['type'] != args.type == 'light'):
             sys.exit(f"ERROR: wrong db type detected! required={args.type}, detected={db_info['type']}")
-        print('successfully downloaded Bakta database!')
+        print('Successfully downloaded Bakta database!')
         print(f"\tversion: {required_version['major']}.{required_version['minor']}")
         print(f"\tType: {args.type}")
         print(f"\tDOI: {required_version['doi']}")
@@ -236,7 +241,7 @@ def main():
         except:
             sys.exit(f'ERROR: cannot set read|execute permissions on new database! path={db_path}, owner={db_path.owner()}, group={db_path.group()}, permissions={oct(db_path.stat().st_mode )[-3:]}')
 
-        print('update AMRFinderPlus database...')
+        print('Update AMRFinderPlus database...')
         update_amrfinderplus_db(db_path)
         print('\t... done')
 
@@ -246,8 +251,8 @@ def main():
         tmp_path = cfg.check_tmp_path(args)
         db_old_path = cfg.check_db_path(args)
         db_old_info = check(db_old_path)
-        print(f"existing database: v{db_old_info['major']}.{db_old_info['minor']}, type={db_old_info['type']}")
-        print('fetch DB versions...')
+        print(f"Existing database: v{db_old_info['major']}.{db_old_info['minor']}, type={db_old_info['type']}")
+        print('Fetch DB versions...')
         versions = fetch_db_versions()
         compatible_versions = [v for v in versions if v['major'] == bakta.__db_schema_version__]
         if(len(compatible_versions) == 0):
@@ -263,11 +268,11 @@ def main():
 
         tarball_path = output_path.joinpath(f"{'db-light' if args.type == 'light' else 'db'}.tar.gz")
         db_url = f"https://zenodo.org/record/{required_version['record']}/files/{'db-light' if args.type == 'light' else 'db'}.tar.gz"
-        print(f"download database: v{required_version['major']}.{required_version['minor']}, type={db_old_info['type']}, {required_version['date']}, DOI: {required_version['doi']}, URL: {db_url}...")
+        print(f"Download database: v{required_version['major']}.{required_version['minor']}, type={db_old_info['type']}, {required_version['date']}, DOI: {required_version['doi']}, URL: {db_url}...")
         download(db_url, tarball_path)
         print('\t... done')
 
-        print('check MD5 sum...')
+        print('Check MD5 sum...')
         md5_sum = calc_md5_sum(tarball_path)
         required_md5 = required_version['md5-light' if args.type == 'light' else 'md5']
         if(md5_sum == required_md5):
@@ -275,7 +280,7 @@ def main():
         else:
             sys.exit(f"Error: corrupt database file! MD5 should be '{required_md5}' but is '{md5_sum}'")
 
-        print(f'extract DB tarball: file={tarball_path}, output-directory={tmp_path}')
+        print(f'Extract DB tarball: file={tarball_path}, output-directory={tmp_path}')
         untar(tarball_path, tmp_path)
         tarball_path.unlink()
 
@@ -287,12 +292,12 @@ def main():
             sys.exit(f"ERROR: wrong minor db detected! required={required_version['minor']}, detected={db_new_info['minor']}")
         elif(db_new_info['type'] != args.type == 'light'):
             sys.exit(f"ERROR: wrong db type detected! required={args.type}, detected={db_new_info['type']}")
-        print('successfully downloaded Bakta DB:')
+        print('Successfully downloaded Bakta DB:')
         print(f"\tversion: {required_version['major']}.{required_version['minor']}")
         print(f"\tType: {args.type}")
         print(f"\tDOI: {required_version['doi']}")
         print(f'\tpath: {db_new_path}')
-        print('remove old database...')
+        print('Remove old database...')
         try:
             db_old_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)  # set write permissions on old directory
             for db_old_file_path in db_old_path.iterdir():
@@ -331,7 +336,7 @@ def main():
 
         print('\t... done')
 
-        print('update AMRFinderPlus database...')
+        print('Update AMRFinderPlus database...')
         update_amrfinderplus_db(db_old_path)
         print('\t... done')
 
