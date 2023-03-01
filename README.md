@@ -43,7 +43,7 @@ This AFSI approach substantially accellerates the annotation process by avoiding
 Fostering the [FAIR](https://www.go-fair.org/fair-principles) principles, Bakta exploits its AFSI approach to annotate CDS with database cross-references (**dbxref**) to RefSeq (`WP_*`), UniRef100 (`UniRef100_*`) and UniParc (`UPI*`). By doing so, IPS allow the surveillance of distinct gene alleles and streamlining comparative analysis as well as posterior (external) annotations of `putative` & `hypothetical` protein sequences which can be mapped back to existing CDS via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)). Currently, Bakta identifies ~214.8 mio, ~199 mio and ~161 mio distinct protein sequences from UniParc, UniRef100 and RefSeq, respectively. Hence, for certain genomes, up to 99 % of all CDS can be identified this way, skipping computationally expensive sequence alignments.
 
 - **FAIR annotations**
-To provide standardized annotations adhearing to FAIR principles, Bakta utilizes a versioned custom annotation database comprising UniProt's [UniRef100 & UniRef90](https://www.uniprot.org/uniref/) protein clusters (FAIR -> [DOI](http://dx.doi.org/10.1038/s41597-019-0180-9)/[DOI](https://doi.org/10.1093/nar/gkaa1100)) enriched with dbxrefs (`GO`, `COG`, `EC`) and annotated by specialized niche databases. For each db version we provide a comprehensive log file of all imported sequences and annotations.
+To provide standardized annotations adhearing to FAIR principles, Bakta utilizes a versioned custom annotation database comprising UniProt's [UniRef100 & UniRef90](https://www.uniprot.org/uniref/) protein clusters (FAIR -> [DOI](http://dx.doi.org/10.1038/s41597-019-0180-9)/[DOI](https://doi.org/10.1093/nar/gkaa1100)) enriched with dbxrefs (`GO`, `COG`, `EC`) and annotated by specialized niche databases. For each DB version we provide a comprehensive log file of all imported sequences and annotations.
 
 - **Small proteins / short open reading frames**
 Bakta detects and annotates small proteins/short open reading frames (**sORF**) which are not predicted by tools like `Prodigal`.
@@ -121,9 +121,9 @@ Bakta requires the following 3rd party software tools which must be installed an
 ### Database download
 
 Bakta requires a mandatory database which is publicly hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
-We provide 2 versions: `full` and `light`. To get best annotation results and to use all features, we recommend using the default (`full`). If you seek for maximum runtime performance or if download time/storage requirements are an issue, please try the `light` version. Further information is provided in the [database](#database) section below.
+We provide 2 types: `full` and `light`. To get best annotation results and to use all features, we recommend using the `full` (default). If you seek for maximum runtime performance or if download time/storage requirements are an issue, please try the `light` version. Further information is provided in the [database](#database) section below.
 
-List available DB versions:
+List available DB versions (available as either `full` or `light`):
 
 ```bash
 bakta_db list
@@ -133,7 +133,7 @@ bakta_db list
 To download the most recent compatible database version we recommend to use the internal database download & setup tool:
 
 ```bash
-bakta_db download --output <output-path> --type light
+bakta_db download --output <output-path> --type [light|full]
 ```
 
 Of course, the database can also be downloaded manually:
@@ -478,24 +478,23 @@ Due due to uncertain nature of sORF prediction, only those identified via IPS / 
 ## Database
 
 The Bakta database comprises a set of AA & DNA sequence databases as well as HMM & covariance models.
-At its core Bakta utilizes a compact read-only SQLite db storing protein sequence digests, lengths, pre-assigned annotations and dbxrefs of UPS, IPS and PSC from:
+At its core Bakta utilizes a compact read-only SQLite DB storing protein sequence digests, lengths, pre-assigned annotations and dbxrefs of UPS, IPS and PSC from:
 
 - **UPS**: UniParc / UniProtKB (246,384,812)
 - **IPS**: UniProt UniRef100 (228,759,203)
 - **PSC**: UniProt UniRef90 (100,315,337)
 - **PSCC**: UniProt UniRef50 (23,959,577)
 
-This allows the exact protein sequences identification via MD5 digests & sequence lengths as well as the rapid subsequent lookup of related information. Protein sequence digests are checked for hash collisions while the db creation process.
-IPS & PSC have been comprehensively pre-annotated integrating annotations & database *dbxrefs* from:
+This allows the exact protein sequences identification via MD5 digests & sequence lengths as well as the rapid subsequent lookup of related information. Protein sequence digests are checked for hash collisions while the DB creation process. IPS & PSC have been comprehensively pre-annotated integrating annotations & database *dbxrefs* from:
 
 - NCBI nonredundant proteins (IPS: 192,288,757)
-- NCBI COG db (PSC: 3,428,564)
+- NCBI COG DB (PSC: 3,428,564)
 - KEGG Kofams (PSC: 16,776,225)
 - SwissProt EC/GO terms (PSC: 336,187)
 - NCBI NCBIfams (PSC: 14,391,965)
 - PHROG (PSC: 4,379)
 - NCBI AMRFinderPlus (IPS: 7,235)
-- ISFinder db (IPS: 125,967, PSC: 11,800)
+- ISFinder DB (IPS: 125,967, PSC: 11,800)
 - Pfam families (PSC: 248,169)
 
 To provide high quality annotations for distinct protein sequences of high importance (AMR, VF, *etc*) which cannot sufficiently be covered by the IPS/PSC approach, Bakta provides additional expert systems. For instance, AMR genes, are annotated via NCBI's AMRFinderPlus.
@@ -520,11 +519,12 @@ ori sequences:
 - oriC/V: 6,690
 - oriT: 502
 
-To provide FAIR annotations, the database releases are SemVer versioned (w/o patch level), *i.e.* `<major>.<minor>`. For each version we provide a comprehensive log file tracking all imported sequences as well as annotations thereof. The db schema is represented by the `<major>` digit and automatically checked at runtime by Bakta in order to ensure compatibility. Content updates are tracked by the `<minor>` digit.
+To provide FAIR annotations, the database releases are SemVer versioned (w/o patch level), *i.e.* `<major>.<minor>`. For each version we provide a comprehensive log file tracking all imported sequences as well as annotations thereof. The DB schema is represented by the `<major>` digit and automatically checked at runtime by Bakta in order to ensure compatibility. Content updates are tracked by the `<minor>` digit.
 
-As this taxonomic-untargeted database is fairly demanding regarding storage consumption, we provide a lightweight version providing all non-coding feature information but only PSCC information from UniRef50 clusters for CDS. If download bandwiths or storage requirements become an issue or if shorter runtimes are favored over more-specific annotation, the `light` database will do the job.
+As this taxonomic-untargeted database is fairly demanding in terms of storage consumption, we also provide a lightweight DB type providing all non-coding feature information but only PSCC information from UniRef50 clusters for CDS. If download bandwiths or storage requirements become an issue or if shorter runtimes are favored over more-specific annotation, the `light` DB will do the job.
 
-Latest database version 5.0:
+Latest database version: 5.0
+DB types:
 
 - `light`: 1.2 Gb zipped, 2.8 Gb unzipped, MD5: a40e680b4aab7871102f31aaac91838b
 - `full`: 31 Gb zipped, 60 Gb unzipped, MD5: 3200136a0a32b3c33d1cb348ab6b87de
