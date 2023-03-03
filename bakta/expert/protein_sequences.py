@@ -25,15 +25,13 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
         '--query', str(cds_fasta_path),
         '--db', str(db_path),
         '--out', str(diamond_output_path),
-        '--id', str(50),  # '50',
-        '--query-cover', str(80),  # '80'
-        '--subject-cover', str(80),  # '80'
         '--max-target-seqs', '1',  # single best output
         '--outfmt', '6', 'qseqid', 'sseqid', 'slen', 'length', 'pident', 'evalue', 'bitscore', 'stitle',
         '--threads', str(cfg.threads),
         '--tmpdir', str(cfg.tmp_path),  # use tmp folder
         '--block-size', '4',  # increase block size for faster executions
-        '--index-chunks', '1'  # set index chunks to 1 for faster executions
+        '--index-chunks', '1',  # set index chunks to 1 for faster executions
+        '--sensitive'
     ]
     log.debug('cmd=%s', cmd)
     proc = sp.run(
