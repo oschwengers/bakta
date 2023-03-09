@@ -63,7 +63,10 @@ def write_json(genome: dict, features: Sequence[dict], json_path: Path):
 
     version = OrderedDict()
     version['bakta'] = bakta.__version__
-    version['db'] = f"{cfg.db_info['major']}.{cfg.db_info['minor']}"
+    version['db'] = {
+        'version': f"{cfg.db_info['major']}.{cfg.db_info['minor']}",
+        'type': cfg.db_info['type']
+    }
     output['version'] = version
 
     with json_path.open('wt') as fh:

@@ -27,7 +27,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
 
         fh.write('# Annotated with Bakta\n')
         fh.write(f'# Software: v{bakta.__version__}\n')
-        fh.write(f"# Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}\n")
+        fh.write(f"# Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}\n")
         fh.write(f'# DOI: {bc.BAKTA_DOI}\n')
         fh.write(f'# URL: {bc.BAKTA_URL}\n')
 

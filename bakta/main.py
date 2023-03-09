@@ -601,7 +601,7 @@ def main():
         fh_out.write(f"oriTs: {len([f for f in features if f['type'] == bc.FEATURE_ORIT])}\n")
         fh_out.write('\nBakta:\n')
         fh_out.write(f'Software: v{bakta.__version__}\n')
-        fh_out.write(f"Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}\n")
+        fh_out.write(f"Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}\n")
         fh_out.write('DOI: 10.1099/mgen.0.000685\n')
         fh_out.write('URL: github.com/oschwengers/bakta\n')
 

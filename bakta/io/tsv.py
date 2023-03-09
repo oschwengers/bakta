@@ -17,9 +17,13 @@ def write_tsv(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_
     log.info('write tsv: path=%s', tsv_path)
 
     with tsv_path.open('wt') as fh:
-        fh.write(f'#Annotated with Bakta (v{bakta.__version__}): https://github.com/oschwengers/bakta\n')
-        fh.write(f"#Database (v{cfg.db_info['major']}.{cfg.db_info['minor']}): https://doi.org/10.5281/zenodo.4247252\n")
+        fh.write('# Annotated with Bakta\n')
+        fh.write(f'# Software: v{bakta.__version__}\n')
+        fh.write(f"# Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}\n")
+        fh.write(f'# DOI: {bc.BAKTA_DOI}\n')
+        fh.write(f'# URL: {bc.BAKTA_URL}\n')
         fh.write('#Sequence Id\tType\tStart\tStop\tStrand\tLocus Tag\tGene\tProduct\tDbXrefs\n')
+
         for contig in contigs:
             for feat in features_by_contig[contig['id']]:
                 feat_type = feat['type']
