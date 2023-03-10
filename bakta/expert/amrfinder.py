@@ -56,29 +56,30 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path):
                     cov_ref_seq, ident_ref_seq, alignment_length, accession_closest_seq, name_closest_seq, hmm_id, hmm_description
                 ) = line.split('\t')
                 cds = cds_by_hexdigest[aa_identifier]
-                expert_hit = {
+                hit = {
+                    'type': 'amrfinder',
                     'rank': 95,
                     'gene': gene if gene != '' else None,
                     'product': product,
                     'method': method
                 }
                 if(method.lower() != 'hmm'):
-                    expert_hit['query_cov'] = int(alignment_length) / len(cds['aa'])
+                    hit['query_cov'] = int(alignment_length) / len(cds['aa'])
                     model_cov = float(cov_ref_seq) / 100
-                    expert_hit['model_cov'] = model_cov
+                    hit['model_cov'] = model_cov
                     identity = float(ident_ref_seq) / 100
-                    expert_hit['identity'] = identity
-                    expert_hit['id'] = accession_closest_seq
-                    expert_hit['db_xrefs'] = [f'{bc.DB_XREF_NCBI_PROTEIN}:{accession_closest_seq}']
+                    hit['identity'] = identity
+                    hit['id'] = accession_closest_seq
+                    hit['db_xrefs'] = [f'{bc.DB_XREF_NCBI_PROTEIN}:{accession_closest_seq}']
                 else:
                     model_cov = 0
                     identity = 0
-                    expert_hit['id'] = hmm_id
-                    expert_hit['db_xrefs'] = [f'{bc.DB_XREF_NCBI_FAMILIES}:{hmm_id}']
+                    hit['id'] = hmm_id
+                    hit['db_xrefs'] = [f'{bc.DB_XREF_NCBI_FAMILIES}:{hmm_id}']
 
                 if('expert' not in cds):
-                    cds['expert'] = {}
-                cds['expert']['amrfinder'] = expert_hit
+                    cds['expert'] = []
+                cds['expert'].append(hit)
                 log.debug(
                     'hit: gene=%s, product=%s, method=%s, target-cov=%0.3f, identity=%0.3f, contig=%s, start=%i, stop=%i, strand=%s',
                     gene, product, method, model_cov, identity, cds['contig'], cds['start'], cds['stop'], cds['strand']

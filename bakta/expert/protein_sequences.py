@@ -64,7 +64,8 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
             min_query_cov = float(min_query_cov) / 100
             min_model_cov = float(min_model_cov) / 100
             if(query_cov >= min_query_cov and model_cov >= min_model_cov and identity >= min_identity):
-                expert_hit = {
+                hit = {
+                    'type': expert_system,
                     'source': source,
                     'rank': rank,
                     'id': model_id,
@@ -78,13 +79,13 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
                     'db_xrefs': [] if dbxrefs == '' else dbxrefs.split(',')
                 }
                 if(expert_system == 'user_proteins'):
-                    expert_hit['db_xrefs'].append(f'UserProtein:{model_id}')
+                    hit['db_xrefs'].append(f'UserProtein:{model_id}')
                 if('expert' not in cds):
-                    cds['expert'] = {}
-                cds['expert'][expert_system] = expert_hit
+                    cds['expert'] = []
+                cds['expert'].append(hit)
                 log.debug(
-                    'hit: contig=%s, start=%i, stop=%i, strand=%s, source=%s, rank=%i, query-cov=%0.3f, model-cov=%0.3f, identity=%0.3f, gene=%s, product=%s, evalue=%1.1e, bitscore=%f',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], source, rank, query_cov, model_cov, identity, gene, product, evalue, bitscore
+                    'hit: source=%s, rank=%i, contig=%s, start=%i, stop=%i, strand=%s, query-cov=%0.3f, model-cov=%0.3f, identity=%0.3f, gene=%s, product=%s, evalue=%1.1e, bitscore=%f',
+                    source, rank, cds['contig'], cds['start'], cds['stop'], cds['strand'], query_cov, model_cov, identity, gene, product, evalue, bitscore
                 )
                 cds_found.add(aa_identifier)
 

@@ -42,7 +42,7 @@ def combine_annotation(feature: dict):
     ips = feature.get('ips', None)
     psc = feature.get('psc', None)
     pscc = feature.get('pscc', None)
-    expert = feature.get('expert', None)
+    expert_hits = feature.get('expert', [])
 
     gene = None
     genes = set()
@@ -101,22 +101,18 @@ def combine_annotation(feature: dict):
             product = ips_product
         for db_xref in ips['db_xrefs']:
             db_xrefs.add(db_xref)
-    if(expert):
-        rank = 0
-        for expert_system, expert_hit in expert.items():
-            expert_rank = expert_hit['rank']
-            if(expert_rank > rank):
-                expert_genes = expert_hit.get('gene', None)
-                if(expert_genes):
-                    expert_genes = expert_genes.replace('/', ',').split(',')
-                    genes.update(expert_genes)
-                    gene = expert_genes[0]
-                product = expert_hit.get('product', None)
-                expert_db_xrefs = expert_hit.get('db_xrefs', None)
-                if(expert_db_xrefs):
-                    for expert_db_xref in expert_db_xrefs:
-                        db_xrefs.add(expert_db_xref)
-                rank = expert_rank
+    rank = 0
+    for hit in expert_hits:
+        db_xrefs.update(hit.get('db_xrefs', []))
+        expert_rank = hit['rank']
+        if(expert_rank > rank):
+            expert_genes = hit.get('gene', None)
+            if(expert_genes):
+                expert_genes = expert_genes.replace('/', ',').split(',')
+                genes.update(expert_genes)
+                gene = expert_genes[0]
+            product = hit.get('product', None)
+            rank = expert_rank
 
     if(product):
         product = revise_cds_product(product)
