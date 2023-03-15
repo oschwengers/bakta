@@ -166,10 +166,9 @@ def test_user_proteins(parameters, tmpdir):
     ec_annotated = 0
     user_prot_feats = []
     for feat in results['features']:
-        if('expert' in feat and 'user_proteins' in feat['expert']):
-            user_prot_feats.append(feat)
-        for db_xref in feat['db_xrefs']:
-            if('EC' in db_xref):
-                ec_annotated += 1
+        for expert in feat.get('expert', []):
+            if(expert['type'] == 'user_proteins'):
+                user_prot_feats.append(feat)
+                ec_annotated += len([x for x in feat['db_xrefs'] if 'EC' in x])
     assert ec_annotated == 1
     assert len(user_prot_feats) == 1
