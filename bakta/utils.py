@@ -384,8 +384,6 @@ def qc_contigs(contigs: Sequence[dict], replicons: Dict[str, dict]) -> Tuple[Seq
     valid_contigs = []
     contig_counter = 1
     contig_prefix = cfg.locus if cfg.locus else 'contig'
-    organism_definition = f"[organism={cfg.taxon}]" if cfg.taxon else None
-
     complete_genome = True
     plasmid_number = 1
     contig_ids = set()
@@ -426,8 +424,9 @@ def qc_contigs(contigs: Sequence[dict], replicons: Dict[str, dict]) -> Tuple[Seq
                 contig['id'] = contig_id_generated
                 contig['orig_description'] = contig['description']
                 contig_desc = []
-                if(organism_definition):
-                    contig_desc.append(organism_definition)
+                if(cfg.genus is not None or cfg.species is not None):
+                    organism = ' '.join([t for t in [cfg.genus, cfg.species] if t is not None])
+                    contig_desc.append(f"[organism={organism}]")
                 if(cfg.strain):
                     contig_desc.append(f'[strain={cfg.strain}]')
                 if(cfg.complete or contig['complete']):
