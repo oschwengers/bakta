@@ -447,8 +447,12 @@ def qc_contigs(contigs: Sequence[dict], replicons: Dict[str, dict]) -> Tuple[Seq
                     log.debug('qc: detected replicon type via length: id=%s, type=%s, length=%i, description=%s', contig['id'], contig['type'], contig['length'], contig['description'])
             valid_contigs.append(contig)
 
-            if(len(contigs) == 1 and contig['type'] == bc.REPLICON_PLASMID and cfg.plasmid is not None):
+            if(len(contigs) == 1 and cfg.plasmid is not None):  # set plasmid mode
+                contig['type'] == bc.REPLICON_PLASMID
+                contig['complete'] = True
+                contig['topology'] = bc.TOPOLOGY_CIRCULAR
                 contig['name'] = cfg.plasmid
+                contig['description'] += f" [plasmid-name={cfg.plasmid}]"
 
             if(replicons):  # use user provided replicon table
                 contig_id = contig['orig_id'] if 'orig_id' in contig else contig['id']
