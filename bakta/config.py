@@ -1,6 +1,7 @@
 import logging
 import multiprocessing as mp
 import os
+import re
 import sys
 import tempfile
 
@@ -9,6 +10,10 @@ from datetime import datetime
 from pathlib import Path
 
 import bakta.constants as bc
+
+
+PLASMID_NAME_PATTERN = re.compile(r'p[a-zA-Z0-9\._]{1,19}')
+PLASMID_UNNAMED_PATTERN = re.compile(r'unnamed[0-9]{0,3}')
 
 
 log = logging.getLogger('CONFIG')
@@ -134,6 +139,17 @@ def setup(args):
             sys.exit(f"ERROR: empty 'strain' parameter!")
     log.info('strain=%s', strain)
     plasmid = args.plasmid
+    if(plasmid is not None):
+        plasmid = plasmid.strip()
+        if(plasmid == ''):
+            log.error("Empty 'plasmid' parameter! plasmid=%s", plasmid)
+            sys.exit(f"ERROR: empty 'plasmid' parameter!")
+        elif('plasmid' in plasmid.lower()):
+            log.error("Wrong 'plasmid' parameter! plasmid=%s", plasmid)
+            sys.exit(f"ERROR: wrong 'plasmid' parameter! The plasmid name mustn't contain the word 'plasmid'.")
+        elif(PLASMID_NAME_PATTERN.fullmatch(plasmid) is None and PLASMID_UNNAMED_PATTERN.fullmatch(plasmid) is None):
+            log.error("Wrong 'plasmid' name! plasmid=%s", plasmid)
+            sys.exit(f"ERROR: wrong 'plasmid' name! Plasmid names must either be named as 'unnamed', 'unnamed1', ... or start with a lower 'p', contain only digits, dots, underscores and letters, and are limited to 20 characters in total.")
     log.info('plasmid=%s', plasmid)
     taxon = ' '.join([t for t in [genus, species, strain] if t is not None])
     if(taxon == ''):

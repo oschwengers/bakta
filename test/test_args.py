@@ -140,10 +140,7 @@ def test_output_failing():
 @pytest.mark.parametrize(
     'parameters',
     [
-        (['--tmp-dir']),  # not provided
-
-# ToDo
-
+        (['--tmp-dir'])  # not provided
     ]
 )
 def test_tmp_dir_failiing(parameters, tmpdir):
@@ -444,7 +441,7 @@ def test_locustag_compliant_ok(parameters, tmpdir):
     ]
 )
 def test_genus_failiing(parameters, tmpdir):
-    # test genus prefix arguments
+    # test genus arguments
     proc = run(
         ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
@@ -465,7 +462,7 @@ def test_genus_failiing(parameters, tmpdir):
     ]
 )
 def test_species_ok(parameters, tmpdir):
-    # test species prefix arguments
+    # test species arguments
     proc = run(
         ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
@@ -485,7 +482,7 @@ def test_species_ok(parameters, tmpdir):
     ]
 )
 def test_species_failiing(parameters, tmpdir):
-    # test species prefix arguments
+    # test species arguments
     proc = run(
         ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
@@ -505,7 +502,7 @@ def test_species_failiing(parameters, tmpdir):
     ]
 )
 def test_strain_ok(parameters, tmpdir):
-    # test strain prefix arguments
+    # test strain arguments
     proc = run(
         ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
@@ -525,7 +522,62 @@ def test_strain_ok(parameters, tmpdir):
     ]
 )
 def test_strain_failiing(parameters, tmpdir):
-    # test strain prefix arguments
+    # test strain arguments
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
+        parameters +
+        SKIP_PARAMETERS +
+        ['test/data/NC_002127.1.fna']
+    )
+    assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--plasmid', 'unnamed']),  # unnamed example
+        (['--plasmid', 'unnamed1']),  # unnamed example
+        (['--plasmid', 'unnamed12']),  # unnamed example
+        (['--plasmid', 'unnamed123']),  # unnamed example
+        (['--plasmid', 'pA']),  # minimal set
+        (['--plasmid', 'pZ']),  # minimal set
+        (['--plasmid', 'p1']),  # minimal set
+        (['--plasmid', 'p2']),  # minimal set
+        (['--plasmid', 'p.']),  # minimal set
+        (['--plasmid', 'p_']),  # minimal set
+        (['--plasmid', 'pAZ.az_09'])  # full blown plasmid designation
+    ]
+)
+def test_plasmid_ok(parameters, tmpdir):
+    # test plasmid arguments
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
+        parameters +
+        SKIP_PARAMETERS +
+        ['test/data/NC_002127.1.fna']
+    )
+    assert proc.returncode == 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--plasmid', '']),  # empty
+        (['--plasmid', 'unnamed1234']),  # wrong unnamed example
+        (['--plasmid', 'unname']),  # wrong unnamed example
+        (['--plasmid', 'p']),  # p only
+        (['--plasmid', 'pABCDEFGHIJKLMNOPQRST']),  # longer than 20 chars
+        (['--plasmid', 'pAZ 123']),  # contains whitespace
+        (['--plasmid', 'pAZ-123']),  # contains dash
+        (['--plasmid', 'pAZ/123']),  # contains slash
+        (['--plasmid', 'pAZ\\123']),  # contains backslash
+        (['--plasmid', 'pAZ=123']),  # contains equals
+        (['--plasmid', 'plasmid123']),  # contains word plasmid
+        (['--plasmid', 'pPlasmidA1'])  # contains word plasmid
+    ]
+)
+def test_plasmid_failiing(parameters, tmpdir):
+    # test plasmid arguments
     proc = run(
         ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--skip-plot'] +
         parameters +
