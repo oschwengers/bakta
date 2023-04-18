@@ -2,6 +2,7 @@ import logging
 import multiprocessing as mp
 import os
 import re
+import shutil
 import sys
 import tempfile
 
@@ -33,6 +34,7 @@ genome_path = None
 min_contig_length = None
 prefix = None
 output_path = None
+force = None
 
 # organism configuration
 genus = None
@@ -87,7 +89,7 @@ def setup(args):
         verbose = True
 
     # input / output path configurations
-    global db_path, db_info, tmp_path, genome_path, min_contig_length, prefix, output_path
+    global db_path, db_info, tmp_path, genome_path, min_contig_length, prefix, output_path, force
     db_path = check_db_path(args)
     tmp_path = check_tmp_path(args)
 
@@ -110,6 +112,7 @@ def setup(args):
     log.info('min_contig_length=%s', min_contig_length)
     log.info('prefix=%s', prefix)  # set in main.py before global logger config
     log.info('output-path=%s', output_path)
+    log.info('force=%s', force)
 
     # organism configurations
     global genus, species, strain, plasmid, taxon
@@ -294,21 +297,28 @@ def check_threads(args: Namespace) -> int:
     return threads
 
 
-def check_output_path(args: Namespace) -> Path:
+def check_output_path(output: str, force_override: bool) -> Path:
+    """Check provided output path
+    Args:
+        output (string): The output directory destination path
+        force_override (Bool): Whether to override existing output directories
+    """
     global output_path
-    try:
-        output_path = Path(args.output)
-        if(not output_path.exists()):
+    output_path = Path(output)
+    if(not output_path.exists()):
+        try:
             output_path.mkdir(parents=True, exist_ok=True)
+        except:
+            sys.exit(f'ERROR: could not resolve or create output directory ({output})!')
+    else:
+        if(force_override is False):
+            sys.exit(f'ERROR: output path ({output_path}) already exists! Either provide a non-existent new path or force overwriting it via \'--force\'')
         elif(not os.access(str(output_path), os.X_OK)):
             sys.exit(f'ERROR: output path ({output_path}) not accessible!')
         elif(not os.access(str(output_path), os.W_OK)):
             sys.exit(f'ERROR: output path ({output_path}) not writable!')
-        output_path = output_path.resolve()
-        log.info('output-path=%s', output_path)
-        return output_path
-    except:
-        sys.exit(f'ERROR: could not resolve or create output directory ({args.output})!')
+    output_path = output_path.resolve()
+    return output_path
 
 
 def check_db_path(args: Namespace) -> Path:

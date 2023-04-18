@@ -43,7 +43,7 @@ def main():
     # Setup logging
     ############################################################################
     cfg.prefix = args.prefix if args.prefix else Path(args.genome).stem
-    output_path = cfg.check_output_path(args)
+    output_path = cfg.check_output_path(args.output, args.force)
     bu.setup_logger(output_path, cfg.prefix, args)
     log = logging.getLogger('MAIN')
 

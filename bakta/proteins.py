@@ -36,6 +36,7 @@ def main():
     arg_group_io.add_argument('--db', '-d', action='store', default=None, help='Database path (default = <bakta_path>/db). Can also be provided as BAKTA_DB environment variable.')
     arg_group_io.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
     arg_group_io.add_argument('--prefix', '-p', action='store', default=None, help='Prefix for output files')
+    arg_group_io.add_argument('--force', '-f', action='store_true', help='Force overwriting existing output folder')
     
     arg_group_annotation = parser.add_argument_group('Annotation')
     arg_group_annotation.add_argument('--proteins', action='store', default=None, dest='proteins', help='Fasta file of trusted protein sequences for annotation')
@@ -53,7 +54,7 @@ def main():
     # Setup logging
     ############################################################################
     cfg.prefix = args.prefix if args.prefix else Path(args.input).stem
-    output_path = cfg.check_output_path(args)
+    output_path = cfg.check_output_path(args.output, args.force)
     
     bu.setup_logger(output_path, cfg.prefix, args)
     log.info('prefix=%s', cfg.prefix)

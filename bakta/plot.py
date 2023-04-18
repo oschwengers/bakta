@@ -78,6 +78,7 @@ def main():
     arg_group_io.add_argument('--config', '-c', action='store', default=None, help='Plotting configuration in YAML format')
     arg_group_io.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
     arg_group_io.add_argument('--prefix', '-p', action='store', default=None, help='Prefix for output files')
+    arg_group_io.add_argument('--force', '-f', action='store_true', help='Force overwriting existing output folder')
 
     arg_group_plot = parser.add_argument_group('Plotting')
     arg_group_plot.add_argument('--sequences', action='store', default='all', help='Sequences to plot: comma separated number or name (default = all, numbers one-based)')
@@ -95,7 +96,7 @@ def main():
     # Setup logging
     ############################################################################
     cfg.prefix = args.prefix if args.prefix else Path(args.input).stem
-    output_path = cfg.check_output_path(args)
+    output_path = cfg.check_output_path(args.output, args.force)
     
     bu.setup_logger(output_path, cfg.prefix, args)
     log.info('prefix=%s', cfg.prefix)

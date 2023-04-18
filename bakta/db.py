@@ -179,7 +179,7 @@ def main():
         print("\nType 'bakta_db download --help' for further details")
     elif(args.subcommand == 'download'):
         bu.test_dependency(bu.DEPENDENCY_AMRFINDERPLUS)
-        output_path = cfg.check_output_path(args)
+        output_path = cfg.check_output_path(args.output, True)
 
         print(f'Selected DB type: {args.type}\n')
         print('Fetch DB versions...')
