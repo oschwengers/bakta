@@ -164,6 +164,9 @@ def main():
     print(f'\tannotated sequences (Fasta): {aa_output_path}')
     fasta.write_faa(aas, aa_output_path)
 
+    print(f'\nIf you use these results please cite Bakta: https://doi.org/{bc.BAKTA_DOI}')
+    print(f'Annotation successfully finished in {int(run_duration / 60):01}:{int(run_duration % 60):02} [mm:ss].')
+
 
 def map_aa_columns(feat: dict) -> Sequence[str]:
     gene = feat.get('gene', None)
