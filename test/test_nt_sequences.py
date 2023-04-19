@@ -14,7 +14,7 @@ def test_bakta_cds_nt_sequence(tmpdir):
     # test extracted nucleotide sequences of cds
     proc = run(
         [
-            'bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test',
+            'bin/bakta', '--db', 'test/db', '--output', tmpdir, '--force', '--prefix', 'test',
             '--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-sorf', '--skip-ori', '--skip-gap', '--skip-plot',
             '--keep-contig-headers', '--complete', 'test/data/cds.fna'
         ]
@@ -39,7 +39,7 @@ def test_bakta_sorf_nt_sequence(tmpdir):
     # test extracted nucleotide sequences of sorfs
     proc = run(
         [
-            'bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test',
+            'bin/bakta', '--db', 'test/db', '--output', tmpdir, '--force', '--prefix', 'test',
             '--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-cds', '--skip-ori', '--skip-gap', '--skip-plot',
             '--keep-contig-headers', '--complete', 'test/data/sorf.fna'
         ]

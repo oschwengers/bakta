@@ -149,7 +149,7 @@ def test_user_proteins(parameters, tmpdir):
     # fast test skipping all feature detections
     proc = run(
         [
-            'bin/bakta', '--db', 'test/db', '--output', tmpdir, '--prefix', 'test', '--proteins', parameters,
+            'bin/bakta', '--db', 'test/db', '--output', tmpdir, '--force', '--prefix', 'test', '--proteins', parameters,
             '--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-sorf', '--skip-ori', '--skip-gap', '--skip-plot',
             'test/data/NC_002127.1.fna'
         ]
