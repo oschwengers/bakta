@@ -21,7 +21,7 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: [3.8]
+        python-version: [3.8, 3.10]
     steps:
     - uses: actions/checkout@v2
     - uses: conda-incubator/setup-miniconda@v2
@@ -36,7 +36,7 @@ jobs:
         environment-file: environment.yml
         activate-environment: bakta
     - name: Install DeepSig
-      if: ${{ matrix.os == 'ubuntu-latest' }}
+      if: ${{ matrix.os == 'ubuntu-latest'  &&  matrix.python-version == '3.8'}}
       run: conda install numpy=1.23 keras=2.4.3 tensorflow=2.2.0 chardet deepsig
     - name: Install PyTest
       run: conda install pytest
@@ -47,4 +47,5 @@ jobs:
         conda config --show
         printenv | sort
     - name: Run PyTest
+      if: ${{ matrix.os == 'ubuntu-latest'  ||  matrix.python-version == '3.10'}}
       run: pytest
