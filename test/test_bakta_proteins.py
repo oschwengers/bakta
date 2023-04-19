@@ -10,7 +10,6 @@ FILES = [
 ]
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "user_proteins",
     [

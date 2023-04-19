@@ -135,7 +135,6 @@ def write_tmp_faa(aa, aa_path):
         fh.write(f">{aa['id']} {aa['description']}\n{aa['sequence']}\n")
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     "parameters",
     [

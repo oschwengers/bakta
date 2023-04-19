@@ -21,7 +21,6 @@ def check_deepsig():
     return is_available
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     'db',
     [
@@ -44,7 +43,6 @@ def test_bakta_mock_skipped_features(db, tmpdir):
         assert Path.exists(tmpdir_path.joinpath(file))
 
 
-@pytest.mark.slow
 @pytest.mark.skipif(check_deepsig() == False, reason=f'Skip on unavailable DeepSig')
 def test_bakta_plasmid(tmpdir):
     # full test on plasmid
@@ -80,7 +78,6 @@ def test_bakta_plasmid(tmpdir):
         assert feature_counts[type] == feature_counts_expected[type]
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     'db',
     [

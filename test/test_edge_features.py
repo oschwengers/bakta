@@ -8,7 +8,6 @@ import pytest
 from bakta import constants as bc
 
 
-@pytest.mark.slow
 def test_bakta_edge_features(tmpdir):
     # test edge lable on mock CDS contig
     proc = run(

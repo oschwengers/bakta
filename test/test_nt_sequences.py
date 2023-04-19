@@ -9,7 +9,6 @@ cds = 'TTGACTACGCCATTGAAAAAGATTGTGATTGTCGGCGGCGGTGCTGGTGGGCTGGAAATGGCAACACAGCTGG
 sorf = 'ATGGTGAATACCGGCGGCAATAAACGTCAGGTGCCGGCGAAACGTCAGAATCGTGGCTCCCGTAATTCCAAAGATGATGGCGGCTAA'
 
 
-@pytest.mark.slow
 def test_bakta_cds_nt_sequence(tmpdir):
     # test extracted nucleotide sequences of cds
     proc = run(
@@ -34,7 +33,6 @@ def test_bakta_cds_nt_sequence(tmpdir):
             assert feat['nt'] == cds
 
 
-@pytest.mark.slow
 def test_bakta_sorf_nt_sequence(tmpdir):
     # test extracted nucleotide sequences of sorfs
     proc = run(

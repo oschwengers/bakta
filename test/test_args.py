@@ -184,7 +184,6 @@ def test_prodigal_tf_failiing(parameters, tmpdir):
     assert proc.returncode != 0
 
 
-@pytest.mark.slow
 def test_prodigal_tf_ok(tmpdir):
     # test prodigal training file arguments
     proc = run(
@@ -220,7 +219,6 @@ def test_replicons_failiing(parameters, tmpdir):
     assert proc.returncode != 0
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     'parameters',
     [
@@ -288,7 +286,6 @@ def test_locus_failiing(parameters, tmpdir):
     assert proc.returncode != 0
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     'parameters',
     [
@@ -342,7 +339,6 @@ def test_locustag_failiing(parameters, tmpdir):
     assert proc.returncode != 0
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     'parameters',
     [
@@ -410,7 +406,6 @@ def test_locustag_compliant_failiing(parameters, tmpdir):
     assert proc.returncode != 0
 
 
-@pytest.mark.slow
 @pytest.mark.parametrize(
     'parameters',
     [
