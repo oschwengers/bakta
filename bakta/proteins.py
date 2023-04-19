@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 
+from datetime import datetime
 from typing import Sequence
 from pathlib import Path
 
@@ -17,6 +18,7 @@ import bakta.features.annotation as anno
 import bakta.features.orf as orf
 import bakta.features.cds as feat_cds
 import bakta.io.fasta as fasta
+import bakta.io.json as json
 import bakta.io.tsv as tsv
 import bakta.ups as ups
 import bakta.ips as ips
@@ -127,12 +129,32 @@ def main():
         mock_start += 100
     print('annotate protein sequences...')
     annotate_aa(aas)
+
+    for aa in aas:  # cleanup mock attributes
+        aa.pop('contig', None)
+        aa.pop('start', None)
+        aa.pop('stop', None)
+        aa.pop('strand', None)
+        aa.pop('frame', None)
     
+    cfg.run_end = datetime.now()
+    run_duration = (cfg.run_end - cfg.run_start).total_seconds()
+
+    ############################################################################
+    # Write output files
+    # - write comprehensive annotation results as JSON
+    # - write optional output files in TSV, FAA formats
+    # - remove temp directory
+    ############################################################################
+
     print('write results...')
     annotations_path = output_path.joinpath(f'{cfg.prefix}.tsv')
     header_columns = ['ID', 'Length', 'Gene', 'Product', 'EC', 'GO', 'COG', 'RefSeq', 'UniParc', 'UniRef']
     print(f'\tfull annotations (TSV): {annotations_path}')
     tsv.write_features(aas, header_columns, map_aa_columns, annotations_path)
+    full_annotations_path = output_path.joinpath(f'{cfg.prefix}.json')
+    print(f'\tfull annotations (JSON): {full_annotations_path}')
+    json.write_json(None, aas, full_annotations_path)
     hypotheticals_path = output_path.joinpath(f'{cfg.prefix}.hypotheticals.tsv')
     header_columns = ['ID', 'Length', 'Mol Weight [kDa]', 'Iso El. Point', 'Pfam hits']
     hypotheticals = hypotheticals = [aa for aa in aas if 'hypothetical' in aa]

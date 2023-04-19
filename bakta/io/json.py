@@ -33,28 +33,30 @@ def write_json(genome: dict, features: Sequence[dict], json_path: Path):
 
     # replace features type dict by sorted feature list
     output = OrderedDict()
-    ordered_genome = OrderedDict()
-    ordered_genome['genus'] = genome['genus']
-    ordered_genome['species'] = genome['species']
-    ordered_genome['strain'] = genome['strain']
-    if('plasmid' in genome):
-        ordered_genome['plasmid'] = genome['plasmid']
-    ordered_genome['complete'] = genome['complete']
-    ordered_genome['gram'] = genome['gram']
-    ordered_genome['translation_table'] = genome['translation_table']
-    output['genome'] = ordered_genome
+    if genome is not None:
+        ordered_genome = OrderedDict()
+        ordered_genome['genus'] = genome['genus']
+        ordered_genome['species'] = genome['species']
+        ordered_genome['strain'] = genome['strain']
+        if('plasmid' in genome):
+            ordered_genome['plasmid'] = genome['plasmid']
+        ordered_genome['complete'] = genome['complete']
+        ordered_genome['gram'] = genome['gram']
+        ordered_genome['translation_table'] = genome['translation_table']
+        output['genome'] = ordered_genome
 
-    stats = OrderedDict()
-    stats['no_sequences'] = len(genome['contigs'])
-    stats['size'] = genome['size']
-    stats['gc'] = genome['gc']
-    stats['n_ratio'] = genome['n_ratio']
-    stats['n50'] = genome['n50']
-    stats['coding_ratio'] = genome['coding_ratio']
-    output['stats'] = stats
+        stats = OrderedDict()
+        stats['no_sequences'] = len(genome['contigs'])
+        stats['size'] = genome['size']
+        stats['gc'] = genome['gc']
+        stats['n_ratio'] = genome['n_ratio']
+        stats['n50'] = genome['n50']
+        stats['coding_ratio'] = genome['coding_ratio']
+        output['stats'] = stats
 
     output['features'] = features
-    output['sequences'] = genome['contigs']
+    if genome is not None:
+        output['sequences'] = genome['contigs']
 
     run = OrderedDict()
     run['start'] = cfg.run_start.strftime('%Y-%m-%d %H:%M:%S')
