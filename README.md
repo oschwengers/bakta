@@ -266,13 +266,14 @@ Annotation results are provided in standard bioinformatics file formats:
 - `<prefix>.faa`: CDS/sORF amino acid sequences as FASTA
 - `<prefix>.hypotheticals.tsv`: further information on hypothetical protein CDS as simple human readble tab separated values
 - `<prefix>.hypotheticals.faa`: hypothetical protein CDS amino acid sequences as FASTA
+- `<prefix>.json`: all (internal) annotation & sequence information as JSON
 - `<prefix>.txt`: summary as TXT
 - `<prefix>.png`: circular genome annotation plot as PNG
 - `<prefix>.svg`: circular genome annotation plot as SVG
 
 The `<prefix>` can be set via `--prefix <prefix>`. If no prefix is set, Bakta uses the input file prefix.
 
-Additionally, Bakta provides detailed information on each annotated feature in a standardized machine-readable JSON file `<prefix>.json`:
+Of note, Bakta provides all detailed (internal) information on each annotated feature in a standardized machine-readable JSON file `<prefix>.json`:
 
 ```json
 {
@@ -615,6 +616,7 @@ Annotation results are provided in standard bioinformatics file formats:
 - `<prefix>.tsv`: annotations as simple human readble TSV
 - `<prefix>.faa`: protein sequences as FASTA
 - `<prefix>.hypotheticals.tsv`: further information on hypothetical proteins as simple human readble tab separated values
+- `<prefix>.json`: all (internal) annotation & sequence information as JSON
 
 The `<prefix>` can be set via `--prefix <prefix>`. If no prefix is set, Bakta uses the input file prefix.
 
