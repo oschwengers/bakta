@@ -414,6 +414,7 @@ def qc_contigs(contigs: Sequence[dict], replicons: Dict[str, dict]) -> Tuple[Seq
                 contig['type'] = bc.REPLICON_PLASMID
                 log.debug('qc: detected plasmid replicon type via description: id=%s, description=%s', contig['id'], contig['description'])
 
+            contig_desc = []
             if(cfg.keep_contig_headers):
                 if(contig['id'] in contig_ids):
                     log.error('Fasta import: duplicated contig id! contig-id=%s', contig['id'])
@@ -424,20 +425,12 @@ def qc_contigs(contigs: Sequence[dict], replicons: Dict[str, dict]) -> Tuple[Seq
                 contig['orig_id'] = contig['id']
                 contig['id'] = contig_id_generated
                 contig['orig_description'] = contig['description']
-                contig_desc = []
                 if(cfg.genus is not None or cfg.species is not None):
                     organism = ' '.join([t for t in [cfg.genus, cfg.species] if t is not None])
                     contig_desc.append(f"[organism={organism}]")
                 if(cfg.strain):
                     contig_desc.append(f'[strain={cfg.strain}]')
-                if(cfg.complete or contig['complete']):
-                    contig_desc.append('[completeness=complete]')
-                    if(contig['topology'] != bc.REPLICON_CONTIG):
-                        contig_desc.append(f"[topology={contig['topology']}]")
-                    if(contig['type'] == bc.REPLICON_CHROMOSOME):
-                        contig_desc.append('[location=chromosome]')
                 contig_desc.append(f'[gcode={cfg.translation_table}]')
-                contig['description'] = ' '.join(contig_desc)
 
             if(contig['complete'] and contig['topology'] == bc.TOPOLOGY_CIRCULAR):  # detection of chromosomes/plasmids via sequence length thresholds
                 if(contig['length'] >= bc.REPLICON_LENGTH_THRESHOLD_CHROMOSOME):
@@ -448,14 +441,11 @@ def qc_contigs(contigs: Sequence[dict], replicons: Dict[str, dict]) -> Tuple[Seq
                     log.debug('qc: detected replicon type via length: id=%s, type=%s, length=%i, description=%s', contig['id'], contig['type'], contig['length'], contig['description'])
             valid_contigs.append(contig)
 
-            if(len(contigs) == 1 and cfg.plasmid is not None):  # set plasmid mode
-                contig['type'] == bc.REPLICON_PLASMID
-                contig['complete'] = True
+            if(len(contigs) == 1 and cfg.plasmid is not None):  # use plasmid mode
+                contig['type'] = bc.REPLICON_PLASMID
                 contig['topology'] = bc.TOPOLOGY_CIRCULAR
                 contig['name'] = cfg.plasmid
-                contig['description'] += f" [plasmid-name={cfg.plasmid}]"
-
-            if(replicons):  # use user provided replicon table
+            elif(replicons):  # use user provided replicon table
                 contig_id = contig['orig_id'] if 'orig_id' in contig else contig['id']
                 replicon = replicons.get(contig_id, None)
                 if(replicon):
@@ -467,17 +457,21 @@ def qc_contigs(contigs: Sequence[dict], replicons: Dict[str, dict]) -> Tuple[Seq
                         contig['complete'] = True
                     if(not cfg.keep_contig_headers):
                         contig['id'] = replicon['new_locus_id'] if replicon['new_locus_id'] else contig['simple_id']
-                        if(replicon['replicon_type'] != bc.REPLICON_CONTIG and 'completeness' not in contig['description']):
-                            contig['description'] += ' [completeness=complete]'
-                        if('topology' not in contig['description']):
-                            contig['description'] += f" [topology={replicon['topology']}]"
-                        if(replicon['replicon_type'] == bc.REPLICON_PLASMID and replicon['name']):
-                            contig['description'] += f" [plasmid-name={replicon['name']}]"
                     contig.pop('simple_id')
-
-            if(contig['complete'] and contig['type'] == bc.REPLICON_PLASMID and not contig.get('name', None)):
-                contig['name'] = f'unnamed{plasmid_number}'
-                plasmid_number += 1
+            
+            if(not cfg.keep_contig_headers):
+                if(contig['complete']):
+                    contig_desc.append('[completeness=complete]')
+                if(contig['topology'] != bc.REPLICON_CONTIG):
+                    contig_desc.append(f"[topology={contig['topology']}]")
+                if(contig['type'] == bc.REPLICON_CHROMOSOME):
+                    contig_desc.append('[location=chromosome]')
+                elif(contig['type'] == bc.REPLICON_PLASMID):
+                    if(not contig.get('name', None)):
+                        contig['name'] = f'unnamed{plasmid_number}'
+                        plasmid_number += 1
+                    contig_desc.append(f"[plasmid-name={contig['name']}]")
+                contig['description'] = ' '.join(list(dict.fromkeys(contig_desc)))  # remove duplicates remaining order
 
             if(contig['type'] == bc.REPLICON_CONTIG):
                 complete_genome = False
