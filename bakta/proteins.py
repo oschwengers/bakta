@@ -57,6 +57,8 @@ def main():
     ############################################################################
     cfg.prefix = args.prefix if args.prefix else Path(args.input).stem
     output_path = cfg.check_output_path(args.output, args.force)
+    cfg.force = args.force
+    log.info('force=%s', args.force)
     
     bu.setup_logger(output_path, cfg.prefix, args)
     log.info('prefix=%s', cfg.prefix)
@@ -97,8 +99,9 @@ def main():
         print(f'\tinput: {aa_path}')
         print(f"\tdb: {cfg.db_path}, version {cfg.db_info['major']}.{cfg.db_info['minor']}")
         print(f'\toutput: {cfg.output_path}')
-        print(f'\tprefix: {cfg.prefix}')
+        if(cfg.force): print(f'\tforce: {cfg.force}')
         print(f'\ttmp directory: {cfg.tmp_path}')
+        print(f'\tprefix: {cfg.prefix}')
         print(f'\t# threads: {cfg.threads}')
     
     if(cfg.debug):

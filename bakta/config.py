@@ -112,6 +112,7 @@ def setup(args):
     log.info('min_contig_length=%s', min_contig_length)
     log.info('prefix=%s', prefix)  # set in main.py before global logger config
     log.info('output-path=%s', output_path)
+    force = args.force
     log.info('force=%s', force)
 
     # organism configurations
