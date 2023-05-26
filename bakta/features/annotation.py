@@ -22,11 +22,11 @@ RE_PROTEIN_DOMAIN_CONTAINING = re.compile(r'domain-containing protein', flags=re
 RE_PROTEIN_NO_LETTERS = re.compile(r'[^A-Za-z]')
 RE_PROTEIN_SUSPECT_CHARS = re.compile(r'[.@=?%]')
 RE_PROTEIN_PERIOD_SEPARATOR = re.compile(r'([a-zA-Z0-9]+)\.([a-zA-Z0-9]+)')
-RE_DOMAIN_OF_UNKNOWN_FUCTION = re.compile(r'(DUF\d{3,4})', flags=re.IGNORECASE)
-RE_UNCHARACTERIZED_PROTEIN_FAMILY = re.compile(r'(UPF\d{3,4})', flags=re.IGNORECASE)
+RE_PROTEIN_WRONG_PRIMES = re.compile(r'[\u2032\u0060\u00B4]')  # prime (′), grave accent (`), acute accent (´)
 RE_PROTEIN_WEIGHT = re.compile(r' [0-9]+(?:\.[0-9]+)? k?da ', flags=re.IGNORECASE)
 RE_PROTEIN_SYMBOL = re.compile(r'[A-Z][a-z]{2}[A-Z][0-9]?')
-
+RE_DOMAIN_OF_UNKNOWN_FUCTION = re.compile(r'(DUF\d{3,4})', flags=re.IGNORECASE)
+RE_UNCHARACTERIZED_PROTEIN_FAMILY = re.compile(r'(UPF\d{3,4})', flags=re.IGNORECASE)
 RE_GENE_CAPITALIZED = re.compile(r'^[A-Z].+', flags=re.DOTALL)
 RE_GENE_SUSPECT_CHARS = re.compile(r'[\?]', flags=re.DOTALL)
 RE_GENE_SYMBOL = re.compile(r'[a-z]{3}[A-Z][0-9]?')
@@ -493,7 +493,12 @@ def revise_cds_product(product: str):
     old_product = product
     product = RE_PROTEIN_SUSPECT_CHARS.sub('', product)  # remove suspect characters
     if(product != old_product):
-        log.info('fix product: replace invalid characters (.@=?%%). new=%s, old=%s', product, old_product)
+        log.info('fix product: replace invalid characters. new=%s, old=%s', product, old_product)
+
+    old_product = product
+    product = RE_PROTEIN_WRONG_PRIMES.sub('\u0027', product)  # replace wrong prime characters with single quote (U+0027) (') according to https://www.ncbi.nlm.nih.gov/genome/doc/internatprot_nomenguide/
+    if(product != old_product):
+        log.info('fix product: replace wrong prime characters. new=%s, old=%s', product, old_product)
 
     old_product = product
     product = product.replace('FOG:', '')  # remove FOG ids
