@@ -112,7 +112,7 @@ Bakta requires the following 3rd party software tools which must be installed an
 - INFERNAL (1.1.4) <https://dx.doi.org/10.1093%2Fbioinformatics%2Fbtt509> <http://eddylab.org/infernal>
 - PILER-CR (1.06) <https://doi.org/10.1186/1471-2105-8-18> <http://www.drive5.com/pilercr>
 - Pyrodigal (2.0.2) <https://doi.org/10.21105/joss.04296> <https://github.com/althonos/pyrodigal>
-- Hmmer (3.3.2) <https://doi.org/10.1093/nar/gkt263> <http://hmmer.org>
+- PyHMMER (0.8.2) <https://doi.org/10.21105/joss.04296> <https://github.com/althonos/pyhmmer>
 - Diamond (2.0.14) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
 - Blast+ (2.12.0) <https://www.ncbi.nlm.nih.gov/pubmed/2231712> <https://blast.ncbi.nlm.nih.gov>
 - AMRFinderPlus (3.10.23) <https://github.com/ncbi/amr>
@@ -738,6 +738,7 @@ Bakta is *standing on the shoulder of giants* taking advantage of many great sof
 - Pyrodigal <https://doi.org/10.21105/joss.04296>
 - Diamond <https://doi.org/10.1038/s41592-021-01101-x>
 - BLAST+ <https://doi.org/10.1186/1471-2105-10-421>
+- PyHMMER <https://doi.org/10.21105/joss.04296>
 - HMMER <https://doi.org/10.1371/journal.pcbi.1002195>
 - AMRFinderPlus <https://doi.org/10.1038/s41598-021-91456-0>
 - DeepSig <https://doi.org/10.1093/bioinformatics/btx818>

@@ -5,6 +5,8 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Dict, Sequence
 
+import pyhmmer
+
 import bakta.config as cfg
 import bakta.constants as bc
 
@@ -12,59 +14,51 @@ import bakta.constants as bc
 log = logging.getLogger('ORF')
 
 
-def detect_spurious(orfs: Sequence[dict], orf_aa_path: Path):
+def detect_spurious(orfs: Sequence[dict]):
     """Detect spurious ORFs with AntiFam"""
-    output_path = cfg.tmp_path.joinpath('cds.spurious.hmm.tsv')
-    cmd = [
-        'hmmsearch',
-        '--noali',
-        '--cut_ga',  # use gathering cutoff
-        '--tblout', str(output_path),
-        '--cpu', str(cfg.threads if cfg.threads <= 4 else 4),
-        str(cfg.db_path.joinpath('antifam')),
-        str(orf_aa_path)
+    alphabet: pyhmmer.easel.Alphabet = pyhmmer.easel.Alphabet.amino()
+    proteins: list[pyhmmer.easel.DigitalSequence] = [
+        pyhmmer.easel.TextSequence(sequence=orf['aa'],
+                                   name=bytes(get_orf_key(orf),
+                                              'UTF-8')).digitize(alphabet) for orf in orfs
     ]
-    log.debug('cmd=%s', cmd)
-    proc = sp.run(
-        cmd,
-        cwd=str(cfg.tmp_path),
-        env=cfg.env,
-        stdout=sp.PIPE,
-        stderr=sp.PIPE,
-        universal_newlines=True
-    )
-    if(proc.returncode != 0):
-        log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
-        log.warning('spurious ORF detection failed! hmmsearch-error-code=%d', proc.returncode)
-        raise Exception(f'hmmsearch error! error code: {proc.returncode}')
+
+    hits: list[dict] = []
+    with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('antifam')) as hmm:
+        for top_hits in pyhmmer.hmmsearch(hmm, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
+            for hit in top_hits:
+                hits.append(
+                    {
+                        'query': hit.name.decode(),
+                        'subject_name': hit.best_domain.alignment.hmm_name.decode(),
+                        'subject_id': hit.best_domain.alignment.hmm_accession.decode(),
+                        'bitscore': hit.score,
+                        'evalue': hit.evalue,
+                    }
+                )
 
     discarded_orfs = []
     orf_by_aa_digest = get_orf_dictionary(orfs)
-    with output_path.open() as fh:
-        for line in fh:
-            if(line[0] != '#'):
-                (aa_identifier, _, subject_name, subject_id, evalue, bitscore, _) = line.strip().split(maxsplit=6)
-                orf = orf_by_aa_digest[aa_identifier]
-                evalue = float(evalue)
-                bitscore = float(bitscore)
-                if(evalue > 1E-5):
-                    log.debug(
-                        'discard low spurious E value: contig=%s, start=%i, stop=%i, strand=%s, subject=%s, evalue=%1.1e, bitscore=%f',
-                        orf['contig'], orf['start'], orf['stop'], orf['strand'], subject_name, evalue, bitscore
-                    )
-                else:
-                    discard = OrderedDict()
-                    discard['type'] = bc.DISCARD_TYPE_SPURIOUS
-                    discard['description'] = f'(partial) homology to spurious sequence HMM (AntiFam:{subject_id})'
-                    discard['score'] = bitscore
-                    discard['evalue'] = evalue
+    for hit in hits:
+        orf = orf_by_aa_digest[hit['query']]
+        if hit['evalue'] > 1E-5:
+            log.debug(
+                'discard low spurious E value: contig=%s, start=%i, stop=%i, strand=%s, subject=%s, evalue=%1.1e, bitscore=%f',
+                orf['contig'], orf['start'], orf['stop'], orf['strand'], hit['subject_name'], hit['evalue'], hit['bitscore']
+            )
+        else:
+            discard = OrderedDict()
+            discard['type'] = bc.DISCARD_TYPE_SPURIOUS
+            discard['description'] = f'(partial) homology to spurious sequence HMM (AntiFam:{hit["subject_id"]})'
+            discard['score'] = hit['bitscore']
+            discard['evalue'] = hit['evalue']
 
-                    orf['discarded'] = discard
-                    discarded_orfs.append(orf)
-                    log.info(
-                        'discard spurious: contig=%s, start=%i, stop=%i, strand=%s, homology=%s, evalue=%1.1e, bitscore=%f',
-                        orf['contig'], orf['start'], orf['stop'], orf['strand'], subject_name, evalue, bitscore
-                    )
+            orf['discarded'] = discard
+            discarded_orfs.append(orf)
+            log.info(
+                'discard spurious: contig=%s, start=%i, stop=%i, strand=%s, homology=%s, evalue=%1.1e, bitscore=%f',
+                orf['contig'], orf['start'], orf['stop'], orf['strand'], hit['subject_name'], hit['evalue'], hit['bitscore']
+            )
     log.info('discarded=%i', len(discarded_orfs))
     return discarded_orfs
 

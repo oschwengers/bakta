@@ -65,6 +65,6 @@ process bakta {
     script:
     completeOption = complete ? '--complete' : ''
     """
-    ${baseDir}/../bin/bakta --db ${pathDb} --verbose --prefix ${accession} --genus ${genus} --species "${species}" --strain "${strain}" --keep-contig-headers --threads ${task.cpus} ${completeOption} assembly.fna
+    ${baseDir}/../bin/bakta --force --db ${pathDb} --verbose --prefix ${accession} --genus ${genus} --species "${species}" --strain "${strain}" --keep-contig-headers --threads ${task.cpus} ${completeOption} assembly.fna
     """
 }

@@ -10,6 +10,7 @@ from typing import Dict, Sequence, Set, Tuple, Union
 from pathlib import Path
 
 import pyrodigal
+import pyhmmer
 
 from Bio.Seq import Seq
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
@@ -166,75 +167,69 @@ def create_cdss(genes, contig):
 
 def predict_pfam(cdss: Sequence[dict]) -> Sequence[dict]:
     """Detect Pfam-A entries"""
-    fasta_path = cfg.tmp_path.joinpath('hypotheticals.faa')
-    orf.write_internal_faa(cdss, fasta_path)
-    output_path = cfg.tmp_path.joinpath('cds.hypotheticals.pfam.tsv')
-    cmd = [
-        'hmmsearch',
-        '--noali',
-        '--cut_ga',  # use gathering cutoff
-        '--domtblout', str(output_path),
-        '--cpu', str(cfg.threads if cfg.threads <= 4 else 4),
-        str(cfg.db_path.joinpath('pfam')),
-        str(fasta_path)
+    alphabet: pyhmmer.easel.Alphabet = pyhmmer.easel.Alphabet.amino()
+    proteins: list[pyhmmer.easel.DigitalSequence] = [
+        pyhmmer.easel.TextSequence(sequence=cds['aa'],
+                                   name=bytes(orf.get_orf_key(cds),
+                                              'UTF-8')).digitize(alphabet) for cds in cdss
     ]
-    log.debug('cmd=%s', cmd)
-    proc = sp.run(
-        cmd,
-        cwd=str(cfg.tmp_path),
-        env=cfg.env,
-        stdout=sp.PIPE,
-        stderr=sp.PIPE,
-        universal_newlines=True
-    )
-    if(proc.returncode != 0):
-        log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
-        log.warning('pfam detection failed! hmmsearch-error-code=%d', proc.returncode)
-        raise Exception(f'hmmsearch error! error code: {proc.returncode}')
+
+    hits: list[dict] = []
+    with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('pfam')) as hmm:
+        for top_hits in pyhmmer.hmmsearch(hmm, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
+            for hit in top_hits:
+                hits.append(
+                    {
+                        'query': hit.name.decode(),
+                        'subject_name': hit.best_domain.alignment.hmm_name.decode(),
+                        'subject_id': hit.best_domain.alignment.hmm_accession.decode(),
+                        'bitscore': hit.score,
+                        'evalue': hit.evalue,
+                        'domain_length': len(hit.best_domain.alignment.hmm_sequence),
+                        'domain_start': hit.best_domain.alignment.hmm_from,
+                        'domain_stop': hit.best_domain.alignment.hmm_to,
+                        'aa_start': hit.best_domain.alignment.target_from,
+                        'aa_stop': hit.best_domain.alignment.target_to
+                    }
+                )
 
     pfam_hits = []
-    cds_pfams_hits = {}
+    cds_pfams_hits = []
     orf_by_aa_digest = orf.get_orf_dictionary(cdss)
-    with output_path.open() as fh:
-        for line in fh:
-            if(line[0] != '#'):
-                cols = bc.RE_MULTIWHITESPACE.split(line.strip())
-                aa_identifier = cols[0]
-                cds = orf_by_aa_digest[aa_identifier]
+    for hit in hits:
+        cds = orf_by_aa_digest[hit['query']]
 
-                domain_length = int(cols[5])
-                domain_start = int(cols[15])
-                domain_stop = int(cols[16])
-                domain_cov = (domain_stop - domain_start + 1) / domain_length
-                aa_start = int(cols[19])
-                aa_stop = int(cols[20])
-                aa_cov = (aa_stop - aa_start + 1) / len(cds['aa'])
+        domain_length = hit['domain_length']
+        domain_start = hit['domain_start']
+        domain_stop = hit['domain_stop']
+        domain_cov = (domain_stop - domain_start + 1) / domain_length
+        aa_start = hit['aa_start']
+        aa_stop = hit['aa_stop']
+        aa_cov = (aa_stop - aa_start + 1) / len(cds['aa'])
 
-                pfam = OrderedDict()
-                pfam['id'] = cols[4]
-                pfam['name'] = cols[3]
-                pfam['length'] = domain_length
-                pfam['aa_cov'] = aa_cov
-                pfam['hmm_cov'] = domain_cov
-                pfam['evalue'] = float(cols[6])
-                pfam['score'] = float(cols[7])
-                pfam['start'] = aa_start
-                pfam['stop'] = aa_stop
+        pfam = OrderedDict()
+        pfam['name'] = hit['subject_name']
+        pfam['id'] = hit['subject_id']
+        pfam['length'] = domain_length
+        pfam['aa_cov'] = aa_cov
+        pfam['hmm_cov'] = domain_cov
+        pfam['evalue'] = hit['evalue']
+        pfam['score'] = hit['bitscore']
+        pfam['start'] = aa_start
+        pfam['stop'] = aa_stop
 
-                if('pfams' not in cds):
-                    cds['pfams'] = []
-                cds['pfams'].append(pfam)
-                if('db_xrefs' not in cds):
-                    cds['db_xrefs'] = []
-                cds['db_xrefs'].append(f"PFAM:{pfam['id']}")
-                pfam_hits.append(cds)
-                cds_pfams_hits[aa_identifier] = cds
-                log.info(
-                    'pfam detected: contig=%s, start=%i, stop=%i, strand=%s, pfam-id=%s, length=%i, aa-start=%i, aa-stop=%i, aa-cov=%1.1f, hmm-cov=%1.1f, evalue=%1.1e, bitscore=%1.1f, name=%s',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], pfam['id'], pfam['length'], pfam['start'], pfam['stop'], pfam['aa_cov'], pfam['hmm_cov'], pfam['evalue'], pfam['score'], pfam['name']
-                )
+        cds.setdefault('pfams', [])
+        cds['pfams'].append(pfam)
+        cds.setdefault('db_xrefs', [])
+        cds['db_xrefs'].append(f"PFAM:{pfam['id']}")
+        pfam_hits.append(cds)
+        cds_pfams_hits.append(cds)
+        log.info(
+            'pfam detected: contig=%s, start=%i, stop=%i, strand=%s, pfam-id=%s, length=%i, aa-start=%i, aa-stop=%i, aa-cov=%1.1f, hmm-cov=%1.1f, evalue=%1.1e, bitscore=%1.1f, name=%s',
+            cds['contig'], cds['start'], cds['stop'], cds['strand'], pfam['id'], pfam['length'], pfam['start'], pfam['stop'], pfam['aa_cov'], pfam['hmm_cov'], pfam['evalue'], pfam['score'], pfam['name']
+        )
     log.info('predicted-pfams=%i, CDS-w/-pfams=%i', len(pfam_hits), len(cds_pfams_hits))
-    return cds_pfams_hits.values()
+    return cds_pfams_hits
 
 
 def analyze_proteins(cdss: Sequence[dict]):
