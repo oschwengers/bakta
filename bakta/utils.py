@@ -70,7 +70,7 @@ def parse_arguments():
     arg_group_io.add_argument('--min-contig-length', '-m', action='store', type=int, default=1, dest='min_contig_length', help='Minimum contig size (default = 1; 200 in compliant mode)')
     arg_group_io.add_argument('--prefix', '-p', action='store', default=None, help='Prefix for output files')
     arg_group_io.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
-    arg_group_io.add_argument('--force', '-f', action='store_true', help='Force overwriting existing output folder')
+    arg_group_io.add_argument('--force', '-f', action='store_true', help='Force overwriting existing output folder (except for current working directory)')
 
     arg_group_organism = parser.add_argument_group('Organism')
     arg_group_organism.add_argument('--genus', action='store', default=None, help='Genus name')

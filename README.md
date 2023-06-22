@@ -343,7 +343,7 @@ Input / Output:
                         Prefix for output files
   --output OUTPUT, -o OUTPUT
                         Output directory (default = current working directory)
-  --force, -f           Force overwriting existing output folder
+  --force, -f           Force overwriting existing output folder (except for current working directory)
 
 Organism:
   --genus GENUS         Genus name

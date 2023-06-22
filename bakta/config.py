@@ -312,7 +312,9 @@ def check_output_path(output: str, force_override: bool) -> Path:
         except:
             sys.exit(f'ERROR: could not resolve or create output directory ({output})!')
     else:
-        if(force_override is False):
+        if(output_path == Path(os.getcwd())):
+            pass
+        elif(force_override is False):
             sys.exit(f'ERROR: output path ({output_path}) already exists! Either provide a non-existent new path or force overwriting it via \'--force\'')
         elif(not os.access(str(output_path), os.X_OK)):
             sys.exit(f'ERROR: output path ({output_path}) not accessible!')
