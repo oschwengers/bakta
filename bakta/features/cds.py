@@ -174,60 +174,39 @@ def predict_pfam(cdss: Sequence[dict]) -> Sequence[dict]:
                                               'UTF-8')).digitize(alphabet) for cds in cdss
     ]
 
-    hits: list[dict] = []
-    with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('pfam')) as hmm:
-        for top_hits in pyhmmer.hmmsearch(hmm, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
-            for hit in top_hits:
-                hits.append(
-                    {
-                        'query': hit.name.decode(),
-                        'subject_name': hit.best_domain.alignment.hmm_name.decode(),
-                        'subject_id': hit.best_domain.alignment.hmm_accession.decode(),
-                        'bitscore': hit.score,
-                        'evalue': hit.evalue,
-                        'domain_length': len(hit.best_domain.alignment.hmm_sequence),
-                        'domain_start': hit.best_domain.alignment.hmm_from,
-                        'domain_stop': hit.best_domain.alignment.hmm_to,
-                        'aa_start': hit.best_domain.alignment.target_from,
-                        'aa_stop': hit.best_domain.alignment.target_to
-                    }
-                )
-
     pfam_hits = []
     cds_pfams_hits = []
     orf_by_aa_digest = orf.get_orf_dictionary(cdss)
-    for hit in hits:
-        cds = orf_by_aa_digest[hit['query']]
+    with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('pfam')) as hmm:
+        for top_hits in pyhmmer.hmmsearch(hmm, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
+            for hit in top_hits:
+                cds = orf_by_aa_digest[hit.name.decode()]
 
-        domain_length = hit['domain_length']
-        domain_start = hit['domain_start']
-        domain_stop = hit['domain_stop']
-        domain_cov = (domain_stop - domain_start + 1) / domain_length
-        aa_start = hit['aa_start']
-        aa_stop = hit['aa_stop']
-        aa_cov = (aa_stop - aa_start + 1) / len(cds['aa'])
+                domain_cov = (hit.best_domain.alignment.hmm_to - hit.best_domain.alignment.hmm_from + 1) / len(hit.best_domain.alignment.hmm_sequence)
+                aa_cov = (hit.best_domain.alignment.target_to - hit.best_domain.alignment.target_from + 1) / len(cds['aa'])
 
-        pfam = OrderedDict()
-        pfam['name'] = hit['subject_name']
-        pfam['id'] = hit['subject_id']
-        pfam['length'] = domain_length
-        pfam['aa_cov'] = aa_cov
-        pfam['hmm_cov'] = domain_cov
-        pfam['evalue'] = hit['evalue']
-        pfam['score'] = hit['bitscore']
-        pfam['start'] = aa_start
-        pfam['stop'] = aa_stop
+                pfam = OrderedDict()
+                pfam['name'] = hit.best_domain.alignment.hmm_name.decode()
+                pfam['id'] = hit.best_domain.alignment.hmm_accession.decode()
+                pfam['length'] = len(hit.best_domain.alignment.hmm_sequence)
+                pfam['aa_cov'] = aa_cov
+                pfam['hmm_cov'] = domain_cov
+                pfam['evalue'] = hit.evalue
+                pfam['score'] = hit.score
+                pfam['start'] = hit.best_domain.alignment.target_from
+                pfam['stop'] = hit.best_domain.alignment.target_to
 
-        cds.setdefault('pfams', [])
-        cds['pfams'].append(pfam)
-        cds.setdefault('db_xrefs', [])
-        cds['db_xrefs'].append(f"PFAM:{pfam['id']}")
-        pfam_hits.append(cds)
-        cds_pfams_hits.append(cds)
-        log.info(
-            'pfam detected: contig=%s, start=%i, stop=%i, strand=%s, pfam-id=%s, length=%i, aa-start=%i, aa-stop=%i, aa-cov=%1.1f, hmm-cov=%1.1f, evalue=%1.1e, bitscore=%1.1f, name=%s',
-            cds['contig'], cds['start'], cds['stop'], cds['strand'], pfam['id'], pfam['length'], pfam['start'], pfam['stop'], pfam['aa_cov'], pfam['hmm_cov'], pfam['evalue'], pfam['score'], pfam['name']
-        )
+                cds.setdefault('pfams', [])
+                cds['pfams'].append(pfam)
+                cds.setdefault('db_xrefs', [])
+                cds['db_xrefs'].append(f"PFAM:{pfam['id']}")
+                pfam_hits.append(cds)
+                cds_pfams_hits.append(cds)
+                log.info(
+                    'pfam detected: contig=%s, start=%i, stop=%i, strand=%s, pfam-id=%s, length=%i, aa-start=%i, aa-stop=%i, aa-cov=%1.1f, hmm-cov=%1.1f, evalue=%1.1e, bitscore=%1.1f, name=%s',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], pfam['id'], pfam['length'], pfam['start'],
+                    pfam['stop'], pfam['aa_cov'], pfam['hmm_cov'], pfam['evalue'], pfam['score'], pfam['name']
+                )
     log.info('predicted-pfams=%i, CDS-w/-pfams=%i', len(pfam_hits), len(cds_pfams_hits))
     return cds_pfams_hits
 

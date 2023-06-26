@@ -23,42 +23,32 @@ def detect_spurious(orfs: Sequence[dict]):
                                               'UTF-8')).digitize(alphabet) for orf in orfs
     ]
 
-    hits: list[dict] = []
+    discarded_orfs = []
+    orf_by_aa_digest = get_orf_dictionary(orfs)
     with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('antifam')) as hmm:
         for top_hits in pyhmmer.hmmsearch(hmm, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
             for hit in top_hits:
-                hits.append(
-                    {
-                        'query': hit.name.decode(),
-                        'subject_name': hit.best_domain.alignment.hmm_name.decode(),
-                        'subject_id': hit.best_domain.alignment.hmm_accession.decode(),
-                        'bitscore': hit.score,
-                        'evalue': hit.evalue,
-                    }
-                )
+                orf = orf_by_aa_digest[hit.name.decode()]
+                if hit.evalue > 1E-5:
+                    log.debug(
+                        'discard low spurious E value: contig=%s, start=%i, stop=%i, strand=%s, subject=%s, evalue=%1.1e, bitscore=%f',
+                        orf['contig'], orf['start'], orf['stop'], orf['strand'],
+                        hit.best_domain.alignment.hmm_name.decode(), hit.evalue, hit.score
+                    )
+                else:
+                    discard = OrderedDict()
+                    discard['type'] = bc.DISCARD_TYPE_SPURIOUS
+                    discard['description'] = f'(partial) homology to spurious sequence HMM ' \
+                                             f'(AntiFam:{hit.best_domain.alignment.hmm_accession.decode()})'
+                    discard['score'] = hit.score
+                    discard['evalue'] = hit.evalue
 
-    discarded_orfs = []
-    orf_by_aa_digest = get_orf_dictionary(orfs)
-    for hit in hits:
-        orf = orf_by_aa_digest[hit['query']]
-        if hit['evalue'] > 1E-5:
-            log.debug(
-                'discard low spurious E value: contig=%s, start=%i, stop=%i, strand=%s, subject=%s, evalue=%1.1e, bitscore=%f',
-                orf['contig'], orf['start'], orf['stop'], orf['strand'], hit['subject_name'], hit['evalue'], hit['bitscore']
-            )
-        else:
-            discard = OrderedDict()
-            discard['type'] = bc.DISCARD_TYPE_SPURIOUS
-            discard['description'] = f'(partial) homology to spurious sequence HMM (AntiFam:{hit["subject_id"]})'
-            discard['score'] = hit['bitscore']
-            discard['evalue'] = hit['evalue']
-
-            orf['discarded'] = discard
-            discarded_orfs.append(orf)
-            log.info(
-                'discard spurious: contig=%s, start=%i, stop=%i, strand=%s, homology=%s, evalue=%1.1e, bitscore=%f',
-                orf['contig'], orf['start'], orf['stop'], orf['strand'], hit['subject_name'], hit['evalue'], hit['bitscore']
-            )
+                    orf['discarded'] = discard
+                    discarded_orfs.append(orf)
+                    log.info(
+                        'discard spurious: contig=%s, start=%i, stop=%i, strand=%s, homology=%s, evalue=%1.1e, bitscore=%f',
+                        orf['contig'], orf['start'], orf['stop'], orf['strand'], hit.best_domain.alignment.hmm_name.decode(), hit.evalue, hit.score
+                    )
     log.info('discarded=%i', len(discarded_orfs))
     return discarded_orfs
 
