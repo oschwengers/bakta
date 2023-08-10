@@ -43,11 +43,14 @@ jobs:
     #   run: mamba install numpy=1.23 keras=2.4.3 tensorflow=2.2.0 chardet deepsig
     - name: Install PyTest
       run: mamba install pytest
+      shell: bash -l {0}
     - name: Mamba info
       run: |
         mamba info
         mamba list
         printenv | sort
+      shell: bash -l {0}
     - name: Run PyTest
       if: ${{ matrix.os == 'ubuntu-latest'  ||  matrix.python-version == '3.10'}}
       run: pytest
+      shell: bash -l {0}
