@@ -12,7 +12,7 @@ on:
       - 'README.md'
 jobs:
   build:
-    name: test (${{ matrix.os }}, ${{ matrix.python-version }})
+    name: Test (${{ matrix.os }}, ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
     defaults:
       run:
