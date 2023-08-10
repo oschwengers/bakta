@@ -24,27 +24,29 @@ jobs:
         python-version: ['3.10'] # ['3.8', '3.10']
     steps:
     - uses: actions/checkout@v2
-    - uses: conda-incubator/setup-miniconda@v2
+    - uses: mamba-org/setup-micromamba@v1
       with:
-        auto-update-conda: false
-        python-version: ${{ matrix.python-version }}
-        miniconda-version: "latest"
-        mamba-version: "1.4.4"
-        channels: conda-forge,bioconda
-        channel-priority: true
-        auto-activate-base: false
-        environment-file: environment.yml
-        activate-environment: bakta
+        micromamba-version: 'latest'
+        environment-name: 'bakta'
+        environment-file: 'environment.yml'
+        create-args: python=${{ matrix.python-version }}
+        condarc: |
+          channels:
+            - conda-forge
+            - bioconda
+        init-shell: bash -l {0}
+        cache-environment: true
+        cache-downloads: true
+        post-cleanup: 'all'
     # - name: Install DeepSig
     #   if: ${{ matrix.os == 'ubuntu-latest'  &&  matrix.python-version == '3.8'}}
-    #   run: conda install numpy=1.23 keras=2.4.3 tensorflow=2.2.0 chardet deepsig
+    #   run: mamba install numpy=1.23 keras=2.4.3 tensorflow=2.2.0 chardet deepsig
     - name: Install PyTest
-      run: conda install pytest
-    - name: Conda info
+      run: mamba install pytest
+    - name: Mamba info
       run: |
-        conda info
-        conda list
-        conda config --show
+        mamba info
+        mamba list
         printenv | sort
     - name: Run PyTest
       if: ${{ matrix.os == 'ubuntu-latest'  ||  matrix.python-version == '3.10'}}
