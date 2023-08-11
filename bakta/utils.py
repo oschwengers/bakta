@@ -38,17 +38,17 @@ VERSION_MAX_DIGIT = 1000000000000
 VERSION_REGEX = re.compile(r'(\d+)\.(\d+)(?:[\.-](\d+))?')  # regex to search for version number in tool output. Takes missing patch version into consideration.
 
 # List of dependencies: tuples for: min version, max version, tool name & command line parameter, dependency check exclusion options
-DEPENDENCY_TRNASCAN = (Version(2, 0, 11), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('tRNAscan-SE', '-h'), ['--skip-trna'])
-DEPENDENCY_ARAGORN = (Version(1, 2, 41), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('aragorn', '-h'), ['skip-tmrna'])
-DEPENDENCY_CMSCAN = (Version(1, 1, 4), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('cmscan', '-h'), ['--skip-rrna', '--skip-ncrna', '--skip-ncrna-region'])
-DEPENDENCY_PILERCR = (Version(1, 6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('pilercr', '-options'), ['--skip-crispr'])
-DEPENDENCY_PYRODIGAL = (Version(2, 1, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('pyrodigal', '--version'), ['--skip-cds'])
-DEPENDENCY_HMMSEARCH = (Version(3, 3, 2), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('hmmsearch', '-h'), ['--skip-cds', '--skip-sorf'])
-DEPENDENCY_DIAMOND = (Version(2, 0, 14), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('diamond', 'help'), ['--skip-cds', '--skip-sorf'])
-DEPENDENCY_DEEPSIG = (Version(1, 2, 5), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('deepsig', '--version'), ['--gram ?'])
-DEPENDENCY_BLASTN = (Version(2, 12, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('blastn', '-version'), ['--skip-ori'])
-DEPENDENCY_AMRFINDERPLUS = (Version(3, 11, 2), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('amrfinder', '--version'), ['--skip-cds'])
-DEPENDENCY_CIRCOS = (Version(0, 69, 8), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, ('circos', '--version'), ['--skip-plot'])
+DEPENDENCY_TRNASCAN = (Version(2, 0, 11), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'tRNAscan-SE', ('tRNAscan-SE', '-h'), ['--skip-trna'])
+DEPENDENCY_ARAGORN = (Version(1, 2, 41), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Aragorn', ('aragorn', '-h'), ['skip-tmrna'])
+DEPENDENCY_CMSCAN = (Version(1, 1, 4), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'CMscan', ('cmscan', '-h'), ['--skip-rrna', '--skip-ncrna', '--skip-ncrna-region'])
+DEPENDENCY_PILERCR = (Version(1, 6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'PilerCR', ('pilercr', '-options'), ['--skip-crispr'])
+DEPENDENCY_PYRODIGAL = (Version(2, 1, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Pyrodigal', ('python', '-c', 'import pyrodigal; print(pyrodigal.__version__)'), ['--skip-cds'])
+DEPENDENCY_PYHMMER = (Version(0, 8, 1), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Pyhmmer', ('python', '-c', 'import pyhmmer; print(pyhmmer.__version__)'), ['--skip-cds', '--skip-sorf'])
+DEPENDENCY_DIAMOND = (Version(2, 0, 14), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Diamond', ('diamond', 'help'), ['--skip-cds', '--skip-sorf'])
+DEPENDENCY_DEEPSIG = (Version(1, 2, 5), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'DeepSig', ('deepsig', '--version'), ['--gram ?'])
+DEPENDENCY_BLASTN = (Version(2, 12, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Blastn', ('blastn', '-version'), ['--skip-ori'])
+DEPENDENCY_AMRFINDERPLUS = (Version(3, 11, 2), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'AMRFinderPlus', ('amrfinder', '--version'), ['--skip-cds'])
+DEPENDENCY_CIRCOS = (Version(0, 69, 8), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Circos', ('circos', '--version'), ['--skip-plot'])
 
 
 def init_parser(sub_command: str=''):
@@ -141,27 +141,29 @@ def cleanup(log, tmp_path: Path):
 def read_tool_output(dependency):
     """Method for reading tool version with regex. Input: regex expression, tool command. Retursn: version number."""
     version_regex = dependency[2]
-    command = dependency[3]
-    skip_options = dependency[4]
+    tool = dependency[3]
+    command = dependency[4]
+    skip_options = dependency[5]
     try:
         tool_output = str(sp.check_output(command, stderr=sp.STDOUT))  # stderr must be added in case the tool output is not piped into stdout
+        log.debug('tool output: tool=%s, output=%s', tool, tool_output)
     except FileNotFoundError:
-        log.error('dependency not found! tool=%s', command[0])
-        sys.exit(f"ERROR: {command[0]} not found or not executable! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
+        log.error('dependency not found! tool=%s', tool)
+        sys.exit(f"ERROR: {tool} not found or not executable! Please make sure {tool} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
     except sp.CalledProcessError:
-        log.error('dependency check failed! tool=%s', command[0])
-        sys.exit(f"ERROR: {command[0]} could not be executed! Please make sure {command[0]} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
+        log.error('dependency check failed! tool=%s', tool)
+        sys.exit(f"ERROR: {tool} could not be executed! Please make sure {tool} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
     version_match = version_regex.search(tool_output)
     try:
         if version_match is None:
-            log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', version_regex, command)
-            sys.exit('ERROR: Could not detect/read %s version!', command[0])
+            log.error('no dependency version detected! No regex hit in dependency output: regex=%s, command=%s', version_regex, command)
+            sys.exit(f'ERROR: Could not detect/read {tool} version! No regex hit in dependency output.')
         major = version_match.group(1)
         minor = version_match.group(2)
         patch = version_match.group(3)
         if major is None:
-            log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', version_regex, command)
-            sys.exit('ERROR: Could not detect/read %s version!', command[0])
+            log.error('no dependency version detected! Major hit is None in dependency output: regex=%s, command=%s', version_regex, command)
+            sys.exit(f'ERROR: Could not detect/read {tool} version! Major hit is None in dependency output.')
         elif minor is None:
             version_output = Version(int(major))
         elif patch is None:
@@ -170,8 +172,8 @@ def read_tool_output(dependency):
             version_output = Version(int(major), int(minor), int(patch))
         return version_output
     except:
-        log.error('no dependency version detected! no regex hit in dependency output: regex=%s, command=%s', version_regex, command)
-        sys.exit('ERROR: Could not detect/read %s version!', command[0])
+        log.error('no dependency version detected! Error while reading dependency output: regex=%s, command=%s', version_regex, command)
+        sys.exit(f'ERROR: Could not detect/read {tool} version! Error while reading dependency output.')
 
 
 def check_version(tool, min: int, max:int ) -> bool:
@@ -202,12 +204,12 @@ def test_dependency(dependency):
     """Test the proper installation of the required 3rd party executable."""
     version = read_tool_output(dependency)
     check_result = check_version(version, dependency[0], dependency[1])
-    tool_name = dependency[3][0]
+    tool_name = dependency[3]
     if (not check_result):
         log.error('wrong dependency version for %s: installed=%s, minimum=%s', tool_name, version, dependency[0])
         sys.exit(f'ERROR: Wrong {tool_name} version installed. Please, either install {tool_name} version {dependency[0]} or use {dependency[4]}!')
     else:
-        tool_path = shutil.which(tool_name)
+        tool_path = shutil.which(dependency[4][0])
         log.info('dependency: tool=%s, version=%s, path=%s', tool_name, version, tool_path)
 
 
@@ -243,7 +245,7 @@ def test_dependencies():
             sys.exit(f"ERROR: AMRFinderPlus database not installed! Please, install AMRFinderPlus's internal database by executing: 'amrfinder_update --database {amrfinderplus_db_path}'. This must be done only once.")
 
     if((cfg.skip_cds is not None and cfg.skip_cds is False) or (cfg.skip_sorf is not None and cfg.skip_sorf is False)):
-        test_dependency(DEPENDENCY_HMMSEARCH)
+        test_dependency(DEPENDENCY_PYHMMER)
         test_dependency(DEPENDENCY_DIAMOND)
         if(cfg.gram is not None and cfg.gram != '?'):
             test_dependency(DEPENDENCY_DEEPSIG)
