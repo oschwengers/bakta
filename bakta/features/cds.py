@@ -168,14 +168,15 @@ def create_cdss(genes, contig):
 def predict_pfam(cdss: Sequence[dict]) -> Sequence[dict]:
     """Detect Pfam-A entries"""
     pfam_hits = []
-    cds_pfams_hits = []
+    cds_with_pfams_hits = {}
     orf_by_aa_digest = orf.get_orf_dictionary(cdss)
     alphabet: pyhmmer.easel.Alphabet = pyhmmer.easel.Alphabet.amino()
     proteins: list[pyhmmer.easel.DigitalSequence] = [ pyhmmer.easel.TextSequence(sequence=cds['aa'], name=bytes(orf.get_orf_key(cds), 'UTF-8')).digitize(alphabet) for cds in cdss ]
     with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('pfam')) as hmm:
         for top_hits in pyhmmer.hmmsearch(hmm, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
             for hit in top_hits:
-                cds = orf_by_aa_digest[hit.name.decode()]
+                aa_identifier = hit.name.decode()
+                cds = orf_by_aa_digest[aa_identifier]
                 domain_cov = (hit.best_domain.alignment.hmm_to - hit.best_domain.alignment.hmm_from + 1) / len(hit.best_domain.alignment.hmm_sequence)
                 aa_cov = (hit.best_domain.alignment.target_to - hit.best_domain.alignment.target_from + 1) / len(cds['aa'])
 
@@ -195,14 +196,14 @@ def predict_pfam(cdss: Sequence[dict]) -> Sequence[dict]:
                 cds.setdefault('db_xrefs', [])
                 cds['db_xrefs'].append(f"PFAM:{pfam['id']}")
                 pfam_hits.append(cds)
-                cds_pfams_hits.append(cds)
+                cds_with_pfams_hits[aa_identifier] = cds
                 log.info(
                     'pfam detected: contig=%s, start=%i, stop=%i, strand=%s, pfam-id=%s, length=%i, aa-start=%i, aa-stop=%i, aa-cov=%1.1f, hmm-cov=%1.1f, evalue=%1.1e, bitscore=%1.1f, name=%s',
                     cds['contig'], cds['start'], cds['stop'], cds['strand'], pfam['id'], pfam['length'], pfam['start'],
                     pfam['stop'], pfam['aa_cov'], pfam['hmm_cov'], pfam['evalue'], pfam['score'], pfam['name']
                 )
-    log.info('predicted-pfams=%i, CDS-w/-pfams=%i', len(pfam_hits), len(cds_pfams_hits))
-    return cds_pfams_hits
+    log.info('predicted-pfams=%i, CDS-w/-pfams=%i', len(pfam_hits), len(cds_with_pfams_hits))
+    return cds_with_pfams_hits.values()
 
 
 def analyze_proteins(cdss: Sequence[dict]):
