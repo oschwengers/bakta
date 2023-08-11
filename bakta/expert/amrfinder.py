@@ -77,8 +77,7 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path):
                     hit['id'] = hmm_id
                     hit['db_xrefs'] = [f'{bc.DB_XREF_NCBI_FAMILIES}:{hmm_id}']
 
-                if('expert' not in cds):
-                    cds['expert'] = []
+                cds.setdefault('expert', [])
                 cds['expert'].append(hit)
                 log.debug(
                     'hit: gene=%s, product=%s, method=%s, target-cov=%0.3f, identity=%0.3f, contig=%s, start=%i, stop=%i, strand=%s',

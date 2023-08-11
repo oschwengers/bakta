@@ -80,8 +80,7 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
                 }
                 if(expert_system == 'user_proteins'):
                     hit['db_xrefs'].append(f'UserProtein:{model_id}')
-                if('expert' not in cds):
-                    cds['expert'] = []
+                cds.setdefault('expert', [])
                 cds['expert'].append(hit)
                 log.debug(
                     'hit: source=%s, rank=%i, contig=%s, start=%i, stop=%i, strand=%s, query-cov=%0.3f, model-cov=%0.3f, identity=%0.3f, gene=%s, product=%s, evalue=%1.1e, bitscore=%f',
