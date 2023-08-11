@@ -230,9 +230,7 @@ def main():
 
         if(len(cdss) > 0):
             log.debug('detect spurious CDS')
-            cds_aa_path = cfg.tmp_path.joinpath('cds.spurious.faa')
-            orf.write_internal_faa(cdss, cds_aa_path)
-            discarded_cdss = orf.detect_spurious(cdss, cds_aa_path)
+            discarded_cdss = orf.detect_spurious(cdss)
             print(f'\tdiscarded spurious: {len(discarded_cdss)}')
             cdss = [cds for cds in cdss if 'discarded' not in cds]
         
@@ -339,9 +337,7 @@ def main():
 
         if(len(sorfs) > 0):
             log.debug('detect spurious sORF')
-            sorf_aa_path = cfg.tmp_path.joinpath('sorf.spurious.faa')
-            orf.write_internal_faa(sorfs, sorf_aa_path)
-            discarded_sorfs = orf.detect_spurious(sorfs, sorf_aa_path)
+            discarded_sorfs = orf.detect_spurious(sorfs)
             print(f'\tdiscarded spurious: {len(discarded_sorfs)}')
             sorfs = [sorf for sorf in sorfs if 'discarded' not in sorf]
 
