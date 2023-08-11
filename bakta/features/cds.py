@@ -167,27 +167,21 @@ def create_cdss(genes, contig):
 
 def predict_pfam(cdss: Sequence[dict]) -> Sequence[dict]:
     """Detect Pfam-A entries"""
-    alphabet: pyhmmer.easel.Alphabet = pyhmmer.easel.Alphabet.amino()
-    proteins: list[pyhmmer.easel.DigitalSequence] = [
-        pyhmmer.easel.TextSequence(sequence=cds['aa'],
-                                   name=bytes(orf.get_orf_key(cds),
-                                              'UTF-8')).digitize(alphabet) for cds in cdss
-    ]
-
     pfam_hits = []
     cds_pfams_hits = []
     orf_by_aa_digest = orf.get_orf_dictionary(cdss)
+    alphabet: pyhmmer.easel.Alphabet = pyhmmer.easel.Alphabet.amino()
+    proteins: list[pyhmmer.easel.DigitalSequence] = [ pyhmmer.easel.TextSequence(sequence=cds['aa'], name=bytes(orf.get_orf_key(cds), 'UTF-8')).digitize(alphabet) for cds in cdss ]
     with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('pfam')) as hmm:
         for top_hits in pyhmmer.hmmsearch(hmm, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
             for hit in top_hits:
                 cds = orf_by_aa_digest[hit.name.decode()]
-
                 domain_cov = (hit.best_domain.alignment.hmm_to - hit.best_domain.alignment.hmm_from + 1) / len(hit.best_domain.alignment.hmm_sequence)
                 aa_cov = (hit.best_domain.alignment.target_to - hit.best_domain.alignment.target_from + 1) / len(cds['aa'])
 
                 pfam = OrderedDict()
-                pfam['name'] = hit.best_domain.alignment.hmm_name.decode()
                 pfam['id'] = hit.best_domain.alignment.hmm_accession.decode()
+                pfam['name'] = hit.best_domain.alignment.hmm_name.decode()
                 pfam['length'] = len(hit.best_domain.alignment.hmm_sequence)
                 pfam['aa_cov'] = aa_cov
                 pfam['hmm_cov'] = domain_cov

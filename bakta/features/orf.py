@@ -16,15 +16,10 @@ log = logging.getLogger('ORF')
 
 def detect_spurious(orfs: Sequence[dict]):
     """Detect spurious ORFs with AntiFam"""
-    alphabet: pyhmmer.easel.Alphabet = pyhmmer.easel.Alphabet.amino()
-    proteins: list[pyhmmer.easel.DigitalSequence] = [
-        pyhmmer.easel.TextSequence(sequence=orf['aa'],
-                                   name=bytes(get_orf_key(orf),
-                                              'UTF-8')).digitize(alphabet) for orf in orfs
-    ]
-
     discarded_orfs = []
     orf_by_aa_digest = get_orf_dictionary(orfs)
+    alphabet: pyhmmer.easel.Alphabet = pyhmmer.easel.Alphabet.amino()
+    proteins: list[pyhmmer.easel.DigitalSequence] = [pyhmmer.easel.TextSequence(sequence=orf['aa'], name=bytes(get_orf_key(orf), 'UTF-8')).digitize(alphabet) for orf in orfs]
     with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('antifam')) as hmm:
         for top_hits in pyhmmer.hmmsearch(hmm, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
             for hit in top_hits:
@@ -32,14 +27,12 @@ def detect_spurious(orfs: Sequence[dict]):
                 if hit.evalue > 1E-5:
                     log.debug(
                         'discard low spurious E value: contig=%s, start=%i, stop=%i, strand=%s, subject=%s, evalue=%1.1e, bitscore=%f',
-                        orf['contig'], orf['start'], orf['stop'], orf['strand'],
-                        hit.best_domain.alignment.hmm_name.decode(), hit.evalue, hit.score
+                        orf['contig'], orf['start'], orf['stop'], orf['strand'], hit.best_domain.alignment.hmm_name.decode(), hit.evalue, hit.score
                     )
                 else:
                     discard = OrderedDict()
                     discard['type'] = bc.DISCARD_TYPE_SPURIOUS
-                    discard['description'] = f'(partial) homology to spurious sequence HMM ' \
-                                             f'(AntiFam:{hit.best_domain.alignment.hmm_accession.decode()})'
+                    discard['description'] = f'(partial) homology to spurious sequence HMM (AntiFam:{hit.best_domain.alignment.hmm_accession.decode()})'
                     discard['score'] = hit.score
                     discard['evalue'] = hit.evalue
 
