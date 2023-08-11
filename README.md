@@ -111,7 +111,7 @@ Bakta requires the following 3rd party software tools which must be installed an
 - Aragorn (1.2.38) <http://dx.doi.org/10.1093/nar/gkh152> <http://130.235.244.92/ARAGORN>
 - INFERNAL (1.1.4) <https://dx.doi.org/10.1093%2Fbioinformatics%2Fbtt509> <http://eddylab.org/infernal>
 - PILER-CR (1.06) <https://doi.org/10.1186/1471-2105-8-18> <http://www.drive5.com/pilercr>
-- Pyrodigal (2.0.2) <https://doi.org/10.21105/joss.04296> <https://github.com/althonos/pyrodigal>
+- Pyrodigal (2.1.0) <https://doi.org/10.21105/joss.04296> <https://github.com/althonos/pyrodigal>
 - PyHMMER (0.8.1) <https://doi.org/10.21105/joss.04296> <https://github.com/althonos/pyhmmer>
 - Diamond (2.0.14) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
 - Blast+ (2.12.0) <https://www.ncbi.nlm.nih.gov/pubmed/2231712> <https://blast.ncbi.nlm.nih.gov>
@@ -735,11 +735,10 @@ Bakta is *standing on the shoulder of giants* taking advantage of many great sof
 - Aragorn <https://doi.org/10.1093/nar/gkh152>
 - Infernal <https://doi.org/10.1093/bioinformatics/btt509>
 - PilerCR <https://doi.org/10.1186/1471-2105-8-18>
-- Pyrodigal <https://doi.org/10.21105/joss.04296>
+- Pyrodigal <https://doi.org/10.21105/joss.04296> Prodigal <10.1186/1471-2105-11-119>
 - Diamond <https://doi.org/10.1038/s41592-021-01101-x>
 - BLAST+ <https://doi.org/10.1186/1471-2105-10-421>
-- PyHMMER <https://doi.org/10.21105/joss.04296>
-- HMMER <https://doi.org/10.1371/journal.pcbi.1002195>
+- PyHMMER <https://doi.org/10.21105/joss.04296> HMMER <https://doi.org/10.1371/journal.pcbi.1002195>
 - AMRFinderPlus <https://doi.org/10.1038/s41598-021-91456-0>
 - DeepSig <https://doi.org/10.1093/bioinformatics/btx818>
 - Circos <https://doi.org/10.1101/gr.092759.109>
