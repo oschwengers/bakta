@@ -735,7 +735,7 @@ Bakta is *standing on the shoulder of giants* taking advantage of many great sof
 - Aragorn <https://doi.org/10.1093/nar/gkh152>
 - Infernal <https://doi.org/10.1093/bioinformatics/btt509>
 - PilerCR <https://doi.org/10.1186/1471-2105-8-18>
-- Pyrodigal <https://doi.org/10.21105/joss.04296> Prodigal <10.1186/1471-2105-11-119>
+- Pyrodigal <https://doi.org/10.21105/joss.04296> Prodigal <https://doi.org/10.1186/1471-2105-11-119>
 - Diamond <https://doi.org/10.1038/s41592-021-01101-x>
 - BLAST+ <https://doi.org/10.1186/1471-2105-10-421>
 - PyHMMER <https://doi.org/10.21105/joss.04296> HMMER <https://doi.org/10.1371/journal.pcbi.1002195>
