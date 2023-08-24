@@ -51,6 +51,11 @@ inputs:
     inputBinding: {prefix: --force}
     default: true
     type: boolean?
+  - doc: Print verbose information
+    id: verbose
+    inputBinding: {prefix: --verbose}
+    default: true
+    type: boolean?
   - doc: Min contig length
     id: min_contig_length
     inputBinding: {prefix: --min-contig-length}
