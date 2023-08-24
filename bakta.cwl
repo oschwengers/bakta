@@ -199,11 +199,10 @@ outputs:
     outputBinding:
       glob: ${
               if (inputs.prefix !== null) {
-                var out = inputs.prefix+'.tsv';
+                return inputs.prefix + '.tsv';
               } else{
-                var out = inputs.fasta_file.basename.replace(/\.[^/.]+$/, "")+'.tsv';
+                return inputs.fasta_file.basename.replace(/\.[^/.]+$/, '') + '.tsv';
               }
-              return out
             }
   - doc: Annotation summary as txt
     id: summary_txt
@@ -247,11 +246,10 @@ outputs:
     outputBinding:
       glob: ${
               if (inputs.prefix !== null) {
-                var out = inputs.prefix+'.faa';
+                return inputs.prefix + '.faa';
               } else{
-                var out = inputs.fasta_file.basename.replace(/\.[^/.]+$/, "")+'.faa';
+                return inputs.fasta_file.basename.replace(/\.[^/.]+$/, '') + '.faa';
               }
-              return out
             }
   - doc: Circular genome plot as PNG
     id: plot_png
