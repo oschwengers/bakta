@@ -2,7 +2,6 @@
 
 cwlVersion: v1.0
 class: CommandLineTool
-baseCommand: [bakta]
 id: bakta
 label: "Bakta: rapid & standardized annotation of bacterial genomes, MAGs & plasmids"
 
@@ -13,23 +12,28 @@ doc: |
       Necessary database files can be found here:
       https://doi.org/10.5281/zenodo.4247252
 
-hints:
-  SoftwareRequirement:
-    packages:
-      bakta:
-      version: [ "1.8.1" ]
-
 requirements:
+  InlineJavascriptRequirement: {}
   ResourceRequirement:
     ramMin: 4096
     coresMin: 1
 
+hints:
+  SoftwareRequirement:
+    packages:
+      bakta:
+        version: [ "1.8.1" ]
+        specs: ["https://github.com/oschwengers/bakta"]
+  DockerRequirement:
+    dockerPull: oschwengers/bakta:v1.8.1
+
+#baseCommand: []
+
 inputs:
   - doc: Genome assembly in Fasta format
     id: fasta_file
-    inputBinding: {position: 0}
+    inputBinding: {position: 100}
     type: File
-    format: edam:format_1929
   - doc: Database path (default = <bakta_path>/db)
     id: db
     inputBinding: {prefix: --db}
@@ -37,123 +41,128 @@ inputs:
   - doc: Output directory (default = current working directory)
     id: output
     inputBinding: {prefix: --output}
-    type: Directory
+    type: Directory?
   - doc: Output files prefix
     id: prefix
     inputBinding: {prefix: --prefix}
-    type: string
+    type: string?
+  - doc: Force overwrite output
+    id: force
+    inputBinding: {prefix: --force}
+    default: true
+    type: boolean?
   - doc: Min contig length
     id: min_contig_length
     inputBinding: {prefix: --min-contig-length}
-    type: int
+    type: int?
   - doc: Genus
     id: genus
     inputBinding: {prefix: --genus}
-    type: string
+    type: string?
   - doc: Species
     id: species
     inputBinding: {prefix: --species}
-    type: string
+    type: string?
   - doc: Strain
     id: strain
     inputBinding: {prefix: --strain}
-    type: string
+    type: string?
   - doc: All sequences are complete replicons (chromosome/plasmid[s])
     id: complete
     inputBinding: {prefix: --complete}
-    type: boolean
+    type: boolean?
   - doc: Prodigal training file for CDS prediction
     id: prodigal_tf_file
     inputBinding: {prefix: --prodigal-tf}
-    type: File
-  - doc: Translation table: 11/4 (default = 11)
+    type: File?
+  - doc: Translation table 11/4 (default = 11)
     id: translation_table
     inputBinding: {prefix: --translation-table}
-    type: int
+    type: int?
   - doc: Locus tag
     id: locus_tag
     inputBinding: {prefix: --locus-tag}
-    type: string
+    type: string?
   - doc: Gram type (default = ?)
     id: gram
     inputBinding: {prefix: --gram}
-    type: string
+    type: string?
   - doc: Keep original contig headers
     id: keep_contig_headers
     inputBinding: {prefix: --keep-contig-headers}
-    type: boolean
+    type: boolean?
   - doc: Replicon information table (tsv/csv)
     id: replicons
     inputBinding: {prefix: --replicons}
-    type: File
+    type: File?
   - doc: Force Genbank/ENA/DDJB compliance
     id: compliant
     inputBinding: {prefix: --compliant}
-    type: boolean
+    type: boolean?
   - doc: Fasta file of trusted protein sequences for CDS annotation
     id: proteins
     inputBinding: {prefix: --proteins}
-    type: File
+    type: File?
   - doc: Run in metagenome mode
     id: meta
     inputBinding: {prefix: --meta}
-    type: boolean
+    type: boolean?
   - doc: Skip tRNA detection & annotation
     id: skip_tRNA
     inputBinding: {prefix: --skip-trna}
-    type: boolean
+    type: boolean?
   - doc: Skip tmRNA detection & annotation
     id: skip_tmrna
     inputBinding: {prefix: --skip-tmrna}
-    type: boolean
+    type: boolean?
   - doc: Skip rRNA detection & annotation
     id: skip_rrna
     inputBinding: {prefix: --skip-rrna}
-    type: boolean
+    type: boolean?
   - doc: Skip ncRNA detection & annotation
     id: skip_ncrna
     inputBinding: {prefix: --skip-ncrna}
-    type: boolean
+    type: boolean?
   - doc: Skip ncRNA region detection & annotation
     id: skip_ncrna_region
     inputBinding: {prefix: --skip-ncrna-region}
-    type: boolean
+    type: boolean?
   - doc: Skip CRISPR detection & annotation
     id: skip_crispr
     inputBinding: {prefix: --skip-crispr}
-    type: boolean
+    type: boolean?
   - doc: Skip CDS detection & annotation
     id: skip_cds
     inputBinding: {prefix: --skip-cds}
-    type: boolean
+    type: boolean?
   - doc: Skip Pseudogene detection & annotation
     id: skip_pseudo
     inputBinding: {prefix: --skip-pseudo}
-    type: boolean
+    type: boolean?
   - doc: Skip sORF detection & annotation
     id: skip_sorf
     inputBinding: {prefix: --skip-sorf}
-    type: boolean
+    type: boolean?
   - doc: Skip gap detection & annotation
     id: skip_gap
     inputBinding: {prefix: --skip-gap}
-    type: boolean
+    type: boolean?
   - doc: Skip ori detection & annotation
     id: skip_ori
     inputBinding: {prefix: --skip-ori}
-    type: boolean
+    type: boolean?
   - doc: Skip genome plotting
     id: skip_plot
     inputBinding: {prefix: --skip-plot}
-    type: boolean
+    type: boolean?
   - doc: Directory for temporary files (default = system dependent auto detection)
     id: tmp_dir
     inputBinding: {prefix: --tmp-dir}
-    type: Directory
+    type: Directory?
   - doc: Threads
     id: threads
     inputBinding: {prefix: --threads}
-    type: int
+    type: int?
 
 outputs:
   - doc: Hypothetical CDS AA sequences as Fasta
@@ -170,7 +179,15 @@ outputs:
     id: annotation_tsv
     type: File
     format: edam:format_3475
-    outputBinding: {glob: '*.tsv'}
+    outputBinding:
+      glob: ${
+              if (inputs.prefix !== null) {
+                var out = inputs.prefix+'.tsv';
+              } else{
+                var out = inputs.fasta_file.basename.replace(/\.[^/.]+$/, "")+'.tsv';
+              }
+              return out
+            }
   - doc: Annotation summary as txt
     id: summary_txt
     type: File
@@ -210,7 +227,15 @@ outputs:
     id: sequences_cds
     type: File
     format: edam:format_2200
-    outputBinding: {glob: '*.faa'}
+    outputBinding:
+      glob: ${
+              if (inputs.prefix !== null) {
+                var out = inputs.prefix+'.faa';
+              } else{
+                var out = inputs.fasta_file.basename.replace(/\.[^/.]+$/, "")+'.faa';
+              }
+              return out
+            }
   - doc: Circular genome plot as PNG
     id: plot_png
     type: File
@@ -238,5 +263,5 @@ $namespaces:
   edam: http://edamontology.org/
 
 $schemas:
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-https.rdf
  - http://edamontology.org/EDAM_1.18.owl
