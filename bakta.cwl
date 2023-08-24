@@ -22,10 +22,10 @@ hints:
   SoftwareRequirement:
     packages:
       bakta:
-        version: [ "1.8.1" ]
+        version: [ "1.8.2" ]
         specs: ["https://github.com/oschwengers/bakta"]
   DockerRequirement:
-    dockerPull: oschwengers/bakta:v1.8.1
+    dockerPull: oschwengers/bakta:v1.8.2
 
 #baseCommand: []
 
