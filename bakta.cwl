@@ -235,7 +235,7 @@ outputs:
     format: edam:format_2200
     outputBinding: {glob: '*.fna'}
   - doc: Gene DNA sequences as Fasta
-    id: sequences_fna
+    id: sequences_ffn
     type: File
     format: edam:format_2200
     outputBinding: {glob: '*.ffn'}
