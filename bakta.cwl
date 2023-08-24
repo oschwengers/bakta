@@ -67,7 +67,10 @@ inputs:
     id: strain
     inputBinding: {prefix: --strain}
     type: string?
-
+  - doc: Plasmid name
+    id: plasmid
+    inputBinding: {prefix: --plasmid}
+    type: string?
   - doc: All sequences are complete replicons (chromosome/plasmid[s])
     id: complete
     inputBinding: {prefix: --complete}
