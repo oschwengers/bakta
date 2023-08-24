@@ -115,7 +115,6 @@ inputs:
     id: meta
     inputBinding: {prefix: --meta}
     type: boolean?
-
   - doc: Skip tRNA detection & annotation
     id: skip_tRNA
     inputBinding: {prefix: --skip-trna}
@@ -169,7 +168,10 @@ inputs:
     inputBinding: {prefix: --verbose}
     default: true
     type: boolean?
-
+  - doc: Run Bakta in debug mode
+    id: debug
+    inputBinding: {prefix: --debug}
+    type: boolean?
   - doc: Threads
     id: threads
     inputBinding: {prefix: --threads}
