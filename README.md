@@ -75,29 +75,28 @@ In all cases a mandatory [database](#database-download) must be downloaded.
 conda install -c conda-forge -c bioconda bakta
 ```
 
-### Docker
+### Podman (Docker)
+
+We maintain a Docker image `oschwengers/bakta` providing an entrypoint, so that containers can be used like an executable:
 
 ```bash
-sudo docker pull oschwengers/bakta
-sudo docker run oschwengers/bakta --help
+podman pull oschwengers/bakta
+podman run oschwengers/bakta --help
 ```
 
-Installation instructions and get-started guides: Docker [docs](https://docs.docker.com)
-
-For further convenience, we provide a shell script (`bakta-docker.sh`) handling Docker related parameters (volume mounting, user IDs, etc):
+Installation instructions and get-started guides: Podman [docs](https://podman.io/docs). For further convenience, we provide a shell script (`bakta-podman.sh`) handling Podman related parameters (volume mounting, user IDs, etc):
 
 ```bash
-bakta-docker.sh --db <db-path> --output <output-path> <input>
+bakta-podman.sh --db <db-path> --output <output-path> <input>
 ```
 
-### Singularity
+For experienced users and full functionality (`bakta_db` & `bakta_proteins`), an image without entrypoint might be a better option. For these cases, please use one of the [Biocontainer](quay.io/biocontainers/bakta) images:
 
 ```bash
-singularity build bakta.sif docker://oschwengers/bakta:latest
-singularity run bakta.sif --help
+export CONTAINER="quay.io/biocontainers/bakta:1.8.2--pyhdfd78af_0"
+podman run -it --rm $CONTAINER bakta --help
+podman run -it --rm $CONTAINER bakta_db --help
 ```
-
-Installation instructions, get-started and guides: Singularity [docs](https://sylabs.io/docs)
 
 ### Pip
 
