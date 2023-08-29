@@ -90,7 +90,7 @@ Installation instructions and get-started guides: Podman [docs](https://podman.i
 bakta-podman.sh --db <db-path> --output <output-path> <input>
 ```
 
-For experienced users and full functionality (`bakta_db` & `bakta_proteins`), an image without entrypoint might be a better option. For these cases, please use one of the [Biocontainer](quay.io/biocontainers/bakta) images:
+For experienced users and full functionality (`bakta_db` & `bakta_proteins`), an image without entrypoint might be a better option. For these cases, please use one of the [Biocontainer](https://quay.io/repository/biocontainers/bakta?tab=tags) images:
 
 ```bash
 export CONTAINER="quay.io/biocontainers/bakta:1.8.2--pyhdfd78af_0"
