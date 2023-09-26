@@ -38,9 +38,9 @@ def predict(genome: dict, sequences_path: Path):
         closed = not genome['complete']
         if(not prodigal_metamode):
             log.info('create prodigal training info object: meta=%s, closed=%s', prodigal_metamode, closed)
-            orffinder = pyrodigal.OrfFinder(meta=prodigal_metamode, closed=closed)
+            gene_finder = pyrodigal.GeneFinder(meta=prodigal_metamode, closed=closed)
             seqs = [c['sequence'] for c in genome['contigs']]
-            trainings_info = orffinder.train(*seqs, translation_table=cfg.translation_table)
+            trainings_info = gene_finder.train(*seqs, translation_table=cfg.translation_table)
         else:
             log.info('skip creation of prodigal training info object: meta=%s, closed=%s', prodigal_metamode, closed)
     else:
@@ -55,29 +55,29 @@ def predict(genome: dict, sequences_path: Path):
 
     cdss = []
     # predict genes on linear sequences
-    linear_sequences = {c['id'] : c for c in genome['contigs'] if c['topology'] == bc.TOPOLOGY_LINEAR}
-    if(len(linear_sequences) > 0):
-        orffinder = pyrodigal.OrfFinder(trainings_info, meta=prodigal_metamode, closed=True, mask=True)
-        future_per_contig = {}
+    linear_contigs = [c for c in genome['contigs'] if c['topology'] == bc.TOPOLOGY_LINEAR]
+    if(len(linear_contigs) > 0):
+        if(prodigal_metamode):
+            gene_finder = pyrodigal.GeneFinder(meta=True, closed=True, mask=True)
+        else:
+            gene_finder = pyrodigal.GeneFinder(trainings_info, meta=False, closed=True, mask=True)
         with cf.ProcessPoolExecutor(max_workers=cfg.threads) as tpe:
-            for id, sequence in linear_sequences.items():
-                future_per_contig[sequence['id']] = tpe.submit(orffinder.find_genes, sequence['sequence'])
-            for contig_id, future in future_per_contig.items():
-                sequence = linear_sequences[contig_id]
-                cdss_per_sequence = create_cdss(future.result(), sequence)
+            sequences = [contig['sequence'] for contig in linear_contigs]
+            for contig, genes in zip(linear_contigs, map(gene_finder.find_genes, sequences)):
+                cdss_per_sequence = create_cdss(genes, contig)
                 cdss.extend(cdss_per_sequence)
 
     # predict genes on circular replicons (chromosomes/plasmids)
-    circular_sequences = {c['id'] : c for c in genome['contigs'] if c['topology'] == bc.TOPOLOGY_CIRCULAR}
-    if(len(circular_sequences) > 0):
-        orffinder = pyrodigal.OrfFinder(trainings_info, meta=prodigal_metamode, closed=False, mask=True)
-        future_per_contig = {}
+    circular_contigs = [c for c in genome['contigs'] if c['topology'] == bc.TOPOLOGY_CIRCULAR]
+    if(len(circular_contigs) > 0):
+        if(prodigal_metamode):
+            gene_finder = pyrodigal.GeneFinder(meta=True, closed=False, mask=True)
+        else:
+            gene_finder = pyrodigal.GeneFinder(trainings_info, meta=False, closed=False, mask=True)
         with cf.ProcessPoolExecutor(max_workers=cfg.threads) as tpe:
-            for id, sequence in circular_sequences.items():
-                future_per_contig[sequence['id']] = tpe.submit(orffinder.find_genes, sequence['sequence'])
-            for contig_id, future in future_per_contig.items():
-                sequence = circular_sequences[contig_id]
-                cdss_per_sequence = create_cdss(future.result(), sequence)
+            sequences = [contig['sequence'] for contig in circular_contigs]
+            for contig, genes in zip(circular_contigs, map(gene_finder.find_genes, sequences)):
+                cdss_per_sequence = create_cdss(genes, contig)
                 cdss.extend(cdss_per_sequence)
 
     log.info('predicted=%i', len(cdss))

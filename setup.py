@@ -31,7 +31,7 @@ setup(
         'requests >= 2.25.1',
         'alive-progress >= 3.0.1',
         'PyYAML >= 6.0',
-        'pyrodigal >= 2.1.0, <3.0',
+        'pyrodigal >= 3.0',
         'pyhmmer >= 0.10.0'
     ],
     entry_points={
