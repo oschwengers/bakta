@@ -511,18 +511,11 @@ def main():
     print(f"\toriCs/oriVs: {len([f for f in features if (f['type'] == bc.FEATURE_ORIC or f['type'] == bc.FEATURE_ORIV)])}")
     print(f"\toriTs: {len([f for f in features if f['type'] == bc.FEATURE_ORIT])}")
 
-    cfg.run_end = datetime.now()
-    run_duration = (cfg.run_end - cfg.run_start).total_seconds()
-    genome['run'] = {
-        'start': cfg.run_start.strftime('%Y-%m-%d %H:%M:%S'),
-        'end': cfg.run_end.strftime('%Y-%m-%d %H:%M:%S'),
-        'duration': f'{(run_duration / 60):.2f} min'
-    }
-
     ############################################################################
     # Write output files
-    # - write comprehensive annotation results as JSON
     # - write optional output files in GFF3/GenBank/EMBL formats
+    # - measure runtime
+    # - write comprehensive annotation results as JSON
     # - remove temp directory
     ############################################################################
     print(f'\nexport annotation results to: {cfg.output_path}')
@@ -566,6 +559,15 @@ def main():
         print('\ttranslated hypothetical CDS sequences...')
         faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.faa')
         fasta.write_faa(hypotheticals, faa_path)
+
+    # measure runtime at the latest possible
+    cfg.run_end = datetime.now()
+    run_duration = (cfg.run_end - cfg.run_start).total_seconds()
+    genome['run'] = {
+        'start': cfg.run_start.strftime('%Y-%m-%d %H:%M:%S'),
+        'end': cfg.run_end.strftime('%Y-%m-%d %H:%M:%S'),
+        'duration': f'{(run_duration / 60):.2f} min'
+    }
 
     print('\tmachine readable JSON...')
     json_path = cfg.output_path.joinpath(f'{cfg.prefix}.json')
