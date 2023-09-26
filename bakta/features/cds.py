@@ -60,7 +60,7 @@ def predict(genome: dict, sequences_path: Path):
         gene_finder = pyrodigal.GeneFinder(trainings_info, meta=prodigal_metamode, closed=True, mask=True)
         with cf.ProcessPoolExecutor(max_workers=cfg.threads) as ppe:
             sequences = [contig['sequence'] for contig in linear_contigs]
-            for contig, genes in zip(linear_contigs, map(gene_finder.find_genes, sequences)):
+            for contig, genes in zip(linear_contigs, ppe.map(gene_finder.find_genes, sequences)):
                 cdss_per_sequence = create_cdss(genes, contig)
                 cdss.extend(cdss_per_sequence)
 
@@ -70,7 +70,7 @@ def predict(genome: dict, sequences_path: Path):
         gene_finder = pyrodigal.GeneFinder(trainings_info, meta=prodigal_metamode, closed=False, mask=True)
         with cf.ProcessPoolExecutor(max_workers=cfg.threads) as ppe:
             sequences = [contig['sequence'] for contig in circular_contigs]
-            for contig, genes in zip(circular_contigs, map(gene_finder.find_genes, sequences)):
+            for contig, genes in zip(circular_contigs, ppe.map(gene_finder.find_genes, sequences)):
                 cdss_per_sequence = create_cdss(genes, contig)
                 cdss.extend(cdss_per_sequence)
 
