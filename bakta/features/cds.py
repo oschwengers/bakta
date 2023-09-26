@@ -57,11 +57,8 @@ def predict(genome: dict, sequences_path: Path):
     # predict genes on linear sequences
     linear_contigs = [c for c in genome['contigs'] if c['topology'] == bc.TOPOLOGY_LINEAR]
     if(len(linear_contigs) > 0):
-        if(prodigal_metamode):
-            gene_finder = pyrodigal.GeneFinder(meta=True, closed=True, mask=True)
-        else:
-            gene_finder = pyrodigal.GeneFinder(trainings_info, meta=False, closed=True, mask=True)
-        with cf.ProcessPoolExecutor(max_workers=cfg.threads) as tpe:
+        gene_finder = pyrodigal.GeneFinder(trainings_info, meta=prodigal_metamode, closed=True, mask=True)
+        with cf.ProcessPoolExecutor(max_workers=cfg.threads) as ppe:
             sequences = [contig['sequence'] for contig in linear_contigs]
             for contig, genes in zip(linear_contigs, map(gene_finder.find_genes, sequences)):
                 cdss_per_sequence = create_cdss(genes, contig)
@@ -70,11 +67,8 @@ def predict(genome: dict, sequences_path: Path):
     # predict genes on circular replicons (chromosomes/plasmids)
     circular_contigs = [c for c in genome['contigs'] if c['topology'] == bc.TOPOLOGY_CIRCULAR]
     if(len(circular_contigs) > 0):
-        if(prodigal_metamode):
-            gene_finder = pyrodigal.GeneFinder(meta=True, closed=False, mask=True)
-        else:
-            gene_finder = pyrodigal.GeneFinder(trainings_info, meta=False, closed=False, mask=True)
-        with cf.ProcessPoolExecutor(max_workers=cfg.threads) as tpe:
+        gene_finder = pyrodigal.GeneFinder(trainings_info, meta=prodigal_metamode, closed=False, mask=True)
+        with cf.ProcessPoolExecutor(max_workers=cfg.threads) as ppe:
             sequences = [contig['sequence'] for contig in circular_contigs]
             for contig, genes in zip(circular_contigs, map(gene_finder.find_genes, sequences)):
                 cdss_per_sequence = create_cdss(genes, contig)
