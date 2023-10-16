@@ -1,4 +1,3 @@
-import concurrent.futures as cf
 import copy
 import logging
 import subprocess as sp
@@ -7,7 +6,6 @@ import xml.etree.ElementTree as ET
 
 from collections import OrderedDict
 from typing import Dict, Sequence, Set, Tuple, Union
-from pathlib import Path
 
 import pyrodigal
 import pyhmmer
@@ -57,22 +55,26 @@ def predict(genome: dict):
     # predict genes on linear sequences
     linear_contigs = [c for c in genome['contigs'] if c['topology'] == bc.TOPOLOGY_LINEAR]
     if(len(linear_contigs) > 0):
-        gene_finder = pyrodigal.GeneFinder(trainings_info, meta=prodigal_metamode, closed=True, mask=True)
-        with cf.ProcessPoolExecutor(max_workers=cfg.threads) as ppe:
-            sequences = [contig['sequence'] for contig in linear_contigs]
-            for contig, genes in zip(linear_contigs, ppe.map(gene_finder.find_genes, sequences)):
-                cdss_per_sequence = create_cdss(genes, contig)
-                cdss.extend(cdss_per_sequence)
+        if prodigal_metamode:
+            gene_finder = pyrodigal.GeneFinder(meta=True, metagenomic_bins=None, closed=True, mask=True)
+        else:
+            gene_finder = pyrodigal.GeneFinder(trainings_info, meta=False, closed=True, mask=True)
+        sequences = [contig['sequence'] for contig in linear_contigs]
+        for contig, genes in zip(linear_contigs, map(gene_finder.find_genes, sequences)):
+            cdss_per_sequence = create_cdss(genes, contig)
+            cdss.extend(cdss_per_sequence)
 
     # predict genes on circular replicons (chromosomes/plasmids)
     circular_contigs = [c for c in genome['contigs'] if c['topology'] == bc.TOPOLOGY_CIRCULAR]
     if(len(circular_contigs) > 0):
-        gene_finder = pyrodigal.GeneFinder(trainings_info, meta=prodigal_metamode, closed=False, mask=True)
-        with cf.ProcessPoolExecutor(max_workers=cfg.threads) as ppe:
-            sequences = [contig['sequence'] for contig in circular_contigs]
-            for contig, genes in zip(circular_contigs, ppe.map(gene_finder.find_genes, sequences)):
-                cdss_per_sequence = create_cdss(genes, contig)
-                cdss.extend(cdss_per_sequence)
+        if prodigal_metamode:
+            gene_finder = pyrodigal.GeneFinder(meta=True, metagenomic_bins=None, closed=False, mask=True)
+        else:
+            gene_finder = pyrodigal.GeneFinder(trainings_info, meta=False, closed=False, mask=True)
+        sequences = [contig['sequence'] for contig in circular_contigs]
+        for contig, genes in zip(circular_contigs, map(gene_finder.find_genes, sequences)):
+            cdss_per_sequence = create_cdss(genes, contig)
+            cdss.extend(cdss_per_sequence)
 
     log.info('predicted=%i', len(cdss))
     return cdss
