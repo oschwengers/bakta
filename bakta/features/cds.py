@@ -27,7 +27,7 @@ from bakta.psc import DB_PSC_COL_UNIREF90
 log = logging.getLogger('CDS')
 
 
-def predict(genome: dict, sequences_path: Path):
+def predict(genome: dict):
     """Predict open reading frames with Pyrodigal."""
     # create Pyrodigal trainining file if not provided by the user
     prodigal_tf_path = cfg.prodigal_tf
