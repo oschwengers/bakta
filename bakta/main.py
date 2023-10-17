@@ -225,7 +225,7 @@ def main():
     else:
         print('predict & annotate CDSs...')
         log.debug('predict CDS')
-        cdss = feat_cds.predict(genome, contigs_path)
+        cdss = feat_cds.predict(genome)
         print(f"\tpredicted: {len(cdss)} ")
 
         if(len(cdss) > 0):
