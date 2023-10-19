@@ -3,9 +3,8 @@ import json
 from pathlib import Path
 from subprocess import run
 
-import bakta.config as cfg
-
 import pytest
+
 
 CRISPR_ARRAYS = [
     {
