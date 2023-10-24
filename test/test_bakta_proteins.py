@@ -3,6 +3,7 @@ from subprocess import run
 
 import pytest
 
+
 FILES = [
     'test.tsv',
     'test.hypotheticals.tsv',

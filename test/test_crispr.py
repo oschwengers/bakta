@@ -3,8 +3,6 @@ import json
 from pathlib import Path
 from subprocess import run
 
-import pytest
-
 
 CRISPR_ARRAYS = [
     {
@@ -17,8 +15,6 @@ CRISPR_ARRAYS = [
         'repeats': 3
     }
 ]
-
-
 
 
 def test_crispr_arrays(tmpdir):
