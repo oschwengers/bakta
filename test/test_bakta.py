@@ -1,10 +1,12 @@
+import json
 import subprocess as sp
-import sys
 
 from pathlib import Path
 from subprocess import run
 
 import pytest
+
+import bakta.constants as bc
 
 from .conftest import FILES, SKIP_PARAMETERS
 
@@ -58,24 +60,28 @@ def test_bakta_plasmid(tmpdir):
         assert Path.exists(output_path)
         assert output_path.stat().st_size > 0
 
-    output_path = tmpdir_path.joinpath('test.tsv')
-    feature_count, feature_counts = count_features(output_path)
-    assert feature_count == 3
+    results_path = tmpdir_path.joinpath('test.json')
+    results = None
+    with results_path.open() as fh:
+        results = json.load(fh)
+    assert results is not None
+    features = results['features']
+    assert len(features) == 3
     feature_counts_expected = {
-        'tRNA': 0,
-        'tmRNA': 0,
-        'rRNA': 0,
-        'ncRNA': 0,
-        'ncRNA-region': 0,
-        'crispr': 0,
-        'sorf': 0,
-        'oriV': 0,
-        'oriC': 0,
-        'oriT': 0,
-        'cds': 3
+        bc.FEATURE_T_RNA: 0,
+        bc.FEATURE_TM_RNA: 0,
+        bc.FEATURE_R_RNA: 0,
+        bc.FEATURE_NC_RNA: 0,
+        bc.FEATURE_NC_RNA_REGION: 0,
+        bc.FEATURE_CRISPR: 0,
+        bc.FEATURE_CDS: 3,
+        bc.FEATURE_SORF: 0,
+        bc.FEATURE_ORIC: 0,
+        bc.FEATURE_ORIV: 0,
+        bc.FEATURE_ORIT: 0
     }
-    for type in feature_counts:
-        assert feature_counts[type] == feature_counts_expected[type]
+    for type, count in feature_counts_expected.items():
+        assert len([f for f in features if f['type'] == type]) == count
 
 
 @pytest.mark.parametrize(
@@ -96,46 +102,26 @@ def test_bakta_genome(db, tmpdir):
         assert Path.exists(output_path)
         assert output_path.stat().st_size > 0
 
-    output_path = tmpdir_path.joinpath('test.tsv')
-    feature_count, feature_counts = count_features(output_path)
-    assert feature_count == 5551
+    results_path = tmpdir_path.joinpath('test.json')
+    results = None
+    with results_path.open() as fh:
+        results = json.load(fh)
+    assert results is not None
+    features = results['features']
+    assert len(features) == 5551
     feature_counts_expected = {
-        'tRNA': 107,
-        'tmRNA': 1,
-        'rRNA': 7,
-        'ncRNA': 57,
-        'ncRNA-region': 1,
-        'crispr': 1,
-        'sorf': 2,
-        'oriV': 0,
-        'oriC': 0,
-        'oriT': 0,
-        'cds': 5375
+        bc.FEATURE_T_RNA: 107,
+        bc.FEATURE_TM_RNA: 1,
+        bc.FEATURE_R_RNA: 7,
+        bc.FEATURE_NC_RNA: 57,
+        bc.FEATURE_NC_RNA_REGION: 1,
+        bc.FEATURE_CRISPR: 1,
+        bc.FEATURE_CDS: 5375,
+        bc.FEATURE_SORF: 2,
+        bc.FEATURE_ORIC: 0,
+        bc.FEATURE_ORIV: 0,
+        bc.FEATURE_ORIT: 0
     }
-    for type in feature_counts:
-        assert feature_counts[type] == feature_counts_expected[type]
+    for type, count in feature_counts_expected.items():
+        assert len([f for f in features if f['type'] == type]) == count
 
-
-def count_features(file_path):
-    with open(file_path, 'r') as fh:
-        feature_count = 0
-        feature_counts = {
-            'tRNA': 0,
-            'tmRNA': 0,
-            'rRNA': 0,
-            'ncRNA': 0,
-            'ncRNA-region': 0,
-            'crispr': 0,
-            'sorf': 0,
-            'oriV': 0,
-            'oriC': 0,
-            'oriT': 0,
-            'cds': 0
-        }
-        for line in fh:
-            if not line.startswith('#'):
-                feature_count += 1
-                feature = line.split('\t')[1]
-                if feature in feature_counts:
-                    feature_counts[feature] += 1
-    return feature_count, feature_counts

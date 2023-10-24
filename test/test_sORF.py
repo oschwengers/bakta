@@ -5,39 +5,39 @@ import bakta.config as cfg
 from bakta.features import s_orf as bu
 
 
-contig_1 = {
+CONTIG_1 = {
     'id': 1,
     'description': 'no sORFs',
     'sequence': 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG'
 }
-contig_2 = {
+CONTIG_2 = {
     'id': 2,
     'description': 'out of limits',
     'sequence': 'ATGAAAAAATAGGGGATGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTAG'
 }
-contig_3 = {
+CONTIG_3 = {
     'id': 3,
     'description': 'two sORFs',
     'sequence': 'ATGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTAGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGATGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGTAG'
 }
 
-genome_1 = {
-    'contigs': [contig_1]
+GENOME_1 = {
+    'contigs': [CONTIG_1]
 }
-genome_2 = {
-    'contigs': [contig_2]
+GENOME_2 = {
+    'contigs': [CONTIG_2]
 }
-genome_3 = {
-    'contigs': [contig_3]
+GENOME_3 = {
+    'contigs': [CONTIG_3]
 }
 
 
 @pytest.mark.parametrize(
     "genome, expected",
     [
-        (genome_1, 0),
-        (genome_2, 0),
-        (genome_3, 2)
+        (GENOME_1, 0),
+        (GENOME_2, 0),
+        (GENOME_3, 2)
     ]
 )
 def test_sORF(genome, expected):

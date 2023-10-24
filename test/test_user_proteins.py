@@ -12,74 +12,74 @@ import pytest
 SEQUENCE = 'MRADEEPGDLSAVAQDYLKVIWTAQEWSQDKVSTKMLAERIGVSASTASESIRKLAEQGLVDHEKYGAVTLTDSGRRAALAMVRRHRLLETFLVNELGYRWDEVHDEA'
 
 
-aa_min = {
+AA_MIN = {
     'id': 'min',
     'description': '~~~product~~~',
     'sequence': SEQUENCE
 }
-aa_min_gene = {
+AA_MIN_GENE = {
     'id': 'min',
     'description': 'gene~~~product~~~',
     'sequence': SEQUENCE
 }
-aa_min_dbxref = {
+AA_MIN_DBXREF = {
     'id': 'min',
     'description': 'gene~~~product~~~db-1:id-1',
     'sequence': SEQUENCE
 }
-aa_min_dbxrefs = {
+AA_MIN_DBXREFS = {
     'id': 'min',
     'description': 'gene~~~product~~~db-1:id-1,db-2:id-2',
     'sequence': SEQUENCE
 }
-aa_full = {
+AA_FULL = {
     'id': 'full',
     'description': '90.0~~~80.0~~~80.0~~~gene~~~product~~~db-1:id-1,db-2:id-2',
     'sequence': SEQUENCE
 }
 
 
-aa_wrong_1 = {
+AA_WRONG_1 = {
     'id': 'low-cols',
     'description': '~~~product',
     'sequence': SEQUENCE
 }
-aa_wrong_2 = {
+AA_WRONG_2 = {
     'id': 'high-cols',
     'description': '90~~~80~~~80~~~gene~~~product~~~dbxref:dbxref~~~',
     'sequence': SEQUENCE
 }
-aa_wrong_3 = {
+AA_WRONG_3 = {
     'id': 'no-product',
     'description': 'gene~~~~~~dbxref:dbxref',
     'sequence': SEQUENCE
 }
-aa_wrong_4 = {
+AA_WRONG_4 = {
     'id': 'no-product-full',
     'description': '90~~~80~~~80~~~gene~~~~~~dbxref:dbxref',
     'sequence': SEQUENCE
 }
-aa_wrong_5 = {
+AA_WRONG_5 = {
     'id': 'wrong-dbxref',
     'description': 'gene~~~product~~~dbxrefdbxref',
     'sequence': SEQUENCE
 }
-aa_wrong_6 = {
+AA_WRONG_6 = {
     'id': 'wrong-dbxref-full',
     'description': '90~~~80~~~80~~~gene~~~product~~~dbxrefdbxref',
     'sequence': SEQUENCE
 }
-aa_wrong_7 = {
+AA_WRONG_7 = {
     'id': 'wrong-id',
     'description': 'ninety~~~80~~~80~~~gene~~~product~~~dbxref:dbxref',
     'sequence': SEQUENCE
 }
-aa_wrong_8 = {
+AA_WRONG_8 = {
     'id': 'wrong-min-query-cov',
     'description': '90~~~eighty~~~80~~~gene~~~product~~~dbxref:dbxref',
     'sequence': SEQUENCE
 }
-aa_wrong_9 = {
+AA_WRONG_9 = {
     'id': 'wrong-min-model-cov',
     'description': '90~~~80~~~eighty~~~gene~~~product~~~dbxref:dbxref',
     'sequence': SEQUENCE
@@ -89,15 +89,15 @@ aa_wrong_9 = {
 @pytest.mark.parametrize(
     "parameters",
     [
-        (aa_wrong_1),
-        (aa_wrong_2),
-        (aa_wrong_3),
-        (aa_wrong_4),
-        (aa_wrong_5),
-        (aa_wrong_6),
-        (aa_wrong_7),
-        (aa_wrong_8),
-        (aa_wrong_9)
+        AA_WRONG_1,
+        AA_WRONG_2,
+        AA_WRONG_3,
+        AA_WRONG_4,
+        AA_WRONG_5,
+        AA_WRONG_6,
+        AA_WRONG_7,
+        AA_WRONG_8,
+        AA_WRONG_9
     ]
 )
 def test_wrong_user_proteins_io(tmpdir, parameters):
@@ -114,11 +114,11 @@ def test_wrong_user_proteins_io(tmpdir, parameters):
 @pytest.mark.parametrize(
     "parameters",
     [
-        (aa_min),
-        (aa_min_gene),
-        (aa_min_dbxref),
-        (aa_min_dbxrefs),
-        (aa_full)
+        AA_MIN,
+        AA_MIN_GENE,
+        AA_MIN_DBXREF,
+        AA_MIN_DBXREFS,
+        AA_FULL
     ]
 )
 def test_user_proteins_io(parameters, tmpdir):

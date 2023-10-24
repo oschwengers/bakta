@@ -186,6 +186,29 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         annotations[bc.INSDC_FEATURE_REPEAT_UNIT_SEQ] = feat['repeat_consensus']
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tPILER-CR\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    if(not cfg.compliant):
+                        i = 0
+                        while i < len(feat['spacers']):
+                            repeat = feat['repeats'][i]
+                            annotations = {
+                                'ID': f"{feat['id']}_repeat_{i+1}"
+                            }
+                            annotations = encode_annotations(annotations)
+                            fh.write(f"{feat['contig']}\tPILER-CR\t{bc.FEATURE_CRISPR_REPEAT}\t{repeat['start']}\t{repeat['stop']}\t.\t{repeat['strand']}\t.\t{annotations}\n")
+                            spacer = feat['spacers'][i]
+                            annotations = {
+                                'ID': f"{feat['id']}_spacer_{i+1}",
+                                'sequence': spacer['sequence']
+                            }
+                            annotations = encode_annotations(annotations)
+                            fh.write(f"{feat['contig']}\tPILER-CR\t{bc.FEATURE_CRISPR_SPACER}\t{spacer['start']}\t{spacer['stop']}\t.\t{spacer['strand']}\t.\t{annotations}\n")
+                            i += 1
+                        repeat = feat['repeats'][i]
+                        annotations = {
+                            'ID': f"{feat['id']}_repeat_{i+1}"
+                        }
+                        annotations = encode_annotations(annotations)
+                        fh.write(f"{feat['contig']}\tPILER-CR\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] is bc.FEATURE_CDS):
                     annotations = {
                         'ID': feat['locus'],

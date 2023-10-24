@@ -3,8 +3,6 @@ import json
 from pathlib import Path
 from subprocess import run
 
-import pytest
-
 from bakta import constants as bc
 
 

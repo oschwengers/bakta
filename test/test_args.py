@@ -1,9 +1,9 @@
-from inspect import Parameter
 import os
-import pytest
 
 from pathlib import Path
 from subprocess import run
+
+import pytest
 
 from .conftest import FILES, SKIP_PARAMETERS
 
