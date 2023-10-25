@@ -270,33 +270,45 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
 
 
 def select_ncrna_class(feature: dict) -> str:
-    if(feature['class'] is None):
+    feature_class = feature['class']
+    if(feature_class is None):
         return bc.INSDC_FEATURE_NC_RNA_CLASS_OTHER
-    elif(feature['class'].id == so.SO_NCRNA_GENE_ANTISENSE.id):
-        return bc.INSDC_FEATURE_NC_RNA_CLASS_ANTISENSE
-    elif(feature['class'].id == so.SO_NCRNA_GENE_RIBOZYME.id):
-        return bc.INSDC_FEATURE_NC_RNA_CLASS_RIBOZYME
-    elif(feature['class'].id == so.SO_NCRNA_GENE_RNASEP.id):
-        return bc.INSDC_FEATURE_NC_RNA_CLASS_RNASEP
     else:
-        return bc.INSDC_FEATURE_NC_RNA_CLASS_OTHER
+        if(isinstance(feature_class, list)):  #  workaround for JSON-imported features
+            feature_class = so.SO(feature_class[0], feature_class[1])
+            feature['class'] = feature_class
+
+        if(feature_class.id == so.SO_NCRNA_GENE_ANTISENSE.id):
+            return bc.INSDC_FEATURE_NC_RNA_CLASS_ANTISENSE
+        elif(feature_class.id == so.SO_NCRNA_GENE_RIBOZYME.id):
+            return bc.INSDC_FEATURE_NC_RNA_CLASS_RIBOZYME
+        elif(feature_class.id == so.SO_NCRNA_GENE_RNASEP.id):
+            return bc.INSDC_FEATURE_NC_RNA_CLASS_RNASEP
+        else:
+            return bc.INSDC_FEATURE_NC_RNA_CLASS_OTHER
 
 
 def select_regulatory_class(feature: dict) -> str:
-    if(feature['class'] is None):
+    feature_class = feature['class']
+    if(feature_class is None):
         return bc.INSDC_FEATURE_REGULATORY_CLASS_OTHER
-    elif(feature['class'].id == so.SO_CIS_REG_ATTENUATOR.id):
-        return bc.INSDC_FEATURE_REGULATORY_CLASS_ATTENUATOR
-    elif(feature['class'].id == so.SO_CIS_REG_RIBOSWITCH.id):
-        return bc.INSDC_FEATURE_REGULATORY_CLASS_RIBOSWITCH
-    elif(feature['class'].id == so.SO_CIS_REG_THERMOMETER.id):
-        return bc.INSDC_FEATURE_REGULATORY_CLASS_RESPONSE_ELEMENT
-    elif(feature['class'].id == so.SO_CIS_REG_RECODING_STIMULATION_REGION.id or feature['class'].id == so.SO_CIS_REG_FRAMESHIFT.id):
-        return bc.INSDC_FEATURE_REGULATORY_CLASS_RECODING_STIMULATORY_REGION
-    elif(feature['class'].id == so.SO_CIS_REG_RIBOSOME_BINDING_SITE.id):
-        return bc.INSDC_FEATURE_REGULATORY_CLASS_RIBOSOME_BINDING_SITE
     else:
-        return bc.INSDC_FEATURE_REGULATORY_CLASS_OTHER
+        if(isinstance(feature_class, list)):  #  workaround for JSON-imported features
+            feature_class = so.SO(feature_class[0], feature_class[1])
+            feature['class'] = feature_class
+
+        if(feature_class.id == so.SO_CIS_REG_ATTENUATOR.id):
+            return bc.INSDC_FEATURE_REGULATORY_CLASS_ATTENUATOR
+        elif(feature_class.id == so.SO_CIS_REG_RIBOSWITCH.id):
+            return bc.INSDC_FEATURE_REGULATORY_CLASS_RIBOSWITCH
+        elif(feature_class.id == so.SO_CIS_REG_THERMOMETER.id):
+            return bc.INSDC_FEATURE_REGULATORY_CLASS_RESPONSE_ELEMENT
+        elif(feature_class.id == so.SO_CIS_REG_RECODING_STIMULATION_REGION.id or feature_class.id == so.SO_CIS_REG_FRAMESHIFT.id):
+            return bc.INSDC_FEATURE_REGULATORY_CLASS_RECODING_STIMULATORY_REGION
+        elif(feature_class.id == so.SO_CIS_REG_RIBOSOME_BINDING_SITE.id):
+            return bc.INSDC_FEATURE_REGULATORY_CLASS_RIBOSOME_BINDING_SITE
+        else:
+            return bc.INSDC_FEATURE_REGULATORY_CLASS_OTHER
 
 
 def revise_product_insdc(product: str):

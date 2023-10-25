@@ -50,7 +50,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                 if('edge' in feat):
                     stop += contig['length']
 
-                if(feat['type'] is bc.FEATURE_T_RNA):
+                if(feat['type'] == bc.FEATURE_T_RNA):
                     annotations = {
                         'ID': feat['locus'],
                         'Name': feat['product'],
@@ -84,7 +84,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         fh.write(f"{feat['contig']}\ttRNAscan-SE\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\ttRNAscan-SE\t{so.SO_TRNA.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
-                elif(feat['type'] is bc.FEATURE_TM_RNA):
+                elif(feat['type'] == bc.FEATURE_TM_RNA):
                     annotations = {
                         'ID': feat['locus'],
                         'Name': feat['product'],
@@ -107,7 +107,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         fh.write(f"{feat['contig']}\tAragorn\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tAragorn\t{so.SO_TMRNA.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
-                elif(feat['type'] is bc.FEATURE_R_RNA):
+                elif(feat['type'] == bc.FEATURE_R_RNA):
                     annotations = {
                         'ID': feat['locus'],
                         'Name': feat['product'],
@@ -131,7 +131,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         fh.write(f"{feat['contig']}\tInfernal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tInfernal\t{so.SO_RRNA.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
-                elif(feat['type'] is bc.FEATURE_NC_RNA):
+                elif(feat['type'] == bc.FEATURE_NC_RNA):
                     annotations = {
                         'ID': feat['locus'],
                         'Name': feat['product'],
@@ -156,7 +156,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         fh.write(f"{feat['contig']}\tInfernal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
                     fh.write(f"{feat['contig']}\tInfernal\t{so.SO_NCRNA_GENE.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
-                elif(feat['type'] is bc.FEATURE_NC_RNA_REGION):
+                elif(feat['type'] == bc.FEATURE_NC_RNA_REGION):
                     annotations = {
                         'ID': feat['id'],
                         'Name': feat['product'],
@@ -209,7 +209,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         }
                         annotations = encode_annotations(annotations)
                         fh.write(f"{feat['contig']}\tPILER-CR\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
-                elif(feat['type'] is bc.FEATURE_CDS):
+                elif(feat['type'] == bc.FEATURE_CDS):
                     annotations = {
                         'ID': feat['locus'],
                         'Name': feat['product'],
@@ -254,7 +254,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                     fh.write(f"{feat['contig']}\tProdigal\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
                     if(bc.FEATURE_SIGNAL_PEPTIDE in feat):
                         write_signal_peptide(fh, feat)
-                elif(feat['type'] is bc.FEATURE_SORF):
+                elif(feat['type'] == bc.FEATURE_SORF):
                     annotations = {
                         'ID': feat['locus'],
                         'Name': feat['product'],
@@ -284,7 +284,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                     fh.write(f"{feat['contig']}\tBakta\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
                     if(bc.FEATURE_SIGNAL_PEPTIDE in feat):
                         write_signal_peptide(fh, feat)
-                elif(feat['type'] is bc.FEATURE_GAP):
+                elif(feat['type'] == bc.FEATURE_GAP):
                     annotations = {
                         'ID': feat['id'],
                         'Name': f"gap ({feat['length']} bp)",

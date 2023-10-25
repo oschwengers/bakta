@@ -23,6 +23,7 @@ Bakta is a tool for the rapid & standardized annotation of bacterial genomes and
 - [Genome Submission](#genome-submission)
 - [Protein bulk annotation](#protein-bulk-annotation)
 - [Genome plots](#genome-plots)
+- [Auxiliary scripts](#auxiliary-scripts)
 - [Web version](#web-version)
 - [Citation](#citation)
 - [FAQ](#faq)
@@ -712,6 +713,15 @@ Currently, there are two types of plots: `features` (the default) and `cog`. In 
 In the `cog` mode, all protein-coding genes (CDS) are colored due to assigned COG functional categories. To better distinguish non-coding genes, these are plotted on an additional 3rd ring.
 
 In addition, both plot types share two innermost GC content and GC skew rings. The first ring represents the GC content per sliding window over the entire sequence(s) in green (`#33a02c`) and red `#e31a1c` representing GC above and below average, respectively. The 2nd ring represents the GC skew in orange (`#fdbf6f`) and blue (`#1f78b4`). The GC skew gives hints on a replicon's replication bubble and hence, on the completeness of the assembly. On a complete & circular bacterial chromosome, you normally see two inflection points at the origin of replication and at its opposite region -> [Wikipedia](https://en.wikipedia.org/wiki/GC_skew)
+
+## Auxiliary scripts
+
+Often, the usage of Bakta is a necessary upfront task followed by deeper analyses implemented in custom scripts. In [scripts](scripts) we'd like to collect & offer a pool of scripts addressing common tasks:
+
+- `collect-annotation-stats.py`: Collect annotation stats for a cohort of genomes and print a condensed `TSV`.
+- `extract-region.py`: Extract genome features within a given genomic range and export them as `GFF3`, `Embl`, `Genbank`, `FAA` and `FFN`
+
+Of course, pull requests are welcome ;-)
 
 ## Web version
 
