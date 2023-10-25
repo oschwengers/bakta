@@ -1,17 +1,26 @@
 #!/usr/bin/python3
 
+import argparse
 import json
 import os
 
 from pathlib import Path
 
-import bakta.utils as bu
+import bakta
+import bakta.constants as bc
 import bakta.io.gff as gff
 import bakta.io.insdc as insdc
 import bakta.io.fasta as fasta
 import bakta.config as cfg
 
-parser = bu.init_parser()
+
+parser = argparse.ArgumentParser(
+    prog=f'extract region',
+    description='Extract genomic region with a given range and exports selected features as GFF3, FAA, FFN, EMBL and Genbank',
+    epilog=f'Version: {bakta.__version__}\nDOI: {bc.BAKTA_DOI}\nURL: github.com/oschwengers/bakta\n\nCitation:\n{bc.BAKTA_CITATION}',
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    add_help=False
+)
 parser.add_argument('genome', metavar='<genome>', help='Bakta genome annotation in JSON format')
 parser.add_argument('--prefix', '-p', action='store', default=None, help='Prefix for output files')
 parser.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
@@ -25,7 +34,6 @@ print('Load annotated genome...')
 genome_path = Path(args.genome).resolve()
 with genome_path.open() as fh:
     genome = json.load(fh)
-
 
 contig_id = args.sequence
 if(contig_id is None):  # take first sequence as default
@@ -44,7 +52,6 @@ for feat in genome['features']:
             features_selected.append(feat)
 features_by_contig = {contig_id: features_selected}  # needed for GFF3 export
 print(f'\t...selected features: {len(features_selected)}')
-
 
 genome['features'] = features_selected
 genome['contigs'] = [sequence for sequence in genome['sequences'] if sequence['id'] == contig_id]
