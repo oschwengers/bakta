@@ -1,3 +1,4 @@
+import concurrent.futures as cf
 import copy
 import logging
 import subprocess as sp
@@ -60,9 +61,10 @@ def predict(genome: dict):
         else:
             gene_finder = pyrodigal.GeneFinder(trainings_info, meta=False, closed=True, mask=True)
         sequences = [contig['sequence'] for contig in linear_contigs]
-        for contig, genes in zip(linear_contigs, map(gene_finder.find_genes, sequences)):
-            cdss_per_sequence = create_cdss(genes, contig)
-            cdss.extend(cdss_per_sequence)
+        with cf.ThreadPoolExecutor(max_workers=cfg.threads) as tpe:
+            for contig, genes in zip(linear_contigs, tpe.map(gene_finder.find_genes, sequences)):
+                cdss_per_sequence = create_cdss(genes, contig)
+                cdss.extend(cdss_per_sequence)
 
     # predict genes on circular replicons (chromosomes/plasmids)
     circular_contigs = [c for c in genome['contigs'] if c['topology'] == bc.TOPOLOGY_CIRCULAR]
@@ -72,9 +74,10 @@ def predict(genome: dict):
         else:
             gene_finder = pyrodigal.GeneFinder(trainings_info, meta=False, closed=False, mask=True)
         sequences = [contig['sequence'] for contig in circular_contigs]
-        for contig, genes in zip(circular_contigs, map(gene_finder.find_genes, sequences)):
-            cdss_per_sequence = create_cdss(genes, contig)
-            cdss.extend(cdss_per_sequence)
+        with cf.ThreadPoolExecutor(max_workers=cfg.threads) as tpe:
+            for contig, genes in zip(circular_contigs, tpe.map(gene_finder.find_genes, sequences)):
+                cdss_per_sequence = create_cdss(genes, contig)
+                cdss.extend(cdss_per_sequence)
 
     log.info('predicted=%i', len(cdss))
     return cdss
