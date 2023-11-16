@@ -244,6 +244,26 @@ def test_replicons_ok(parameters, tmpdir):
 @pytest.mark.parametrize(
     'parameters',
     [
+        (['--regions']),  # not provided
+        (['--regions', '']),  # empty
+        (['--regions', 'foo']),  # not existing
+        (['--regions', 'test/data/empty'])  # empty file
+    ]
+)
+def test_regions_failiing(parameters, tmpdir):
+    # test regions file arguments
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--force', '--skip-plot'] +
+        parameters +
+        SKIP_PARAMETERS +
+        ['test/data/NC_002127.1.fna']
+    )
+    assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
         (['--proteins']),  # not provided
         (['--proteins', '']),  # empty
         (['--proteins', 'foo']),  # not existing
