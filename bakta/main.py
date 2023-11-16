@@ -239,6 +239,12 @@ def main():
             no_revised = feat_cds.revise_translational_exceptions(genome, cdss)
             print(f'\trevised translational exceptions: {no_revised}')
             cdss = [cds for cds in cdss if 'discarded' not in cds]
+        
+        if(cfg.regions):
+            log.debug('import user-provided CDS regions')
+            imported_cdss = feat_cds.import_user_cdss(genome, cfg.regions)
+            print(f'\timported CDS regions: {len(imported_cdss)}')
+            # ToDo: exclude overlapping CDS
 
         if(len(cdss) > 0):
             log.debug('lookup CDS UPS/IPS')
