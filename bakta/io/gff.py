@@ -230,7 +230,12 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         if(feat.get('gene', None)):
                             gene_annotations['gene'] = feat['gene']
                         annotations['Parent'] = gene_id
-                        annotations['inference'] = 'ab initio prediction:Prodigal:2.6'
+                        if(feat.get('source', None) == bc.CDS_SOURCE_USER):
+                            annotations['inference'] = 'EXISTENCE:non-experimental evidence, no additional details recorded'
+                            source = '?'
+                        else:
+                            annotations['inference'] = 'ab initio prediction:Prodigal:2.6'
+                            source = 'Prodigal'
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         annotations['Note'], ec_number = insdc.extract_ec_from_notes_insdc(annotations, 'Note')
                         if(feat.get('pseudo', False)):
@@ -251,7 +256,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         if('Notes' not in annotations):
                             annotations['Note'] = notes
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\tProdigal\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
+                    fh.write(f"{feat['contig']}\t{source}\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
                     if(bc.FEATURE_SIGNAL_PEPTIDE in feat):
                         write_signal_peptide(fh, feat)
                 elif(feat['type'] == bc.FEATURE_SORF):
