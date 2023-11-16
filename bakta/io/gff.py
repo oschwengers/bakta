@@ -221,6 +221,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         annotations['pseudo'] = True
                     if(feat.get('gene', None)):  # add gene annotation if available
                         annotations['gene'] = feat['gene']
+                    source = '?' if feat.get('source', None) == bc.CDS_SOURCE_USER else 'Prodigal'
                     if(cfg.compliant):
                         gene_id = f"{feat['locus']}_gene"
                         gene_annotations = {
@@ -232,10 +233,8 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         annotations['Parent'] = gene_id
                         if(feat.get('source', None) == bc.CDS_SOURCE_USER):
                             annotations['inference'] = 'EXISTENCE:non-experimental evidence, no additional details recorded'
-                            source = '?'
                         else:
                             annotations['inference'] = 'ab initio prediction:Prodigal:2.6'
-                            source = 'Prodigal'
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         annotations['Note'], ec_number = insdc.extract_ec_from_notes_insdc(annotations, 'Note')
                         if(feat.get('pseudo', False)):
@@ -244,7 +243,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         if(ec_number is not None):
                             annotations['ec_number'] = ec_number
                         gene_annotations = encode_annotations(gene_annotations)
-                        fh.write(f"{feat['contig']}\tProdigal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
+                        fh.write(f"{feat['contig']}\t{source}\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     if('exception' in feat):
                         ex = feat['exception']
                         pos = f"{ex['start']}..{ex['stop']}"
