@@ -169,8 +169,12 @@ def detect_feature_overlaps(genome: dict):
         crispr_arrays = contig_crispr_arrays[crispr_array['contig']]
         crispr_arrays.append(crispr_array)
     contig_cdss = {k['id']: [] for k in genome['contigs']}
+    contig_cdss_user_provided = {k['id']: [] for k in genome['contigs']}
     for cds in genome['features'].get(bc.FEATURE_CDS, []):
-        cdss = contig_cdss[cds['contig']]
+        if(cds.get('source', None) == bc.CDS_SOURCE_USER):
+            cdss = contig_cdss_user_provided[cds['contig']]
+        else:
+            cdss = contig_cdss[cds['contig']]
         cdss.append(cds)
     contig_sorfs = {k['id']: [] for k in genome['contigs']}
     for sorf in genome['features'].get(bc.FEATURE_SORF, []):
@@ -217,7 +221,7 @@ def detect_feature_overlaps(genome: dict):
                             ncRNA_region['product'], ncRNA_region['start'], ncRNA_region['stop'], ncRNA_region_overlap['product'], ncRNA_region_overlap['start'], ncRNA_region_overlap['stop'], overlap, ncRNA_region['contig'], ncRNA_region['score'], ncRNA_region_overlap['score']
                         )
 
-        # mark CDS overlapping with tRNAs, tmRNAs, rRNAs, CRISPRs
+        # mark de novo-predicted CDS overlapping with tRNAs, tmRNAs, rRNAs, CRISPRs and user-provided CDS
         for cds in contig_cdss[contig['id']]:
             # tmRNA overlaps
             for tmRNA in contig_tm_rnas[contig['id']]:
@@ -279,6 +283,23 @@ def detect_feature_overlaps(genome: dict):
                         "overlap: CDS (%s/%s) [%i, %i] overlapping CRISPR [%i, %i], %s, contig=%s",
                         cds.get('gene', '-'), cds.get('product', '-'), cds['start'], cds['stop'], crispr['start'], crispr['stop'], overlap, cds['contig']
                     )
+            # user-provided CDS overlaps
+            for cds_user_provided in contig_cdss_user_provided[contig['id']]:
+                if(cds['stop'] < cds_user_provided['start'] or cds['start'] > cds_user_provided['stop']):
+                    continue
+                else:  # overlap -> remove cds
+                    overlap = min(cds['stop'], cds_user_provided['stop']) - max(cds['start'], cds_user_provided['start']) + 1
+                    if(overlap > bc.CDS_MAX_OVERLAPS):
+                        overlap = f"[{max(cds['start'], cds_user_provided['start'])},{min(cds['stop'], cds_user_provided['stop'])}]"
+                        cds['discarded'] = {
+                            'type': bc.DISCARD_TYPE_OVERLAP,
+                            'feature_type': bc.FEATURE_CDS,
+                            'description': f'overlaps {bc.FEATURE_CDS} at {overlap}'
+                        }
+                        log.info(
+                            "overlap: de novo CDS (%s/%s) [%i, %i] overlapping user-provided CDS [%i, %i], %s, contig=%s",
+                            cds.get('gene', '-'), cds.get('product', '-'), cds['start'], cds['stop'], cds_user_provided['start'], cds_user_provided['stop'], overlap, cds['contig']
+                        )
 
         # remove sORF overlapping with tRNAs, tmRNAs, rRNAs, CRISPRs, inframe CDSs, shorter inframe sORFs
         for sorf in contig_sorfs[contig['id']]:
@@ -342,7 +363,21 @@ def detect_feature_overlaps(genome: dict):
                         "overlap: sORF (%s/%s) [%i, %i] overlapping CRISPR [%i, %i], %s, contig=%s",
                         sorf.get('gene', '-'), sorf.get('product', '-'), sorf['start'], sorf['stop'], crispr['start'], crispr['stop'], overlap, sorf['contig']
                     )
-            # CDS overlaps (skipped as most overlaps are filtered in sORF detection)
+            # user-provided CDS overlaps
+            for cds_user_provided in contig_cdss_user_provided[contig['id']]:
+                if(sorf['stop'] < cds_user_provided['start'] or sorf['start'] > cds_user_provided['stop']):
+                    continue
+                else:  # overlap -> remove sorf
+                    overlap = f"[{max(sorf['start'], cds_user_provided['start'])},{min(sorf['stop'], cds_user_provided['stop'])}]"
+                    sorf['discarded'] = {
+                        'type': bc.DISCARD_TYPE_OVERLAP,
+                        'feature_type': bc.FEATURE_CDS,
+                        'description': f'overlaps {bc.FEATURE_CDS} at {overlap}'
+                    }
+                    log.info(
+                        "overlap: sORF (%s/%s) [%i, %i] overlapping user-provided CDS [%i, %i], %s, contig=%s",
+                        sorf.get('gene', '-'), sorf.get('product', '-'), sorf['start'], sorf['stop'], cds_user_provided['start'], cds_user_provided['stop'], overlap, sorf['contig']
+                    )
 
             # sORF overlaps
             for overlap_sorf in contig_sorfs[contig['id']]:

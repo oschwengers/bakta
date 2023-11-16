@@ -244,7 +244,6 @@ def main():
             log.debug('import user-provided CDS regions')
             imported_cdss = feat_cds.import_user_cdss(genome, cfg.regions)
             print(f'\timported CDS regions: {len(imported_cdss)}')
-            # ToDo: exclude overlapping CDS
 
         if(len(cdss) > 0):
             log.debug('lookup CDS UPS/IPS')
