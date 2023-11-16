@@ -203,9 +203,9 @@ def import_user_cdss(genome: dict, import_path: Path):
                         user_cds['type'] = bc.FEATURE_CDS
                         user_cds['source'] = bc.CDS_SOURCE_USER
                         user_cds['contig'] = contig['id']
-                        user_cds['start'] = feature.location.start
+                        user_cds['start'] = feature.location.start + 1
                         user_cds['stop'] = feature.location.end
-                        user_cds['strand'] = bc.STRAND_FORWARD if feature.location == +1 else bc.STRAND_REVERSE
+                        user_cds['strand'] = bc.STRAND_FORWARD if feature.location.strand == +1 else bc.STRAND_REVERSE
                         user_cds['gene'] = None
                         user_cds['product'] = None
                         user_cds['db_xrefs'] = [so.SO_CDS.id]
