@@ -131,7 +131,13 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                 qualifiers['transl_table'] = cfg.translation_table
                 insdc_feature_type = bc.INSDC_FEATURE_CDS
                 inference = []
-                inference.append('ab initio prediction:Prodigal:2.6' if feature['type'] == bc.FEATURE_CDS else f"ab initio prediction:Bakta:{'.'.join(bakta.__version__.split('.')[0:2])}")
+                if(feature['type'] == bc.FEATURE_CDS):
+                    if(feature.get('source', None) == bc.CDS_SOURCE_USER):
+                        inference.append('EXISTENCE:non-experimental evidence, no additional details recorded')
+                    else:
+                        inference.append('ab initio prediction:Prodigal:2.6')
+                else:
+                    inference.append(f"ab initio prediction:Bakta:{'.'.join(bakta.__version__.split('.')[0:2])}")
                 if('ncbi_nrp_id' in feature.get('ups', {})):
                     nrp_id = feature['ups']['ncbi_nrp_id']
                     inference.append(f'similar to AA sequence:{bc.DB_XREF_REFSEQ_NRP}:{nrp_id}')

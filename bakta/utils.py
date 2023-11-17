@@ -91,6 +91,7 @@ def parse_arguments():
     arg_group_annotation.add_argument('--compliant', action='store_true', help='Force Genbank/ENA/DDJB compliance')
     arg_group_annotation.add_argument('--proteins', action='store', default=None, dest='proteins', help='Fasta file of trusted protein sequences for CDS annotation')
     arg_group_annotation.add_argument('--meta', action='store_true', help='Run in metagenome mode. This only affects CDS prediction.')
+    arg_group_annotation.add_argument('--regions', action='store', default=None, help='Path to pre-annotated regions in GFF3 or Genbank format (regions only, no functional annotations).')
 
     arg_group_workflow = parser.add_argument_group('Workflow')
     arg_group_workflow.add_argument('--skip-trna', action='store_true', dest='skip_trna', help='Skip tRNA detection & annotation')

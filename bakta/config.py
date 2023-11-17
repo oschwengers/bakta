@@ -55,6 +55,7 @@ replicons = None
 compliant = None
 user_proteins = None
 meta = None
+regions = None
 
 # workflow configuration
 skip_trna = None
@@ -160,7 +161,7 @@ def setup(args):
         taxon = None
 
     # annotation configurations
-    global complete, prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, gram, replicons, compliant, user_proteins, meta
+    global complete, prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, gram, replicons, compliant, user_proteins, meta, regions
     complete = args.complete
     log.info('complete=%s', complete)
     prodigal_tf = args.prodigal_tf
@@ -232,6 +233,19 @@ def setup(args):
             sys.exit(f'ERROR: replicon table file ({replicons}) not valid!')
     log.info('replicon-table=%s', replicons)
     user_proteins = check_user_proteins(args)
+    regions = args.regions
+    if(regions is not None):
+        try:
+            if(regions == ''):
+                raise ValueError('File path argument must be non-empty')
+            regions_path = Path(args.regions).resolve()
+            check_readability('regions', regions_path)
+            check_content_size('regions', regions_path)
+            regions = regions_path
+        except:
+            log.error('provided regions file not valid! path=%s', regions)
+            sys.exit(f'ERROR: regions file ({regions}) not valid!')
+    log.info('regions=%s', regions)
     
 
     # workflow configurations

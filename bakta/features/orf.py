@@ -48,7 +48,7 @@ def detect_spurious(orfs: Sequence[dict]):
 
 def get_orf_key(orf: dict) -> str:
     """Generate a standardized and unique ORF-like feature key for internal store/analyze/parse/retrieval cycles."""
-    return f"{orf['aa_hexdigest']}-{orf['contig']}-{orf['start']}-{orf['stop']}-{orf['strand']}"
+    return f"{orf['aa_hexdigest']}-{orf['contig']}-{orf['start']}-{orf['stop']}-{orf['strand']}-{orf.get('source', 'internal')}"
 
 
 def get_orf_dictionary(orfs: Sequence[dict]) -> Dict[str, dict]:
