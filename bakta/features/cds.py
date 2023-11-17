@@ -183,55 +183,97 @@ def import_user_cdss(genome: dict, import_path: Path):
         a list of CDS features - with or without functional annotation.
     """
     user_cdss = []
-    # ToDO: implement GFF3 parsing
-    # try:
-    #     with xopen(str(import_path), threads=0) as fh_in:
-    #         for record in SeqIO.parse(fh_in, 'fasta'):
-    #             user_proteins.append(parse_user_protein_sequences_fasta(record))
-    # except Exception as e:
-    #     log.error('provided user proteins file Fasta format not valid!', exc_info=True)
-    #     sys.exit(f'ERROR: User proteins file Fasta format not valid!')
-
     contigs_by_original_id = {c['orig_id']: c for c in genome['contigs']}
-    try:
-        with xopen(str(import_path), threads=0) as fh_in:
-            for record in SeqIO.parse(fh_in, 'genbank'):
-                for feature in record.features:
-                    if(feature.type.lower() == 'cds'  and  'pseudo' not in feature.qualifiers and  bc.INSDC_FEATURE_PSEUDOGENE not in feature.qualifiers):
-                        contig = contigs_by_original_id[record.id]
-                        user_cds = OrderedDict()
-                        user_cds['type'] = bc.FEATURE_CDS
-                        user_cds['source'] = bc.CDS_SOURCE_USER
-                        user_cds['contig'] = contig['id']
-                        user_cds['start'] = feature.location.start + 1
-                        user_cds['stop'] = feature.location.end
-                        user_cds['strand'] = bc.STRAND_FORWARD if feature.location.strand == +1 else bc.STRAND_REVERSE
-                        user_cds['gene'] = None
-                        user_cds['product'] = None
-                        user_cds['db_xrefs'] = [so.SO_CDS.id]
-                        user_cds['frame'] = (user_cds['start'] - 1) % 3 + 1 if user_cds['strand'] == bc.STRAND_FORWARD else (contig['length'] - user_cds['stop']) % 3 + 1
-                        try:
-                            nt = bu.extract_feature_sequence(user_cds, contig)
-                            user_cds['nt'] = nt
-                        except:
-                            log.error('user-provided CDS out of range! contig=%s, start=%i, stop=%i', user_cds['contig'], user_cds['start'], user_cds['stop'])
-                            raise ValueError(f"User-provided CDS out of range! contig={user_cds['contig']}, start={user_cds['start']}, stop={user_cds['stop']}")
-                        dna_seq = Seq(nt)
-                        try:
-                            aa = str(dna_seq.translate(table=cfg.translation_table, cds=True))
-                        except:
-                            log.error('user-provided CDS could not be translated into a valid amino acid sequence! contig=%s, start=%i, stop=%i, cds=%s', user_cds['contig'], user_cds['start'], user_cds['stop'], nt)
-                            raise ValueError(f"User-provided CDS could not be translated into a valid amino acid sequence! contig={user_cds['contig']}, start={user_cds['start']}, stop={user_cds['stop']}, cds={nt}")
-                        user_cds['aa'] = aa
-                        user_cds['aa_digest'], user_cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
-                        log.info(
-                            'user-provided CDS: contig=%s, start=%i, stop=%i, strand=%s, nt=[%s..%s], aa=[%s..%s]',
-                            user_cds['contig'], user_cds['start'], user_cds['stop'], user_cds['strand'], nt[:10], nt[-10:], aa[:10], aa[-10:]
-                        )
-                        user_cdss.append(user_cds)
-    except Exception as e:
-        log.error('user-provided regions/features file GenBank format not valid!', exc_info=True)
-        sys.exit(f'ERROR: User-provided regions/features file GenBank format not valid!')
+    file_suffix = import_path.suffix.lower()
+    if(file_suffix in ['.gff', '.gff3']):
+        try:
+            with xopen(str(import_path), threads=0) as fh_in:
+                skip_lines = False
+                for line in  fh_in:
+                    line = line.strip()
+                    if(line == '##FASTA'):
+                        skip_lines = True
+                    elif(skip_lines  or  line[0] == '#'):
+                        continue
+                    else:
+                        contig_id, tool, feature_type, start, stop, score, strand, phase, attributes = line.split('\t')
+                        if(feature_type.lower() == 'cds'):
+                            contig = contigs_by_original_id[contig_id]
+                            user_cds = OrderedDict()
+                            user_cds['type'] = bc.FEATURE_CDS
+                            user_cds['source'] = bc.CDS_SOURCE_USER
+                            user_cds['contig'] = contig['id']
+                            user_cds['start'] = int(start)
+                            user_cds['stop'] = int(stop)
+                            user_cds['strand'] = strand
+                            user_cds['gene'] = None
+                            user_cds['product'] = None
+                            user_cds['db_xrefs'] = [so.SO_CDS.id]
+                            user_cds['frame'] = (user_cds['start'] - 1) % 3 + 1 if user_cds['strand'] == bc.STRAND_FORWARD else (contig['length'] - user_cds['stop']) % 3 + 1
+                            try:
+                                nt = bu.extract_feature_sequence(user_cds, contig)
+                                user_cds['nt'] = nt
+                            except:
+                                log.error('user-provided CDS out of range! contig=%s, start=%i, stop=%i', user_cds['contig'], user_cds['start'], user_cds['stop'])
+                                raise ValueError(f"User-provided CDS out of range! contig={user_cds['contig']}, start={user_cds['start']}, stop={user_cds['stop']}")
+                            try:
+                                dna_seq = Seq(nt)
+                                aa = str(dna_seq.translate(table=cfg.translation_table, cds=True))
+                            except:
+                                log.error('user-provided CDS could not be translated into a valid amino acid sequence! contig=%s, start=%i, stop=%i, cds=%s', user_cds['contig'], user_cds['start'], user_cds['stop'], nt)
+                                raise ValueError(f"User-provided CDS could not be translated into a valid amino acid sequence! contig={user_cds['contig']}, start={user_cds['start']}, stop={user_cds['stop']}, cds={nt}")
+                            user_cds['aa'] = aa
+                            user_cds['aa_digest'], user_cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
+                            log.info(
+                                'user-provided CDS: contig=%s, start=%i, stop=%i, strand=%s, nt=[%s..%s], aa=[%s..%s]',
+                                user_cds['contig'], user_cds['start'], user_cds['stop'], user_cds['strand'], nt[:10], nt[-10:], aa[:10], aa[-10:]
+                            )
+                            user_cdss.append(user_cds)
+        except Exception as e:
+            log.error('user-provided regions/features file GFF3 format not valid!', exc_info=True)
+            sys.exit(f'ERROR: User-provided regions/features file GFF3 format not valid!')
+    elif(file_suffix in ['.gb', '.genbank', '.gbk', '.gbff']):
+        try:
+            with xopen(str(import_path), threads=0) as fh_in:
+                for record in SeqIO.parse(fh_in, 'genbank'):
+                    for feature in record.features:
+                        if(feature.type.lower() == 'cds'  and  'pseudo' not in feature.qualifiers and  bc.INSDC_FEATURE_PSEUDOGENE not in feature.qualifiers):
+                            contig = contigs_by_original_id[record.id]
+                            user_cds = OrderedDict()
+                            user_cds['type'] = bc.FEATURE_CDS
+                            user_cds['source'] = bc.CDS_SOURCE_USER
+                            user_cds['contig'] = contig['id']
+                            user_cds['start'] = feature.location.start + 1
+                            user_cds['stop'] = feature.location.end
+                            user_cds['strand'] = bc.STRAND_FORWARD if feature.location.strand == +1 else bc.STRAND_REVERSE
+                            user_cds['gene'] = None
+                            user_cds['product'] = None
+                            user_cds['db_xrefs'] = [so.SO_CDS.id]
+                            user_cds['frame'] = (user_cds['start'] - 1) % 3 + 1 if user_cds['strand'] == bc.STRAND_FORWARD else (contig['length'] - user_cds['stop']) % 3 + 1
+                            try:
+                                nt = bu.extract_feature_sequence(user_cds, contig)
+                                user_cds['nt'] = nt
+                            except:
+                                log.error('user-provided CDS out of range! contig=%s, start=%i, stop=%i', user_cds['contig'], user_cds['start'], user_cds['stop'])
+                                raise ValueError(f"User-provided CDS out of range! contig={user_cds['contig']}, start={user_cds['start']}, stop={user_cds['stop']}")
+                            dna_seq = Seq(nt)
+                            try:
+                                aa = str(dna_seq.translate(table=cfg.translation_table, cds=True))
+                            except:
+                                log.error('user-provided CDS could not be translated into a valid amino acid sequence! contig=%s, start=%i, stop=%i, cds=%s', user_cds['contig'], user_cds['start'], user_cds['stop'], nt)
+                                raise ValueError(f"User-provided CDS could not be translated into a valid amino acid sequence! contig={user_cds['contig']}, start={user_cds['start']}, stop={user_cds['stop']}, cds={nt}")
+                            user_cds['aa'] = aa
+                            user_cds['aa_digest'], user_cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
+                            log.info(
+                                'user-provided CDS: contig=%s, start=%i, stop=%i, strand=%s, nt=[%s..%s], aa=[%s..%s]',
+                                user_cds['contig'], user_cds['start'], user_cds['stop'], user_cds['strand'], nt[:10], nt[-10:], aa[:10], aa[-10:]
+                            )
+                            user_cdss.append(user_cds)
+        except Exception as e:
+            log.error('user-provided regions/features file GenBank format not valid!', exc_info=True)
+            sys.exit(f'ERROR: User-provided regions/features file GenBank format not valid!')
+    else:
+        log.warn('user-provided regions/features file suffix not detected! suffix=%s, path=%s', file_suffix, str(import_path))
     
     return user_cdss
 
