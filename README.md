@@ -228,7 +228,7 @@ NODE_5 | `` |  `-` | -
 
 #### User-provided regions
 
-Bakta accepts pre-annotated, user-provided feature regions via `--regions` in either GFF3 or GenBank format. These features supersede all de novo-predicted regions, but are equally subject to the internal functional annotation process. Currently, only `CDS` are supported. If you would like to provide custom functional annotations, you can provide these via `--proteins` which is described in the following section.
+Bakta accepts pre-annotated, user-provided feature regions via `--regions` in either GFF3 or GenBank format. These regions supersede all de novo-predicted regions, but are equally subject to the internal functional annotation process. Currently, only `CDS` are supported. A maximum overlap with de novo-predicted CDS of 30 bp is allowed. If you would like to provide custom functional annotations, you can provide these via `--proteins` which is described in the following section.
 
 #### User-provided protein sequences
 
