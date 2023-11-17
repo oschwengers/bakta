@@ -37,12 +37,21 @@ def test_bakta_plasmid(regions, tmpdir):
     assert results is not None
     cdss = [feat for feat in results['features'] if feat['type'] == 'cds']
     assert len(cdss) == 3
-    for cds in cdss:
-        if(cds['strand'] == '+'  and  cds['stop'] == 736):  # test case 1: alternative downstream start codon +[32,736] superseding de novo-predicted CDS +[2,736]
-            assert cds['start'] != 2  # de novo-predicted CDS start
-            assert cds['start'] == 32  # user-provided CDS start
-        elif(cds['strand'] == '-'  and  cds['start'] == 1348):  # test case 2: alternative downstream start codon -[1348,2229] superseding de novo-predicted CDS -[1348,2388]
-            assert cds['stop'] != 2388  # de novo-predicted CDS start
-            assert cds['stop'] == 2229  # user-provided CDS start
-        elif(cds['strand'] == '+'  and  cds['start'] == 981):  # test case 3: user-provided CDS +[981,1121] overlapping de novo-predicted CDS -[971,1351]
-            assert cds['stop'] == 1121  # user-provided overlapping CDS -> de novo-predicted was filtered-out
+
+    # test case 1: alternative downstream start codon +[32,736] superseding de novo-predicted CDS +[2,736]
+    provided_cds_1 = [cds for cds in cdss if cds['start'] == 32 and cds['stop'] == 736 and cds['strand'] == '+']
+    assert len(provided_cds_1) == 1
+    denovo_cds_1 = [cds for cds in cdss if cds['start'] == 2 and cds['stop'] == 736 and cds['strand'] == '+']
+    assert len(denovo_cds_1) == 0  # de novo-predicted was filtered-out
+
+    # test case 2: alternative downstream start codon -[1348,2229] superseding de novo-predicted CDS -[1348,2388]
+    provided_cds_2 = [cds for cds in cdss if cds['start'] == 1348 and cds['stop'] == 2229 and cds['strand'] == '-']
+    assert len(provided_cds_2) == 1
+    denovo_cds_2 = [cds for cds in cdss if cds['start'] == 1348 and cds['stop'] == 2388 and cds['strand'] == '-']
+    assert len(denovo_cds_2) == 0  # de novo-predicted was filtered-out
+
+    # test case 3: user-provided CDS +[981,1121] overlapping de novo-predicted CDS -[971,1351]
+    provided_cds_3 = [cds for cds in cdss if cds['start'] == 981 and cds['stop'] == 1121 and cds['strand'] == '+']
+    assert len(provided_cds_3) == 1
+    denovo_cds_3 = [cds for cds in cdss if cds['start'] == 971 and cds['stop'] == 1351 and cds['strand'] == '-']
+    assert len(denovo_cds_3) == 0  # de novo-predicted was filtered-out
