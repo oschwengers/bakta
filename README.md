@@ -226,9 +226,13 @@ NODE_3 | p2 | `p`  |  `c` | `pXYZ2`
 NODE_4 | special-contig-name-xyz |  `-` | -
 NODE_5 | `` |  `-` | -
 
-#### User provided protein sequences
+#### User-provided regions
 
-Bakta accepts user provided trusted protein sequences via `--proteins` in either GenBank (CDS features) or Fasta format. Using the Fasta format, each reference sequence can be provided in a short or long format:
+Bakta accepts pre-annotated, user-provided feature regions via `--regions` in either GFF3 or GenBank format. These features supersede all de novo-predicted regions, but are equally subject to the internal functional annotation process. Currently, only `CDS` are supported. If you would like to provide custom functional annotations, you can provide these via `--proteins` which is described in the following section.
+
+#### User-provided protein sequences
+
+Bakta accepts user-provided trusted protein sequences via `--proteins` in either GenBank (CDS features) or Fasta format which are used in the functional annotation process. Using the Fasta format, each reference sequence can be provided in a short or long format:
 
 ```bash
 # short:
@@ -324,7 +328,7 @@ Exemplary annotation result files for several genomes (mostly ESKAPE species) ar
 usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH] [--prefix PREFIX] [--output OUTPUT]
              [--genus GENUS] [--species SPECIES] [--strain STRAIN] [--plasmid PLASMID]
              [--complete] [--prodigal-tf PRODIGAL_TF] [--translation-table {11,4}] [--gram {+,-,?}] [--locus LOCUS]
-             [--locus-tag LOCUS_TAG] [--keep-contig-headers] [--replicons REPLICONS] [--compliant] [--proteins PROTEINS] [--meta]
+             [--locus-tag LOCUS_TAG] [--keep-contig-headers] [--replicons REPLICONS] [--compliant] [--proteins PROTEINS] [--meta] [--regions REGIONS]
              [--skip-trna] [--skip-tmrna] [--skip-rrna] [--skip-ncrna] [--skip-ncrna-region]
              [--skip-crispr] [--skip-cds] [--skip-pseudo] [--skip-sorf] [--skip-gap] [--skip-ori] [--skip-plot]
              [--help] [--verbose] [--debug] [--threads THREADS] [--tmp-dir TMP_DIR] [--version]
@@ -368,6 +372,7 @@ Annotation:
   --compliant           Force Genbank/ENA/DDJB compliance
   --proteins PROTEINS   Fasta file of trusted protein sequences for CDS annotation
   --meta                Run in metagenome mode. This only affects CDS prediction.
+  --regions REGIONS     Path to pre-annotated regions in GFF3 or Genbank format (regions only, no functional annotations).
 
 Workflow:
   --skip-trna           Skip tRNA detection & annotation
@@ -422,7 +427,7 @@ ncRNA (cis-regulatory) region types:
 
 ### Coding sequences
 
-The structural prediction is conducted via Pyrodigal and complemented by a custom detection of sORF < 30 aa.
+The structural prediction is conducted via Pyrodigal and complemented by a custom detection of sORF < 30 aa. In addition, superseding regions of pre-predicted CDS can be provided via `--regions`.
 
 To rapidly identify known protein sequences with exact sequence matches and to conduct a comprehensive annotations, Bakta utilizes a compact read-only SQLite database comprising protein sequence digests and pre-assigned annotations for millions of known protein sequences and clusters.
 
@@ -435,22 +440,23 @@ Conceptual terms:
 
 **CDS**:
 
-1. Prediction via Pyrodigal respecting sequences' completeness (distinct prediction for complete replicons and uncompleted contigs)
+1. De novo-prediction via Pyrodigal respecting sequences' completeness (distinct prediction for complete replicons and uncompleted contigs)
 2. Discard spurious CDS via AntiFam
 3. Detect translational exceptions (selenocysteines)
-4. Detection of UPSs via MD5 digests and lookup of related IPS and PCS
-5. Sequence alignments of remainder via Diamond vs. PSC (query/subject coverage=0.8, identity=0.5)
-6. Assignment to UniRef90 or UniRef50 clusters if alignment hits achieve identities larger than 0.9 or 0.5, respectively
-7. Execution of expert systems:
+4. Import of superseding user-provided CDS regions (optional)
+5. Detection of UPSs via MD5 digests and lookup of related IPS and PCS
+6. Sequence alignments of remainder via Diamond vs. PSC (query/subject coverage=0.8, identity=0.5)
+7. Assignment to UniRef90 or UniRef50 clusters if alignment hits achieve identities larger than 0.9 or 0.5, respectively
+8. Execution of expert systems:
    - AMR: AMRFinderPlus
    - Expert proteins: NCBI BlastRules, VFDB
    - User proteins (optionally via `--proteins <Fasta/GenBank>`)
-8. Prediction of signal peptides (optionally via `--gram <+/->`)
-9. Detection of pseudogenes:
+9. Prediction of signal peptides (optionally via `--gram <+/->`)
+10. Detection of pseudogenes:
    1. Search for reference PCSs using `hypothetical` CDS as seed sequences
    2. Translated alignment (blastx) of reference PCSs against up-/downstream-elongated CDS regions
    3. Analysis of translated alignments and detection of pseudogenization causes & effects
-10. Combination of IPS, PSC, PSCC and expert system information favouring more specific annotations and avoiding redundancy
+11. Combination of IPS, PSC, PSCC and expert system information favouring more specific annotations and avoiding redundancy
 
 CDS without IPS or PSC hits as well as those without gene symbols or product descriptions different from `hypothetical` will be marked as `hypothetical`.
 
