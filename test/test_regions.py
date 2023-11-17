@@ -6,15 +6,20 @@ from subprocess import run
 
 import pytest
 
-import bakta.constants as bc
-
 from .conftest import FILES, SKIP_PARAMETERS
 
 
-def test_bakta_plasmid(tmpdir):
+@pytest.mark.parametrize(
+    'regions',
+    [
+        ('NC_002127.1-region.gff3'),  # GFF3
+        ('NC_002127.1-region.gbff')  # Genbank
+    ]
+)
+def test_bakta_plasmid(regions, tmpdir):
     # full test on plasmid
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--force', '--prefix', 'test', '--regions', 'test/data/NC_002127.1-region.gbff'] +
+        ['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--force', '--prefix', 'test', '--regions', f'test/data/{regions}'] +
         ['test/data/NC_002127.1.fna.gz']
     )
     assert proc.returncode == 0
