@@ -38,6 +38,9 @@ def test_bakta_plasmid(regions, tmpdir):
     cdss = [feat for feat in results['features'] if feat['type'] == 'cds']
     assert len(cdss) == 3
     for cds in cdss:
-        if(cds['stop'] == 736):
+        if(cds['strand'] == '+'  and  cds['stop'] == 736):  # test case 1: alternative downstream start codon from 2 to 32 on + strand
             assert cds['start'] != 2  # de novo-predicted CDS start
             assert cds['start'] == 32  # user-provided CDS start
+        elif(cds['strand'] == '-'  and  cds['start'] == 1348):  # test case 2: alternative downstream start codon from 2388 to 2229 on - strand
+            assert cds['stop'] != 2388  # de novo-predicted CDS start
+            assert cds['stop'] == 2229  # user-provided CDS start
