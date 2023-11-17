@@ -38,9 +38,11 @@ def test_bakta_plasmid(regions, tmpdir):
     cdss = [feat for feat in results['features'] if feat['type'] == 'cds']
     assert len(cdss) == 3
     for cds in cdss:
-        if(cds['strand'] == '+'  and  cds['stop'] == 736):  # test case 1: alternative downstream start codon from 2 to 32 on + strand
+        if(cds['strand'] == '+'  and  cds['stop'] == 736):  # test case 1: alternative downstream start codon +[32,736] superseding de novo-predicted CDS +[2,736]
             assert cds['start'] != 2  # de novo-predicted CDS start
             assert cds['start'] == 32  # user-provided CDS start
-        elif(cds['strand'] == '-'  and  cds['start'] == 1348):  # test case 2: alternative downstream start codon from 2388 to 2229 on - strand
+        elif(cds['strand'] == '-'  and  cds['start'] == 1348):  # test case 2: alternative downstream start codon -[1348,2229] superseding de novo-predicted CDS -[1348,2388]
             assert cds['stop'] != 2388  # de novo-predicted CDS start
             assert cds['stop'] == 2229  # user-provided CDS start
+        elif(cds['strand'] == '+'  and  cds['start'] == 981):  # test case 3: user-provided CDS +[981,1121] overlapping de novo-predicted CDS -[971,1351]
+            assert cds['stop'] == 1121  # user-provided overlapping CDS -> de novo-predicted was filtered-out

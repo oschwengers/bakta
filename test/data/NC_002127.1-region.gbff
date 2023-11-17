@@ -11,22 +11,16 @@ FEATURES             Location/Qualifiers
      CDS             32..736
                      /locus_tag="DOGAIA_00005"
                      /product="alternative downstream start codon test case 1"
-                     /translation="MVACSSASSASSFSSSVRLWLFMNPAMLSAVCCCL
-                     FIFLFSPFCLSSASCDYIAHHFSTVLPPVFCRRTFQSDNTVTAKKQQCFVGNSNLQTGQ
-                     DVQLLYRAYMHAITITLVRASPRHPMSDTEPCFMTKRSGSNTRRRAISRPVRLTAEEDQ
-                     EIRKRAAECGKTVSGFLRAAALGKKVNSLTDDRVLKEVMRLGALQKKLFIDGKRVGDRE
-                     YAEVLIAITEYHRALLSRLMAD"
                      /codon_start=1
                      /transl_table=11
-     CDS             complement(1348..2388)
+     CDS             981..1121
+                     /locus_tag="DOGAIA_00006"
+                     /product="additional overlapping CDS test case 3"
+                     /codon_start=1
+                     /transl_table=11
+     CDS             complement(1348..2229)
                      /locus_tag="DOGAIA_00015"
                      /product="alternative downstream start codon test case 2"
-                     /translation="MPSGGNTTIGRASGQNNTYFDEIALIIKENCLYSDTKNFEYTIPK
-                     FSDDDRANLFEFLSEEGITITEDNNNDPNCKHQYIMTTSNGDRVRAKIYKRGSIQFQGK
-                     YLQIASLINDFMCSILNMKEIVEQKNKEFNVDIKKETIESELHSKLPKSIDKIHEDIKK
-                     QLSCSLIMKKIDVEMEDYSTYCFSALRAIEGFIYQILNDVCNPSSSKNLGEYFTENKPK
-                     YIIREIHQETINGEIAEVLCECYTYWHENRHGLFHMKPGIADTKTINKLESIAIIDTVC
-                     QLIDGGVARLKL"
                      /codon_start=1
                      /transl_table=11
 

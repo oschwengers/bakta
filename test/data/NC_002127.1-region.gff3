@@ -8,6 +8,7 @@
 ##sequence-region NC_002127.1 1 3306
 NC_002127.1	Bakta	region	1	3306	.	+	.	ID=NC_002127.1;Name=NC_002127.1;Is_circular=true
 NC_002127.1	?	CDS	32	736	.	+	0	ID=DOGAIA_00005;NAME=alternative downstream start codon test case 1
+NC_002127.1	?	CDS	981	1121	.	+	0	ID=DOGAIA_00006;NAME=additional overlapping CDS test case 3
 NC_002127.1	?	CDS	1348	2229	.	-	0	ID=DOGAIA_00015;NAME=alternative downstream start codon test case 2
 ##FASTA
 >NC_002127.1
