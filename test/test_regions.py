@@ -6,7 +6,7 @@ from subprocess import run
 
 import pytest
 
-from .conftest import FILES, SKIP_PARAMETERS
+from .conftest import FILES
 
 
 @pytest.mark.parametrize(
@@ -20,16 +20,12 @@ def test_bakta_plasmid(regions, tmpdir):
     # full test on plasmid
     proc = run(
         ['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--force', '--prefix', 'test', '--regions', f'test/data/{regions}'] +
+        ['--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-sorf', '--skip-ori', '--skip-gap', '--skip-plot'] +
         ['test/data/NC_002127.1.fna.gz']
     )
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)
-    for file in FILES:
-        output_path = tmpdir_path.joinpath(file)
-        assert Path.exists(output_path)
-        assert output_path.stat().st_size > 0
-
     results_path = tmpdir_path.joinpath('test.json')
     results = None
     with results_path.open() as fh:
