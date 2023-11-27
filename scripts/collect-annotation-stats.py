@@ -1,5 +1,15 @@
 #!/usr/bin/python3
 
+##################################################################################
+#
+# This script collects annotation information from multiple JSON files
+# and exports key metrics as TSV
+#
+# Thanks to Ahmed M. A. Elsherbini (https://github.com/AhmedElsherbini), for contributing.
+#
+##################################################################################
+
+
 import argparse
 import json
 import os

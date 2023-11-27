@@ -1,5 +1,13 @@
 #!/usr/bin/python3
 
+##################################################################################
+#
+# This script extract requested subregions of a genome
+# and exports contained features as regular Bakta outputs.
+#
+##################################################################################
+
+
 import argparse
 import json
 import os
