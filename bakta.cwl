@@ -99,14 +99,18 @@ inputs:
     id: keep_contig_headers
     inputBinding: {prefix: --keep-contig-headers}
     type: boolean?
-  - doc: Replicon information table (tsv/csv)
-    id: replicons
-    inputBinding: {prefix: --replicons}
-    type: File?
   - doc: Force Genbank/ENA/DDJB compliance
     id: compliant
     inputBinding: {prefix: --compliant}
     type: boolean?
+  - doc: Replicon information table (tsv/csv)
+    id: replicons
+    inputBinding: {prefix: --replicons}
+    type: File?
+  - doc: Genbank/GFF3 file of trusted regions for pre-detected feature coordinates
+    id: regions
+    inputBinding: {prefix: --regions}
+    type: File?
   - doc: Fasta file of trusted protein sequences for CDS annotation
     id: proteins
     inputBinding: {prefix: --proteins}
