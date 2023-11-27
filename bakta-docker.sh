@@ -69,7 +69,7 @@ CMD=$(cat <<-END
     -v $DB:$DB:ro \
     -v $OUTPUT:$OUTPUT:rw \
     -v $GENOME:$GENOME:ro \
-    $DOCKER_IMAGE ${args[@]}
+    $DOCKER_IMAGE --force ${args[@]}
 END
 )
 echo "* Commandline: " $CMD
