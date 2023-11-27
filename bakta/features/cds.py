@@ -205,7 +205,10 @@ def import_user_cdss(genome: dict, import_path: Path):
                     else:
                         contig_id, tool, feature_type, start, stop, score, strand, phase, attributes = line.split('\t')
                         if(feature_type.lower() == 'cds'):
-                            contig = contigs_by_original_id[contig_id]
+                            contig = contigs_by_original_id.get(contig_id, None)
+                            if(contig is None):
+                                log.error('user-provided CDS: No contig found for id=%s', contig_id)
+                                raise Exception(f'user-provided CDS: No contig found for id={contig_id}')
                             user_cds = create_cds(contig, int(start), int(stop), strand, '', '')
                             user_cds['source'] = bc.CDS_SOURCE_USER
                             try:
@@ -236,7 +239,10 @@ def import_user_cdss(genome: dict, import_path: Path):
                 for record in SeqIO.parse(fh_in, 'genbank'):
                     for feature in record.features:
                         if(feature.type.lower() == 'cds'  and  'pseudo' not in feature.qualifiers and  bc.INSDC_FEATURE_PSEUDOGENE not in feature.qualifiers):
-                            contig = contigs_by_original_id[record.id]
+                            contig = contigs_by_original_id.get(record.id, None)
+                            if(contig is None):
+                                log.error('user-provided CDS: No contig found for id=%s', record.id)
+                                raise Exception(f'user-provided CDS: No contig found for id={record.id}')
                             strand = bc.STRAND_FORWARD if feature.location.strand == +1 else bc.STRAND_REVERSE
                             user_cds = create_cds(contig, feature.location.start + 1, feature.location.end, strand, '', '')
                             user_cds['source'] = bc.CDS_SOURCE_USER
@@ -244,14 +250,14 @@ def import_user_cdss(genome: dict, import_path: Path):
                                 nt = bu.extract_feature_sequence(user_cds, contig)
                                 user_cds['nt'] = nt
                             except:
-                                log.error('user-provided CDS out of range! contig=%s, start=%i, stop=%i', user_cds['contig'], user_cds['start'], user_cds['stop'])
+                                log.error('user-provided CDS: CDS out of range! contig=%s, start=%i, stop=%i', user_cds['contig'], user_cds['start'], user_cds['stop'])
                                 raise ValueError(f"User-provided CDS out of range! contig={user_cds['contig']}, start={user_cds['start']}, stop={user_cds['stop']}")
                             try:
                                 aa = str(Seq(nt).translate(table=cfg.translation_table, cds=True))
                                 user_cds['aa'] = aa
                                 user_cds['aa_digest'], user_cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
                             except:
-                                log.error('user-provided CDS could not be translated into a valid amino acid sequence! contig=%s, start=%i, stop=%i, cds=%s', user_cds['contig'], user_cds['start'], user_cds['stop'], nt)
+                                log.error('user-provided CDS: CDS could not be translated into a valid amino acid sequence! contig=%s, start=%i, stop=%i, cds=%s', user_cds['contig'], user_cds['start'], user_cds['stop'], nt)
                                 raise ValueError(f"User-provided CDS could not be translated into a valid amino acid sequence! contig={user_cds['contig']}, start={user_cds['start']}, stop={user_cds['stop']}, cds={nt}")
                             
                             log.info(
@@ -260,7 +266,7 @@ def import_user_cdss(genome: dict, import_path: Path):
                             )
                             user_cdss.append(user_cds)
         except Exception as e:
-            log.error('user-provided regions/features file GenBank format not valid!', exc_info=True)
+            log.error('user-provided CDS: regions/features file GenBank format not valid!', exc_info=True)
             sys.exit(f'ERROR: User-provided regions/features file GenBank format not valid!')
     else:
         log.warn('user-provided regions/features file suffix not detected! suffix=%s, path=%s', file_suffix, str(import_path))
