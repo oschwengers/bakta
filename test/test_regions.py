@@ -9,6 +9,16 @@ import pytest
 from .conftest import FILES
 
 
+def test_wrong_seq_id_failiing(tmpdir):
+    # CDS test on plasmid
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--force', '--prefix', 'test', '--regions', f'test/data/NC_002127.1-region.wrong-ids.gff3'] +
+        ['--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-sorf', '--skip-ori', '--skip-gap', '--skip-plot'] +
+        ['test/data/NC_002127.1.fna.gz']
+    )
+    assert proc.returncode != 0
+
+
 @pytest.mark.parametrize(
     'regions',
     [
@@ -16,8 +26,8 @@ from .conftest import FILES
         ('NC_002127.1-region.gbff')  # Genbank
     ]
 )
-def test_bakta_plasmid(regions, tmpdir):
-    # full test on plasmid
+def test_regions_plasmid(regions, tmpdir):
+    # CDS test on plasmid
     proc = run(
         ['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--force', '--prefix', 'test', '--regions', f'test/data/{regions}'] +
         ['--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-sorf', '--skip-ori', '--skip-gap', '--skip-plot'] +
