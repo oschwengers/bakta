@@ -26,10 +26,17 @@ def test_wrong_seq_id_failiing(tmpdir):
         ('NC_002127.1-region.gbff')  # Genbank
     ]
 )
-def test_regions_plasmid(regions, tmpdir):
+@pytest.mark.parametrize(
+    'keep_contig_headers',
+    [
+        ([]),  # autogenerate contig ids
+        (['--keep-contig-headers'])  # keep contig headers
+    ]
+)
+def test_regions_plasmid(regions, keep_contig_headers, tmpdir):
     # CDS test on plasmid
     proc = run(
-        ['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--force', '--prefix', 'test', '--regions', f'test/data/{regions}'] +
+        ['bin/bakta', '--db', 'test/db', '--verbose', '--output', tmpdir, '--force', '--prefix', 'test', '--regions', f'test/data/{regions}'] + keep_contig_headers +
         ['--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-sorf', '--skip-ori', '--skip-gap', '--skip-plot'] +
         ['test/data/NC_002127.1.fna.gz']
     )

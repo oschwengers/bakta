@@ -461,6 +461,7 @@ def qc_contigs(contigs: Sequence[dict], replicons: Dict[str, dict]) -> Tuple[Seq
                     if(replicon['replicon_type'] != bc.REPLICON_CONTIG):
                         contig['complete'] = True
                     if(not cfg.keep_contig_headers):
+                        contig['orig_id'] = contig['id']
                         contig['id'] = replicon['new_locus_id'] if replicon['new_locus_id'] else contig['simple_id']
                     contig.pop('simple_id')
             
