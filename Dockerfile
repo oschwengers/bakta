@@ -11,7 +11,7 @@ RUN apk update && apk add wget tar bash \
     && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.32-r0/glibc-2.32-r0.apk \
     && apk add glibc-2.32-r0.apk \
     && rm glibc-2.32-r0.apk \
-    && wget -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
+    && wget --no-iri -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
     && touch /root/.bashrc \
     && ./bin/micromamba shell init -s bash -p /opt/conda  \
     && cp /root/.bashrc /opt/conda/bashrc
