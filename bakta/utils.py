@@ -407,7 +407,7 @@ def qc_contigs(contigs: Sequence[dict], replicons: Dict[str, dict]) -> Tuple[Seq
                 contig['complete'] = True
                 contig['topology'] = bc.TOPOLOGY_CIRCULAR
                 log.debug('qc: detected Unicycler circular topology via description: id=%s, description=%s', contig['id'], contig['description'])
-            elif('complete' in contig_description):  # detection of public/described sequences
+            elif('complete' in contig_description and 'complete=false' not in contig_description):  # detection of public/described sequences
                 contig['complete'] = True
                 contig['topology'] = bc.TOPOLOGY_CIRCULAR
                 log.debug('qc: detected complete replicon via description: id=%s, description=%s', contig['id'], contig['description'])
