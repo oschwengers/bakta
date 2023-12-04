@@ -78,8 +78,8 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         if(feat.get('gene', None)):
                             gene_annotations['gene'] = feat['gene']
                         if(feat.get('pseudo', None)):
-                            annotations[bc.INSDC_FEATURE_PSEUDOGENE] = 'true'
-                            gene_annotations[bc.INSDC_FEATURE_PSEUDOGENE] = 'true'
+                            annotations[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNKNOWN
+                            gene_annotations[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNKNOWN
                         gene_annotations = encode_annotations(gene_annotations)
                         fh.write(f"{feat['contig']}\ttRNAscan-SE\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
