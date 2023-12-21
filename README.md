@@ -145,12 +145,24 @@ rm db-light.tar.gz
 amrfinder_update --force_update --database db-light/amrfinderplus-db/
 ```
 
+If you're using bakta on Docker:
+
+```bash
+docker run -v /path/to/desired-db-path:/db --entrypoint /bin/bash oschwengers/bakta:latest -c "bakta_db download --output /db --type [light|full]"
+```
+
 As an additional data repository backup, we provide the most recent database version via our institute servers: [full](https://jlubox.uni-giessen.de/dl/fiKeyT1huWv9vW5cXKYkZXYB/db.tar.gz), [light](https://jlubox.uni-giessen.de/dl/fiG6AHmHA94t4v2r2vwW91WB/db-light.tar.gz). However, the bandwith is limited. Hence, please use it with caution and only if Zenodo might be temporarily uncreachable or slow. In these cases, please also download the AMRFinderPlus database as indicated above.
 
 Update an existing database:
 
 ```bash
 bakta_db update --db <existing-db-path> [--tmp-dir <tmp-directory>]
+```
+
+Update using Docker:
+
+```bash
+docker run -v /path/to/desired-db-path:/db --entrypoint /bin/bash oschwengers/bakta:latest -c "bakta_db update --db /db/db-[light|full]"
 ```
 
 The database path can be provided either via parameter (`--db`) or environment variable (`BAKTA_DB`):
