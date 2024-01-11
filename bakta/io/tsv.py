@@ -50,15 +50,15 @@ def write_tsv(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_
                     i = 0
                     while i < len(feat['spacers']):
                         repeat = feat['repeats'][i]
-                        fh.write('\t'.join([feat['contig'], 'CRISPR repeat', str(repeat['start']), str(repeat['stop']), repeat['strand'], '', '', f"CRISPR repeat", '']))
+                        fh.write('\t'.join([feat['contig'], bc.FEATURE_CRISPR_REPEAT, str(repeat['start']), str(repeat['stop']), repeat['strand'], '', '', f"CRISPR repeat", '']))
                         fh.write('\n')
                         spacer = feat['spacers'][i]
-                        fh.write('\t'.join([feat['contig'], 'CRISPR spacer', str(spacer['start']), str(spacer['stop']), spacer['strand'], '', '', f"CRISPR spacer, sequence {spacer['sequence']}", '']))
+                        fh.write('\t'.join([feat['contig'], bc.FEATURE_CRISPR_SPACER, str(spacer['start']), str(spacer['stop']), spacer['strand'], '', '', f"CRISPR spacer, sequence {spacer['sequence']}", '']))
                         fh.write('\n')
                         i += 1
                     if(len(feat['repeats']) - 1 == i):
                         repeat = feat['repeats'][i]
-                        fh.write('\t'.join([feat['contig'], 'CRISPR repeat', str(repeat['start']), str(repeat['stop']), repeat['strand'], '', '', f"CRISPR repeat", '']))
+                        fh.write('\t'.join([feat['contig'], bc.FEATURE_CRISPR_REPEAT, str(repeat['start']), str(repeat['stop']), repeat['strand'], '', '', f"CRISPR repeat", '']))
                         fh.write('\n')
     return
 
