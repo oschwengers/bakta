@@ -203,12 +203,13 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                             annotations = encode_annotations(annotations)
                             fh.write(f"{feat['contig']}\tPILER-CR\t{bc.FEATURE_CRISPR_SPACER}\t{spacer['start']}\t{spacer['stop']}\t.\t{spacer['strand']}\t.\t{annotations}\n")
                             i += 1
-                        repeat = feat['repeats'][i]
-                        annotations = {
-                            'ID': f"{feat['id']}_repeat_{i+1}"
-                        }
-                        annotations = encode_annotations(annotations)
-                        fh.write(f"{feat['contig']}\tPILER-CR\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                        if(len(feat['repeats']) - 1 == i):
+                            repeat = feat['repeats'][i]
+                            annotations = {
+                                'ID': f"{feat['id']}_repeat_{i+1}"
+                            }
+                            annotations = encode_annotations(annotations)
+                            fh.write(f"{feat['contig']}\tPILER-CR\t{bc.FEATURE_CRISPR_REPEAT}\t{repeat['start']}\t{repeat['stop']}\t.\t{repeat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_CDS):
                     annotations = {
                         'ID': feat['locus'],

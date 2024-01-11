@@ -56,9 +56,10 @@ def write_tsv(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_
                         fh.write('\t'.join([feat['contig'], 'CRISPR spacer', str(spacer['start']), str(spacer['stop']), spacer['strand'], '', '', f"CRISPR spacer, sequence {spacer['sequence']}", '']))
                         fh.write('\n')
                         i += 1
-                    repeat = feat['repeats'][i]
-                    fh.write('\t'.join([feat['contig'], 'CRISPR repeat', str(repeat['start']), str(repeat['stop']), repeat['strand'], '', '', f"CRISPR repeat", '']))
-                    fh.write('\n')
+                    if(len(feat['repeats']) - 1 == i):
+                        repeat = feat['repeats'][i]
+                        fh.write('\t'.join([feat['contig'], 'CRISPR repeat', str(repeat['start']), str(repeat['stop']), repeat['strand'], '', '', f"CRISPR repeat", '']))
+                        fh.write('\n')
     return
 
 
