@@ -62,7 +62,7 @@ rm -r antifam antifam-dir/
 
 # download & extract oriT sequences
 printf "\n5/20: download and extract oriT sequences from Mob-suite ...\n"
-wget https://zenodo.org/record/3786915/files/data.tar.gz
+wget https://zenodo.org/records/10304948/files/data.tar.gz
 tar -xvzf data.tar.gz
 mv data/orit.fas ./orit.fna
 rm -r data/ data.tar.gz
