@@ -81,9 +81,7 @@ def predict_crispr(genome: dict, contigs_path: Path):
                         crispr_array['contig'] = contig_id
                     elif(line[0] != '='):
                         m = RE_CRISPR.fullmatch(line)
-                        print(f'CRISPR DEBUG: match: {m}')
                         if(m is not None):
-                            print(f'CRISPR DEBUG: detected line: {line}')
                             position = int(m.group(1))
                             repeat_length = int(m.group(2))
                             repeat_seq = m.group(6)
