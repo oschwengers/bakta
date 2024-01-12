@@ -109,9 +109,13 @@ python3 ${BAKTA_DB_SCRIPTS}/init-db.py --db bakta.db
 ############################################################################
 printf "\n8/20: download UniProt UniRef50 ...\n"
 wget https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref50/uniref50.xml.gz
-wget https://ftp.expasy.org/databases/uniprot/current_release/uniparc/uniparc_active.fasta.gz
+for i in {1..200}; do
+    wget https://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p${i}.fasta.gz
+    pigz -dc uniparc_active_p${i}.fasta.gz >> uniparc_active.fasta
+    rm uniparc_active_p${i}.fasta.gz
+done
 printf "\n8/20: read UniRef90 entries and build Protein Sequence Cluster sequence and information databases:\n"
-python3 ${BAKTA_DB_SCRIPTS}/init-pscc.py --taxonomy nodes.dmp --uniref50 uniref50.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --pscc pscc.faa --sorf pscc_sorf.faa
+python3 ${BAKTA_DB_SCRIPTS}/init-pscc.py --taxonomy nodes.dmp --uniref50 uniref50.xml.gz --uniparc uniparc_active.fasta --db bakta.db --pscc pscc.faa --sorf pscc_sorf.faa
 printf "\n8/20: build PSCC Diamond db ...\n"
 diamond makedb --in pscc.faa --db pscc
 diamond makedb --in pscc_sorf.faa --db sorf
@@ -133,7 +137,7 @@ rm uniref50.xml.gz
 printf "\n9/20: download UniProt UniRef90 ...\n"
 wget https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref90/uniref90.xml.gz
 printf "\n9/20: read UniRef90 entries and build Protein Sequence Cluster sequence and information databases:\n"
-python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --uniref90 uniref90.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --psc psc.faa --sorf sorf.faa
+python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --uniref90 uniref90.xml.gz --uniparc uniparc_active.fasta --db bakta.db --psc psc.faa --sorf sorf.faa
 printf "\n9/20: build PSC Diamond db ...\n"
 diamond makedb --in psc.faa --db psc
 diamond makedb --in sorf.faa --db sorf
