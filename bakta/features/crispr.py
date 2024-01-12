@@ -102,7 +102,7 @@ def predict_crispr(genome: dict, contigs_path: Path):
                                 crispr_spacer['sequence'] = spacer_seq
                                 crispr_array['spacers'].append(crispr_spacer)
                                 spacer_genome_seq = bu.extract_feature_sequence(crispr_spacer, contigs[contig_id])
-                                assert spacer_seq == spacer_genome_seq  # assure PILER-CR spacer sequence equal extraction from genome
+                                assert spacer_seq == spacer_genome_seq  # assure PILER-CR provided sequence equals sequence extracted from genome
                 elif(output_section == 'POSITION'):
                     if(line[0] == '>'):
                         contig_id = line[1:]
