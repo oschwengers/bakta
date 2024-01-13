@@ -11,7 +11,7 @@ import bakta.so as so
 import bakta.utils as bu
 
 
-RE_CRISPR = re.compile(r'(\d{1,8})\s+(\d{2})\s+(\d{1,3}\.\d)\s+(?:(\d{2})\s+)?([ATGCN]+)\s+([ATGCN\.]+)\s*(?:([ATGCN]+))?')
+RE_CRISPR = re.compile(r'(\d{1,8})\s+(\d{2})\s+(\d{1,3}\.\d)\s+(?:(\d{2})\s+)?([ATGCN]+)\s+([ATGCN\.-]+)\s*(?:([ATGCN]+))?')
 
 
 log = logging.getLogger('CRISPR')
@@ -81,9 +81,7 @@ def predict_crispr(genome: dict, contigs_path: Path):
                         crispr_array['contig'] = contig_id
                     elif(line[0] != '='):
                         m = RE_CRISPR.fullmatch(line)
-                        print(f'CRISPR DEBUG: match: {m}')
                         if(m is not None):
-                            print(f'CRISPR DEBUG: detected line: {line}')
                             position = int(m.group(1))
                             repeat_length = int(m.group(2))
                             repeat_seq = m.group(6)
@@ -104,7 +102,7 @@ def predict_crispr(genome: dict, contigs_path: Path):
                                 crispr_spacer['sequence'] = spacer_seq
                                 crispr_array['spacers'].append(crispr_spacer)
                                 spacer_genome_seq = bu.extract_feature_sequence(crispr_spacer, contigs[contig_id])
-                                assert spacer_seq == spacer_genome_seq  # assure PILER-CR spacer sequence equal extraction from genome
+                                assert spacer_seq == spacer_genome_seq  # assure PILER-CR provided sequence equals sequence extracted from genome
                 elif(output_section == 'POSITION'):
                     if(line[0] == '>'):
                         contig_id = line[1:]
