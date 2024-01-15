@@ -30,7 +30,7 @@ process hmmsearch {
     maxRetries 3
     cpus 1
     memory { 1.GB * task.attempt }
-    conda 'hmmer=3.3.2'
+    conda 'hmmer=3.4'
 
     input:
     path('input.faa') from chAAs
