@@ -27,7 +27,7 @@ process diamond {
     maxRetries 3
     cpus 8
     memory '32 GB'
-    conda 'diamond=2.0.14'
+    conda 'diamond=2.1.8'
 
     input:
     file('input.faa') from chAAs
