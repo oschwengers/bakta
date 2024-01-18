@@ -62,7 +62,7 @@ rm -r antifam antifam-dir/
 
 # download & extract oriT sequences
 printf "\n5/20: download and extract oriT sequences from Mob-suite ...\n"
-wget https://zenodo.org/record/3786915/files/data.tar.gz
+wget https://zenodo.org/records/10304948/files/data.tar.gz
 tar -xvzf data.tar.gz
 mv data/orit.fas ./orit.fna
 rm -r data/ data.tar.gz
@@ -109,9 +109,13 @@ python3 ${BAKTA_DB_SCRIPTS}/init-db.py --db bakta.db
 ############################################################################
 printf "\n8/20: download UniProt UniRef50 ...\n"
 wget https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref50/uniref50.xml.gz
-wget https://ftp.expasy.org/databases/uniprot/current_release/uniparc/uniparc_active.fasta.gz
+for i in {1..200}; do
+    wget https://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/uniparc_active_p${i}.fasta.gz
+    pigz -dc uniparc_active_p${i}.fasta.gz >> uniparc_active.fasta
+    rm uniparc_active_p${i}.fasta.gz
+done
 printf "\n8/20: read UniRef90 entries and build Protein Sequence Cluster sequence and information databases:\n"
-python3 ${BAKTA_DB_SCRIPTS}/init-pscc.py --taxonomy nodes.dmp --uniref50 uniref50.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --pscc pscc.faa --sorf pscc_sorf.faa
+python3 ${BAKTA_DB_SCRIPTS}/init-pscc.py --taxonomy nodes.dmp --uniref50 uniref50.xml.gz --uniparc uniparc_active.fasta --db bakta.db --pscc pscc.faa --pscc_sorf pscc_sorf.faa
 printf "\n8/20: build PSCC Diamond db ...\n"
 diamond makedb --in pscc.faa --db pscc
 diamond makedb --in pscc_sorf.faa --db sorf
@@ -133,7 +137,7 @@ rm uniref50.xml.gz
 printf "\n9/20: download UniProt UniRef90 ...\n"
 wget https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref90/uniref90.xml.gz
 printf "\n9/20: read UniRef90 entries and build Protein Sequence Cluster sequence and information databases:\n"
-python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --uniref90 uniref90.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --psc psc.faa --sorf sorf.faa
+python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --uniref90 uniref90.xml.gz --uniparc uniparc_active.fasta --db bakta.db --psc psc.faa --psc_sorf sorf.faa
 printf "\n9/20: build PSC Diamond db ...\n"
 diamond makedb --in psc.faa --db psc
 diamond makedb --in sorf.faa --db sorf
@@ -148,7 +152,7 @@ rm uniref90.xml.gz
 printf "\n10/20: download UniProt UniRef100 ...\n"
 wget https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref100/uniref100.xml.gz
 printf "\n10/20: read, filter and store UniRef100 entries ...:\n"
-python3 ${BAKTA_DB_SCRIPTS}/init-ups-ips.py --taxonomy nodes.dmp --uniref100 uniref100.xml.gz --uniparc uniparc_active.fasta.gz --db bakta.db --ips ips.faa
+python3 ${BAKTA_DB_SCRIPTS}/init-ups-ips.py --taxonomy nodes.dmp --uniref100 uniref100.xml.gz --uniparc uniparc_active.fasta --db bakta.db --ips ips.faa
 rm uniref100.xml.gz uniparc_active.fasta.gz
 
 
@@ -224,7 +228,7 @@ rm refseq-bacteria-nrp.trimmed.faa PCLA_proteins.txt PCLA_clusters.txt
 # - annotate IPSs if IPS have no PSC UniRef90 identifier (seq -> hash -> UPS -> IPS)
 ############################################################################
 printf "\n14/20: download UniProt/SwissProt ...\n"
-wget https://ftp.expasy.org/databases/swiss-prot/release/uniprot_sprot.xml.gz
+wget https://ftp.expasy.org/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
 printf "\n14/20: annotate IPSs and PSCs ...\n"
 python3 ${BAKTA_DB_SCRIPTS}/annotate-swissprot.py --taxonomy nodes.dmp --xml uniprot_sprot.xml.gz --db bakta.db
 rm uniprot_sprot.xml.gz
@@ -241,7 +245,7 @@ wget https://ftp.ncbi.nlm.nih.gov/hmm/current/hmm_PGAP.tsv
 grep -v "(Provisional)" hmm_PGAP.tsv > hmms.non-prov.tsv
 grep exception hmms.non-prov.tsv > hmms.ncbi.selected.tsv
 grep equivalog hmms.non-prov.tsv >> hmms.ncbi.selected.tsv
-cut -f1 hmms.ncbi.selected.tsv > hmms.ids.txt
+sort hmms.ncbi.selected.tsv | uniq | cut -f1 > hmms.ids.txt
 hmmfetch -f -o ncbifams hmm_PGAP.LIB hmms.ids.txt
 hmmpress ncbifams
 printf "\n15/20: annotate PSCs...\n"

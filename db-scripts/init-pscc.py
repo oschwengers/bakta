@@ -189,8 +189,8 @@ print(f'written UniParc seed sequences: {uniparc_total_seqs}')
 log_pscc.debug('written UniParc seed sequences: %i', uniparc_total_seqs)
 
 print(f'PSCC normal seqs: {pscc_seqs}')
-log_pscc.debug('summary: # PSC normal=%i', pscc_seqs)
+log_pscc.debug('summary: # PSCC normal=%i', pscc_seqs)
 print(f'PSCC sORF seqs: {pscc_sorf_seqs}')
-log_pscc.debug('summary: # PSC sORFs=%i', pscc_sorf_seqs)
+log_pscc.debug('summary: # PSCC sORFs=%i', pscc_sorf_seqs)
 
 print("\nsuccessfully initialized PSCC table!")
