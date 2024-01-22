@@ -237,7 +237,10 @@ def main():
         try:
             db_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)  # set write permissions on old (existing) directory with updated content
             for db_file_path in db_path.iterdir():
-                db_file_path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+                if(db_file_path.is_dir()):
+                    db_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+                else:    
+                    db_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH)
         except:
             sys.exit(f'ERROR: cannot set read|execute permissions on new database! path={db_path}, owner={db_path.owner()}, group={db_path.group()}, permissions={oct(db_path.stat().st_mode )[-3:]}')
 
@@ -266,15 +269,15 @@ def main():
             sys.exit()
         required_version = compatible_sorted[0]
 
-        tarball_path = output_path.joinpath(f"{'db-light' if args.type == 'light' else 'db'}.tar.gz")
-        db_url = f"https://zenodo.org/record/{required_version['record']}/files/{'db-light' if args.type == 'light' else 'db'}.tar.gz"
+        tarball_path = tmp_path.joinpath(f"{'db-light' if db_old_info['type'] == 'light' else 'db'}.tar.gz")
+        db_url = f"https://zenodo.org/record/{required_version['record']}/files/{'db-light' if db_old_info['type'] == 'light' else 'db'}.tar.gz"
         print(f"Download database: v{required_version['major']}.{required_version['minor']}, type={db_old_info['type']}, {required_version['date']}, DOI: {required_version['doi']}, URL: {db_url}...")
         download(db_url, tarball_path)
         print('\t... done')
 
         print('Check MD5 sum...')
         md5_sum = calc_md5_sum(tarball_path)
-        required_md5 = required_version['md5-light' if args.type == 'light' else 'md5']
+        required_md5 = required_version['md5-light' if db_old_info['type'] == 'light' else 'md5']
         if(md5_sum == required_md5):
             print(f'\t...database file OK: {md5_sum}')
         else:
@@ -284,17 +287,17 @@ def main():
         untar(tarball_path, tmp_path)
         tarball_path.unlink()
 
-        db_new_path = tmp_path.joinpath('db-light' if args.type == 'light' else 'db')
+        db_new_path = tmp_path.joinpath('db-light' if db_old_info['type'] == 'light' else 'db')
         db_new_info = check(db_new_path)
         if(db_new_info['major'] != required_version['major']):
             sys.exit(f"ERROR: wrong major db detected! required={required_version['major']}, detected={db_new_info['major']}")
         elif(db_new_info['minor'] != required_version['minor']):
             sys.exit(f"ERROR: wrong minor db detected! required={required_version['minor']}, detected={db_new_info['minor']}")
-        elif(db_new_info['type'] != args.type == 'light'):
-            sys.exit(f"ERROR: wrong db type detected! required={args.type}, detected={db_new_info['type']}")
+        elif(db_new_info['type'] != db_old_info['type'] == 'light'):
+            sys.exit(f"ERROR: wrong db type detected! required={db_old_info['type']}, detected={db_new_info['type']}")
         print('Successfully downloaded Bakta DB:')
         print(f"\tversion: {required_version['major']}.{required_version['minor']}")
-        print(f"\tType: {args.type}")
+        print(f"\tType: {db_new_info['type']}")
         print(f"\tDOI: {required_version['doi']}")
         print(f'\tpath: {db_new_path}')
         print('Remove old database...')
@@ -316,7 +319,10 @@ def main():
         try:
             db_new_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)  # set write permissions on db_new_path directory
             for db_new_file_path in db_new_path.iterdir():
-                db_new_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR)
+                if(db_new_file_path.is_dir()):
+                    db_new_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+                else:    
+                    db_new_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH)
         except:
             sys.exit(f'ERROR: cannot set read|write|execute permissions on new database! path={db_new_path}, owner={db_new_path.owner()}, group={db_new_path.group()}, permissions={oct(db_new_path.stat().st_mode )[-3:]}')
         try:
@@ -330,7 +336,10 @@ def main():
         try:
             db_old_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)  # set write permissions on old (existing) directory with updated content
             for db_old_file_path in db_old_path.iterdir():
-                db_old_file_path.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+                if(db_old_file_path.is_dir()):
+                    db_old_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+                else:    
+                    db_old_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH)
         except:
             sys.exit(f'ERROR: cannot set read(|execute) permissions on new database! path={db_old_path}, owner={db_old_path.owner()}, group={db_old_path.group()}, permissions={oct(db_old_path.stat().st_mode )[-3:]}')
 
