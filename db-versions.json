@@ -1,18 +1,5 @@
 [
     {
-        "date": "2024-01-19",
-        "major": 5,
-        "minor": 1,
-        "doi": "10.5281/zenodo.10522951",
-        "record": "10522951",
-        "md5": "f8823533b789dd315025fdcc46f1a8c1",
-        "md5-light": "31b3fbdceace50930f8607f8d664d3f4",
-        "software-min": {
-            "major": 1,
-            "minor": 7
-        }
-    },
-    {
         "date": "2023-02-20",
         "major": 5,
         "minor": 0,
