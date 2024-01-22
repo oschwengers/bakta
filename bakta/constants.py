@@ -214,7 +214,7 @@ DISCARD_TYPE_RECODING = 'recoding'
 ############################################################################
 # Miscellaneous constants
 ############################################################################
-DB_VERSIONS_URL = 'https://raw.githubusercontent.com/oschwengers/bakta/master/db-versions.json'
+DB_VERSIONS_URL = 'https://raw.githubusercontent.com/oschwengers/bakta/main/db-versions.json'
 
 BAKTA_DOI = '10.1099/mgen.0.000685'
 BAKTA_URL = 'github.com/oschwengers/bakta'
