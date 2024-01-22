@@ -142,6 +142,11 @@ Of course, the database can also be downloaded manually:
 wget https://zenodo.org/record/7669534/files/db-light.tar.gz
 tar -xzf db-light.tar.gz
 rm db-light.tar.gz
+```
+
+If required, or desired, the AMRFinderPlus DB can also be updated manually:
+
+```bash
 amrfinder_update --force_update --database db-light/amrfinderplus-db/
 ```
 
