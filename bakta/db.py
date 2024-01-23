@@ -50,6 +50,8 @@ FILE_NAMES = [
         'rRNA.i1p',
         'sorf.dmnd'
     ]
+FILE_PERMISSIONS = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH
+DIR_PERMISSIONS = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH
 
 
 def check(db_path: Path) -> dict:
@@ -235,14 +237,11 @@ def main():
         print(f'\tpath: {db_path}')
 
         try:
-            db_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)  # set write permissions on old (existing) directory with updated content
+            db_path.chmod(DIR_PERMISSIONS)  # set write permissions on old (existing) directory with updated content
             for db_file_path in db_path.iterdir():
-                if(db_file_path.is_dir()):
-                    db_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
-                else:    
-                    db_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH)
+                db_file_path.chmod(DIR_PERMISSIONS if db_file_path.is_dir() else FILE_PERMISSIONS)
         except:
-            sys.exit(f'ERROR: cannot set read|execute permissions on new database! path={db_path}, owner={db_path.owner()}, group={db_path.group()}, permissions={oct(db_path.stat().st_mode )[-3:]}')
+            sys.exit(f'ERROR: cannot set read|write|execute permissions on new database! path={db_path}, owner={db_path.owner()}, group={db_path.group()}, permissions={oct(db_path.stat().st_mode )[-3:]}')
 
         print('Update AMRFinderPlus database...')
         update_amrfinderplus_db(db_path)
@@ -302,12 +301,9 @@ def main():
         print(f'\tpath: {db_new_path}')
         print('Remove old database...')
         try:
-            db_old_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)  # set write permissions on old directory
+            db_old_path.chmod(DIR_PERMISSIONS)  # set write permissions on old directory
             for db_old_file_path in db_old_path.iterdir():
-                if(db_old_file_path.is_dir()):
-                    db_old_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
-                else:    
-                    db_old_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR)
+                db_old_file_path.chmod(DIR_PERMISSIONS if db_old_file_path.is_dir() else FILE_PERMISSIONS)
         except:
             sys.exit(f'ERROR: cannot set read|write|execute permissions on old database! path={db_old_path}, owner={db_old_path.owner()}, group={db_old_path.group()}, permissions={oct(db_old_path.stat().st_mode )[-3:]}')
         try:
@@ -317,31 +313,25 @@ def main():
         db_old_path.mkdir()
 
         try:
-            db_new_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)  # set write permissions on db_new_path directory
+            db_new_path.chmod(DIR_PERMISSIONS)  # set write permissions on db_new_path directory
             for db_new_file_path in db_new_path.iterdir():
-                if(db_new_file_path.is_dir()):
-                    db_new_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
-                else:    
-                    db_new_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH)
+                db_new_file_path.chmod(DIR_PERMISSIONS if db_new_file_path.is_dir() else FILE_PERMISSIONS)
         except:
             sys.exit(f'ERROR: cannot set read|write|execute permissions on new database! path={db_new_path}, owner={db_new_path.owner()}, group={db_new_path.group()}, permissions={oct(db_new_path.stat().st_mode )[-3:]}')
         try:
             for db_new_file_path in db_new_path.iterdir():  # move new db files into old (existing) db directory
-                file_name = db_new_file_path.name
-                shutil.move(db_new_file_path, db_old_path.joinpath(file_name))
+                name = db_new_file_path.name
+                shutil.move(db_new_file_path, db_old_path.joinpath(name))
         except:
             sys.exit(f'ERROR: cannot move new database to existing path! new-path={db_new_path}, existing-path={db_old_path.parent}')
         shutil.rmtree(tmp_path)
 
         try:
-            db_old_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)  # set write permissions on old (existing) directory with updated content
+            db_old_path.chmod(DIR_PERMISSIONS)  # set write permissions on old (existing) directory with updated content
             for db_old_file_path in db_old_path.iterdir():
-                if(db_old_file_path.is_dir()):
-                    db_old_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
-                else:    
-                    db_old_file_path.chmod(stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH)
+                db_old_file_path.chmod(DIR_PERMISSIONS if db_old_file_path.is_dir() else FILE_PERMISSIONS)
         except:
-            sys.exit(f'ERROR: cannot set read(|execute) permissions on new database! path={db_old_path}, owner={db_old_path.owner()}, group={db_old_path.group()}, permissions={oct(db_old_path.stat().st_mode )[-3:]}')
+            sys.exit(f'ERROR: cannot set read|write|execute permissions on new database! path={db_old_path}, owner={db_old_path.owner()}, group={db_old_path.group()}, permissions={oct(db_old_path.stat().st_mode )[-3:]}')
 
         print('\t... done')
 
