@@ -115,8 +115,9 @@ def predict_crispr(genome: dict, contigs_path: Path):
                         else:
                             (array_id, contig, position, length, copies, repeat_length, spacer_length, distance, repeat_consensus) = cols
                         crispr_array = crispr_arrays[array_id]
-                        crispr_array['start'] = int(position)
-                        crispr_array['stop'] = int(position) + int(length) - 1
+                        positions = [c['start'] for c in crispr_array['spacers']] + [c['stop'] for c in crispr_array['spacers']] + [c['start'] for c in crispr_array['repeats']] + [c['stop'] for c in crispr_array['repeats']]
+                        crispr_array['start'] = min(positions)
+                        crispr_array['stop'] = max(positions)
                         crispr_array['product'] = f'CRISPR array with {copies} repeats of length {repeat_length}, consensus sequence {repeat_consensus} and spacer length {spacer_length}'
                         crispr_array['spacer_length'] = int(spacer_length)
                         crispr_array['repeat_length'] = int(repeat_length)
