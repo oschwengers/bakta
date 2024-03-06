@@ -191,13 +191,15 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         while i < len(feat['spacers']):
                             repeat = feat['repeats'][i]
                             annotations = {
-                                'ID': f"{feat['id']}_repeat_{i+1}"
+                                'ID': f"{feat['id']}_repeat_{i+1}",
+                                'Parent': feat['id']
                             }
                             annotations = encode_annotations(annotations)
                             fh.write(f"{feat['contig']}\tPILER-CR\t{bc.FEATURE_CRISPR_REPEAT}\t{repeat['start']}\t{repeat['stop']}\t.\t{repeat['strand']}\t.\t{annotations}\n")
                             spacer = feat['spacers'][i]
                             annotations = {
                                 'ID': f"{feat['id']}_spacer_{i+1}",
+                                'Parent': feat['id'],
                                 'sequence': spacer['sequence']
                             }
                             annotations = encode_annotations(annotations)
