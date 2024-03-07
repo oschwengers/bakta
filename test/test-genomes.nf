@@ -52,7 +52,7 @@ process bakta {
     errorStrategy 'retry'
     maxRetries 3
     cpus 8
-    memory { 8.GB * task.attempt }
+    memory { 16.GB * task.attempt }
     conda "${baseDir}/../environment.yml"
 
     input:
