@@ -119,7 +119,13 @@ def create_cdss(genes, contig):
             partial_cdss_per_sequence.append(cds)
         else:
             cdss_per_sequence.append(cds)
-        aa = gene.translate(translation_table=cfg.translation_table).upper()
+
+        # In meta mode, let pyrodigal use the translation table the gene was predicted with
+        if cfg.meta:
+            aa = gene.translate(translation_table=None).upper()
+        else:
+            aa = gene.translate(translation_table=cfg.translation_table).upper()
+        
         if('truncated' not in cds or cds['truncated'] == bc.FEATURE_END_5_PRIME):
             aa = aa[:-1]  # discard trailing asterisk
         cds['aa'] = aa
