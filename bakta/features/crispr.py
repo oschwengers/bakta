@@ -98,7 +98,7 @@ def predict_crispr(genome: dict, contigs_path: Path):
                                 spacer_length = len(spacer_seq)
                                 crispr_spacer = OrderedDict()
                                 crispr_spacer['strand'] = bc.STRAND_UNKNOWN
-                                crispr_spacer['start'] = position + repeat_length  - gap_count
+                                crispr_spacer['start'] = position + repeat_length - gap_count
                                 crispr_spacer['stop'] = position + repeat_length + spacer_length - 1 - gap_count
                                 crispr_spacer['sequence'] = spacer_seq
                                 crispr_array['spacers'].append(crispr_spacer)
