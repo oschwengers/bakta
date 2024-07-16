@@ -11,7 +11,7 @@ import bakta.so as so
 import bakta.utils as bu
 
 
-RE_CRISPR = re.compile(r'(\d{1,8})\s+(\d{2})\s+(\d{1,3}\.\d)\s+(?:(\d{1})\s+)?([ATGCN]+)?\s+([ATGCN\.-]+)\s*(?:([ATGCN]+))?')
+RE_CRISPR = re.compile(r'(\d{1,8})\s+(\d{2})\s+(\d{1,3}\.\d)\s+(?:(\d{1,2})\s+)?([ATGCN]+)?\s+([ATGCN\.-]+)\s*(?:([ATGCN]+))?')
 
 
 log = logging.getLogger('CRISPR')
