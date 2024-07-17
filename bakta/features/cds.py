@@ -215,18 +215,18 @@ def import_user_cdss(genome: dict, import_path: Path):
                         contig_id, tool, feature_type, start, stop, score, strand, phase, attributes = line.split('\t')
                         if(feature_type.lower() == 'cds'):
                             attributes = attributes.lower().split(';')
-                            if('pseudo=' in attributes  or  bc.INSDC_FEATURE_PSEUDOGENE in attributes):  # skip pseudo genes
-                                log.debug(
-                                    'skip user-provided CDS: reason=pseudogene contig=%s, start=%i, stop=%i, strand=%s',
-                                    user_cds['contig'], user_cds['start'], user_cds['stop'], user_cds['strand']
-                                )
-                                continue
                             contig = contigs_by_id.get(contig_id, None)
                             if(contig is None):
                                 log.error('user-provided CDS: No contig found for id=%s', contig_id)
                                 raise Exception(f'user-provided CDS: No contig found for id={contig_id}')
                             user_cds = create_cds(contig, int(start), int(stop), strand, '', '')
                             user_cds['source'] = bc.CDS_SOURCE_USER
+                            if('pseudo=' in attributes  or  bc.INSDC_FEATURE_PSEUDOGENE in attributes):  # skip pseudo genes
+                                log.debug(
+                                    'skip user-provided CDS: reason=pseudogene contig=%s, start=%i, stop=%i, strand=%s',
+                                    user_cds['contig'], user_cds['start'], user_cds['stop'], user_cds['strand']
+                                )
+                                continue
                             try:
                                 nt = bu.extract_feature_sequence(user_cds, contig)
                                 user_cds['nt'] = nt
