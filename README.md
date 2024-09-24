@@ -344,7 +344,7 @@ Exemplary annotation result files for several genomes (mostly ESKAPE species) ar
 ```bash
 usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH] [--prefix PREFIX] [--output OUTPUT]
              [--genus GENUS] [--species SPECIES] [--strain STRAIN] [--plasmid PLASMID]
-             [--complete] [--prodigal-tf PRODIGAL_TF] [--translation-table {11,4}] [--gram {+,-,?}] [--locus LOCUS]
+             [--complete] [--prodigal-tf PRODIGAL_TF] [--translation-table {11,4,25}] [--gram {+,-,?}] [--locus LOCUS]
              [--locus-tag LOCUS_TAG] [--keep-contig-headers] [--replicons REPLICONS] [--compliant] [--replicons REPLICONS] [--regions REGIONS] [--proteins PROTEINS] [--meta]
              [--skip-trna] [--skip-tmrna] [--skip-rrna] [--skip-ncrna] [--skip-ncrna-region]
              [--skip-crispr] [--skip-cds] [--skip-pseudo] [--skip-sorf] [--skip-gap] [--skip-ori] [--skip-plot]
@@ -376,8 +376,8 @@ Annotation:
   --complete            All sequences are complete replicons (chromosome/plasmid[s])
   --prodigal-tf PRODIGAL_TF
                         Path to existing Prodigal training file to use for CDS prediction
-  --translation-table {11,4}
-                        Translation table: 11/4 (default = 11)
+  --translation-table {11,4,25}
+                        Translation table: 11/4/25 (default = 11)
   --gram {+,-,?}        Gram type for signal peptide predictions: +/-/? (default = ?)
   --locus LOCUS         Locus prefix (default = 'contig')
   --locus-tag LOCUS_TAG
