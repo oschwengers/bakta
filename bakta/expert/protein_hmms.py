@@ -58,7 +58,7 @@ def search(cdss: Sequence[dict], user_hmms):
                     hit = {
                         'type': 'user_hmms',
                         'source': 'UserHMMs',
-                        'rank': 99,
+                        'rank': 100,
                         'id': hmm_id,
                         'length': hit_domain_lengths_sum,
                         'aa_cov': aa_cov,
