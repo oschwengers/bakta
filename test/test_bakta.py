@@ -93,7 +93,25 @@ def test_bakta_plasmid(tmpdir):
 )
 def test_bakta_genome(db, tmpdir):
     # full test on complete genome in compliant mode
-    proc = run(['bin/bakta', '--db', f'test/{db}', '--verbose', '--output', tmpdir, '--force', '--force', '--prefix', 'test', '--min-contig-length', '200', '--complete', '--compliant', '--proteins', 'test/data/user-proteins.faa', '--genus', 'Foo gen. nov.', '--species', 'bar sp. nov.', '--strain', 'test 1', 'test/data/GCF_000008865.2.fna.gz'])
+    proc = run(
+        [
+            'bin/bakta',
+            '--db', f'test/{db}',
+            '--verbose',
+            '--output', tmpdir,
+            '--force',
+            '--prefix', 'test',
+            '--min-contig-length', '200',
+            '--complete',
+            '--genus', 'Foo gen. nov.',
+            '--species', 'bar sp. nov.',
+            '--strain', 'test 1',
+            '--replicons', 'test/data/replicons.tsv',
+            '--regions', 'test/data/NC_002127.1-region.gff3',
+            '--proteins', 'test/data/user-proteins.faa',
+            '--compliant',
+            'test/data/GCF_000008865.2.fna.gz']
+    )
     assert proc.returncode == 0
 
     tmpdir_path = Path(tmpdir)
@@ -108,7 +126,7 @@ def test_bakta_genome(db, tmpdir):
         results = json.load(fh)
     assert results is not None
     features = results['features']
-    assert len(features) == 5551
+    assert len(features) == 5550
     feature_counts_expected = {
         bc.FEATURE_T_RNA: 107,
         bc.FEATURE_TM_RNA: 1,
@@ -116,7 +134,7 @@ def test_bakta_genome(db, tmpdir):
         bc.FEATURE_NC_RNA: 57,
         bc.FEATURE_NC_RNA_REGION: 1,
         bc.FEATURE_CRISPR: 1,
-        bc.FEATURE_CDS: 5375,
+        bc.FEATURE_CDS: 5374,
         bc.FEATURE_SORF: 2,
         bc.FEATURE_ORIC: 0,
         bc.FEATURE_ORIV: 0,
