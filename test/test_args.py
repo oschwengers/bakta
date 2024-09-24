@@ -285,6 +285,27 @@ def test_proteins_failiing(parameters, tmpdir):
 @pytest.mark.parametrize(
     'parameters',
     [
+        (['--hmms']),  # not provided
+        (['--hmms', '']),  # empty
+        (['--hmms', 'foo']),  # not existing
+        (['--hmms', 'test/data/empty']),  # empty file
+        (['--hmms', 'test/data/nonsense.txt'])  # nonsense file
+    ]
+)
+def test_hmms_failiing(parameters, tmpdir):
+    # test HMM file arguments
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--force'] + 
+        parameters + 
+        ['--skip-tmrna', '--skip-trna', '--skip-rrna', '--skip-ncrna', '--skip-ncrna-region', '--skip-crispr', '--skip-sorf', '--skip-ori', '--skip-gap', '--skip-plot'] +
+        ['test/data/NC_002127.1.fna']
+    )
+    assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
         (['--locus']),  # not provided
         (['--locus', '']),  # empty
         (['--locus', ' ']),  # whitespace only
