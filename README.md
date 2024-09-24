@@ -240,8 +240,8 @@ original locus id  |  new locus id  |  type  |  topology  |  name
 NODE_1 | chrom | `chromosome` | `circular` | `-`
 NODE_2 | p1 | `plasmid` | `c` | `pXYZ1`
 NODE_3 | p2 | `p`  |  `c` | `pXYZ2`
-NODE_4 | special-contig-name-xyz |  `-` | -
-NODE_5 | `` |  `-` | -
+NODE_4 | special-contig-name-xyz |  `-` | `-` | `-`
+NODE_5 | `` |  `-` | `-` | `-`
 
 #### User-provided regions
 
