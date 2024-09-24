@@ -26,6 +26,7 @@ MIN_PSC_COVERAGE = 0.8  # min protein coverage for PSC detection
 MIN_PSC_IDENTITY = 0.9  # min protein identity for PSC detection
 MIN_SORF_COVERAGE = 0.9  # min sORF coverage for PSC detection
 MIN_SORF_IDENTITY = 0.9  # min sORF identity for PSC detection
+MIN_HMM_EVALUE = 1e-6  # min evalue for CDS HMM searches
 HYPOTHETICAL_PROTEIN = 'hypothetical protein'  # hypothetical protein product description
 CDS_MAX_OVERLAPS = 30  # max overlap [bp] allowed for user-provided/de novo-predicted CDS overlaps
 CDS_SOURCE_USER = 'user-provided'
