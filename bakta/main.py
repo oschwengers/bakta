@@ -248,11 +248,15 @@ def main():
             cdss.extend(imported_cdss)
 
         if(len(cdss) > 0):
-            log.debug('lookup CDS UPS/IPS')
-            cdss_ups, cdss_not_found_ups = ups.lookup(cdss)
-            cdss_ips, cdss_not_found_ips = ips.lookup(cdss_ups)
-            cdss_not_found = cdss_not_found_ups + cdss_not_found_ips
-            print(f'\tdetected IPSs: {len(cdss_ips)}')
+            if(cfg.db_info['type'] == 'full'):
+                log.debug('lookup CDS UPS/IPS')
+                cdss_ups, cdss_not_found_ups = ups.lookup(cdss)
+                cdss_ips, cdss_not_found_ips = ips.lookup(cdss_ups)
+                cdss_not_found = cdss_not_found_ups + cdss_not_found_ips
+                print(f'\tdetected IPSs: {len(cdss_ips)}')
+            else:
+                cdss_not_found = [*cdss]
+                print(f'\tskip UPS/IPS detection with light db version')
 
             if(len(cdss_not_found) > 0):
                 if(cfg.db_info['type'] == 'full'):
