@@ -54,6 +54,7 @@ gram = None
 replicons = None
 compliant = None
 user_proteins = None
+user_hmms = None
 meta = None
 regions = None
 
@@ -161,7 +162,7 @@ def setup(args):
         taxon = None
 
     # annotation configurations
-    global complete, prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, gram, replicons, compliant, user_proteins, meta, regions
+    global complete, prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, gram, replicons, compliant, user_proteins, user_hmms, meta, regions
     complete = args.complete
     log.info('complete=%s', complete)
     prodigal_tf = args.prodigal_tf
@@ -233,6 +234,19 @@ def setup(args):
             sys.exit(f'ERROR: replicon table file ({replicons}) not valid!')
     log.info('replicon-table=%s', replicons)
     user_proteins = check_user_proteins(args)
+    user_hmms = args.hmms
+    if(user_hmms is not None):
+        try:
+            if(user_hmms == ''):
+                raise ValueError('File path argument must be non-empty')
+            user_hmms_path = Path(user_hmms).resolve()
+            check_readability('HMM', user_hmms_path)
+            check_content_size('HMM', user_hmms_path)
+            user_hmms = user_hmms_path
+        except:
+            log.error('provided HMM file not valid! path=%s', user_hmms)
+            sys.exit(f'ERROR: HMM file ({user_hmms}) not valid!')
+
     regions = args.regions
     if(regions is not None):
         try:
