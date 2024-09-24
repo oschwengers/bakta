@@ -249,9 +249,9 @@ def main():
 
         if(len(cdss) > 0):
             log.debug('lookup CDS UPS/IPS')
-            cdss_ups, cdss_not_found = ups.lookup(cdss)
-            cdss_ips, sorf_pscs = ips.lookup(cdss_ups)
-            cdss_not_found.extend(sorf_pscs)
+            cdss_ups, cdss_not_found_ups = ups.lookup(cdss)
+            cdss_ips, cdss_not_found_ips = ips.lookup(cdss_ups)
+            cdss_not_found = cdss_not_found_ups + cdss_not_found_ips
             print(f'\tdetected IPSs: {len(cdss_ips)}')
 
             if(len(cdss_not_found) > 0):
