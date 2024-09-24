@@ -15,6 +15,7 @@ import bakta.io.gff as gff
 import bakta.io.insdc as insdc
 import bakta.expert.amrfinder as exp_amr
 import bakta.expert.protein_sequences as exp_aa_seq
+import bakta.expert.protein_hmms as exp_aa_hmms
 import bakta.features.annotation as anno
 import bakta.features.t_rna as t_rna
 import bakta.features.tm_rna as tm_rna
@@ -249,8 +250,8 @@ def main():
         if(len(cdss) > 0):
             log.debug('lookup CDS UPS/IPS')
             cdss_ups, cdss_not_found = ups.lookup(cdss)
-            cdss_ips, sorf_pscs = ips.lookup(cdss_ups)
-            cdss_not_found.extend(sorf_pscs)
+            cdss_ips, cdss_not_found_tmp = ips.lookup(cdss_ups)
+            cdss_not_found.extend(cdss_not_found_tmp)
             print(f'\tdetected IPSs: {len(cdss_ips)}')
 
             if(len(cdss_not_found) > 0):
@@ -285,6 +286,11 @@ def main():
                 exp_aa_seq.write_user_protein_sequences(user_aa_path)
                 user_aa_found = exp_aa_seq.search(cdss, cds_aa_path, 'user_proteins', user_aa_path)
                 print(f'\t\tuser protein sequences: {len(user_aa_found)}')
+
+            if(cfg.user_hmms):
+                log.debug('conduct expert system: user HMM')
+                user_hmm_found = exp_aa_hmms.search(cdss, cfg.user_hmms)
+                print(f'\t\tuser HMM sequences: {len(user_hmm_found)}')
 
             if(cfg.gram != bc.GRAM_UNKNOWN):
                 sig_peptides_found = sig_peptides.search(cdss, cds_aa_path)
@@ -357,8 +363,8 @@ def main():
         if(len(sorfs_not_found) > 0):
             if(cfg.db_info['type'] == 'full'):
                 log.debug('search sORF PSC')
-                sorf_pscs, sorfs_not_found = s_orf.search_pscs(sorfs_not_found)
-                sorf_pscs_psccs.extend(sorf_pscs)
+                cdss_not_found_tmp, sorfs_not_found = s_orf.search_pscs(sorfs_not_found)
+                sorf_pscs_psccs.extend(cdss_not_found_tmp)
                 print(f'\tfound PSCs: {len(sorf_pscs_psccs)}')
             else:
                 log.debug('search sORF PSCC')
