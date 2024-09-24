@@ -301,17 +301,20 @@ def main():
                 anno.combine_annotation(cds)  # combine IPS & PSC annotations and mark hypotheticals
 
             hypotheticals = [cds for cds in cdss if 'hypothetical' in cds and 'edge' not in cds and cds.get('start_type', 'Edge') != 'Edge']
-            if(len(hypotheticals) > 0  and  not cfg.skip_pseudo  and  cfg.db_info['type'] == 'full'):
-                print('\tdetect pseudogenes...')
-                log.debug('search pseudogene candidates')
-                pseudo_candidates = feat_cds.predict_pseudo_candidates(hypotheticals)
-                print(f'\t\tpseudogene candidates: {len(pseudo_candidates)}')
-                pseudogenes = feat_cds.detect_pseudogenes(pseudo_candidates, cdss, genome) if len(pseudo_candidates) > 0 else []
-                psc.lookup(pseudogenes, pseudo=True)
-                pscc.lookup(pseudogenes, pseudo=True)
-                for pseudogene in pseudogenes:
-                    anno.combine_annotation(pseudogene)
-                print(f'\t\tfound pseudogenes: {len(pseudogenes)}')
+            if(len(hypotheticals) > 0  and  not cfg.skip_pseudo):
+                if(cfg.db_info['type'] == 'full'):
+                    print('\tdetect pseudogenes...')
+                    log.debug('search pseudogene candidates')
+                    pseudo_candidates = feat_cds.predict_pseudo_candidates(hypotheticals)
+                    print(f'\t\tpseudogene candidates: {len(pseudo_candidates)}')
+                    pseudogenes = feat_cds.detect_pseudogenes(pseudo_candidates, cdss, genome) if len(pseudo_candidates) > 0 else []
+                    psc.lookup(pseudogenes, pseudo=True)
+                    pscc.lookup(pseudogenes, pseudo=True)
+                    for pseudogene in pseudogenes:
+                        anno.combine_annotation(pseudogene)
+                    print(f'\t\tfound pseudogenes: {len(pseudogenes)}')
+                else:
+                    print(f'\tskip pseudogene detection with light db version')
             hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
             if(len(hypotheticals) > 0):
                 log.debug('analyze hypotheticals')
