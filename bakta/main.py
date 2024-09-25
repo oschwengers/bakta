@@ -476,15 +476,15 @@ def main():
     log.info('selected features=%i', len(features))
     print(f'selected: {len(features)}')
 
-    locus_tag_nr = 5
     # use user provided locus tag if not None/non-empty or generate a sequence based locus prefix
     locus_tag_prefix = cfg.locus_tag if cfg.locus_tag else bu.create_locus_tag_prefix(contigs)
     log.info('locus tag prefix=%s', locus_tag_prefix)
+    locus_tag_nr = cfg.locus_tag_increment
     for feature in features:
-        locus_tag = f'{locus_tag_prefix}_{locus_tag_nr:05}'
+        locus_tag = f'{locus_tag_prefix}_{locus_tag_nr:0{len(str(cfg.locus_tag_increment*len(features)))+1}}'
         if(feature['type'] in [bc.FEATURE_T_RNA, bc.FEATURE_TM_RNA, bc.FEATURE_R_RNA, bc.FEATURE_NC_RNA, bc.FEATURE_CDS, bc.FEATURE_SORF]):
             feature['locus'] = locus_tag
-            locus_tag_nr += 5
+            locus_tag_nr += cfg.locus_tag_increment
 
     ############################################################################
     # Improve annotations
