@@ -353,16 +353,20 @@ def search(sorfs: Sequence[dict], cluster_type: str):
             sorf = sorf_by_aa_digest[sorf_hash]
             query_cov = int(alignment_length) / len(sorf['aa'])
             identity = float(identity) / 100
+            bitscore = float(bitscore)
+            evalue = float(evalue)
             if(query_cov >= bc.MIN_SORF_COVERAGE and identity >= bc.MIN_SORF_IDENTITY):
                 result = {
                     'query_cov': query_cov,
-                    'identity': identity
+                    'identity': identity,
+                    'score': bitscore,
+                    'evalue': evalue
                 }
                 result[psc.DB_PSC_COL_UNIREF90 if cluster_type == 'full' else pscc.DB_PSCC_COL_UNIREF50] = cluster_id
                 sorf['psc' if cluster_type == 'full' else 'pscc'] = result
                 log.info(
-                    'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, UniRef90=%s',
-                    sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], len(sorf['aa']), query_cov, identity, cluster_id
+                    'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, score=%0.1f, evalue=%s, UniRef90=%s',
+                    sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], len(sorf['aa']), query_cov, identity, bitscore, evalue, cluster_id
                 )
 
     sorfs_found = []

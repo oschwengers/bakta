@@ -72,16 +72,20 @@ def search(cdss: Sequence[dict]) -> Tuple[Sequence[dict], Sequence[dict], Sequen
             cds = cds_by_hexdigest[aa_identifier]
             query_cov = int(alignment_length) / len(cds['aa'])
             identity = float(identity) / 100
+            bitscore = float(bitscore)
+            evalue = float(evalue)
             if(query_cov >= bc.MIN_PSC_COVERAGE and identity >= bc.MIN_PSCC_IDENTITY):
                 cds['psc'] = {
                     DB_PSC_COL_UNIREF90: cluster_id,
                     'query_cov': query_cov,
                     'identity': identity,
+                    'score': bitscore,
+                    'evalue': evalue,
                     'valid': identity >= bc.MIN_PSC_IDENTITY
                 }
                 log.debug(
-                    'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, UniRef90=%s',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, identity, cluster_id
+                    'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, score=%0.1f, evalue=%s, UniRef90=%s',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, identity, bitscore, evalue, cluster_id
                 )
 
     pscs_found = []
