@@ -449,6 +449,48 @@ def test_locustag_compliant_ok(parameters, tmpdir):
 @pytest.mark.parametrize(
     'parameters',
     [
+        (['--locus-tag-increment']),  # not provided
+        (['--locus-tag-increment', '']),  # empty
+        (['--locus-tag-increment', ' ']),  # whitespace only
+        (['--locus-tag-increment', 'A']),  # wrong characters
+        (['--locus-tag-increment', 'a']),  # wrong characters
+        (['--locus-tag-increment', '0']),  # wrong number
+        (['--locus-tag-increment', '11']),  # wrong number
+    ]
+)
+def test_locustag_increment_failiing(parameters, tmpdir):
+    # test locus-tag increment arguments
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--force', '--skip-plot'] +
+        parameters +
+        SKIP_PARAMETERS +
+        ['test/data/NC_002127.1.fna']
+    )
+    assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--locus-tag-increment', '1']),
+        (['--locus-tag-increment', '5']),
+        (['--locus-tag-increment', '10'])
+    ]
+)
+def test_locustag_increment_ok(parameters, tmpdir):
+    # test locus-tag increment arguments
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--force', '--skip-plot'] +
+        parameters +
+        SKIP_PARAMETERS +
+        ['test/data/NC_002127.1.fna']
+    )
+    assert proc.returncode == 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
         (['--genus']),  # not provided
         (['--genus', '']),  # empty
         (['--genus', ' ']),  # whitespace only
