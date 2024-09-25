@@ -92,9 +92,10 @@ def main():
         if(cfg.skip_gap): print(f'\tskip gap: {cfg.skip_gap}')
         if(cfg.skip_ori): print(f'\tskip oriC/V/T: {cfg.skip_ori}')
         if(cfg.skip_plot): print(f'\tskip plot: {cfg.skip_plot}')
+        print()
     
     if(cfg.debug):
-        print(f"\nBakta runs in DEBUG mode! Temporary data will not be destroyed at: {cfg.tmp_path}")
+        print(f"Bakta runs in DEBUG mode! Temporary data will not be destroyed at: {cfg.tmp_path}\n")
     else:
         atexit.register(bu.cleanup, log, cfg.tmp_path)  # register cleanup exit hook
 
@@ -104,7 +105,7 @@ def main():
     # - apply contig length filter
     # - rename contigs
     ############################################################################
-    print('\nparse genome sequences...')
+    print('parse genome sequences...')
     try:
         contigs = fasta.import_contigs(cfg.genome_path)
         log.info('imported sequences=%i', len(contigs))
@@ -535,16 +536,16 @@ def main():
     print(f'\nexport annotation results to: {cfg.output_path}')
     print('\thuman readable TSV...')
     tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.tsv')
-    tsv.write_tsv(genome['contigs'], features_by_contig, tsv_path)
+    tsv.write_features(genome['contigs'], features_by_contig, tsv_path)
 
     print('\tGFF3...')
     gff3_path = cfg.output_path.joinpath(f'{cfg.prefix}.gff3')
-    gff.write_gff3(genome, features_by_contig, gff3_path)
+    gff.write_features(genome, features_by_contig, gff3_path)
 
     print('\tINSDC GenBank & EMBL...')
     genbank_path = cfg.output_path.joinpath(f'{cfg.prefix}.gbff')
     embl_path = cfg.output_path.joinpath(f'{cfg.prefix}.embl')
-    insdc.write_insdc(genome, features, genbank_path, embl_path)
+    insdc.write_features(genome, features, genbank_path, embl_path)
 
     print('\tgenome sequences...')
     fna_path = cfg.output_path.joinpath(f'{cfg.prefix}.fna')
@@ -562,13 +563,13 @@ def main():
         print('\tskip generation of circular genome plot...')
     else:
         print('\tcircular genome plot...')
-        plot.write_plot(features, contigs, cfg.output_path)
+        plot.write(features, contigs, cfg.output_path)
 
     if(cfg.skip_cds is False):
         hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
         print('\thypothetical TSV...')
         tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.tsv')
-        tsv.write_hypotheticals_tsv(hypotheticals, tsv_path)
+        tsv.write_hypotheticals(hypotheticals, tsv_path)
 
         print('\ttranslated hypothetical CDS sequences...')
         faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.faa')

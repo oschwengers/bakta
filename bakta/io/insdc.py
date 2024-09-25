@@ -18,7 +18,7 @@ import bakta.so as so
 log = logging.getLogger('INSDC')
 
 
-def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Path, embl_output_path: Path):
+def write_features(genome: dict, features: Sequence[dict], genbank_output_path: Path, embl_output_path: Path):
     log.debug('prepare: genbank=%s, embl=%s', genbank_output_path, embl_output_path)
 
     contig_list = []
