@@ -120,7 +120,7 @@ def lookup(features: Sequence[dict], pseudo: bool = False):
                 if(pseudo):
                     feature[bc.PSEUDOGENE]['pscc'] = pscc
                 else:
-                    feature['pscc'] = pscc
+                    feature['pscc'] = {**feature['pscc'], **pscc}  # merge dicts to store alignment info for later PSC/PSCC annotations
                 no_pscc_lookups += 1
                 log.debug(
                     'lookup: contig=%s, start=%i, stop=%i, strand=%s, UniRef50=%s, product=%s',
