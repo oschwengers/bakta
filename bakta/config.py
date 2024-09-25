@@ -50,6 +50,7 @@ translation_table = None
 keep_contig_headers = None
 locus = None
 locus_tag = None
+locus_tag_increment = None
 gram = None
 replicons = None
 compliant = None
@@ -162,7 +163,7 @@ def setup(args):
         taxon = None
 
     # annotation configurations
-    global complete, prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, gram, replicons, compliant, user_proteins, user_hmms, meta, regions
+    global complete, prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, locus_tag_increment, gram, replicons, compliant, user_proteins, user_hmms, meta, regions
     complete = args.complete
     log.info('complete=%s', complete)
     prodigal_tf = args.prodigal_tf
@@ -218,6 +219,8 @@ def setup(args):
                 log.error("Invalid 'locus-tag' parameter! locus-tag=%s", locus_tag)
                 sys.exit(f"ERROR: invalid 'locus-tag' parameter ({locus_tag})!\nLocus tag prefixes must contain between 1 and 24 alphanumeric characters or '_.-' signs.")
     log.info('locus-tag=%s', locus_tag)
+    locus_tag_increment = args.locus_tag_increment
+    log.info('locus-tag-increment=%s', locus_tag_increment)
     keep_contig_headers = args.keep_contig_headers
     log.info('keep_contig_headers=%s', keep_contig_headers)
     replicons = args.replicons

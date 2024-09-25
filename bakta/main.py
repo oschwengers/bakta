@@ -62,8 +62,9 @@ def main():
         print('Options and arguments:')
         print(f'\tinput: {cfg.genome_path}')
         print(f"\tdb: {cfg.db_path}, version {cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}")
-        if(cfg.prodigal_tf): print(f'\tprodigal training file: {cfg.prodigal_tf}')
         if(cfg.replicons): print(f'\treplicon table: {cfg.replicons}')
+        if(cfg.prodigal_tf): print(f'\tprodigal training file: {cfg.prodigal_tf}')
+        if(cfg.regions): print(f'\tregion table: {cfg.regions}')
         if(cfg.user_proteins): print(f'\tuser proteins: {cfg.user_proteins}')
         if(cfg.user_hmms): print(f'\tuser hmms: {cfg.user_hmms}')
         print(f'\toutput: {cfg.output_path}')
@@ -249,11 +250,15 @@ def main():
             cdss.extend(imported_cdss)
 
         if(len(cdss) > 0):
-            log.debug('lookup CDS UPS/IPS')
-            cdss_ups, cdss_not_found = ups.lookup(cdss)
-            cdss_ips, cdss_not_found_tmp = ips.lookup(cdss_ups)
-            cdss_not_found.extend(cdss_not_found_tmp)
-            print(f'\tdetected IPSs: {len(cdss_ips)}')
+            if(cfg.db_info['type'] == 'full'):
+                log.debug('lookup CDS UPS/IPS')
+                cdss_ups, cdss_not_found_ups = ups.lookup(cdss)
+                cdss_ips, cdss_not_found_ips = ips.lookup(cdss_ups)
+                cdss_not_found = cdss_not_found_ups + cdss_not_found_ips
+                print(f'\tdetected IPSs: {len(cdss_ips)}')
+            else:
+                cdss_not_found = [*cdss]
+                print(f'\tskip UPS/IPS detection with light db version')
 
             if(len(cdss_not_found) > 0):
                 if(cfg.db_info['type'] == 'full'):
@@ -303,17 +308,20 @@ def main():
                 anno.combine_annotation(cds)  # combine IPS & PSC annotations and mark hypotheticals
 
             hypotheticals = [cds for cds in cdss if 'hypothetical' in cds and 'edge' not in cds and cds.get('start_type', 'Edge') != 'Edge']
-            if(len(hypotheticals) > 0  and  not cfg.skip_pseudo  and  cfg.db_info['type'] == 'full'):
-                print('\tdetect pseudogenes...')
-                log.debug('search pseudogene candidates')
-                pseudo_candidates = feat_cds.predict_pseudo_candidates(hypotheticals)
-                print(f'\t\tpseudogene candidates: {len(pseudo_candidates)}')
-                pseudogenes = feat_cds.detect_pseudogenes(pseudo_candidates, cdss, genome) if len(pseudo_candidates) > 0 else []
-                psc.lookup(pseudogenes, pseudo=True)
-                pscc.lookup(pseudogenes, pseudo=True)
-                for pseudogene in pseudogenes:
-                    anno.combine_annotation(pseudogene)
-                print(f'\t\tfound pseudogenes: {len(pseudogenes)}')
+            if(len(hypotheticals) > 0  and  not cfg.skip_pseudo):
+                if(cfg.db_info['type'] == 'full'):
+                    print('\tdetect pseudogenes...')
+                    log.debug('search pseudogene candidates')
+                    pseudo_candidates = feat_cds.predict_pseudo_candidates(hypotheticals)
+                    print(f'\t\tpseudogene candidates: {len(pseudo_candidates)}')
+                    pseudogenes = feat_cds.detect_pseudogenes(pseudo_candidates, cdss, genome) if len(pseudo_candidates) > 0 else []
+                    psc.lookup(pseudogenes, pseudo=True)
+                    pscc.lookup(pseudogenes, pseudo=True)
+                    for pseudogene in pseudogenes:
+                        anno.combine_annotation(pseudogene)
+                    print(f'\t\tfound pseudogenes: {len(pseudogenes)}')
+                else:
+                    print(f'\tskip pseudogene detection with light db version')
             hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
             if(len(hypotheticals) > 0):
                 log.debug('analyze hypotheticals')
@@ -475,15 +483,15 @@ def main():
     log.info('selected features=%i', len(features))
     print(f'selected: {len(features)}')
 
-    locus_tag_nr = 5
     # use user provided locus tag if not None/non-empty or generate a sequence based locus prefix
     locus_tag_prefix = cfg.locus_tag if cfg.locus_tag else bu.create_locus_tag_prefix(contigs)
     log.info('locus tag prefix=%s', locus_tag_prefix)
+    locus_tag_nr = cfg.locus_tag_increment
     for feature in features:
-        locus_tag = f'{locus_tag_prefix}_{locus_tag_nr:05}'
+        locus_tag = f'{locus_tag_prefix}_{locus_tag_nr:0{len(str(cfg.locus_tag_increment*len(features)))+1}}'
         if(feature['type'] in [bc.FEATURE_T_RNA, bc.FEATURE_TM_RNA, bc.FEATURE_R_RNA, bc.FEATURE_NC_RNA, bc.FEATURE_CDS, bc.FEATURE_SORF]):
             feature['locus'] = locus_tag
-            locus_tag_nr += 5
+            locus_tag_nr += cfg.locus_tag_increment
 
     ############################################################################
     # Improve annotations
