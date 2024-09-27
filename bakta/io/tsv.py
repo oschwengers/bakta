@@ -63,6 +63,48 @@ def write_features(contigs: Sequence[dict], features_by_contig: Dict[str, dict],
     return
 
 
+def write_feature_inferences(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_path: Path):
+    """Export feature inference statistics in TSV format."""
+    log.info('write tsv: path=%s', tsv_path)
+
+    with tsv_path.open('wt') as fh:
+        fh.write('# Annotated with Bakta\n')
+        fh.write(f'# Software: v{bakta.__version__}\n')
+        fh.write(f"# Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}\n")
+        fh.write(f'# DOI: {bc.BAKTA_DOI}\n')
+        fh.write(f'# URL: {bc.BAKTA_URL}\n')
+        fh.write('#Sequence Id\tType\tStart\tStop\tStrand\tLocus Tag\tscore\tevalue\tquery-cov\tsubject-cov\tid')
+
+        for contig in contigs:
+            for feat in features_by_contig[contig['id']]:
+                if(feat['type'] in [
+                            bc.FEATURE_T_RNA,
+                            bc.FEATURE_R_RNA,
+                            bc.FEATURE_NC_RNA,
+                            bc.FEATURE_NC_RNA_REGION,
+                            bc.FEATURE_CDS,
+                            bc.FEATURE_SORF
+                        ]
+                    ):
+                    fh.write('\t'.join(
+                        [
+                            feat['contig'],
+                            feat['type'],
+                            str(feat['start']),
+                            str(feat['stop']),
+                            feat['strand'],
+                            feat['locus'],
+                            f"{feat['score']:0.1f}",
+                            f"{feat['evalue']:1.1e}" if 'evalue' in feat else '-',
+                            f"{feat['query_cov']:0.3f}" if 'query_cov' in feat else '-',
+                            f"{feat['subject_cov']:0.3f}" if 'subject_cov' in feat else '-',
+                            f"{feat['identity']:0.3f}" if 'identity' in feat else '-'
+                        ])
+                    )
+                    fh.write('\n')
+    return
+
+
 def write_protein_features(features: Sequence[dict], header_columns: Sequence[str], mapping: LambdaType, tsv_path: Path):
     """Export protein features in TSV format."""
     log.info('write protein feature tsv: path=%s', tsv_path)

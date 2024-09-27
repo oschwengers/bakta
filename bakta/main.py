@@ -559,6 +559,10 @@ def main():
     faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.faa')
     fasta.write_faa(features, faa_path)
 
+    print('\tfeature inferences...')
+    tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.inference.tsv')
+    tsv.write_feature_inferences(genome['contigs'], features_by_contig, tsv_path)
+
     if(cfg.skip_plot  or  cfg.meta):
         print('\tskip generation of circular genome plot...')
     else:
