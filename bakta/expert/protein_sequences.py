@@ -26,7 +26,7 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
         '--db', str(db_path),
         '--out', str(diamond_output_path),
         '--max-target-seqs', '1',  # single best output
-        '--outfmt', '6', 'qseqid', 'sseqid', 'slen', 'length', 'pident', 'evalue', 'bitscore', 'stitle',
+        '--outfmt', '6', 'qseqid', 'sseqid', 'qlen', 'slen', 'length', 'pident', 'evalue', 'bitscore', 'stitle',
         '--threads', str(cfg.threads),
         '--tmpdir', str(cfg.tmp_path),  # use tmp folder
         '--block-size', '4',  # increase block size for faster executions
@@ -51,13 +51,13 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
     cds_by_hexdigest = orf.get_orf_dictionary(cdss)
     with diamond_output_path.open() as fh:
         for line in fh:
-            (aa_identifier, model_id, model_length, alignment_length, identity, evalue, bitscore, model_title) = line.strip().split('\t')
+            (aa_identifier, model_id, query_length, model_length, alignment_length, identity, evalue, bitscore, model_title) = line.strip().split('\t')
             cds = cds_by_hexdigest[aa_identifier]
             query_cov = int(alignment_length) / len(cds['aa'])
             model_cov = int(alignment_length) / int(model_length)
             identity = float(identity) / 100
-            evalue = float(evalue)
             bitscore = float(bitscore)
+            evalue = float(evalue)
             (source, rank, min_identity, min_query_cov, min_model_cov, gene, product, dbxrefs) = model_title.split(' ', 1)[1].split('~~~')
             rank = int(rank)
             min_identity = float(min_identity) / 100
@@ -72,10 +72,10 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
                     'gene': gene if gene != '' else None,
                     'product': product,
                     'query_cov': query_cov,
-                    'model_cov': model_cov,
+                    'subject_cov': model_cov,
                     'identity': identity,
+                    'score': bitscore,
                     'evalue': evalue,
-                    'bitscore': bitscore,
                     'db_xrefs': [] if dbxrefs == '' else dbxrefs.split(',')
                 }
                 if(expert_system == 'user_proteins'):
@@ -83,8 +83,8 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
                 cds.setdefault('expert', [])
                 cds['expert'].append(hit)
                 log.debug(
-                    'hit: source=%s, rank=%i, contig=%s, start=%i, stop=%i, strand=%s, query-cov=%0.3f, model-cov=%0.3f, identity=%0.3f, gene=%s, product=%s, evalue=%1.1e, bitscore=%f',
-                    source, rank, cds['contig'], cds['start'], cds['stop'], cds['strand'], query_cov, model_cov, identity, gene, product, evalue, bitscore
+                    'hit: source=%s, rank=%i, contig=%s, start=%i, stop=%i, strand=%s, query-cov=%0.3f, subject-cov=%0.3f, identity=%0.3f, score=%0.1f, evalue=%1.1e, gene=%s, product=%s',
+                    source, rank, cds['contig'], cds['start'], cds['stop'], cds['strand'], query_cov, model_cov, identity, bitscore, evalue, gene, product
                 )
                 cds_found.add(aa_identifier)
 
