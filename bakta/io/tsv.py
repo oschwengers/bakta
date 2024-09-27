@@ -73,19 +73,24 @@ def write_feature_inferences(contigs: Sequence[dict], features_by_contig: Dict[s
         fh.write(f"# Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}\n")
         fh.write(f'# DOI: {bc.BAKTA_DOI}\n')
         fh.write(f'# URL: {bc.BAKTA_URL}\n')
-        fh.write('#Sequence Id\tType\tStart\tStop\tStrand\tLocus Tag\tscore\tevalue\tquery-cov\tsubject-cov\tid')
+        fh.write('#Sequence Id\tType\tStart\tStop\tStrand\tLocus Tag\tscore\tevalue\tquery-cov\tsubject-cov\tid\n')
 
         for contig in contigs:
             for feat in features_by_contig[contig['id']]:
-                if(feat['type'] in [
-                            bc.FEATURE_T_RNA,
-                            bc.FEATURE_R_RNA,
-                            bc.FEATURE_NC_RNA,
-                            bc.FEATURE_NC_RNA_REGION,
-                            bc.FEATURE_CDS,
-                            bc.FEATURE_SORF
-                        ]
-                    ):
+                if(feat['type'] in [bc.FEATURE_CDS, bc.FEATURE_SORF]):
+                    score, evalue, query_cov, subject_cov, identity = None, None, None, None, None
+                    if('ups' in feat or 'ips' in feat):
+                        query_cov = 1
+                        subject_cov = 1
+                        identity = 1
+                        evalue = 0
+                    elif('psc' in feat or 'pscc' in feat):
+                        psc_type = 'psc' if 'psc' in feat else 'pscc'
+                        query_cov = feat[psc_type]['query_cov']
+                        subject_cov = feat[psc_type]['subject_cov']
+                        identity = feat[psc_type]['identity']
+                        score = feat[psc_type]['score']
+                        evalue = feat[psc_type]['evalue']
                     fh.write('\t'.join(
                         [
                             feat['contig'],
@@ -94,11 +99,28 @@ def write_feature_inferences(contigs: Sequence[dict], features_by_contig: Dict[s
                             str(feat['stop']),
                             feat['strand'],
                             feat['locus'],
+                            f"{score:0.1f}" if score != None else '-',
+                            ('0.0' if evalue == 0 else f"{evalue:1.1e}") if evalue != None else '-',
+                            ('1.0' if query_cov == 1 else f"{query_cov:0.3f}") if query_cov != None else '-',
+                            ('1.0' if subject_cov == 1 else f"{subject_cov:0.3f}") if subject_cov != None else '-',
+                            ('1.0' if identity == 1 else f"{identity:0.3f}") if identity != None else '-'
+                        ])
+                    )
+                    fh.write('\n')
+                elif(feat['type'] in [bc.FEATURE_T_RNA, bc.FEATURE_R_RNA, bc.FEATURE_NC_RNA, bc.FEATURE_NC_RNA_REGION]):
+                    fh.write('\t'.join(
+                        [
+                            feat['contig'],
+                            feat['type'],
+                            str(feat['start']),
+                            str(feat['stop']),
+                            feat['strand'],
+                            feat['locus'] if 'locus' in feat else '-',
                             f"{feat['score']:0.1f}",
-                            f"{feat['evalue']:1.1e}" if 'evalue' in feat else '-',
-                            f"{feat['query_cov']:0.3f}" if 'query_cov' in feat else '-',
-                            f"{feat['subject_cov']:0.3f}" if 'subject_cov' in feat else '-',
-                            f"{feat['identity']:0.3f}" if 'identity' in feat else '-'
+                            ('0.0' if feat['evalue'] == 0 else f"{feat['evalue']:1.1e}") if 'evalue' in feat else '-',
+                            ('1.0' if feat['query_cov'] == 1 else f"{feat['query_cov']:0.3f}") if 'query_cov' in feat else '-',
+                            ('1.0' if feat['subject_cov'] == 1 else f"{feat['subject_cov']:0.3f}") if 'subject_cov' in feat else '-',
+                            ('1.0' if feat['identity'] == 1 else f"{feat['identity']:0.3f}") if 'identity' in feat else '-'
                         ])
                     )
                     fh.write('\n')
