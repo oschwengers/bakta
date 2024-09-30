@@ -24,7 +24,6 @@ def detect_spurious(orfs: Sequence[dict]):
         for top_hits in pyhmmer.hmmsearch(hmm, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
             for hit in top_hits:
                 orf = orf_by_aa_digest[hit.name.decode()]
-                print(f'ANTIFAM: hit.evalue={hit.evalue}')
                 if hit.evalue > bc.MIN_HMM_EVALUE:
                     log.debug(
                         'discard low spurious E value: contig=%s, start=%i, stop=%i, strand=%s, subject=%s, evalue=%1.1e, bitscore=%f',
