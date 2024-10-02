@@ -14,6 +14,7 @@ import pyhmmer
 
 from Bio import SeqIO
 from Bio.Seq import Seq
+from Bio import SeqFeature
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from xopen import xopen
 
@@ -219,7 +220,16 @@ def import_user_cdss(genome: dict, import_path: Path):
                             if(contig is None):
                                 log.error('user-provided CDS: No contig found for id=%s', contig_id)
                                 raise Exception(f'user-provided CDS: No contig found for id={contig_id}')
-                            user_cds = create_cds(contig, int(start), int(stop), strand, '', '')
+                            edge = False
+                            start = int(start)
+                            stop = int(stop)
+                            if(stop > contig['length']):  # check for features spanning sequence edges
+                                stop = stop - contig['length']
+                                edge = True
+                                
+                            user_cds = create_cds(contig, start, stop, strand, '', '')
+                            if(edge):
+                                user_cds['edge'] = True
                             user_cds['source'] = bc.CDS_SOURCE_USER
                             if('pseudo=' in attributes  or  bc.INSDC_FEATURE_PSEUDOGENE in attributes):  # skip pseudo genes
                                 log.debug(
@@ -259,7 +269,13 @@ def import_user_cdss(genome: dict, import_path: Path):
                             if(contig is None):
                                 log.error('user-provided CDS: No contig found for id=%s', record.id)
                                 raise Exception(f'user-provided CDS: No contig found for id={record.id}')
-                            strand = bc.STRAND_FORWARD if feature.location.strand == +1 else bc.STRAND_REVERSE
+                            if(feature.location.strand is None):  # weird mixed-stranded compound locations
+                                strand = bc.STRAND_UNKNOWN
+                            else:
+                                strand = bc.STRAND_FORWARD if feature.location.strand == +1 else bc.STRAND_REVERSE
+                            start = feature.location.start + 1
+                            end = feature.location.end
+                            edge = False
                             if('<' in str(feature.location.start)  or  '>' in str(feature.location.end)):
                                 log.debug(
                                     'skip user-provided CDS: reason=partial, contig=%s, start=%s, stop=%s, strand=%s',
@@ -278,7 +294,22 @@ def import_user_cdss(genome: dict, import_path: Path):
                                     contig['id'], feature.location.start, feature.location.end, strand
                                 )
                                 continue
-                            user_cds = create_cds(contig, feature.location.start + 1, feature.location.end, strand, '', '')
+                            elif(isinstance(feature.location, SeqFeature.CompoundLocation)  and  len(feature.location.parts) == 2):
+                                strand = feature.location.strand
+                                if(strand != bc.STRAND_UNKNOWN):  # only accept equal strands -> edge feature 
+                                    strand = bc.STRAND_FORWARD if feature.location.strand == +1 else bc.STRAND_REVERSE
+                                    edge = True
+                                    edge_left, edge_right = feature.location.parts
+                                    if(strand == bc.STRAND_FORWARD):
+                                        start = edge_left.start + 1
+                                        end = edge_right.end
+                                    else:
+                                        start = edge_right.start + 1
+                                        end = edge_left.end
+
+                            user_cds = create_cds(contig, start, end, strand, '', '')
+                            if(edge):
+                                user_cds['edge'] = True
                             user_cds['source'] = bc.CDS_SOURCE_USER
                             try:
                                 nt = bu.extract_feature_sequence(user_cds, contig)
