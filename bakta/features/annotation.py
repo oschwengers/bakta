@@ -103,7 +103,7 @@ def combine_annotation(feature: dict):
             db_xrefs.add(db_xref)
 
     if(len(expert_hits) > 0):
-        top_expert_hit = sorted(expert_hits,key=lambda k: (k['rank'], k.get('score', 0)), reverse=True)[0]
+        top_expert_hit = sorted(expert_hits,key=lambda k: (k['rank'], k.get('score', 0), calc_annotation_score(k)), reverse=True)[0]
         expert_genes = top_expert_hit.get('gene', None)
         if(expert_genes):
             expert_genes = expert_genes.replace('/', ',').split(',')
@@ -385,8 +385,8 @@ def detect_feature_overlaps(genome: dict):
                 elif(sorf['start'] == overlap_sorf['start'] and sorf['stop'] == overlap_sorf['stop']):
                     continue  # same
                 else:  # overlap -> remove sorf
-                    score_sorf = calc_sorf_annotation_score(sorf)
-                    score_overlap_sorf = calc_sorf_annotation_score(overlap_sorf)
+                    score_sorf = calc_cds_annotation_score(sorf)
+                    score_overlap_sorf = calc_cds_annotation_score(overlap_sorf)
 
                     if(score_sorf < score_overlap_sorf):  # lower annotation score
                         overlap = f"[{max(sorf['start'], overlap_sorf['start'])},{min(sorf['stop'], overlap_sorf['stop'])}]"
@@ -412,36 +412,35 @@ def detect_feature_overlaps(genome: dict):
                         )
 
 
-def calc_sorf_annotation_score(sorf: dict) -> int:
+def calc_cds_annotation_score(cds: dict) -> int:
     """Calc an annotation score rewarding each identification & annotation"""
     score = 0
 
-    if('ups' in sorf):
+    if('ups' in cds):
         score += 1
 
-    ips = sorf.get('ips', None)
+    ips = cds.get('ips', None)
     if(ips):
         score += 1
-        ips_gene = ips.get('gene', None)
-        if(ips_gene):
-            score += 1
-        ips_product = ips.get('product', None)
-        if(ips_product):
-            score += 1
+        score += calc_annotation_score(ips)
 
-    psc = sorf.get('psc', None)
+    psc = cds.get('psc', None)
     if(psc):
         score += 1
-        psc_gene = psc.get('gene', None)
-        if(psc_gene):
-            score += 1
-        psc_product = psc.get('product', None)
-        if(psc_product):
-            score += 1
+        score += calc_annotation_score(psc)
     log.debug(
-        'sorf score: contig=%s, start=%i, stop=%i, gene=%s, product=%s, score=%i',
-        sorf['contig'], sorf['start'], sorf['stop'], sorf.get('gene', '-'), sorf.get('product', '-'), score
+        'cds score: contig=%s, start=%i, stop=%i, gene=%s, product=%s, score=%i',
+        cds['contig'], cds['start'], cds['stop'], cds.get('gene', '-'), cds.get('product', '-'), score
     )
+    return score
+
+
+def calc_annotation_score(orf:dict) -> int:
+    score = 0
+    if(orf.get('gene', None)):
+        score += 1
+    if(orf.get('product', None)):
+        score += 1
     return score
 
 
