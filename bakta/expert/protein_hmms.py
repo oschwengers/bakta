@@ -38,7 +38,6 @@ def search(cdss: Sequence[dict], user_hmms_path):
                     hit_domain_lengths_sum = sum([len(dom.alignment.hmm_sequence) for dom in hmm_query_hit.domains.included])
                     hit = {
                         'type': 'user_hmms',
-                        'source': 'UserHMMs',
                         'rank': 100,
                         'id': hmm_id,
                         'length': hit_domain_lengths_sum,
