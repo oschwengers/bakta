@@ -276,7 +276,7 @@ Protein sequences provided in short Fasta or GenBank format are searched with de
 
 #### User-provided HMMs
 
-Bakta accepts user-provided trusted HMMs via `--hmms` in HMMER's text format. If set, Bakta will adhere to the *trusted cutoff* specified in the HMM header. In addition, a max. evalue threshold of 1e-6 is applied. By default, Bakta used the HMM description line as a product description. Further information can be provided via the HMM description line using the *short* format as explained above.
+Bakta accepts user-provided trusted HMMs via `--hmms` in HMMER's text format. If set, Bakta will adhere to the *trusted cutoff* specified in the HMM header. In addition, a max. evalue threshold of 1e-6 is applied. By default, Bakta uses the HMM description line as a product description. Further information can be provided via the HMM description line using the *short* format as explained above in the [User-provided protein sequences](####user-provided-protein-sequences) section.
 
 ```bash
 # default
