@@ -87,7 +87,7 @@ def predict(genome: dict):
     return cdss
 
 
-def create_cds(contig: dict, start: int, stop: int, strand: str, nt: str, aa: str):
+def create_cds(contig: dict, start: int, stop: int, strand: str, edge:bool, nt: str, aa: str):
     cds = OrderedDict()
     cds['type'] = bc.FEATURE_CDS
     cds['contig'] = contig['id']
@@ -101,6 +101,8 @@ def create_cds(contig: dict, start: int, stop: int, strand: str, nt: str, aa: st
     cds['nt'] = nt
     cds['aa'] = aa
     cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
+    if(edge):
+        cds['edge'] = True
     return cds
 
 
@@ -109,7 +111,7 @@ def create_cdss(genes, contig):
     cdss_per_sequence = []
     for gene in genes:
         strand = bc.STRAND_FORWARD if gene.strand == 1 else bc.STRAND_REVERSE
-        cds = create_cds(contig, gene.begin, gene.end, strand, '', '')
+        cds = create_cds(contig, gene.begin, gene.end, strand, False, '', '')
         cds['start_type'] = gene.start_type
         cds['rbs_motif'] = gene.rbs_motif
         if gene.partial_begin:
@@ -227,9 +229,7 @@ def import_user_cdss(genome: dict, import_path: Path):
                                 stop = stop - contig['length']
                                 edge = True
                                 
-                            user_cds = create_cds(contig, start, stop, strand, '', '')
-                            if(edge):
-                                user_cds['edge'] = True
+                            user_cds = create_cds(contig, start, stop, strand, edge, '', '')
                             user_cds['source'] = bc.CDS_SOURCE_USER
                             if('pseudo=' in attributes  or  bc.INSDC_FEATURE_PSEUDOGENE in attributes):  # skip pseudo genes
                                 log.debug(
@@ -307,9 +307,7 @@ def import_user_cdss(genome: dict, import_path: Path):
                                         start = edge_right.start + 1
                                         end = edge_left.end
 
-                            user_cds = create_cds(contig, start, end, strand, '', '')
-                            if(edge):
-                                user_cds['edge'] = True
+                            user_cds = create_cds(contig, start, end, strand, edge, '', '')
                             user_cds['source'] = bc.CDS_SOURCE_USER
                             try:
                                 nt = bu.extract_feature_sequence(user_cds, contig)
