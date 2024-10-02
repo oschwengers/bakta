@@ -285,21 +285,39 @@ def detect_feature_overlaps(genome: dict):
                     )
             # user-provided CDS overlaps
             for cds_user_provided in contig_cdss_user_provided[contig['id']]:
-                if(cds['stop'] < cds_user_provided['start'] or cds['start'] > cds_user_provided['stop']):
-                    continue
-                else:  # overlap -> remove cds
-                    overlap = min(cds['stop'], cds_user_provided['stop']) - max(cds['start'], cds_user_provided['start']) + 1
-                    if(overlap > bc.CDS_MAX_OVERLAPS):
-                        overlap = f"[{max(cds['start'], cds_user_provided['start'])},{min(cds['stop'], cds_user_provided['stop'])}]"
-                        cds['discarded'] = {
-                            'type': bc.DISCARD_TYPE_OVERLAP,
-                            'feature_type': bc.FEATURE_CDS,
-                            'description': f'overlaps {bc.FEATURE_CDS} at {overlap}'
-                        }
-                        log.info(
-                            "overlap: de novo CDS (%s/%s) [%i, %i] overlapping user-provided CDS [%i, %i], %s, contig=%s",
-                            cds.get('gene', '-'), cds.get('product', '-'), cds['start'], cds['stop'], cds_user_provided['start'], cds_user_provided['stop'], overlap, cds['contig']
-                        )
+                overlap = 0
+                if(not cds_user_provided.get('edge', False)  and  not cds.get('edge', False)):  # both CDS not edge features
+                    if(cds['stop'] < cds_user_provided['start'] or cds['start'] > cds_user_provided['stop']):
+                        continue
+                    else:
+                        overlap = min(cds['stop'], cds_user_provided['stop']) - max(cds['start'], cds_user_provided['start']) + 1
+                elif(cds_user_provided.get('edge', False)  and  not cds.get('edge', False)):  # only user-provided CDS edge feature
+                    if(cds['stop'] > cds_user_provided['start']):  # overlapping de-novo CDS at sequence end
+                        overlap = cds['stop'] - max(cds['start'], cds_user_provided['start']) + 1
+                    elif(cds['start'] < cds_user_provided['stop']):  # overlapping de-novo CDS at sequence start
+                        overlap = min(cds['stop'], cds_user_provided['stop']) - cds['start'] + 1
+                    else:
+                        continue
+                elif(not cds_user_provided.get('edge', False)  and  cds.get('edge', False)):  # only de-novo CDS edge feature
+                    if(cds_user_provided['stop'] > cds['start']):  # overlapping user-provided CDS at sequence end
+                        overlap = cds_user_provided['stop'] - max(cds['start'], cds_user_provided['start']) + 1
+                    elif(cds_user_provided['start'] < cds['stop']):  # overlapping user-provided CDS at sequence start
+                        overlap = min(cds['stop'], cds_user_provided['stop']) - cds_user_provided['start'] + 1
+                    else:
+                        continue
+                elif(cds_user_provided.get('edge', False)  and  cds.get('edge', False)):  # both CDS edge features
+                    overlap = (contig['length'] - max(cds['start'], cds_user_provided['start']) + 1) + min(cds['stop'], cds_user_provided['stop'])
+                if(overlap > bc.CDS_MAX_OVERLAPS):
+                    overlap = f"[{max(cds['start'], cds_user_provided['start'])},{min(cds['stop'], cds_user_provided['stop'])}]"
+                    cds['discarded'] = {
+                        'type': bc.DISCARD_TYPE_OVERLAP,
+                        'feature_type': bc.FEATURE_CDS,
+                        'description': f'overlaps user-provided {bc.FEATURE_CDS} at {overlap}'
+                    }
+                    log.info(
+                        "overlap: de-novo CDS (%s/%s) [%i, %i] overlapping user-provided CDS [%i, %i], %s, contig=%s",
+                        cds.get('gene', '-'), cds.get('product', '-'), cds['start'], cds['stop'], cds_user_provided['start'], cds_user_provided['stop'], overlap, cds['contig']
+                    )
 
         # remove sORF overlapping with tRNAs, tmRNAs, rRNAs, CRISPRs, inframe CDSs, shorter inframe sORFs
         for sorf in contig_sorfs[contig['id']]:
