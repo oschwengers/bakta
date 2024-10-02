@@ -101,18 +101,17 @@ def combine_annotation(feature: dict):
             product = ips_product
         for db_xref in ips['db_xrefs']:
             db_xrefs.add(db_xref)
-    rank = 0
-    for hit in expert_hits:
-        db_xrefs.update(hit.get('db_xrefs', []))
-        expert_rank = hit['rank']
-        if(expert_rank > rank):
-            expert_genes = hit.get('gene', None)
-            if(expert_genes):
-                expert_genes = expert_genes.replace('/', ',').split(',')
-                genes.update(expert_genes)
-                gene = expert_genes[0]
-            product = hit.get('product', None)
-            rank = expert_rank
+
+    if(len(expert_hits) > 0):
+        top_expert_hit = sorted(expert_hits,key=lambda k: (k['rank'], k.get('score', 0)), reverse=True)[0]
+        expert_genes = top_expert_hit.get('gene', None)
+        if(expert_genes):
+            expert_genes = expert_genes.replace('/', ',').split(',')
+            genes.update(expert_genes)
+            gene = expert_genes[0]
+        product = top_expert_hit.get('product', None)
+        for hit in expert_hits:
+            db_xrefs.update(hit.get('db_xrefs', []))
 
     if(product):
         product = revise_cds_product(product)
