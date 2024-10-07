@@ -22,6 +22,7 @@ RE_PROTEIN_DOMAIN_CONTAINING = re.compile(r'domain-containing protein', flags=re
 RE_PROTEIN_NO_LETTERS = re.compile(r'[^A-Za-z]')
 RE_PROTEIN_SUSPECT_CHARS_DISCARD = re.compile(r'[.#]')
 RE_PROTEIN_SUSPECT_CHARS_REPLACE = re.compile(r'[@=?%]')
+RE_PROTEIN_SUSPECT_CHARS_BEGINNING = '_\-+.:,;/\\\''
 RE_PROTEIN_PERIOD_SEPARATOR = re.compile(r'([a-zA-Z0-9]+)\.([a-zA-Z0-9]+)')
 RE_PROTEIN_WRONG_PRIMES = re.compile(r'[\u2032\u0060\u00B4]')  # prime (′), grave accent (`), acute accent (´)
 RE_PROTEIN_WEIGHT = re.compile(r' [0-9]+(?:\.[0-9]+)? k?da ', flags=re.IGNORECASE)
@@ -539,6 +540,11 @@ def revise_cds_product(product: str):
     product = re.sub(RE_PROTEIN_PERIOD_SEPARATOR, r'\1-\2', product)  # replace separator periods
     if(product != old_product):
         log.info('fix product: replace separator periods. new=%s, old=%s', product, old_product)
+    
+    old_product = product
+    if(product[0] in RE_PROTEIN_SUSPECT_CHARS_BEGINNING):  # remove suspect first character
+        product = product[1:]
+        log.info('fix product: replace invalid first character. new=%s, old=%s', product, old_product)
 
     old_product = product
     product = RE_PROTEIN_SUSPECT_CHARS_DISCARD.sub('', product)  # remove suspect characters
