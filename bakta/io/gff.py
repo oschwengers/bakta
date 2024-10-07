@@ -91,6 +91,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         'locus_tag': feat['locus'],
                         'gene': feat['gene'],
                         'product': feat['product'],
+                        'tag_peptide': feat['tag_aa'],
                         'Dbxref': feat['db_xrefs']
                     }
                     if(cfg.compliant):

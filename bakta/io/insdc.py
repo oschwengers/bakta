@@ -189,6 +189,7 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                     qualifiers['pseudo'] = None
             elif(feature['type'] == bc.FEATURE_TM_RNA):
                 qualifiers['inference'] = 'profile:aragorn:1.2'
+                qualifiers['tag_peptide'] = feature['tag_aa']
                 insdc_feature_type = bc.INSDC_FEATURE_TM_RNA
             elif(feature['type'] == bc.FEATURE_R_RNA):
                 for rfam_id in [dbxref.split(':')[1] for dbxref in feature['db_xrefs'] if dbxref.split(':')[0] == bc.DB_XREF_RFAM]:
