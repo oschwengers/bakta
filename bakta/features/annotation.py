@@ -20,7 +20,8 @@ RE_PROTEIN_NODE = re.compile(r'NODE_', flags=re.IGNORECASE)
 RE_PROTEIN_POTENTIAL_CONTIG_NAME = re.compile(r'(genome|shotgun)', flags=re.IGNORECASE)
 RE_PROTEIN_DOMAIN_CONTAINING = re.compile(r'domain-containing protein', flags=re.IGNORECASE)
 RE_PROTEIN_NO_LETTERS = re.compile(r'[^A-Za-z]')
-RE_PROTEIN_SUSPECT_CHARS = re.compile(r'[.@=?%]')
+RE_PROTEIN_SUSPECT_CHARS_DISCARD = re.compile(r'[.]')
+RE_PROTEIN_SUSPECT_CHARS_REPLACE = re.compile(r'[@=?%]')
 RE_PROTEIN_PERIOD_SEPARATOR = re.compile(r'([a-zA-Z0-9]+)\.([a-zA-Z0-9]+)')
 RE_PROTEIN_WRONG_PRIMES = re.compile(r'[\u2032\u0060\u00B4]')  # prime (′), grave accent (`), acute accent (´)
 RE_PROTEIN_WEIGHT = re.compile(r' [0-9]+(?:\.[0-9]+)? k?da ', flags=re.IGNORECASE)
@@ -540,7 +541,12 @@ def revise_cds_product(product: str):
         log.info('fix product: replace separator periods. new=%s, old=%s', product, old_product)
 
     old_product = product
-    product = RE_PROTEIN_SUSPECT_CHARS.sub('', product)  # remove suspect characters
+    product = RE_PROTEIN_SUSPECT_CHARS_DISCARD.sub('', product)  # remove suspect characters
+    if(product != old_product):
+        log.info('fix product: replace invalid characters. new=%s, old=%s', product, old_product)
+
+    old_product = product
+    product = RE_PROTEIN_SUSPECT_CHARS_REPLACE.sub(' ', product)  # replace suspect characters by single whitespace
     if(product != old_product):
         log.info('fix product: replace invalid characters. new=%s, old=%s', product, old_product)
 
