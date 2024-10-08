@@ -60,7 +60,9 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                     }
                     if(feat.get('gene', None)):  # add gene annotation if available
                         annotations['gene'] = feat['gene']
-                    if(feat.get('pseudo', False)):
+                    if(bc.PSEUDOGENE in feat):
+                        annotations[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNKNOWN
+                    elif('truncated' in feat):
                         annotations['pseudo'] = True
                     if(feat.get('anti_codon', False)):
                         annotations['anti_codon'] = feat['anti_codon']
@@ -77,8 +79,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         }
                         if(feat.get('gene', None)):
                             gene_annotations['gene'] = feat['gene']
-                        if(feat.get('pseudo', None)):
-                            annotations[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNKNOWN
+                        if(bc.PSEUDOGENE in feat):
                             gene_annotations[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNKNOWN
                         gene_annotations = encode_annotations(gene_annotations)
                         fh.write(f"{feat['contig']}\ttRNAscan-SE\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
@@ -94,6 +95,8 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         'tag_peptide': feat['tag_aa'],
                         'Dbxref': feat['db_xrefs']
                     }
+                    if('truncated' in feat):
+                        annotations['pseudo'] = True
                     if(cfg.compliant):
                         gene_id = f"{feat['locus']}_gene"
                         annotations['Parent'] = gene_id
@@ -104,6 +107,8 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                             'locus_tag': feat['locus'],
                             'gene': feat['gene']
                         }
+                        if('truncated' in feat):
+                            gene_annotations['pseudo'] = True
                         gene_annotations = encode_annotations(gene_annotations)
                         fh.write(f"{feat['contig']}\tAragorn\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
@@ -117,6 +122,8 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
+                    if('truncated' in feat):
+                        annotations['pseudo'] = True
                     if(cfg.compliant):
                         gene_id = f"{feat['locus']}_gene"
                         annotations['Parent'] = gene_id
@@ -128,6 +135,8 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                             'locus_tag': feat['locus'],
                             'gene': feat['gene']
                         }
+                        if('truncated' in feat):
+                            gene_annotations['pseudo'] = True
                         gene_annotations = encode_annotations(gene_annotations)
                         fh.write(f"{feat['contig']}\tInfernal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
@@ -141,6 +150,8 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
+                    if('truncated' in feat):
+                        annotations['pseudo'] = True
                     if(cfg.compliant):
                         gene_id = f"{feat['locus']}_gene"
                         gene_annotations = {
@@ -148,6 +159,8 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                             'locus_tag': feat['locus'],
                             'gene': feat['gene']
                         }
+                        if('truncated' in feat):
+                            gene_annotations['pseudo'] = True
                         annotations['Parent'] = gene_id
                         for rfam_id in [dbxref.split(':')[1] for dbxref in feat['db_xrefs'] if dbxref.split(':')[0] == bc.DB_XREF_RFAM]:
                             annotations['inference'] = f'profile:Rfam:{rfam_id}'
@@ -164,6 +177,8 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
+                    if('truncated' in feat):
+                        annotations['pseudo'] = True
                     if(cfg.compliant):
                         for rfam_id in [dbxref.split(':')[1] for dbxref in feat['db_xrefs'] if dbxref.split(':')[0] == bc.DB_XREF_RFAM]:
                             annotations['inference'] = f'profile:Rfam:{rfam_id}'
@@ -221,7 +236,9 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                         'product': feat['product'],
                         'Dbxref': feat['db_xrefs']
                     }
-                    if(feat.get('pseudo', False)):
+                    if(bc.PSEUDOGENE in feat):
+                        annotations[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNPROCESSED if feat[bc.PSEUDOGENE]['paralog'] else bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNITARY
+                    elif('truncated' in feat):
                         annotations['pseudo'] = True
                     if(feat.get('gene', None)):  # add gene annotation if available
                         annotations['gene'] = feat['gene']
@@ -241,8 +258,7 @@ def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Pat
                             annotations['inference'] = 'ab initio prediction:Prodigal:2.6'
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         annotations['Note'], ec_number = insdc.extract_ec_from_notes_insdc(annotations, 'Note')
-                        if(feat.get('pseudo', False)):
-                            annotations[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNPROCESSED if feat[bc.PSEUDOGENE]['paralog'] else bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNITARY
+                        if(bc.PSEUDOGENE in feat):
                             gene_annotations[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNPROCESSED if feat[bc.PSEUDOGENE]['paralog'] else bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNITARY
                         if(ec_number is not None):
                             annotations['ec_number'] = ec_number

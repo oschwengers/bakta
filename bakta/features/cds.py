@@ -745,14 +745,11 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
                         pseudogene['description'] = f"{effects}. {causes}" if effects != '' else causes
 
                         if bc.FEATURE_END_5_PRIME in directions and bc.FEATURE_END_3_PRIME in directions:
-                            truncation = bc.FEATURE_END_BOTH
+                            cds['truncated'] = bc.FEATURE_END_BOTH
                         elif bc.FEATURE_END_5_PRIME in directions:
-                            truncation = bc.FEATURE_END_5_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_3_PRIME
+                            cds['truncated'] = bc.FEATURE_END_5_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_3_PRIME
                         elif bc.FEATURE_END_3_PRIME in directions:
-                            truncation = bc.FEATURE_END_3_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_5_PRIME
-                        cds['truncated'] = truncation
-
-                        cds['pseudo'] = True
+                            cds['truncated'] = bc.FEATURE_END_3_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_5_PRIME
                         cds[bc.PSEUDOGENE] = pseudogene
                         cds.pop('hypothetical')
                         pseudogenes.append(cds)
