@@ -282,7 +282,7 @@ def import_user_cdss(genome: dict, import_path: Path):
                                     contig['id'], feature.location.start, feature.location.end, strand
                                 )
                                 continue
-                            elif('pseudo' in feature.qualifiers  or  bc.INSDC_FEATURE_PSEUDOGENE in feature.qualifiers):
+                            elif(bc.INSDC_FEATURE_PSEUDO in feature.qualifiers  or  bc.INSDC_FEATURE_PSEUDOGENE in feature.qualifiers):
                                 log.debug(
                                     'skip user-provided CDS: reason=pseudo, contig=%s, start=%i, stop=%i, strand=%s',
                                     contig['id'], feature.location.start, feature.location.end, strand

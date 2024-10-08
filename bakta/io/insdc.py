@@ -235,7 +235,7 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
             else:
                 if('truncated' in feature):
                     if(bc.PSEUDOGENE not in feature):  # only add /pseudo qualifier if /pseudogene is not already set
-                        qualifiers['pseudo'] = None
+                        qualifiers[bc.INSDC_FEATURE_PSEUDO] = None
                     if(feature['truncated'] == bc.FEATURE_END_5_PRIME):
                         qualifiers['note'].append("(5' truncated)")
                         if(feature['strand'] == bc.STRAND_FORWARD):
@@ -266,7 +266,7 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                     else:
                         gene_qualifier[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNKNOWN
                 elif('truncated' in feature):
-                    gene_qualifier['pseudo'] = None
+                    gene_qualifier[bc.INSDC_FEATURE_PSEUDO] = None
                 gen_seqfeat = SeqFeature(feature_location, type='gene', qualifiers=gene_qualifier)
                 seq_feature_list.append(gen_seqfeat)
             feat_seqfeat = SeqFeature(feature_location, type=insdc_feature_type, qualifiers=qualifiers)
