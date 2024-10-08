@@ -116,15 +116,7 @@ def predict_r_rnas(genome: dict, contigs_path: Path):
                         rrna['gene'] = 'rrs'
                     elif(accession == 'RF02541'):
                         rrna['gene'] = 'rrl'
-
-                    if(truncated is None):
-                        rrna['product'] = f'{rrna_tag} ribosomal RNA'
-                    elif(truncated == bc.FEATURE_END_UNKNOWN):
-                        rrna['product'] = f'(partial) {rrna_tag} ribosomal RNA'
-                    elif(truncated == bc.FEATURE_END_5_PRIME):
-                        rrna['product'] = f"(5' truncated) {rrna_tag} ribosomal RNA"
-                    elif(truncated == bc.FEATURE_END_3_PRIME):
-                        rrna['product'] = f"(3' truncated) {rrna_tag} ribosomal RNA"
+                    rrna['product'] = f'{rrna_tag} ribosomal RNA'
 
                     if(truncated):
                         rrna['truncated'] = truncated

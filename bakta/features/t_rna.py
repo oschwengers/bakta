@@ -97,7 +97,7 @@ def predict_t_rnas(genome: dict, contigs_path: Path):
                 trna['anti_codon'] = anti_codon.lower()
 
             if('pseudo' in note):
-                trna['pseudo'] = True
+                trna[bc.PSEUDOGENE] = True
 
             trna['score'] = float(score)
 

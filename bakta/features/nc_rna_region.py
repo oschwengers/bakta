@@ -100,15 +100,7 @@ def predict_nc_rna_regions(genome: dict, contigs_path: Path):
                     ncrna_region['stop'] = stop
                     ncrna_region['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
                     ncrna_region['label'] = subject
-
-                    if(truncated is None):
-                        ncrna_region['product'] = description
-                    elif(truncated == bc.FEATURE_END_UNKNOWN):
-                        ncrna_region['product'] = f'(partial) {description}'
-                    elif(truncated == bc.FEATURE_END_5_PRIME):
-                        ncrna_region['product'] = f"(5' truncated) {description}"
-                    elif(truncated == bc.FEATURE_END_3_PRIME):
-                        ncrna_region['product'] = f"(3' truncated) {description}"
+                    ncrna_region['product'] = description
 
                     if(ncrna_region['class'] is not None):
                         db_xrefs.append(ncrna_region['class'].id)

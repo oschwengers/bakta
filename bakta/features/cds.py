@@ -282,7 +282,7 @@ def import_user_cdss(genome: dict, import_path: Path):
                                     contig['id'], feature.location.start, feature.location.end, strand
                                 )
                                 continue
-                            elif('pseudo' in feature.qualifiers  or  bc.INSDC_FEATURE_PSEUDOGENE in feature.qualifiers):
+                            elif(bc.INSDC_FEATURE_PSEUDO in feature.qualifiers  or  bc.INSDC_FEATURE_PSEUDOGENE in feature.qualifiers):
                                 log.debug(
                                     'skip user-provided CDS: reason=pseudo, contig=%s, start=%i, stop=%i, strand=%s',
                                     contig['id'], feature.location.start, feature.location.end, strand
@@ -745,14 +745,11 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
                         pseudogene['description'] = f"{effects}. {causes}" if effects != '' else causes
 
                         if bc.FEATURE_END_5_PRIME in directions and bc.FEATURE_END_3_PRIME in directions:
-                            truncation = bc.FEATURE_END_BOTH
+                            cds['truncated'] = bc.FEATURE_END_BOTH
                         elif bc.FEATURE_END_5_PRIME in directions:
-                            truncation = bc.FEATURE_END_5_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_3_PRIME
+                            cds['truncated'] = bc.FEATURE_END_5_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_3_PRIME
                         elif bc.FEATURE_END_3_PRIME in directions:
-                            truncation = bc.FEATURE_END_3_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_5_PRIME
-                        cds['truncated'] = truncation
-
-                        cds['pseudo'] = True
+                            cds['truncated'] = bc.FEATURE_END_3_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_5_PRIME
                         cds[bc.PSEUDOGENE] = pseudogene
                         cds.pop('hypothetical')
                         pseudogenes.append(cds)

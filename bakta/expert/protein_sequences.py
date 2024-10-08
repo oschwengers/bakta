@@ -106,7 +106,7 @@ def write_user_protein_sequences(aa_fasta_path: Path):
         with xopen(str(cfg.user_proteins), threads=0) as fh_in:
             for record in SeqIO.parse(fh_in, 'genbank'):
                 for feature in record.features:
-                    if(feature.type.lower() == 'cds'  and  'pseudo' not in feature.qualifiers and  bc.INSDC_FEATURE_PSEUDOGENE not in feature.qualifiers):
+                    if(feature.type.lower() == 'cds'  and  bc.INSDC_FEATURE_PSEUDO not in feature.qualifiers  and  bc.INSDC_FEATURE_PSEUDOGENE not in feature.qualifiers):
                         user_proteins.append(parse_user_protein_sequences_genbank(feature))
     except Exception as e:
         log.error('provided user proteins file GenBank format not valid!', exc_info=True)
