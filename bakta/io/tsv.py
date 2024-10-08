@@ -31,16 +31,15 @@ def write_tsv(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_
                     feat_type = bc.INSDC_FEATURE_ASSEMBLY_GAP if feat['length'] >= 100 else bc.INSDC_FEATURE_GAP
 
                 gene = feat['gene'] if feat.get('gene', None) else ''
+                product = feat.get('product', '')
                 if(bc.PSEUDOGENE in feat):
-                    product = f"(pseudo) {feat.get('product', '')}"
+                    product = f"(pseudo) {product}"
                 elif(feat.get('truncated', '') == bc.FEATURE_END_5_PRIME):
-                    product = f"(5' truncated) {feat.get('product', '')}"
+                    product = f"(5' truncated) {product}"
                 elif(feat.get('truncated', '') == bc.FEATURE_END_3_PRIME):
-                    product = f"(3' truncated) {feat.get('product', '')}"
+                    product = f"(3' truncated) {product}"
                 elif(feat.get('truncated', '') == bc.FEATURE_END_BOTH):
-                    product = f"(partial) {feat.get('product', '')}"
-                else:
-                    product = feat.get('product', '')
+                    product = f"(partial) {product}"
                 fh.write('\t'.join(
                     [
                         feat['contig'],
