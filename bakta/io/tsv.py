@@ -35,9 +35,9 @@ def write_tsv(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_
                     product = f"(pseudo) {feat.get('product', '')}"
                 elif(feat.get('truncated', '') == bc.FEATURE_END_5_PRIME):
                     product = f"(5' truncated) {feat.get('product', '')}"
-                elif(feat['truncated'] == bc.FEATURE_END_3_PRIME):
+                elif(feat.get('truncated', '') == bc.FEATURE_END_3_PRIME):
                     product = f"(3' truncated) {feat.get('product', '')}"
-                elif(feat['truncated'] == bc.FEATURE_END_BOTH):
+                elif(feat.get('truncated', '') == bc.FEATURE_END_BOTH):
                     product = f"(partial) {feat.get('product', '')}"
                 else:
                     product = feat.get('product', '')
