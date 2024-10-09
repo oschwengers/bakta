@@ -14,6 +14,7 @@ import bakta.db as db
 import bakta.utils as bu
 import bakta.expert.amrfinder as exp_amr
 import bakta.expert.protein_sequences as exp_aa_seq
+import bakta.expert.protein_hmms as exp_aa_hmms
 import bakta.features.annotation as anno
 import bakta.features.orf as orf
 import bakta.features.cds as feat_cds
@@ -42,6 +43,7 @@ def main():
     
     arg_group_annotation = parser.add_argument_group('Annotation')
     arg_group_annotation.add_argument('--proteins', action='store', default=None, dest='proteins', help='Fasta file of trusted protein sequences for annotation')
+    arg_group_annotation.add_argument('--hmms', action='store', default=None, dest='hmms', help='HMM file of trusted hidden markov models in HMMER format for CDS annotation')
     
     arg_group_general = parser.add_argument_group('General')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
@@ -91,6 +93,18 @@ def main():
     log.info('debug=%s', cfg.debug)
     cfg.verbose = True if cfg.debug else args.verbose
     log.info('verbose=%s', cfg.verbose)
+    cfg.user_proteins = cfg.check_user_proteins(args)
+    if(args.hmms is not None):
+        try:
+            if(args.hmms == ''):
+                raise ValueError('File path argument must be non-empty')
+            user_hmms_path = Path(args.hmms).resolve()
+            cfg.check_readability('HMM', user_hmms_path)
+            cfg.check_content_size('HMM', user_hmms_path)
+            cfg.user_hmms = user_hmms_path
+        except:
+            log.error('provided HMM file not valid! path=%s', args.hmms)
+            sys.exit(f'ERROR: HMM file ({args.hmms}) not valid!')
     
     bu.test_dependencies()
     if(cfg.verbose):
@@ -233,6 +247,10 @@ def annotate_aa(aas: Sequence[dict]):
         exp_aa_seq.write_user_protein_sequences(user_aa_path)
         user_aa_found = exp_aa_seq.search(aas, aa_path, 'user_proteins', user_aa_path)
         print(f'\t\tuser protein sequences: {len(user_aa_found)}')
+    if(cfg.user_hmms):
+        log.debug('conduct expert system: user HMM')
+        user_hmm_found = exp_aa_hmms.search(aas, cfg.user_hmms)
+        print(f'\t\tuser HMM sequences: {len(user_hmm_found)}')
     print('\tcombine annotations and mark hypotheticals...')
     log.debug('combine CDS annotations')
     for aa in aas:
