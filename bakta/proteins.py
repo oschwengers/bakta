@@ -154,7 +154,7 @@ def main():
     annotations_path = output_path.joinpath(f'{cfg.prefix}.tsv')
     header_columns = ['ID', 'Length', 'Gene', 'Product', 'EC', 'GO', 'COG', 'RefSeq', 'UniParc', 'UniRef']
     print(f'\tfull annotations (TSV): {annotations_path}')
-    tsv.write_features(aas, header_columns, map_aa_columns, annotations_path)
+    tsv.write_protein_features(aas, header_columns, map_aa_columns, annotations_path)
     full_annotations_path = output_path.joinpath(f'{cfg.prefix}.json')
     print(f'\tfull annotations (JSON): {full_annotations_path}')
     json.write_json(None, aas, full_annotations_path)
@@ -162,7 +162,7 @@ def main():
     header_columns = ['ID', 'Length', 'Mol Weight [kDa]', 'Iso El. Point', 'Pfam hits']
     hypotheticals = hypotheticals = [aa for aa in aas if 'hypothetical' in aa]
     print(f'\tinformation on hypotheticals (TSV): {hypotheticals_path}')
-    tsv.write_features(hypotheticals, header_columns, map_hypothetical_columns, hypotheticals_path)
+    tsv.write_protein_features(hypotheticals, header_columns, map_hypothetical_columns, hypotheticals_path)
     aa_output_path = output_path.joinpath(f'{cfg.prefix}.faa')
     print(f'\tannotated sequences (Fasta): {aa_output_path}')
     fasta.write_faa(aas, aa_output_path)

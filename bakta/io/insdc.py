@@ -18,7 +18,7 @@ import bakta.so as so
 log = logging.getLogger('INSDC')
 
 
-def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Path, embl_output_path: Path):
+def write_features(genome: dict, features: Sequence[dict], genbank_output_path: Path, embl_output_path: Path):
     log.debug('prepare: genbank=%s, embl=%s', genbank_output_path, embl_output_path)
 
     contig_list = []
@@ -122,8 +122,9 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                 if('product' in qualifiers):
                     del qualifiers['product']
             elif(feature['type'] == bc.FEATURE_CDS) or (feature['type'] == bc.FEATURE_SORF):
-                if(feature.get('pseudo', False)):
+                if(bc.PSEUDOGENE in feature):
                     qualifiers[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNPROCESSED if feature[bc.PSEUDOGENE]['paralog'] else bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNITARY
+                    qualifiers['note'].append(feature[bc.PSEUDOGENE]['description'])
                 else:
                     qualifiers['protein_id'] = f"gnl|Bakta|{feature['locus']}"
                     qualifiers['translation'] = feature['aa']
@@ -158,8 +159,6 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                     qualifiers['note'], ec_number = extract_ec_from_notes_insdc(qualifiers, 'note')
                     if(ec_number is not None):
                             qualifiers['EC_number'] = ec_number
-                if(feature.get('pseudo', False)):
-                    qualifiers['note'].append(feature[bc.PSEUDOGENE]['description'])
                 if('exception' in feature):
                     ex = feature['exception']
                     pos = f"{ex['start']}..{ex['stop']}"
@@ -185,10 +184,11 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                         qualifiers['note'] = f"tRNA-{feature['amino_acid']} ({feature['anti_codon']})"
                 qualifiers['inference'] = 'profile:tRNAscan:2.0'
                 insdc_feature_type = bc.INSDC_FEATURE_T_RNA
-                if('pseudo' in feature):
-                    qualifiers['pseudo'] = None
+                if(bc.PSEUDOGENE in feature):
+                    qualifiers[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNKNOWN
             elif(feature['type'] == bc.FEATURE_TM_RNA):
                 qualifiers['inference'] = 'profile:aragorn:1.2'
+                qualifiers['tag_peptide'] = feature['tag_aa']
                 insdc_feature_type = bc.INSDC_FEATURE_TM_RNA
             elif(feature['type'] == bc.FEATURE_R_RNA):
                 for rfam_id in [dbxref.split(':')[1] for dbxref in feature['db_xrefs'] if dbxref.split(':')[0] == bc.DB_XREF_RFAM]:
@@ -234,17 +234,22 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                     feature_location = CompoundLocation([fl_1, fl_2])
             else:
                 if('truncated' in feature):
+                    if(bc.PSEUDOGENE not in feature):  # only add /pseudo qualifier if /pseudogene is not already set
+                        qualifiers[bc.INSDC_FEATURE_PSEUDO] = None
                     if(feature['truncated'] == bc.FEATURE_END_5_PRIME):
+                        qualifiers['note'].append("(5' truncated)")
                         if(feature['strand'] == bc.STRAND_FORWARD):
                             start = BeforePosition(start)
                         else:
                             stop = AfterPosition(stop)
                     elif(feature['truncated'] == bc.FEATURE_END_3_PRIME):
+                        qualifiers['note'].append("(3' truncated)")
                         if(feature['strand'] == bc.STRAND_FORWARD):
                             stop = AfterPosition(stop)
                         else:
                             start = BeforePosition(start)
                     elif(feature['truncated'] == bc.FEATURE_END_BOTH):
+                        qualifiers['note'].append('(partial)')
                         start = BeforePosition(start)
                         stop = AfterPosition(stop)
                 feature_location = FeatureLocation(start, stop, strand=strand)
@@ -255,8 +260,13 @@ def write_insdc(genome: dict, features: Sequence[dict], genbank_output_path: Pat
                 if(feature.get('gene', None)):
                     qualifiers['gene'] = feature['gene']
                     gene_qualifier['gene'] = feature['gene']
-                if(feature.get(bc.PSEUDOGENE, None)):
-                    gene_qualifier[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNPROCESSED if feature[bc.PSEUDOGENE]['paralog'] else bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNITARY
+                if(bc.PSEUDOGENE in feature):
+                    if(feature['type'] == bc.FEATURE_CDS):
+                        gene_qualifier[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNPROCESSED if feature[bc.PSEUDOGENE]['paralog'] else bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNITARY
+                    else:
+                        gene_qualifier[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNKNOWN
+                elif('truncated' in feature):
+                    gene_qualifier[bc.INSDC_FEATURE_PSEUDO] = None
                 gen_seqfeat = SeqFeature(feature_location, type='gene', qualifiers=gene_qualifier)
                 seq_feature_list.append(gen_seqfeat)
             feat_seqfeat = SeqFeature(feature_location, type=insdc_feature_type, qualifiers=qualifiers)

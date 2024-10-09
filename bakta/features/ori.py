@@ -72,7 +72,7 @@ def predict_oris(genome: dict, contigs_path: Path, ori_type: str) -> Sequence[di
                 if(len(contig_hits) == 1):
                     hits[hit['contig']] = contig_hits
                 log.debug(
-                    'raw hit: type=%s, contig=%s, start=%i, stop=%i, strand=%s, coverage=%f, identity=%f',
+                    'raw hit: type=%s, contig=%s, start=%i, stop=%i, strand=%s, coverage=%0.3f, identity=%0.3f',
                     ori_type, hit['contig'], hit['contig_start'], hit['contig_stop'], hit['strand'], hit['coverage'], hit['identity']
                 )
 

@@ -14,6 +14,7 @@ import pyhmmer
 
 from Bio import SeqIO
 from Bio.Seq import Seq
+from Bio import SeqFeature
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from xopen import xopen
 
@@ -86,7 +87,7 @@ def predict(genome: dict):
     return cdss
 
 
-def create_cds(contig: dict, start: int, stop: int, strand: str, nt: str, aa: str):
+def create_cds(contig: dict, start: int, stop: int, strand: str, edge:bool, nt: str, aa: str):
     cds = OrderedDict()
     cds['type'] = bc.FEATURE_CDS
     cds['contig'] = contig['id']
@@ -100,6 +101,8 @@ def create_cds(contig: dict, start: int, stop: int, strand: str, nt: str, aa: st
     cds['nt'] = nt
     cds['aa'] = aa
     cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
+    if(edge):
+        cds['edge'] = True
     return cds
 
 
@@ -108,7 +111,7 @@ def create_cdss(genes, contig):
     cdss_per_sequence = []
     for gene in genes:
         strand = bc.STRAND_FORWARD if gene.strand == 1 else bc.STRAND_REVERSE
-        cds = create_cds(contig, gene.begin, gene.end, strand, '', '')
+        cds = create_cds(contig, gene.begin, gene.end, strand, False, '', '')
         cds['start_type'] = gene.start_type
         cds['rbs_motif'] = gene.rbs_motif
         if gene.partial_begin:
@@ -219,7 +222,14 @@ def import_user_cdss(genome: dict, import_path: Path):
                             if(contig is None):
                                 log.error('user-provided CDS: No contig found for id=%s', contig_id)
                                 raise Exception(f'user-provided CDS: No contig found for id={contig_id}')
-                            user_cds = create_cds(contig, int(start), int(stop), strand, '', '')
+                            edge = False
+                            start = int(start)
+                            stop = int(stop)
+                            if(stop > contig['length']):  # check for features spanning sequence edges
+                                stop = stop - contig['length']
+                                edge = True
+                                
+                            user_cds = create_cds(contig, start, stop, strand, edge, '', '')
                             user_cds['source'] = bc.CDS_SOURCE_USER
                             if('pseudo=' in attributes  or  bc.INSDC_FEATURE_PSEUDOGENE in attributes):  # skip pseudo genes
                                 log.debug(
@@ -259,14 +269,20 @@ def import_user_cdss(genome: dict, import_path: Path):
                             if(contig is None):
                                 log.error('user-provided CDS: No contig found for id=%s', record.id)
                                 raise Exception(f'user-provided CDS: No contig found for id={record.id}')
-                            strand = bc.STRAND_FORWARD if feature.location.strand == +1 else bc.STRAND_REVERSE
+                            if(feature.location.strand is None):  # weird mixed-stranded compound locations
+                                strand = bc.STRAND_UNKNOWN
+                            else:
+                                strand = bc.STRAND_FORWARD if feature.location.strand == +1 else bc.STRAND_REVERSE
+                            start = feature.location.start + 1
+                            end = feature.location.end
+                            edge = False
                             if('<' in str(feature.location.start)  or  '>' in str(feature.location.end)):
                                 log.debug(
                                     'skip user-provided CDS: reason=partial, contig=%s, start=%s, stop=%s, strand=%s',
                                     contig['id'], feature.location.start, feature.location.end, strand
                                 )
                                 continue
-                            elif('pseudo' in feature.qualifiers  or  bc.INSDC_FEATURE_PSEUDOGENE in feature.qualifiers):
+                            elif(bc.INSDC_FEATURE_PSEUDO in feature.qualifiers  or  bc.INSDC_FEATURE_PSEUDOGENE in feature.qualifiers):
                                 log.debug(
                                     'skip user-provided CDS: reason=pseudo, contig=%s, start=%i, stop=%i, strand=%s',
                                     contig['id'], feature.location.start, feature.location.end, strand
@@ -278,7 +294,20 @@ def import_user_cdss(genome: dict, import_path: Path):
                                     contig['id'], feature.location.start, feature.location.end, strand
                                 )
                                 continue
-                            user_cds = create_cds(contig, feature.location.start + 1, feature.location.end, strand, '', '')
+                            elif(isinstance(feature.location, SeqFeature.CompoundLocation)  and  len(feature.location.parts) == 2):
+                                strand = feature.location.strand
+                                if(strand != bc.STRAND_UNKNOWN):  # only accept equal strands -> edge feature 
+                                    strand = bc.STRAND_FORWARD if feature.location.strand == +1 else bc.STRAND_REVERSE
+                                    edge = True
+                                    edge_left, edge_right = feature.location.parts
+                                    if(strand == bc.STRAND_FORWARD):
+                                        start = edge_left.start + 1
+                                        end = edge_right.end
+                                    else:
+                                        start = edge_right.start + 1
+                                        end = edge_left.end
+
+                            user_cds = create_cds(contig, start, end, strand, edge, '', '')
                             user_cds['source'] = bc.CDS_SOURCE_USER
                             try:
                                 nt = bu.extract_feature_sequence(user_cds, contig)
@@ -528,7 +557,7 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
         '--query-cover', str(int(bc.MIN_PSEUDOGENE_QUERY_COVERAGE * 100)),      # '80'
         '--subject-cover', str(int(bc.MIN_PSEUDOGENE_SUBJECT_COVERAGE * 100)),  # '40'
         '--max-target-seqs', '1',  # single best output
-        '--outfmt', '6', 'qseqid', 'sseqid', 'pident', 'length', 'qstart', 'qend', 'sstart', 'send', 'full_sseq',
+        '--outfmt', '6', 'qseqid', 'sseqid', 'qlen', 'slen', 'length', 'pident', 'evalue', 'bitscore', 'qstart', 'qend', 'sstart', 'send', 'full_sseq',
         '--threads', str(cfg.threads),
         '--tmpdir', str(cfg.tmp_path),
         '--block-size', '3',  # slightly increase block size for faster executions
@@ -552,18 +581,21 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
     cds_by_hexdigest = orf.get_orf_dictionary(hypotheticals)
     with diamond_output_path.open() as fh:
         for line in fh:
-            (aa_identifier, cluster_id, identity, alignment_length, query_start, query_end, subject_start, subject_end, subject_sequence) = line.rstrip('\n').split('\t')
+            (aa_identifier, cluster_id, query_length, subject_length, alignment_length, identity, evalue, bitscore, query_start, query_end, subject_start, subject_end, subject_sequence) = line.rstrip('\n').split('\t')
             cds = cds_by_hexdigest[aa_identifier]
             query_cov = int(alignment_length) / len(cds['aa'])
-            subject_cov = int(alignment_length) / len(subject_sequence)
+            subject_cov = int(alignment_length) / int(subject_length)
             identity = float(identity) / 100
-            if query_cov >= bc.MIN_PSEUDOGENE_QUERY_COVERAGE and identity >= bc.MIN_PSEUDOGENE_IDENTITY \
-                    and bc.MIN_PSEUDOGENE_SUBJECT_COVERAGE <= subject_cov < bc.MIN_PSC_COVERAGE:
+            bitscore = float(bitscore)
+            evalue = float(evalue)
+            if(query_cov >= bc.MIN_PSEUDOGENE_QUERY_COVERAGE and bc.MIN_PSEUDOGENE_SUBJECT_COVERAGE <= subject_cov < bc.MIN_PSC_COVERAGE and identity >= bc.MIN_PSEUDOGENE_IDENTITY):
                 cds['pseudo-inference'] = {
                     DB_PSC_COL_UNIREF90: cluster_id,
-                    'query-cov': query_cov,
-                    'subject-cov': subject_cov,
+                    'query_cov': query_cov,
+                    'subject_cov': subject_cov,
                     'identity': identity,
+                    'score': bitscore,
+                    'evalue': evalue,
                     'gene_start': int(query_start),
                     'gene_end': int(query_end),
                     'reference_start': int(subject_start),
@@ -572,8 +604,8 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
                 }
                 pseudo_candidates.append(cds)
                 log.debug(
-                    'pseudogene-candidate: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, subject-cov=%0.3f, identity=%0.3f, UniRef90=%s',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, subject_cov, identity, cluster_id
+                    'pseudogene-candidate: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, subject-cov=%0.3f, identity=%0.3f, score=%0.1f, evalue=%1.1e, UniRef90=%s',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, subject_cov, identity, bitscore, evalue, cluster_id
                 )
     log.info('found: pseudogene-candidates=%i', len(pseudo_candidates))
     return pseudo_candidates
@@ -662,6 +694,9 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
                     query_alignment_start = int(hit.find('Hit_hsps/Hsp/Hsp_query-from').text)
                     query_alignment_stop = int(hit.find('Hit_hsps/Hsp/Hsp_query-to').text)
                     alignment_length = int(hit.find('Hit_hsps/Hsp/Hsp_align-len').text)
+                    identity = float(hit.find('Hit_hsps/Hsp/Hsp_identity').text) / alignment_length
+                    bitscore = float(hit.find('Hit_hsps/Hsp/Hsp_bit-score').text)
+                    evalue = float(hit.find('Hit_hsps/Hsp/Hsp_evalue').text)
 
                     if alignment_length == len(cds['aa']):  # skip non-extended genes (full match)
                         log.debug(
@@ -686,7 +721,10 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
                             'stop': positions['stop'],
                             'observations': clean_observations(observations),
                             'inference': cds['pseudo-inference'],
-                            'paralog': is_paralog(uniref90_by_hexdigest, aa_identifier, cluster_id)
+                            'paralog': is_paralog(uniref90_by_hexdigest, aa_identifier, cluster_id),
+                            'identity': identity,
+                            'score': bitscore,
+                            'evalue': evalue
                         }
 
                         effects = []
@@ -716,14 +754,11 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
                         pseudogene['description'] = f"{effects}. {causes}" if effects != '' else causes
 
                         if bc.FEATURE_END_5_PRIME in directions and bc.FEATURE_END_3_PRIME in directions:
-                            truncation = bc.FEATURE_END_BOTH
+                            cds['truncated'] = bc.FEATURE_END_BOTH
                         elif bc.FEATURE_END_5_PRIME in directions:
-                            truncation = bc.FEATURE_END_5_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_3_PRIME
+                            cds['truncated'] = bc.FEATURE_END_5_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_3_PRIME
                         elif bc.FEATURE_END_3_PRIME in directions:
-                            truncation = bc.FEATURE_END_3_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_5_PRIME
-                        cds['truncated'] = truncation
-
-                        cds['pseudo'] = True
+                            cds['truncated'] = bc.FEATURE_END_3_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_5_PRIME
                         cds[bc.PSEUDOGENE] = pseudogene
                         cds.pop('hypothetical')
                         pseudogenes.append(cds)

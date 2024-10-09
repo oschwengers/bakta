@@ -108,15 +108,7 @@ def predict_nc_rnas(genome: dict, contigs_path: Path):
                         gene = gene[0].lower() + gene[1:]
                         log.debug('fix gene: lowercase first char. new=%s, old=%s', gene, subject)
                     ncrna['gene'] = gene
-
-                    if(truncated is None):
-                        ncrna['product'] = description
-                    elif(truncated == bc.FEATURE_END_UNKNOWN):
-                        ncrna['product'] = f'(partial) {description}'
-                    elif(truncated == bc.FEATURE_END_5_PRIME):
-                        ncrna['product'] = f"(5' truncated) {description}"
-                    elif(truncated == bc.FEATURE_END_3_PRIME):
-                        ncrna['product'] = f"(3' truncated) {description}"
+                    ncrna['product'] = description
 
                     if(ncrna['class'] is not None):
                         db_xrefs.append(ncrna['class'].id)

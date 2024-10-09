@@ -72,6 +72,7 @@ def predict_tm_rnas(genome: dict, contigs_path: Path):
                     tmrna['strand'] = strand
                     tmrna['gene'] = 'ssrA'
                     tmrna['product'] = 'transfer-messenger RNA, SsrA'
+                    tmrna['tag_aa'] = tag_aa.replace('*', '')
                     tmrna['db_xrefs'] = [so.SO_TMRNA.id]
 
                     nt = bu.extract_feature_sequence(tmrna, contigs[contig_id])  # extract nt sequences
