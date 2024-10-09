@@ -285,6 +285,7 @@ Annotation results are provided in standard bioinformatics file formats:
 - `<prefix>.fna`: replicon/contig DNA sequences as FASTA
 - `<prefix>.ffn`: feature nucleotide sequences as FASTA
 - `<prefix>.faa`: CDS/sORF amino acid sequences as FASTA
+- `<prefix>.inference.tsv`: inference metrics (score, evalue, coverage, identity) for annotated accessions as TSV
 - `<prefix>.hypotheticals.tsv`: further information on hypothetical protein CDS as simple human readble tab separated values
 - `<prefix>.hypotheticals.faa`: hypothetical protein CDS amino acid sequences as FASTA
 - `<prefix>.json`: all (internal) annotation & sequence information as JSON
