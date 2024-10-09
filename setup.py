@@ -32,7 +32,7 @@ setup(
         'alive-progress >= 3.0.1',
         'PyYAML >= 6.0',
         'pyrodigal >= 3.1.0',
-        'pyhmmer >= 0.10.14'
+        'pyhmmer >= 0.10.15'
     ],
     entry_points={
         'console_scripts': [
