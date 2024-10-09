@@ -14,9 +14,9 @@ import bakta.so as so
 log = logging.getLogger('GFF')
 
 
-def write_gff3(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Path):
+def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Path):
     """Export features in GFF3 format."""
-    log.info('write GFF3: path=%s', gff3_path)
+    log.info('write features: path=%s', gff3_path)
 
     with gff3_path.open('wt') as fh:
         fh.write('##gff-version 3\n')  # GFF version

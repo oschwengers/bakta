@@ -324,7 +324,7 @@ def search(sorfs: Sequence[dict], cluster_type: str):
         '--query-cover', str(int(bc.MIN_SORF_COVERAGE * 100)),  # '90'
         '--subject-cover', str(int(bc.MIN_SORF_COVERAGE * 100)),  # '90'
         '--max-target-seqs', '1',  # single best output
-        '--outfmt', '6',
+        '--outfmt', '6', 'qseqid', 'sseqid', 'qlen', 'slen', 'length', 'pident', 'evalue', 'bitscore',
         '--threads', str(cfg.threads),
         '--tmpdir', str(cfg.tmp_path),  # use tmp folder
         '--block-size', '3',  # slightly increase block size for faster executions
@@ -347,22 +347,26 @@ def search(sorfs: Sequence[dict], cluster_type: str):
     sorf_by_aa_digest = orf.get_orf_dictionary(sorfs)
     with diamond_output_path.open() as fh:
         for line in fh:
-            (sorf_hash, cluster_id, identity, alignment_length, align_mismatches,
-                align_gaps, query_start, query_end, subject_start, subject_end,
-                evalue, bitscore) = line.split('\t')
+            (sorf_hash, cluster_id, query_length, subject_length, alignment_length, identity, evalue, bitscore) = line.split('\t')
             sorf = sorf_by_aa_digest[sorf_hash]
             query_cov = int(alignment_length) / len(sorf['aa'])
+            subject_cov = int(alignment_length) / int(subject_length)
             identity = float(identity) / 100
-            if(query_cov >= bc.MIN_SORF_COVERAGE and identity >= bc.MIN_SORF_IDENTITY):
+            bitscore = float(bitscore)
+            evalue = float(evalue)
+            if(query_cov >= bc.MIN_SORF_COVERAGE and subject_cov >= bc.MIN_SORF_COVERAGE and identity >= bc.MIN_SORF_IDENTITY):
                 result = {
                     'query_cov': query_cov,
-                    'identity': identity
+                    'subject_cov': subject_cov,
+                    'identity': identity,
+                    'score': bitscore,
+                    'evalue': evalue
                 }
                 result[psc.DB_PSC_COL_UNIREF90 if cluster_type == 'full' else pscc.DB_PSCC_COL_UNIREF50] = cluster_id
                 sorf['psc' if cluster_type == 'full' else 'pscc'] = result
                 log.info(
-                    'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, UniRef90=%s',
-                    sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], len(sorf['aa']), query_cov, identity, cluster_id
+                    'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, subject-cov=%0.3f, identity=%0.3f, score=%0.1f, evalue=%1.1e, UniRef=%s',
+                    sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], len(sorf['aa']), query_cov, subject_cov, identity, bitscore, evalue, cluster_id
                 )
 
     sorfs_found = []

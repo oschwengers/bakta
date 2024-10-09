@@ -557,7 +557,7 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
         '--query-cover', str(int(bc.MIN_PSEUDOGENE_QUERY_COVERAGE * 100)),      # '80'
         '--subject-cover', str(int(bc.MIN_PSEUDOGENE_SUBJECT_COVERAGE * 100)),  # '40'
         '--max-target-seqs', '1',  # single best output
-        '--outfmt', '6', 'qseqid', 'sseqid', 'pident', 'length', 'qstart', 'qend', 'sstart', 'send', 'full_sseq',
+        '--outfmt', '6', 'qseqid', 'sseqid', 'qlen', 'slen', 'length', 'pident', 'evalue', 'bitscore', 'qstart', 'qend', 'sstart', 'send', 'full_sseq',
         '--threads', str(cfg.threads),
         '--tmpdir', str(cfg.tmp_path),
         '--block-size', '3',  # slightly increase block size for faster executions
@@ -581,18 +581,21 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
     cds_by_hexdigest = orf.get_orf_dictionary(hypotheticals)
     with diamond_output_path.open() as fh:
         for line in fh:
-            (aa_identifier, cluster_id, identity, alignment_length, query_start, query_end, subject_start, subject_end, subject_sequence) = line.rstrip('\n').split('\t')
+            (aa_identifier, cluster_id, query_length, subject_length, alignment_length, identity, evalue, bitscore, query_start, query_end, subject_start, subject_end, subject_sequence) = line.rstrip('\n').split('\t')
             cds = cds_by_hexdigest[aa_identifier]
             query_cov = int(alignment_length) / len(cds['aa'])
-            subject_cov = int(alignment_length) / len(subject_sequence)
+            subject_cov = int(alignment_length) / int(subject_length)
             identity = float(identity) / 100
-            if query_cov >= bc.MIN_PSEUDOGENE_QUERY_COVERAGE and identity >= bc.MIN_PSEUDOGENE_IDENTITY \
-                    and bc.MIN_PSEUDOGENE_SUBJECT_COVERAGE <= subject_cov < bc.MIN_PSC_COVERAGE:
+            bitscore = float(bitscore)
+            evalue = float(evalue)
+            if(query_cov >= bc.MIN_PSEUDOGENE_QUERY_COVERAGE and bc.MIN_PSEUDOGENE_SUBJECT_COVERAGE <= subject_cov < bc.MIN_PSC_COVERAGE and identity >= bc.MIN_PSEUDOGENE_IDENTITY):
                 cds['pseudo-inference'] = {
                     DB_PSC_COL_UNIREF90: cluster_id,
-                    'query-cov': query_cov,
-                    'subject-cov': subject_cov,
+                    'query_cov': query_cov,
+                    'subject_cov': subject_cov,
                     'identity': identity,
+                    'score': bitscore,
+                    'evalue': evalue,
                     'gene_start': int(query_start),
                     'gene_end': int(query_end),
                     'reference_start': int(subject_start),
@@ -601,8 +604,8 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
                 }
                 pseudo_candidates.append(cds)
                 log.debug(
-                    'pseudogene-candidate: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, subject-cov=%0.3f, identity=%0.3f, UniRef90=%s',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, subject_cov, identity, cluster_id
+                    'pseudogene-candidate: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, subject-cov=%0.3f, identity=%0.3f, score=%0.1f, evalue=%1.1e, UniRef90=%s',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, subject_cov, identity, bitscore, evalue, cluster_id
                 )
     log.info('found: pseudogene-candidates=%i', len(pseudo_candidates))
     return pseudo_candidates
@@ -691,6 +694,9 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
                     query_alignment_start = int(hit.find('Hit_hsps/Hsp/Hsp_query-from').text)
                     query_alignment_stop = int(hit.find('Hit_hsps/Hsp/Hsp_query-to').text)
                     alignment_length = int(hit.find('Hit_hsps/Hsp/Hsp_align-len').text)
+                    identity = float(hit.find('Hit_hsps/Hsp/Hsp_identity').text) / alignment_length
+                    bitscore = float(hit.find('Hit_hsps/Hsp/Hsp_bit-score').text)
+                    evalue = float(hit.find('Hit_hsps/Hsp/Hsp_evalue').text)
 
                     if alignment_length == len(cds['aa']):  # skip non-extended genes (full match)
                         log.debug(
@@ -715,7 +721,10 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], genome:
                             'stop': positions['stop'],
                             'observations': clean_observations(observations),
                             'inference': cds['pseudo-inference'],
-                            'paralog': is_paralog(uniref90_by_hexdigest, aa_identifier, cluster_id)
+                            'paralog': is_paralog(uniref90_by_hexdigest, aa_identifier, cluster_id),
+                            'identity': identity,
+                            'score': bitscore,
+                            'evalue': evalue
                         }
 
                         effects = []
