@@ -77,7 +77,7 @@ def write_feature_inferences(contigs: Sequence[dict], features_by_contig: Dict[s
         fh.write(f"# Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}\n")
         fh.write(f'# DOI: {bc.BAKTA_DOI}\n')
         fh.write(f'# URL: {bc.BAKTA_URL}\n')
-        fh.write('#Sequence Id\tType\tStart\tStop\tStrand\tLocus Tag\tscore\tevalue\tquery-cov\tsubject-cov\tid\taccession\n')
+        fh.write('#Sequence Id\tType\tStart\tStop\tStrand\tLocus Tag\tScore\tEvalue\tQuery Cov\tSubject Cov\tId\tAccession\n')
 
         for contig in contigs:
             for feat in features_by_contig[contig['id']]:
