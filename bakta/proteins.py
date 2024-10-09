@@ -138,7 +138,7 @@ def main():
         aa['type'] = bc.FEATURE_CDS
         aa['aa'] = aa['sequence']
         aa['locus'] = aa['id']
-        aa['contig'] = 'mock'
+        aa['contig'] = '-'
         aa['start'] = mock_start
         aa['stop'] = -1
         aa['strand'] = bc.STRAND_UNKNOWN
@@ -146,14 +146,6 @@ def main():
         mock_start += 100
     print('annotate protein sequences...')
     annotate_aa(aas)
-
-    for aa in aas:  # cleanup mock attributes
-        aa.pop('contig', None)
-        aa.pop('start', None)
-        aa.pop('stop', None)
-        aa.pop('strand', None)
-        aa.pop('frame', None)
-    
     cfg.run_end = datetime.now()
     run_duration = (cfg.run_end - cfg.run_start).total_seconds()
 
@@ -163,12 +155,25 @@ def main():
     # - write optional output files in TSV, FAA formats
     # - remove temp directory
     ############################################################################
-
+    for aa in aas:  # reset mock attributes
+        aa['start'] = -1
+        aa['stop'] = -1
     print('write results...')
     annotations_path = output_path.joinpath(f'{cfg.prefix}.tsv')
     header_columns = ['ID', 'Length', 'Gene', 'Product', 'EC', 'GO', 'COG', 'RefSeq', 'UniParc', 'UniRef']
     print(f'\tfull annotations (TSV): {annotations_path}')
     tsv.write_protein_features(aas, header_columns, map_aa_columns, annotations_path)
+    inference_path = output_path.joinpath(f'{cfg.prefix}.inference.tsv')
+    print(f'\tfeature inferences (TSV): {inference_path}')
+    mock_contigs = [{'id': '-'}]
+    features_by_contig = {'-': aas}
+    tsv.write_feature_inferences(mock_contigs, features_by_contig, inference_path)
+    for aa in aas:  # cleanup mock attributes
+        aa.pop('contig', None)
+        aa.pop('start', None)
+        aa.pop('stop', None)
+        aa.pop('strand', None)
+        aa.pop('frame', None)
     full_annotations_path = output_path.joinpath(f'{cfg.prefix}.json')
     print(f'\tfull annotations (JSON): {full_annotations_path}')
     json.write_json(None, aas, full_annotations_path)
