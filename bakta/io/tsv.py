@@ -7,6 +7,10 @@ from typing import Dict, Sequence
 import bakta
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.ips as bips
+import bakta.ups as bups
+import bakta.psc as bpsc
+import bakta.pscc as bpscc
 
 
 log = logging.getLogger('TSV')
@@ -73,17 +77,18 @@ def write_feature_inferences(contigs: Sequence[dict], features_by_contig: Dict[s
         fh.write(f"# Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}\n")
         fh.write(f'# DOI: {bc.BAKTA_DOI}\n')
         fh.write(f'# URL: {bc.BAKTA_URL}\n')
-        fh.write('#Sequence Id\tType\tStart\tStop\tStrand\tLocus Tag\tscore\tevalue\tquery-cov\tsubject-cov\tid\n')
+        fh.write('#Sequence Id\tType\tStart\tStop\tStrand\tLocus Tag\tscore\tevalue\tquery-cov\tsubject-cov\tid\taccession\n')
 
         for contig in contigs:
             for feat in features_by_contig[contig['id']]:
                 if(feat['type'] in [bc.FEATURE_CDS, bc.FEATURE_SORF]):
-                    score, evalue, query_cov, subject_cov, identity = None, None, None, None, None
+                    score, evalue, query_cov, subject_cov, identity, accession = None, None, None, None, None, '-'
                     if('ups' in feat or 'ips' in feat):
                         query_cov = 1
                         subject_cov = 1
                         identity = 1
                         evalue = 0
+                        accession = f"{bc.DB_XREF_UNIREF}:{feat['ips'][bips.DB_IPS_COL_UNIREF100]}" if 'ips' in feat else f"{bc.DB_XREF_UNIPARC}:{feat['ups'][bups.DB_UPS_COL_UNIPARC]}"
                     elif('psc' in feat or 'pscc' in feat):
                         psc_type = 'psc' if 'psc' in feat else 'pscc'
                         query_cov = feat[psc_type]['query_cov']
@@ -91,6 +96,7 @@ def write_feature_inferences(contigs: Sequence[dict], features_by_contig: Dict[s
                         identity = feat[psc_type]['identity']
                         score = feat[psc_type]['score']
                         evalue = feat[psc_type]['evalue']
+                        accession = f"{bc.DB_XREF_UNIREF}:{feat['psc'][bpsc.DB_PSC_COL_UNIREF90]}" if 'psc' in feat else f"{bc.DB_XREF_UNIREF}:{feat['pscc'][bpscc.DB_PSCC_COL_UNIREF50]}"
                     fh.write('\t'.join(
                         [
                             feat['contig'],
@@ -103,11 +109,13 @@ def write_feature_inferences(contigs: Sequence[dict], features_by_contig: Dict[s
                             ('0.0' if evalue == 0 else f"{evalue:1.1e}") if evalue != None else '-',
                             ('1.0' if query_cov == 1 else f"{query_cov:0.3f}") if query_cov != None else '-',
                             ('1.0' if subject_cov == 1 else f"{subject_cov:0.3f}") if subject_cov != None else '-',
-                            ('1.0' if identity == 1 else f"{identity:0.3f}") if identity != None else '-'
+                            ('1.0' if identity == 1 else f"{identity:0.3f}") if identity != None else '-',
+                            accession
                         ])
                     )
                     fh.write('\n')
                 elif(feat['type'] in [bc.FEATURE_T_RNA, bc.FEATURE_R_RNA, bc.FEATURE_NC_RNA, bc.FEATURE_NC_RNA_REGION]):
+                    accession = '-' if feat['type'] == bc.FEATURE_T_RNA else [xref for xref in feat['db_xrefs'] if bc.DB_XREF_RFAM in xref][0]
                     fh.write('\t'.join(
                         [
                             feat['contig'],
@@ -120,7 +128,8 @@ def write_feature_inferences(contigs: Sequence[dict], features_by_contig: Dict[s
                             ('0.0' if feat['evalue'] == 0 else f"{feat['evalue']:1.1e}") if 'evalue' in feat else '-',
                             ('1.0' if feat['query_cov'] == 1 else f"{feat['query_cov']:0.3f}") if 'query_cov' in feat else '-',
                             ('1.0' if feat['subject_cov'] == 1 else f"{feat['subject_cov']:0.3f}") if 'subject_cov' in feat else '-',
-                            ('1.0' if feat['identity'] == 1 else f"{feat['identity']:0.3f}") if 'identity' in feat else '-'
+                            ('1.0' if feat['identity'] == 1 else f"{feat['identity']:0.3f}") if 'identity' in feat else '-',
+                            accession
                         ])
                     )
                     fh.write('\n')
