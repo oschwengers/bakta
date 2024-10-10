@@ -20,6 +20,7 @@ RE_PROTEIN_NODE = re.compile(r'NODE_', flags=re.IGNORECASE)
 RE_PROTEIN_POTENTIAL_CONTIG_NAME = re.compile(r'(genome|shotgun)', flags=re.IGNORECASE)
 RE_PROTEIN_DOMAIN_CONTAINING = re.compile(r'domain-containing protein', flags=re.IGNORECASE)
 RE_PROTEIN_REMNANT = re.compile(r'Remnant of ', re.IGNORECASE)
+RE_PROTEIN_TMRNA = re.compile(r'TmRNA', flags=re.IGNORECASE)
 RE_PROTEIN_NO_LETTERS = re.compile(r'[^A-Za-z]')
 RE_PROTEIN_SUSPECT_CHARS_DISCARD = re.compile(r'[.#]')
 RE_PROTEIN_SUSPECT_CHARS_REPLACE = re.compile(r'[@=?%]')
@@ -613,6 +614,11 @@ def revise_cds_product(product: str):
         product = product.replace('_', '-')
         if(product != old_product):
             log.info('fix product: replace domain name underscores. new=%s, old=%s', product, old_product)
+    
+    old_product = product
+    if(RE_PROTEIN_TMRNA.fullmatch(product)):
+        product = ''
+        log.info('fix product: discard pure tmRNA product descriptions. new=%s, old=%s', product, old_product)
 
     old_product = product
     if(
