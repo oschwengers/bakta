@@ -221,16 +221,25 @@ def map_hypothetical_columns(feat: dict) -> Sequence[str]:
 def annotate_aa(aas: Sequence[dict]):
     for aa in aas:
         aa['aa_digest'], aa['aa_hexdigest'] = bu.calc_aa_hash(aa['sequence'])
-    log.debug('lookup AA UPS/IPS')
-    aas_ups, aas_not_found = ups.lookup(aas)
-    aas_ips, tmp = ips.lookup(aas_ups)
-    aas_not_found.extend(tmp)
-    print(f'\tdetected IPSs: {len(aas_ips)}')
+    if(cfg.db_info['type'] == 'full'):
+        log.debug('lookup AA UPS/IPS')
+        aas_ups, aas_not_found = ups.lookup(aas)
+        aas_ips, tmp = ips.lookup(aas_ups)
+        aas_not_found.extend(tmp)
+        print(f'\tdetected IPSs: {len(aas_ips)}')
+    else:
+        aas_not_found = [*aas]
+        print(f'\tskip UPS/IPS detection with light db version')
     if(len(aas_not_found) > 0):
-        log.debug('search CDS PSC')
-        aas_psc, aas_pscc, aas_not_found = psc.search(aas_not_found)
-        print(f'\tfound PSCs: {len(aas_psc)}')
-        print(f'\tfound PSCCs: {len(aas_pscc)}')
+        if(cfg.db_info['type'] == 'full'):
+            log.debug('search CDS PSC')
+            aas_psc, aas_pscc, aas_not_found = psc.search(aas_not_found)
+            print(f'\tfound PSCs: {len(aas_psc)}')
+            print(f'\tfound PSCCs: {len(aas_pscc)}')
+        else:
+            log.debug('search CDS PSCC')
+            aas_pscc, aas_not_found = pscc.search(aas_not_found)
+            print(f'\tfound PSCCs: {len(aas_pscc)}')
     print('\tlookup annotations...')
     log.debug('lookup CDS PSCs')
     psc.lookup(aas)  # lookup PSC info
