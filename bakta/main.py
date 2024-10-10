@@ -67,22 +67,22 @@ def main():
         if(cfg.regions): print(f'\tregion table: {cfg.regions}')
         if(cfg.user_proteins): print(f'\tuser proteins: {cfg.user_proteins}')
         if(cfg.user_hmms): print(f'\tuser hmms: {cfg.user_hmms}')
-        print(f'\toutput: {cfg.output_path}')
-        if(cfg.force): print(f'\tforce: {cfg.force}')
-        print(f'\ttmp directory: {cfg.tmp_path}')
-        print(f'\tprefix: {cfg.prefix}')
-        print(f'\tthreads: {cfg.threads}')
-        if(cfg.debug): print(f'\tdebug: {cfg.debug}')
-        if(cfg.meta): print(f'\tmeta mode: {cfg.meta}')
         print(f'\ttranslation table: {cfg.translation_table}')
         if(cfg.taxon): print(f'\ttaxon: {cfg.taxon}')
         if(cfg.plasmid): print(f'\tplasmid: {cfg.plasmid}')
         if(cfg.gram != '?'): print(f'\tgram: {cfg.gram}')
         if(cfg.locus): print(f'\tlocus prefix: {cfg.locus}')
         if(cfg.locus_tag): print(f'\tlocus tag prefix: {cfg.locus_tag}')
+        if(cfg.meta): print(f'\tmeta mode: {cfg.meta}')
         if(cfg.complete): print(f'\tcomplete replicons: {cfg.complete}')
+        print(f'\toutput: {cfg.output_path}')
+        if(cfg.force): print(f'\tforce: {cfg.force}')
+        print(f'\ttmp directory: {cfg.tmp_path}')
         if(cfg.compliant): print(f'\tINSDC compliant: {cfg.compliant}')
         if(cfg.keep_contig_headers): print(f'\tkeep contig headers: {cfg.keep_contig_headers}')
+        print(f'\tprefix: {cfg.prefix}')
+        print(f'\tthreads: {cfg.threads}')
+        if(cfg.debug): print(f'\tdebug: {cfg.debug}')
         if(cfg.skip_trna): print(f'\tskip tRNA: {cfg.skip_trna}')
         if(cfg.skip_tmrna): print(f'\tskip tmRNA: {cfg.skip_tmrna}')
         if(cfg.skip_rrna): print(f'\tskip rRNA: {cfg.skip_rrna}')
@@ -107,7 +107,7 @@ def main():
     # - apply contig length filter
     # - rename contigs
     ############################################################################
-    print('parse genome sequences...')
+    print('Parse genome sequences...')
     try:
         contigs = fasta.import_contigs(cfg.genome_path)
         log.info('imported sequences=%i', len(contigs))
@@ -146,7 +146,7 @@ def main():
     }
     if(cfg.plasmid):
         genome['plasmid'] = cfg.plasmid
-    print('\nstart annotation...')
+    print('\nStart annotation...')
 
     ############################################################################
     # tRNA prediction
@@ -314,23 +314,23 @@ def main():
                     print('\tdetect pseudogenes...')
                     log.debug('search pseudogene candidates')
                     pseudo_candidates = feat_cds.predict_pseudo_candidates(hypotheticals)
-                    print(f'\t\tpseudogene candidates: {len(pseudo_candidates)}')
+                    print(f'\t\tcandidates: {len(pseudo_candidates)}')
                     pseudogenes = feat_cds.detect_pseudogenes(pseudo_candidates, cdss, genome) if len(pseudo_candidates) > 0 else []
                     psc.lookup(pseudogenes, pseudo=True)
                     pscc.lookup(pseudogenes, pseudo=True)
                     for pseudogene in pseudogenes:
                         anno.combine_annotation(pseudogene)
-                    print(f'\t\tfound pseudogenes: {len(pseudogenes)}')
+                    print(f'\t\tverified: {len(pseudogenes)}')
                 else:
                     print(f'\tskip pseudogene detection with light db version')
             hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
             if(len(hypotheticals) > 0):
                 log.debug('analyze hypotheticals')
-                print(f'analyze hypothetical proteins: {len(hypotheticals)}')
+                print(f'\tanalyze hypothetical proteins: {len(hypotheticals)}')
                 pfam_hits = feat_cds.predict_pfam(hypotheticals)
-                print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
+                print(f"\t\tdetected Pfam hits: {len(pfam_hits)} ")
                 feat_cds.analyze_proteins(hypotheticals)
-                print('\tcalculated proteins statistics')
+                print('\t\tcalculated proteins statistics')
             
             print('\trevise special cases...')
             feat_cds.revise_special_cases_annotated(genome, cdss)
@@ -348,10 +348,10 @@ def main():
     if(cfg.skip_sorf):
         print('skip sORF prediction...')
     else:
-        print('extract sORF...')
-        log.debug('predict sORF')
+        print('detect & annotate sORF...')
+        log.debug('extract sORF')
         sorfs = s_orf.extract(genome)
-        print(f'\tpotential: {len(sorfs)}')
+        print(f'\tdetected: {len(sorfs)}')
 
         log.debug('apply sORF overlap filter')
         sorfs, discarded_sorfs = s_orf.overlap_filter(genome, sorfs)
@@ -507,7 +507,7 @@ def main():
     # - genome stats
     # - annotation stats
     ############################################################################
-    print('\ngenome statistics:')
+    print('\nGenome statistics:')
     genome_stats = bu.calc_genome_stats(genome, features)
     print(f"\tGenome size: {genome['size']:,} bp")
     print(f"\tContigs/replicons: {len(genome['contigs'])}")
@@ -540,7 +540,7 @@ def main():
     # - write comprehensive annotation results as JSON
     # - remove temp directory
     ############################################################################
-    print(f'\nexport annotation results to: {cfg.output_path}')
+    print(f'\nExport annotation results to: {cfg.output_path}')
     print('\thuman readable TSV...')
     tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.tsv')
     tsv.write_features(genome['contigs'], features_by_contig, tsv_path)
@@ -599,7 +599,7 @@ def main():
     json_path = cfg.output_path.joinpath(f'{cfg.prefix}.json')
     json.write_json(genome, features, json_path)
 
-    print('\tgenome and annotation summary...')
+    print('\tGenome and annotation summary...')
     summary_path = cfg.output_path.joinpath(f'{cfg.prefix}.txt')
     with summary_path.open('w') as fh_out:
         fh_out.write('Sequence(s):\n')

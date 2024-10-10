@@ -167,6 +167,7 @@ def main():
     ############################################################################
 
     # load genome annotations
+    print('Parse genome annotations...')
     with annotation_path.open('r') as fh:
         annotation = json.load(fh)
     features = annotation['features']
@@ -178,8 +179,9 @@ def main():
     if conf_colors is not None:
         colors = {**colors, **conf_colors}
 
+    print('Draw plots...')
     if args.sequences == 'all':  # write whole genome plot
-        print(f'draw circular genome plot (type={plot_type}) containing all sequences...')
+        print(f'\tdraw circular genome plot (type={plot_type}) containing all sequences...')
         write(features, contigs, output_path, colors, plot_type=plot_type)
     else:  # write genome plot containing provided sequences only
         plot_contigs = []
@@ -194,7 +196,7 @@ def main():
                     plot_contigs.append(contig)
                     sequence_identifiers.append(contig['id'])
         if len(plot_contigs) > 0:
-            print(f'draw circular genome plot (type={plot_type}) containing sequences: {sequence_identifiers}...')
+            print(f'\tdraw circular genome plot (type={plot_type}) containing sequences: {sequence_identifiers}...')
             plot_name_suffix = '_'.join(sequence_identifiers)
             plot_contig_ids = [c['id'] for c in plot_contigs]
             features = [feat for feat in features if feat['contig'] in plot_contig_ids]

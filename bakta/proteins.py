@@ -42,8 +42,8 @@ def main():
     arg_group_io.add_argument('--force', '-f', action='store_true', help='Force overwriting existing output folder')
     
     arg_group_annotation = parser.add_argument_group('Annotation')
-    arg_group_annotation.add_argument('--proteins', action='store', default=None, dest='proteins', help='Fasta file of trusted protein sequences for annotation')
-    arg_group_annotation.add_argument('--hmms', action='store', default=None, dest='hmms', help='HMM file of trusted hidden markov models in HMMER format for CDS annotation')
+    arg_group_annotation.add_argument('--proteins', action='store', default=None, dest='proteins', help='Fasta file of trusted protein sequences')
+    arg_group_annotation.add_argument('--hmms', action='store', default=None, dest='hmms', help='HMM file of trusted hidden markov models in HMMER format')
     
     arg_group_general = parser.add_argument_group('General')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
@@ -127,6 +127,7 @@ def main():
     # Import proteins
     ############################################################################
     try:
+        print('Parse protein sequences...')
         aas = fasta.import_contigs(aa_path, False, False)
         log.info('imported sequences=%i', len(aas))
         print(f'\timported: {len(aas)}')
@@ -144,7 +145,7 @@ def main():
         aa['strand'] = bc.STRAND_UNKNOWN
         aa['frame'] = 1
         mock_start += 100
-    print('annotate protein sequences...')
+    print('\nStart annotation...')
     annotate_aa(aas)
     cfg.run_end = datetime.now()
     run_duration = (cfg.run_end - cfg.run_start).total_seconds()
@@ -158,7 +159,7 @@ def main():
     for aa in aas:  # reset mock attributes
         aa['start'] = -1
         aa['stop'] = -1
-    print('write results...')
+    print(f'\nExport annotation results to: {output_path}')
     annotations_path = output_path.joinpath(f'{cfg.prefix}.tsv')
     header_columns = ['ID', 'Length', 'Gene', 'Product', 'EC', 'GO', 'COG', 'RefSeq', 'UniParc', 'UniRef']
     print(f'\tfull annotations (TSV): {annotations_path}')
@@ -232,16 +233,16 @@ def annotate_aa(aas: Sequence[dict]):
         print(f'\tskip UPS/IPS detection with light db version')
     if(len(aas_not_found) > 0):
         if(cfg.db_info['type'] == 'full'):
-            log.debug('search CDS PSC')
+            log.debug('search PSC')
             aas_psc, aas_pscc, aas_not_found = psc.search(aas_not_found)
             print(f'\tfound PSCs: {len(aas_psc)}')
             print(f'\tfound PSCCs: {len(aas_pscc)}')
         else:
-            log.debug('search CDS PSCC')
+            log.debug('search PSCC')
             aas_pscc, aas_not_found = pscc.search(aas_not_found)
             print(f'\tfound PSCCs: {len(aas_pscc)}')
     print('\tlookup annotations...')
-    log.debug('lookup CDS PSCs')
+    log.debug('lookup PSCs')
     psc.lookup(aas)  # lookup PSC info
     pscc.lookup(aas)  # lookup PSCC inf
     print('\tconduct expert systems...')  # conduct expert systems annotation
@@ -266,7 +267,7 @@ def annotate_aa(aas: Sequence[dict]):
         user_hmm_found = exp_aa_hmms.search(aas, cfg.user_hmms)
         print(f'\t\tuser HMM sequences: {len(user_hmm_found)}')
     print('\tcombine annotations and mark hypotheticals...')
-    log.debug('combine CDS annotations')
+    log.debug('combine annotations')
     for aa in aas:
         anno.combine_annotation(aa)  # combine IPS & PSC annotations and mark hypothetical
     log.debug('analyze hypotheticals')
