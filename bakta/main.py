@@ -15,6 +15,7 @@ import bakta.io.gff as gff
 import bakta.io.insdc as insdc
 import bakta.expert.amrfinder as exp_amr
 import bakta.expert.protein_sequences as exp_aa_seq
+import bakta.expert.protein_hmms as exp_aa_hmms
 import bakta.features.annotation as anno
 import bakta.features.t_rna as t_rna
 import bakta.features.tm_rna as tm_rna
@@ -62,25 +63,26 @@ def main():
         print(f'\tinput: {cfg.genome_path}')
         print(f"\tdb: {cfg.db_path}, version {cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}")
         if(cfg.replicons): print(f'\treplicon table: {cfg.replicons}')
-        if(cfg.regions): print(f'\tregion table: {cfg.regions}')
         if(cfg.prodigal_tf): print(f'\tprodigal training file: {cfg.prodigal_tf}')
+        if(cfg.regions): print(f'\tregion table: {cfg.regions}')
         if(cfg.user_proteins): print(f'\tuser proteins: {cfg.user_proteins}')
-        print(f'\toutput: {cfg.output_path}')
-        if(cfg.force): print(f'\tforce: {cfg.force}')
-        print(f'\ttmp directory: {cfg.tmp_path}')
-        print(f'\tprefix: {cfg.prefix}')
-        print(f'\tthreads: {cfg.threads}')
-        if(cfg.debug): print(f'\tdebug: {cfg.debug}')
-        if(cfg.meta): print(f'\tmeta mode: {cfg.meta}')
+        if(cfg.user_hmms): print(f'\tuser hmms: {cfg.user_hmms}')
         print(f'\ttranslation table: {cfg.translation_table}')
         if(cfg.taxon): print(f'\ttaxon: {cfg.taxon}')
         if(cfg.plasmid): print(f'\tplasmid: {cfg.plasmid}')
         if(cfg.gram != '?'): print(f'\tgram: {cfg.gram}')
         if(cfg.locus): print(f'\tlocus prefix: {cfg.locus}')
         if(cfg.locus_tag): print(f'\tlocus tag prefix: {cfg.locus_tag}')
+        if(cfg.meta): print(f'\tmeta mode: {cfg.meta}')
         if(cfg.complete): print(f'\tcomplete replicons: {cfg.complete}')
+        print(f'\toutput: {cfg.output_path}')
+        if(cfg.force): print(f'\tforce: {cfg.force}')
+        print(f'\ttmp directory: {cfg.tmp_path}')
         if(cfg.compliant): print(f'\tINSDC compliant: {cfg.compliant}')
         if(cfg.keep_contig_headers): print(f'\tkeep contig headers: {cfg.keep_contig_headers}')
+        print(f'\tprefix: {cfg.prefix}')
+        print(f'\tthreads: {cfg.threads}')
+        if(cfg.debug): print(f'\tdebug: {cfg.debug}')
         if(cfg.skip_trna): print(f'\tskip tRNA: {cfg.skip_trna}')
         if(cfg.skip_tmrna): print(f'\tskip tmRNA: {cfg.skip_tmrna}')
         if(cfg.skip_rrna): print(f'\tskip rRNA: {cfg.skip_rrna}')
@@ -92,9 +94,10 @@ def main():
         if(cfg.skip_gap): print(f'\tskip gap: {cfg.skip_gap}')
         if(cfg.skip_ori): print(f'\tskip oriC/V/T: {cfg.skip_ori}')
         if(cfg.skip_plot): print(f'\tskip plot: {cfg.skip_plot}')
+        print()
     
     if(cfg.debug):
-        print(f"\nBakta runs in DEBUG mode! Temporary data will not be destroyed at: {cfg.tmp_path}")
+        print(f"Bakta runs in DEBUG mode! Temporary data will not be destroyed at: {cfg.tmp_path}\n")
     else:
         atexit.register(bu.cleanup, log, cfg.tmp_path)  # register cleanup exit hook
 
@@ -104,7 +107,7 @@ def main():
     # - apply contig length filter
     # - rename contigs
     ############################################################################
-    print('\nparse genome sequences...')
+    print('Parse genome sequences...')
     try:
         contigs = fasta.import_contigs(cfg.genome_path)
         log.info('imported sequences=%i', len(contigs))
@@ -143,7 +146,7 @@ def main():
     }
     if(cfg.plasmid):
         genome['plasmid'] = cfg.plasmid
-    print('\nstart annotation...')
+    print('\nStart annotation...')
 
     ############################################################################
     # tRNA prediction
@@ -291,6 +294,11 @@ def main():
                 user_aa_found = exp_aa_seq.search(cdss, cds_aa_path, 'user_proteins', user_aa_path)
                 print(f'\t\tuser protein sequences: {len(user_aa_found)}')
 
+            if(cfg.user_hmms):
+                log.debug('conduct expert system: user HMM')
+                user_hmm_found = exp_aa_hmms.search(cdss, cfg.user_hmms)
+                print(f'\t\tuser HMM sequences: {len(user_hmm_found)}')
+
             if(cfg.gram != bc.GRAM_UNKNOWN):
                 sig_peptides_found = sig_peptides.search(cdss, cds_aa_path)
                 print(f'\tsignal peptides: {len(sig_peptides_found)}')
@@ -306,23 +314,23 @@ def main():
                     print('\tdetect pseudogenes...')
                     log.debug('search pseudogene candidates')
                     pseudo_candidates = feat_cds.predict_pseudo_candidates(hypotheticals)
-                    print(f'\t\tpseudogene candidates: {len(pseudo_candidates)}')
+                    print(f'\t\tcandidates: {len(pseudo_candidates)}')
                     pseudogenes = feat_cds.detect_pseudogenes(pseudo_candidates, cdss, genome) if len(pseudo_candidates) > 0 else []
                     psc.lookup(pseudogenes, pseudo=True)
                     pscc.lookup(pseudogenes, pseudo=True)
                     for pseudogene in pseudogenes:
                         anno.combine_annotation(pseudogene)
-                    print(f'\t\tfound pseudogenes: {len(pseudogenes)}')
+                    print(f'\t\tverified: {len(pseudogenes)}')
                 else:
                     print(f'\tskip pseudogene detection with light db version')
             hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
             if(len(hypotheticals) > 0):
                 log.debug('analyze hypotheticals')
-                print(f'analyze hypothetical proteins: {len(hypotheticals)}')
+                print(f'\tanalyze hypothetical proteins: {len(hypotheticals)}')
                 pfam_hits = feat_cds.predict_pfam(hypotheticals)
-                print(f"\tdetected Pfam hits: {len(pfam_hits)} ")
+                print(f"\t\tdetected Pfam hits: {len(pfam_hits)} ")
                 feat_cds.analyze_proteins(hypotheticals)
-                print('\tcalculated proteins statistics')
+                print('\t\tcalculated proteins statistics')
             
             print('\trevise special cases...')
             feat_cds.revise_special_cases_annotated(genome, cdss)
@@ -340,10 +348,10 @@ def main():
     if(cfg.skip_sorf):
         print('skip sORF prediction...')
     else:
-        print('extract sORF...')
-        log.debug('predict sORF')
+        print('detect & annotate sORF...')
+        log.debug('extract sORF')
         sorfs = s_orf.extract(genome)
-        print(f'\tpotential: {len(sorfs)}')
+        print(f'\tdetected: {len(sorfs)}')
 
         log.debug('apply sORF overlap filter')
         sorfs, discarded_sorfs = s_orf.overlap_filter(genome, sorfs)
@@ -365,8 +373,8 @@ def main():
         if(len(sorfs_not_found) > 0):
             if(cfg.db_info['type'] == 'full'):
                 log.debug('search sORF PSC')
-                sorf_pscs, sorfs_not_found = s_orf.search_pscs(sorfs_not_found)
-                sorf_pscs_psccs.extend(sorf_pscs)
+                cdss_not_found_tmp, sorfs_not_found = s_orf.search_pscs(sorfs_not_found)
+                sorf_pscs_psccs.extend(cdss_not_found_tmp)
                 print(f'\tfound PSCs: {len(sorf_pscs_psccs)}')
             else:
                 log.debug('search sORF PSCC')
@@ -474,7 +482,7 @@ def main():
         contig_features.sort(key=lambda k: k['start'])
         features.extend(contig_features)
     log.info('selected features=%i', len(features))
-    print(f'selected: {len(features)}')
+    print(f'\tselected: {len(features)}')
 
     # use user provided locus tag if not None/non-empty or generate a sequence based locus prefix
     locus_tag_prefix = cfg.locus_tag if cfg.locus_tag else bu.create_locus_tag_prefix(contigs)
@@ -499,7 +507,7 @@ def main():
     # - genome stats
     # - annotation stats
     ############################################################################
-    print('\ngenome statistics:')
+    print('\nGenome statistics:')
     genome_stats = bu.calc_genome_stats(genome, features)
     print(f"\tGenome size: {genome['size']:,} bp")
     print(f"\tContigs/replicons: {len(genome['contigs'])}")
@@ -532,19 +540,19 @@ def main():
     # - write comprehensive annotation results as JSON
     # - remove temp directory
     ############################################################################
-    print(f'\nexport annotation results to: {cfg.output_path}')
+    print(f'\nExport annotation results to: {cfg.output_path}')
     print('\thuman readable TSV...')
     tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.tsv')
-    tsv.write_tsv(genome['contigs'], features_by_contig, tsv_path)
+    tsv.write_features(genome['contigs'], features_by_contig, tsv_path)
 
     print('\tGFF3...')
     gff3_path = cfg.output_path.joinpath(f'{cfg.prefix}.gff3')
-    gff.write_gff3(genome, features_by_contig, gff3_path)
+    gff.write_features(genome, features_by_contig, gff3_path)
 
     print('\tINSDC GenBank & EMBL...')
     genbank_path = cfg.output_path.joinpath(f'{cfg.prefix}.gbff')
     embl_path = cfg.output_path.joinpath(f'{cfg.prefix}.embl')
-    insdc.write_insdc(genome, features, genbank_path, embl_path)
+    insdc.write_features(genome, features, genbank_path, embl_path)
 
     print('\tgenome sequences...')
     fna_path = cfg.output_path.joinpath(f'{cfg.prefix}.fna')
@@ -558,17 +566,21 @@ def main():
     faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.faa')
     fasta.write_faa(features, faa_path)
 
+    print('\tfeature inferences...')
+    tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.inference.tsv')
+    tsv.write_feature_inferences(genome['contigs'], features_by_contig, tsv_path)
+
     if(cfg.skip_plot  or  cfg.meta):
         print('\tskip generation of circular genome plot...')
     else:
         print('\tcircular genome plot...')
-        plot.write_plot(features, contigs, cfg.output_path)
+        plot.write(features, contigs, cfg.output_path)
 
     if(cfg.skip_cds is False):
         hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
         print('\thypothetical TSV...')
         tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.tsv')
-        tsv.write_hypotheticals_tsv(hypotheticals, tsv_path)
+        tsv.write_hypotheticals(hypotheticals, tsv_path)
 
         print('\ttranslated hypothetical CDS sequences...')
         faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.faa')
@@ -587,7 +599,7 @@ def main():
     json_path = cfg.output_path.joinpath(f'{cfg.prefix}.json')
     json.write_json(genome, features, json_path)
 
-    print('\tgenome and annotation summary...')
+    print('\tGenome and annotation summary...')
     summary_path = cfg.output_path.joinpath(f'{cfg.prefix}.txt')
     with summary_path.open('w') as fh_out:
         fh_out.write('Sequence(s):\n')

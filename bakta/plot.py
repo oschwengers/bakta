@@ -8,9 +8,9 @@ import sys
 from pathlib import Path
 
 import yaml
+import Bio as bp
 
 from Bio import SeqUtils
-import Bio as bp
 
 import bakta
 import bakta.utils as bu
@@ -167,6 +167,7 @@ def main():
     ############################################################################
 
     # load genome annotations
+    print('Parse genome annotations...')
     with annotation_path.open('r') as fh:
         annotation = json.load(fh)
     features = annotation['features']
@@ -178,9 +179,10 @@ def main():
     if conf_colors is not None:
         colors = {**colors, **conf_colors}
 
+    print('Draw plots...')
     if args.sequences == 'all':  # write whole genome plot
-        print(f'draw circular genome plot (type={plot_type}) containing all sequences...')
-        write_plot(features, contigs, output_path, colors, plot_type=plot_type)
+        print(f'\tdraw circular genome plot (type={plot_type}) containing all sequences...')
+        write(features, contigs, output_path, colors, plot_type=plot_type)
     else:  # write genome plot containing provided sequences only
         plot_contigs = []
         sequence_identifiers = []
@@ -194,14 +196,14 @@ def main():
                     plot_contigs.append(contig)
                     sequence_identifiers.append(contig['id'])
         if len(plot_contigs) > 0:
-            print(f'draw circular genome plot (type={plot_type}) containing sequences: {sequence_identifiers}...')
+            print(f'\tdraw circular genome plot (type={plot_type}) containing sequences: {sequence_identifiers}...')
             plot_name_suffix = '_'.join(sequence_identifiers)
             plot_contig_ids = [c['id'] for c in plot_contigs]
             features = [feat for feat in features if feat['contig'] in plot_contig_ids]
-            write_plot(features, plot_contigs, output_path, colors, plot_name_suffix=plot_name_suffix, plot_type=plot_type)
+            write(features, plot_contigs, output_path, colors, plot_name_suffix=plot_name_suffix, plot_type=plot_type)
 
 
-def write_plot(features, contigs, output_path, colors=COLORS, plot_name_suffix=None, plot_type=bc.PLOT_FEATURES):
+def write(features, contigs, output_path, colors=COLORS, plot_name_suffix=None, plot_type=bc.PLOT_FEATURES):
     # config paths
     circos_path = cfg.tmp_path.joinpath(f'circos')
     circos_path.mkdir(parents=True, exist_ok=True)

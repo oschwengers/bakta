@@ -109,6 +109,7 @@ def test_bakta_genome(db, tmpdir):
             '--replicons', 'test/data/replicons.tsv',
             '--regions', 'test/data/NC_002127.1-region.gff3',
             '--proteins', 'test/data/user-proteins.faa',
+            '--hmms', 'test/data/NF000185.2.HMM',
             '--compliant',
             'test/data/GCF_000008865.2.fna.gz']
     )

@@ -36,7 +36,7 @@ def search(cdss: Sequence[dict]) -> Tuple[Sequence[dict], Sequence[dict], Sequen
         '--query-cover', str(int(bc.MIN_PSC_COVERAGE * 100)),  # '80'
         '--subject-cover', str(int(bc.MIN_PSC_COVERAGE * 100)),  # '80'
         '--max-target-seqs', '1',  # single best output
-        '--outfmt', '6',
+        '--outfmt', '6', 'qseqid', 'sseqid', 'qlen', 'slen', 'length', 'pident', 'evalue', 'bitscore',
         '--threads', str(cfg.threads),
         '--tmpdir', str(cfg.tmp_path),  # use tmp folder
         '--block-size', '3',  # slightly increase block size for faster executions
@@ -59,22 +59,25 @@ def search(cdss: Sequence[dict]) -> Tuple[Sequence[dict], Sequence[dict], Sequen
     cds_by_hexdigest = orf.get_orf_dictionary(cdss)
     with diamond_output_path.open() as fh:
         for line in fh:
-            (aa_identifier, cluster_id, identity, alignment_length, align_mismatches,
-                align_gaps, query_start, query_end, subject_start, subject_end,
-                evalue, bitscore) = line.split('\t')
+            (aa_identifier, cluster_id, query_length, subject_length, alignment_length, identity, evalue, bitscore) = line.split('\t')
             cds = cds_by_hexdigest[aa_identifier]
             query_cov = int(alignment_length) / len(cds['aa'])
+            subject_cov = int(alignment_length) / int(subject_length)
             identity = float(identity) / 100
-            if(query_cov >= bc.MIN_PSC_COVERAGE and identity >= bc.MIN_PSCC_IDENTITY):
+            bitscore = float(bitscore)
+            evalue = float(evalue)
+            if(query_cov >= bc.MIN_PSC_COVERAGE and subject_cov >= bc.MIN_PSC_COVERAGE and identity >= bc.MIN_PSCC_IDENTITY):
                 cds['pscc'] = {
                     DB_PSCC_COL_UNIREF50: cluster_id,
                     'query_cov': query_cov,
+                    'subject_cov': subject_cov,
                     'identity': identity,
-                    'valid': identity >= bc.MIN_PSC_IDENTITY
+                    'score': bitscore,
+                    'evalue': evalue
                 }
                 log.debug(
-                    'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, identity=%0.3f, UniRef90=%s',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, identity, cluster_id
+                    'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, subject-cov=%0.3f, identity=%0.3f, score=%0.1f, evalue=%1.1e, UniRef50=%s',
+                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, subject_cov, identity, bitscore, evalue, cluster_id
                 )
 
     psccs_found = []
@@ -120,7 +123,10 @@ def lookup(features: Sequence[dict], pseudo: bool = False):
                 if(pseudo):
                     feature[bc.PSEUDOGENE]['pscc'] = pscc
                 else:
-                    feature['pscc'] = pscc
+                    if('pscc' in feature):
+                        feature['pscc'] = {**feature['pscc'], **pscc}  # merge dicts, add PSCC annotation info to PSCC alignment info
+                    else:
+                        feature['pscc'] = pscc  # add PSCC annotation info
                 no_pscc_lookups += 1
                 log.debug(
                     'lookup: contig=%s, start=%i, stop=%i, strand=%s, UniRef50=%s, product=%s',

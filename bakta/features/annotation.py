@@ -29,7 +29,7 @@ RE_PROTEIN_PERIOD_SEPARATOR = re.compile(r'([a-zA-Z0-9]+)\.([a-zA-Z0-9]+)')
 RE_PROTEIN_WRONG_PRIMES = re.compile(r'[\u2032\u0060\u00B4]')  # prime (′), grave accent (`), acute accent (´)
 RE_PROTEIN_WEIGHT = re.compile(r' [0-9]+(?:\.[0-9]+)? k?da ', flags=re.IGNORECASE)
 RE_PROTEIN_SYMBOL = re.compile(r'[A-Z][a-z]{2}[A-Z][0-9]?')
-RE_DOMAIN_OF_UNKNOWN_FUCTION = re.compile(r'(DUF\d{3,4})', flags=re.IGNORECASE)
+RE_DOMAIN_OF_UNKNOWN_FUNCTION = re.compile(r'(DUF\d{3,4})', flags=re.IGNORECASE)
 RE_UNCHARACTERIZED_PROTEIN_FAMILY = re.compile(r'(UPF\d{3,4})', flags=re.IGNORECASE)
 RE_GENE_CAPITALIZED = re.compile(r'^[A-Z].+', flags=re.DOTALL)
 RE_GENE_SUSPECT_CHARS = re.compile(r'[\?]', flags=re.DOTALL)
@@ -105,18 +105,17 @@ def combine_annotation(feature: dict):
             product = ips_product
         for db_xref in ips['db_xrefs']:
             db_xrefs.add(db_xref)
-    rank = 0
-    for hit in expert_hits:
-        db_xrefs.update(hit.get('db_xrefs', []))
-        expert_rank = hit['rank']
-        if(expert_rank > rank):
-            expert_genes = hit.get('gene', None)
-            if(expert_genes):
-                expert_genes = expert_genes.replace('/', ',').split(',')
-                genes.update(expert_genes)
-                gene = expert_genes[0]
-            product = hit.get('product', None)
-            rank = expert_rank
+
+    if(len(expert_hits) > 0):
+        top_expert_hit = sorted(expert_hits,key=lambda k: (k['rank'], k.get('score', 0), calc_annotation_score(k)), reverse=True)[0]
+        expert_genes = top_expert_hit.get('gene', None)
+        if(expert_genes):
+            expert_genes = expert_genes.replace('/', ',').split(',')
+            genes.update(expert_genes)
+            gene = expert_genes[0]
+        product = top_expert_hit.get('product', None)
+        for hit in expert_hits:
+            db_xrefs.update(hit.get('db_xrefs', []))
 
     if(product):
         product = revise_cds_product(product)
@@ -408,8 +407,8 @@ def detect_feature_overlaps(genome: dict):
                 elif(sorf['start'] == overlap_sorf['start'] and sorf['stop'] == overlap_sorf['stop']):
                     continue  # same
                 else:  # overlap -> remove sorf
-                    score_sorf = calc_sorf_annotation_score(sorf)
-                    score_overlap_sorf = calc_sorf_annotation_score(overlap_sorf)
+                    score_sorf = calc_cds_annotation_score(sorf)
+                    score_overlap_sorf = calc_cds_annotation_score(overlap_sorf)
 
                     if(score_sorf < score_overlap_sorf):  # lower annotation score
                         overlap = f"[{max(sorf['start'], overlap_sorf['start'])},{min(sorf['stop'], overlap_sorf['stop'])}]"
@@ -435,36 +434,35 @@ def detect_feature_overlaps(genome: dict):
                         )
 
 
-def calc_sorf_annotation_score(sorf: dict) -> int:
+def calc_cds_annotation_score(cds: dict) -> int:
     """Calc an annotation score rewarding each identification & annotation"""
     score = 0
 
-    if('ups' in sorf):
+    if('ups' in cds):
         score += 1
 
-    ips = sorf.get('ips', None)
+    ips = cds.get('ips', None)
     if(ips):
         score += 1
-        ips_gene = ips.get('gene', None)
-        if(ips_gene):
-            score += 1
-        ips_product = ips.get('product', None)
-        if(ips_product):
-            score += 1
+        score += calc_annotation_score(ips)
 
-    psc = sorf.get('psc', None)
+    psc = cds.get('psc', None)
     if(psc):
         score += 1
-        psc_gene = psc.get('gene', None)
-        if(psc_gene):
-            score += 1
-        psc_product = psc.get('product', None)
-        if(psc_product):
-            score += 1
+        score += calc_annotation_score(psc)
     log.debug(
-        'sorf score: contig=%s, start=%i, stop=%i, gene=%s, product=%s, score=%i',
-        sorf['contig'], sorf['start'], sorf['stop'], sorf.get('gene', '-'), sorf.get('product', '-'), score
+        'cds score: contig=%s, start=%i, stop=%i, gene=%s, product=%s, score=%i',
+        cds['contig'], cds['start'], cds['stop'], cds.get('gene', '-'), cds.get('product', '-'), score
     )
+    return score
+
+
+def calc_annotation_score(orf:dict) -> int:
+    score = 0
+    if(orf.get('gene', None)):
+        score += 1
+    if(orf.get('product', None)):
+        score += 1
     return score
 
 
@@ -575,7 +573,7 @@ def revise_cds_product(product: str):
 
     old_product = product
     dufs = []  # replace DUF-containing products
-    for m in RE_DOMAIN_OF_UNKNOWN_FUCTION.finditer(product):
+    for m in RE_DOMAIN_OF_UNKNOWN_FUNCTION.finditer(product):
         dufs.append(m.group(1).upper())
     if(len(dufs) >= 1):
         product = f"{' '.join(dufs)} domain{'s' if len(dufs) > 1 else ''}-containing protein"
