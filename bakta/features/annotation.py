@@ -19,6 +19,7 @@ RE_PROTEIN_PUTATIVE = re.compile(r'(potential|possible|probable|predicted)', fla
 RE_PROTEIN_NODE = re.compile(r'NODE_', flags=re.IGNORECASE)
 RE_PROTEIN_POTENTIAL_CONTIG_NAME = re.compile(r'(genome|shotgun)', flags=re.IGNORECASE)
 RE_PROTEIN_DOMAIN_CONTAINING = re.compile(r'domain-containing protein', flags=re.IGNORECASE)
+RE_PROTEIN_REMNANT = re.compile(r'Remnant of ', re.IGNORECASE)
 RE_PROTEIN_NO_LETTERS = re.compile(r'[^A-Za-z]')
 RE_PROTEIN_SUSPECT_CHARS_DISCARD = re.compile(r'[.#]')
 RE_PROTEIN_SUSPECT_CHARS_REPLACE = re.compile(r'[@=?%]')
@@ -565,6 +566,11 @@ def revise_cds_product(product: str):
     product = product.replace('FOG:', '')  # remove FOG ids
     if(product != old_product):
         log.info('fix product: replace FOG ids. new=%s, old=%s', product, old_product)
+
+    old_product = product
+    product = RE_PROTEIN_REMNANT.sub('', product)  # remove 'Remnant of's
+    if(product != old_product):
+        log.info('fix product: replace remnant ofs. new=%s, old=%s', product, old_product)
 
     old_product = product
     dufs = []  # replace DUF-containing products
