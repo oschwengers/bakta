@@ -25,7 +25,7 @@ RE_PROTEIN_PERIOD_SEPARATOR = re.compile(r'([a-zA-Z0-9]+)\.([a-zA-Z0-9]+)')
 RE_PROTEIN_WRONG_PRIMES = re.compile(r'[\u2032\u0060\u00B4]')  # prime (′), grave accent (`), acute accent (´)
 RE_PROTEIN_WEIGHT = re.compile(r' [0-9]+(?:\.[0-9]+)? k?da ', flags=re.IGNORECASE)
 RE_PROTEIN_SYMBOL = re.compile(r'[A-Z][a-z]{2}[A-Z][0-9]?')
-RE_DOMAIN_OF_UNKNOWN_FUCTION = re.compile(r'(DUF\d{3,4})', flags=re.IGNORECASE)
+RE_DOMAIN_OF_UNKNOWN_FUNCTION = re.compile(r'(DUF\d{3,4})', flags=re.IGNORECASE)
 RE_UNCHARACTERIZED_PROTEIN_FAMILY = re.compile(r'(UPF\d{3,4})', flags=re.IGNORECASE)
 RE_GENE_CAPITALIZED = re.compile(r'^[A-Z].+', flags=re.DOTALL)
 RE_GENE_SUSPECT_CHARS = re.compile(r'[\?]', flags=re.DOTALL)
@@ -554,7 +554,7 @@ def revise_cds_product(product: str):
 
     old_product = product
     dufs = []  # replace DUF-containing products
-    for m in RE_DOMAIN_OF_UNKNOWN_FUCTION.finditer(product):
+    for m in RE_DOMAIN_OF_UNKNOWN_FUNCTION.finditer(product):
         dufs.append(m.group(1).upper())
     if(len(dufs) >= 1):
         product = f"{' '.join(dufs)} domain{'s' if len(dufs) > 1 else ''}-containing protein"
