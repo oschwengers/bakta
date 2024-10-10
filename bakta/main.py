@@ -15,6 +15,7 @@ import bakta.io.gff as gff
 import bakta.io.insdc as insdc
 import bakta.expert.amrfinder as exp_amr
 import bakta.expert.protein_sequences as exp_aa_seq
+import bakta.expert.protein_hmms as exp_aa_hmms
 import bakta.features.annotation as anno
 import bakta.features.t_rna as t_rna
 import bakta.features.tm_rna as tm_rna
@@ -62,9 +63,10 @@ def main():
         print(f'\tinput: {cfg.genome_path}')
         print(f"\tdb: {cfg.db_path}, version {cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}")
         if(cfg.replicons): print(f'\treplicon table: {cfg.replicons}')
-        if(cfg.regions): print(f'\tregion table: {cfg.regions}')
         if(cfg.prodigal_tf): print(f'\tprodigal training file: {cfg.prodigal_tf}')
+        if(cfg.regions): print(f'\tregion table: {cfg.regions}')
         if(cfg.user_proteins): print(f'\tuser proteins: {cfg.user_proteins}')
+        if(cfg.user_hmms): print(f'\tuser hmms: {cfg.user_hmms}')
         print(f'\toutput: {cfg.output_path}')
         if(cfg.force): print(f'\tforce: {cfg.force}')
         print(f'\ttmp directory: {cfg.tmp_path}')
@@ -292,6 +294,11 @@ def main():
                 user_aa_found = exp_aa_seq.search(cdss, cds_aa_path, 'user_proteins', user_aa_path)
                 print(f'\t\tuser protein sequences: {len(user_aa_found)}')
 
+            if(cfg.user_hmms):
+                log.debug('conduct expert system: user HMM')
+                user_hmm_found = exp_aa_hmms.search(cdss, cfg.user_hmms)
+                print(f'\t\tuser HMM sequences: {len(user_hmm_found)}')
+
             if(cfg.gram != bc.GRAM_UNKNOWN):
                 sig_peptides_found = sig_peptides.search(cdss, cds_aa_path)
                 print(f'\tsignal peptides: {len(sig_peptides_found)}')
@@ -366,8 +373,8 @@ def main():
         if(len(sorfs_not_found) > 0):
             if(cfg.db_info['type'] == 'full'):
                 log.debug('search sORF PSC')
-                sorf_pscs, sorfs_not_found = s_orf.search_pscs(sorfs_not_found)
-                sorf_pscs_psccs.extend(sorf_pscs)
+                cdss_not_found_tmp, sorfs_not_found = s_orf.search_pscs(sorfs_not_found)
+                sorf_pscs_psccs.extend(cdss_not_found_tmp)
                 print(f'\tfound PSCs: {len(sorf_pscs_psccs)}')
             else:
                 log.debug('search sORF PSCC')

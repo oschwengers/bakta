@@ -14,6 +14,7 @@ import bakta.db as db
 import bakta.utils as bu
 import bakta.expert.amrfinder as exp_amr
 import bakta.expert.protein_sequences as exp_aa_seq
+import bakta.expert.protein_hmms as exp_aa_hmms
 import bakta.features.annotation as anno
 import bakta.features.orf as orf
 import bakta.features.cds as feat_cds
@@ -42,6 +43,7 @@ def main():
     
     arg_group_annotation = parser.add_argument_group('Annotation')
     arg_group_annotation.add_argument('--proteins', action='store', default=None, dest='proteins', help='Fasta file of trusted protein sequences for annotation')
+    arg_group_annotation.add_argument('--hmms', action='store', default=None, dest='hmms', help='HMM file of trusted hidden markov models in HMMER format for CDS annotation')
     
     arg_group_general = parser.add_argument_group('General')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
@@ -91,6 +93,18 @@ def main():
     log.info('debug=%s', cfg.debug)
     cfg.verbose = True if cfg.debug else args.verbose
     log.info('verbose=%s', cfg.verbose)
+    cfg.user_proteins = cfg.check_user_proteins(args)
+    if(args.hmms is not None):
+        try:
+            if(args.hmms == ''):
+                raise ValueError('File path argument must be non-empty')
+            user_hmms_path = Path(args.hmms).resolve()
+            cfg.check_readability('HMM', user_hmms_path)
+            cfg.check_content_size('HMM', user_hmms_path)
+            cfg.user_hmms = user_hmms_path
+        except:
+            log.error('provided HMM file not valid! path=%s', args.hmms)
+            sys.exit(f'ERROR: HMM file ({args.hmms}) not valid!')
     
     bu.test_dependencies()
     if(cfg.verbose):
@@ -124,7 +138,7 @@ def main():
         aa['type'] = bc.FEATURE_CDS
         aa['aa'] = aa['sequence']
         aa['locus'] = aa['id']
-        aa['contig'] = 'mock'
+        aa['contig'] = '-'
         aa['start'] = mock_start
         aa['stop'] = -1
         aa['strand'] = bc.STRAND_UNKNOWN
@@ -132,14 +146,6 @@ def main():
         mock_start += 100
     print('annotate protein sequences...')
     annotate_aa(aas)
-
-    for aa in aas:  # cleanup mock attributes
-        aa.pop('contig', None)
-        aa.pop('start', None)
-        aa.pop('stop', None)
-        aa.pop('strand', None)
-        aa.pop('frame', None)
-    
     cfg.run_end = datetime.now()
     run_duration = (cfg.run_end - cfg.run_start).total_seconds()
 
@@ -149,12 +155,25 @@ def main():
     # - write optional output files in TSV, FAA formats
     # - remove temp directory
     ############################################################################
-
+    for aa in aas:  # reset mock attributes
+        aa['start'] = -1
+        aa['stop'] = -1
     print('write results...')
     annotations_path = output_path.joinpath(f'{cfg.prefix}.tsv')
     header_columns = ['ID', 'Length', 'Gene', 'Product', 'EC', 'GO', 'COG', 'RefSeq', 'UniParc', 'UniRef']
     print(f'\tfull annotations (TSV): {annotations_path}')
     tsv.write_protein_features(aas, header_columns, map_aa_columns, annotations_path)
+    inference_path = output_path.joinpath(f'{cfg.prefix}.inference.tsv')
+    print(f'\tfeature inferences (TSV): {inference_path}')
+    mock_contigs = [{'id': '-'}]
+    features_by_contig = {'-': aas}
+    tsv.write_feature_inferences(mock_contigs, features_by_contig, inference_path)
+    for aa in aas:  # cleanup mock attributes
+        aa.pop('contig', None)
+        aa.pop('start', None)
+        aa.pop('stop', None)
+        aa.pop('strand', None)
+        aa.pop('frame', None)
     full_annotations_path = output_path.joinpath(f'{cfg.prefix}.json')
     print(f'\tfull annotations (JSON): {full_annotations_path}')
     json.write_json(None, aas, full_annotations_path)
@@ -233,6 +252,10 @@ def annotate_aa(aas: Sequence[dict]):
         exp_aa_seq.write_user_protein_sequences(user_aa_path)
         user_aa_found = exp_aa_seq.search(aas, aa_path, 'user_proteins', user_aa_path)
         print(f'\t\tuser protein sequences: {len(user_aa_found)}')
+    if(cfg.user_hmms):
+        log.debug('conduct expert system: user HMM')
+        user_hmm_found = exp_aa_hmms.search(aas, cfg.user_hmms)
+        print(f'\t\tuser HMM sequences: {len(user_hmm_found)}')
     print('\tcombine annotations and mark hypotheticals...')
     log.debug('combine CDS annotations')
     for aa in aas:

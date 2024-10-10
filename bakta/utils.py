@@ -92,6 +92,7 @@ def parse_arguments():
     arg_group_annotation.add_argument('--replicons', '-r', action='store', default=None, dest='replicons', help='Replicon information table (tsv/csv)')
     arg_group_annotation.add_argument('--regions', action='store', default=None, help='Path to pre-annotated regions in GFF3 or Genbank format (regions only, no functional annotations).')
     arg_group_annotation.add_argument('--proteins', action='store', default=None, dest='proteins', help='Fasta file of trusted protein sequences for CDS annotation')
+    arg_group_annotation.add_argument('--hmms', action='store', default=None, dest='hmms', help='HMM file of trusted hidden markov models in HMMER format for CDS annotation')
     arg_group_annotation.add_argument('--meta', action='store_true', help='Run in metagenome mode. This only affects CDS prediction.')
 
     arg_group_workflow = parser.add_argument_group('Workflow')

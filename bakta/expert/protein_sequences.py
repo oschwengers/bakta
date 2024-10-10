@@ -117,7 +117,7 @@ def write_user_protein_sequences(aa_fasta_path: Path):
             with aa_fasta_path.open('w') as fh_out:
                 for user_protein in user_proteins:
                     (model_id, min_id, min_query_cov, min_model_cov, gene, product, dbxrefs, seq) = user_protein
-                    fh_out.write(f">{model_id} UserProteins~~~{100}~~~{min_id}~~~{min_query_cov}~~~{min_model_cov}~~~{gene}~~~{product}~~~{','.join(dbxrefs)}\n{seq}\n")
+                    fh_out.write(f">{model_id} UserProteins~~~{101}~~~{min_id}~~~{min_query_cov}~~~{min_model_cov}~~~{gene}~~~{product}~~~{','.join(dbxrefs)}\n{seq}\n")
                     log.debug(
                         'imported user aa: id=%s, length=%i, min-id=%f, min-query-cov=%f, min-model-cov=%f, gene=%s, product=%s, dbxrefs=%s',
                         model_id, len(seq), min_id, min_query_cov, min_model_cov, gene, product, dbxrefs

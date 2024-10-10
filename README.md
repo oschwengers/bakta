@@ -240,8 +240,8 @@ original locus id  |  new locus id  |  type  |  topology  |  name
 NODE_1 | chrom | `chromosome` | `circular` | `-`
 NODE_2 | p1 | `plasmid` | `c` | `pXYZ1`
 NODE_3 | p2 | `p`  |  `c` | `pXYZ2`
-NODE_4 | special-contig-name-xyz |  `-` | -
-NODE_5 | `` |  `-` | -
+NODE_4 | special-contig-name-xyz |  `-` | `-` | `-`
+NODE_5 | `` |  `-` | `-` | `-`
 
 #### User-provided regions
 
@@ -273,6 +273,27 @@ product | `string` | my special protein
 dbxrefs | `<empty>`, `db:id`, `,` separated list  | `VFDB:VF0511`
 
 Protein sequences provided in short Fasta or GenBank format are searched with default thresholds of 90%, 80% and 80% for minimal identity, query and subject coverage, respectively.
+
+#### User-provided HMMs
+
+Bakta accepts user-provided trusted HMMs via `--hmms` in HMMER's text format. If set, Bakta will adhere to the *trusted cutoff* specified in the HMM header. In addition, a max. evalue threshold of 1e-6 is applied. By default, Bakta uses the HMM description line as a product description. Further information can be provided via the HMM description line using the *short* format as explained above in the [User-provided protein sequences](####user-provided-protein-sequences) section.
+
+```bash
+# default
+HMMER3/f [3.1b2 | February 2015]
+NAME  id
+ACC   id
+DESC  product
+LENG  435
+TC    600 600
+
+# short
+NAME  id
+ACC   id
+DESC  gene~~~product~~~dbxrefs
+LENG  435
+TC    600 600
+```
 
 ### Output
 
@@ -394,6 +415,7 @@ Annotation:
                         Replicon information table (tsv/csv)
   --regions REGIONS     Path to pre-annotated regions in GFF3 or Genbank format (regions only, no functional annotations).
   --proteins PROTEINS   Fasta file of trusted protein sequences for CDS annotation
+  --hmms HMMS           HMM file of trusted hidden markov models in HMMER format for CDS annotation
   --meta                Run in metagenome mode. This only affects CDS prediction.
 
 Workflow:
