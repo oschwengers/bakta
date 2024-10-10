@@ -1,5 +1,4 @@
 import logging
-import subprocess as sp
 
 from collections import OrderedDict
 from pathlib import Path

@@ -8,9 +8,9 @@ import sys
 from pathlib import Path
 
 import yaml
+import Bio as bp
 
 from Bio import SeqUtils
-import Bio as bp
 
 import bakta
 import bakta.utils as bu

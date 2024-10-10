@@ -5,12 +5,12 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
+from Bio import SeqIO
+from xopen import xopen
+
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.features.orf as orf
-
-from Bio import SeqIO
-from xopen import xopen
 
 
 log = logging.getLogger('EXPERT_AA_SEQ')

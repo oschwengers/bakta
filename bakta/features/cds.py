@@ -13,8 +13,8 @@ import pyrodigal
 import pyhmmer
 
 from Bio import SeqIO
-from Bio.Seq import Seq
 from Bio import SeqFeature
+from Bio.Seq import Seq
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from xopen import xopen
 

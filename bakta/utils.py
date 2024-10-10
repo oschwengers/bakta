@@ -4,11 +4,11 @@ import csv
 import hashlib
 import logging
 import os
-import shutil
 import platform as pf
+import re
+import shutil
 import sys
 import subprocess as sp
-import re
 
 from argparse import Namespace
 from datetime import datetime
