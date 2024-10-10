@@ -482,7 +482,7 @@ def main():
         contig_features.sort(key=lambda k: k['start'])
         features.extend(contig_features)
     log.info('selected features=%i', len(features))
-    print(f'selected: {len(features)}')
+    print(f'\tselected: {len(features)}')
 
     # use user provided locus tag if not None/non-empty or generate a sequence based locus prefix
     locus_tag_prefix = cfg.locus_tag if cfg.locus_tag else bu.create_locus_tag_prefix(contigs)
