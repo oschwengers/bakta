@@ -163,6 +163,10 @@ inputs:
     id: skip_ori
     inputBinding: {prefix: --skip-ori}
     type: boolean?
+  - doc: Skip feature overlap filters
+    id: skip_filter
+    inputBinding: {prefix: --skip-filter}
+    type: boolean?
   - doc: Skip genome plotting
     id: skip_plot
     inputBinding: {prefix: --skip-plot}

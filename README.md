@@ -370,7 +370,7 @@ usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH] [--prefix PREFIX]
              [--locus LOCUS] [--locus-tag LOCUS_TAG] [--locus-tag-increment {1,5,10}] [--keep-contig-headers] [--compliant]
              [--replicons REPLICONS] [--regions REGIONS] [--proteins PROTEINS] [--meta]
              [--skip-trna] [--skip-tmrna] [--skip-rrna] [--skip-ncrna] [--skip-ncrna-region]
-             [--skip-crispr] [--skip-cds] [--skip-pseudo] [--skip-sorf] [--skip-gap] [--skip-ori] [--skip-plot]
+             [--skip-crispr] [--skip-cds] [--skip-pseudo] [--skip-sorf] [--skip-gap] [--skip-ori] [--skip-filter] [--skip-plot]
              [--help] [--verbose] [--debug] [--threads THREADS] [--tmp-dir TMP_DIR] [--version]
              <genome>
 
@@ -430,6 +430,7 @@ Workflow:
   --skip-sorf           Skip sORF detection & annotation
   --skip-gap            Skip gap detection & annotation
   --skip-ori            Skip oriC/oriT detection & annotation
+  --skip-filter         Skip feature overlap filters
   --skip-plot           Skip generation of circular genome plots
 
 General:

@@ -93,6 +93,7 @@ def main():
         if(cfg.skip_sorf): print(f'\tskip sORF: {cfg.skip_sorf}')
         if(cfg.skip_gap): print(f'\tskip gap: {cfg.skip_gap}')
         if(cfg.skip_ori): print(f'\tskip oriC/V/T: {cfg.skip_ori}')
+        if(cfg.skip_filter): print(f'\tskip feature overlap filters: {cfg.skip_filter}')
         if(cfg.skip_plot): print(f'\tskip plot: {cfg.skip_plot}')
         print()
     
@@ -441,8 +442,11 @@ def main():
     ############################################################################
     # Filter overlapping features
     ############################################################################
-    print('apply feature overlap filters...')
-    anno.detect_feature_overlaps(genome)
+    if(cfg.skip_filter):
+        print('skip feature overlap filters...')
+    else:
+        print('apply feature overlap filters...')
+        anno.detect_feature_overlaps(genome)
 
     ############################################################################
     # Create annotations

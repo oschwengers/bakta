@@ -107,6 +107,7 @@ def parse_arguments():
     arg_group_workflow.add_argument('--skip-sorf', action='store_true', dest='skip_sorf', help='Skip sORF detection & annotation')
     arg_group_workflow.add_argument('--skip-gap', action='store_true', dest='skip_gap', help='Skip gap detection & annotation')
     arg_group_workflow.add_argument('--skip-ori', action='store_true', dest='skip_ori', help='Skip oriC/oriT detection & annotation')
+    arg_group_workflow.add_argument('--skip-filter', action='store_true', dest='skip_filter', help='Skip feature overlap filters')
     arg_group_workflow.add_argument('--skip-plot', action='store_true', dest='skip_plot', help='Skip generation of circular genome plots')
 
     arg_group_general = parser.add_argument_group('General')
