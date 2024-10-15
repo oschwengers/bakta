@@ -293,8 +293,8 @@ def has_annotation(feature: dict, attribute: str) -> bool:
         return False
 
 
-def calc_genome_stats(data: dict, features: Sequence[dict]):
-    genome_size = data['size']
+def calc_genome_stats(data: dict):
+    genome_size = data['stats']['size']
     log.info('genome-size=%i', genome_size)
 
     # N50
@@ -305,11 +305,11 @@ def calc_genome_stats(data: dict, features: Sequence[dict]):
         gc_sum += nt.count('G') + nt.count('C')
         n_sum += nt.count('N')
     gc_ratio = gc_sum / (genome_size - n_sum)
-    data['gc'] = gc_ratio
+    data['stats']['gc'] = gc_ratio
     log.info('GC=%0.3f', gc_ratio)
 
     n_ratio = n_sum / genome_size
-    data['n_ratio'] = n_ratio
+    data['stats']['n_ratio'] = n_ratio
     log.info('N=%0.3f', n_ratio)
 
     n50 = 0
@@ -320,27 +320,20 @@ def calc_genome_stats(data: dict, features: Sequence[dict]):
         if(sequence_length_sum >= genome_size / 2):
             n50 = nt_length
             break
-    data['n50'] = n50
+    data['stats']['n50'] = n50
     log.info('N50=%i', n50)
 
     sequence_by_id = {seq['id']: seq for seq in data['sequences']}
     coding_nts = 0
-    for feat in features:
+    for feat in data['features']:
         if(feat.get('edge', False)):
             sequence_length = sequence_by_id[feat['sequence']]['length']
             coding_nts += feat['stop'] + (sequence_length - feat['start'] + 1)  # feature coding nucleotides
         else:
             coding_nts += feat['stop'] - feat['start'] + 1  # feature coding nucleotides
     coding_ratio = coding_nts / (genome_size - n_sum)
-    data['coding_ratio'] = coding_ratio
+    data['stats']['coding_ratio'] = coding_ratio
     log.info('coding-ratio=%0.3f', coding_ratio)
-
-    return {
-        'gc': gc_ratio,
-        'n_ratio': n_ratio,
-        'n50': n50,
-        'coding_ratio': coding_ratio
-    }
 
 
 def parse_replicon_table(replicon_table_path: Path) -> Dict[str, dict]:

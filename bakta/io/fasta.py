@@ -23,6 +23,11 @@ def import_sequences(sequences_path: Path, is_genomic: bool=True, is_dna: bool=T
     sequences = []
     with xopen(str(sequences_path), threads=0) as fh:
         for record in SeqIO.parse(fh, 'fasta'):
+            sequence = {
+                'id': record.id,
+                'description': record.description.split(' ', maxsplit=1)[1] if ' ' in record.description else ''
+            }
+            
             raw_sequence = str(record.seq).upper()
             if('-' in raw_sequence):
                 dash_count = raw_sequence.count('-')
@@ -32,6 +37,7 @@ def import_sequences(sequences_path: Path, is_genomic: bool=True, is_dna: bool=T
                 if(FASTA_DNA_SEQUENCE_PATTERN.fullmatch(raw_sequence) is None):
                     log.error('import: Fasta sequence contains invalid DNA characters! id=%s', record.id)
                     raise ValueError(f'Fasta sequence contains invalid DNA characters! id={record.id}')
+                sequence['nt'] = raw_sequence
             else:
                 if(raw_sequence[-1] == '*'):  # remove trailing stop asterik
                     raw_sequence = raw_sequence[:-1]
@@ -39,13 +45,8 @@ def import_sequences(sequences_path: Path, is_genomic: bool=True, is_dna: bool=T
                 if(FASTA_AA_SEQUENCE_PATTERN.fullmatch(raw_sequence) is None):
                     log.error('import: Fasta sequence contains invalid AA characters! id=%s, seq=%s', record.id, raw_sequence)
                     raise ValueError(f'Fasta sequence contains invalid AA characters! id={record.id}')
-
-            sequence = {
-                'id': record.id,
-                'description': record.description.split(' ', maxsplit=1)[1] if ' ' in record.description else '',
-                'nt': raw_sequence,
-                'length': len(raw_sequence)
-            }
+                sequence['aa'] = raw_sequence
+            sequence['length'] = len(raw_sequence)
             if(is_genomic):
                 sequence['complete'] = False
                 sequence['type'] = bc.REPLICON_CONTIG

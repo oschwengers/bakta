@@ -31,45 +31,13 @@ def write_json(data: dict, features: Sequence[dict], json_path: Path):
             if(psc):
                 psc.pop('db_xrefs')
 
-    # replace features type dict by sorted feature list
-    output = OrderedDict()
-    if data is not None:
-        ordered_genome = OrderedDict()
-        ordered_genome['genus'] = data['genus']
-        ordered_genome['species'] = data['species']
-        ordered_genome['strain'] = data['strain']
-        if('plasmid' in data):
-            ordered_genome['plasmid'] = data['plasmid']
-        ordered_genome['complete'] = data['complete']
-        ordered_genome['gram'] = data['gram']
-        ordered_genome['translation_table'] = data['translation_table']
-        output['genome'] = ordered_genome
-
-        stats = OrderedDict()
-        stats['no_sequences'] = len(data['sequences'])
-        stats['size'] = data['size']
-        stats['gc'] = data['gc']
-        stats['n_ratio'] = data['n_ratio']
-        stats['n50'] = data['n50']
-        stats['coding_ratio'] = data['coding_ratio']
-        output['stats'] = stats
-
-    output['features'] = features
-    if data is not None:
-        output['sequences'] = data['sequences']
-
-    run = OrderedDict()
-    run['start'] = cfg.run_start.strftime('%Y-%m-%d %H:%M:%S')
-    run['end'] = cfg.run_end.strftime('%Y-%m-%d %H:%M:%S')
-    output['run'] = run
-
     version = OrderedDict()
     version['bakta'] = bakta.__version__
     version['db'] = {
         'version': f"{cfg.db_info['major']}.{cfg.db_info['minor']}",
         'type': cfg.db_info['type']
     }
-    output['version'] = version
+    data['version'] = version
 
     with json_path.open('wt') as fh:
-        json.dump(output, fh, indent=4)
+        json.dump(data, fh, indent=4)

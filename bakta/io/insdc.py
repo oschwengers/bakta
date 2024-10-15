@@ -47,7 +47,7 @@ def write_features(data: dict, features: Sequence[dict], genbank_output_path: Pa
         )
         sequence_annotations = {
             'molecule_type': 'DNA',
-            'source': data['taxon'],
+            'source': data['genome']['taxon'],
             'date': date.today().strftime('%d-%b-%Y').upper(),
             'topology': seq['topology'],
             'data_file_division': 'HGT' if seq['type'] == bc.REPLICON_CONTIG else 'BCT',
@@ -61,12 +61,12 @@ def write_features(data: dict, features: Sequence[dict], genbank_output_path: Pa
         }
 
         description = ''
-        if(data['taxon']):
-            sequence_annotations['organism'] = data['taxon']
-            source_qualifiers['organism'] = data['taxon']
-            description = data['taxon']
-        if(data['strain']):
-            source_qualifiers['strain'] = data['strain']
+        if(data['genome']['taxon']):
+            sequence_annotations['organism'] = data['genome']['taxon']
+            source_qualifiers['organism'] = data['genome']['taxon']
+            description = data['genome']['taxon']
+        if(data['genome']['strain']):
+            source_qualifiers['strain'] = data['genome']['strain']
 
         if(seq['type'] == bc.REPLICON_PLASMID):
             source_qualifiers['plasmid'] = seq['name'] if seq.get('name', None) else 'unnamed'

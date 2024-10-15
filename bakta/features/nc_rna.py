@@ -31,9 +31,9 @@ def predict_nc_rnas(data: dict, sequences_path: Path):
         '--cpu', str(cfg.threads),
         '--tblout', str(output_path)
     ]
-    if(data['size'] >= 1000000):
+    if(data['stats']['size'] >= 1000000):
         cmd.append('-Z')
-        cmd.append(str(2 * data['size'] // 1000000))
+        cmd.append(str(2 * data['stats']['size'] // 1000000))
     cmd.append(str(cfg.db_path.joinpath('ncRNA-genes')))
     cmd.append(str(sequences_path))
     log.debug('cmd=%s', cmd)

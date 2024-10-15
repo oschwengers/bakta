@@ -271,7 +271,7 @@ def test_compare_alignments(alignment, ref_alignment, cds, coordinates, expected
               'edge': False
             },
             {
-              'sequence': 'ACGT' * 200,
+              'nt': 'ACGT' * 200,
               'topology': 'linear'
             },
             {
@@ -291,7 +291,7 @@ def test_compare_alignments(alignment, ref_alignment, cds, coordinates, expected
               'edge': False
             },
             {
-              'sequence': 'ACGT' * 50,  # 200nt
+              'nt': 'ACGT' * 50,  # 200nt
               'topology': 'linear'
             },
             {
@@ -313,7 +313,7 @@ def test_compare_alignments(alignment, ref_alignment, cds, coordinates, expected
               'elongation_downstream': 300
             },
             {
-              'sequence': 'ACGT' * 100,  # 400nt
+              'nt': 'ACGT' * 100,  # 400nt
               'topology': 'circular'
             },
             {

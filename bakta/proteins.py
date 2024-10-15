@@ -137,7 +137,6 @@ def main():
     mock_start = 1
     for aa in aas:  # rename and mock feature attributes to reuse existing functions
         aa['type'] = bc.FEATURE_CDS
-        aa['aa'] = aa['sequence']
         aa['locus'] = aa['id']
         aa['sequence'] = '-'
         aa['start'] = mock_start
@@ -177,7 +176,7 @@ def main():
         aa.pop('frame', None)
     full_annotations_path = output_path.joinpath(f'{cfg.prefix}.json')
     print(f'\tfull annotations (JSON): {full_annotations_path}')
-    json.write_json(None, aas, full_annotations_path)
+    json.write_json({'features': aas}, aas, full_annotations_path)
     hypotheticals_path = output_path.joinpath(f'{cfg.prefix}.hypotheticals.tsv')
     header_columns = ['ID', 'Length', 'Mol Weight [kDa]', 'Iso El. Point', 'Pfam hits']
     hypotheticals = hypotheticals = [aa for aa in aas if 'hypothetical' in aa]

@@ -90,33 +90,33 @@ def get_feature_stop(feature: dict) -> int:
 def overlap_filter(data: dict, orfs_raw: Sequence[dict]):
     """Filter in-mem ORFs by overlapping CDSs."""
     t_rnas_per_sequence = {seq['id']: [] for seq in data['sequences']}
-    for t_rna in data['features'].get(bc.FEATURE_T_RNA, []):
+    for t_rna in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_T_RNA]:
         t_rnas = t_rnas_per_sequence[t_rna['sequence']]
         t_rnas.append(t_rna)
-    for tm_rna in data['features'].get(bc.FEATURE_TM_RNA, []):
+    for tm_rna in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_TM_RNA]:
         t_rnas = t_rnas_per_sequence[tm_rna['sequence']]
         t_rnas.append(tm_rna)
 
     r_rna_per_sequence = {seq['id']: [] for seq in data['sequences']}
-    for r_rna in data['features'].get(bc.FEATURE_R_RNA, []):
+    for r_rna in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_R_RNA]:
         r_rnas = r_rna_per_sequence[r_rna['sequence']]
         r_rnas.append(r_rna)
 
     # nc_rnas_per_sequence = {k['id']: [] for k in data['sequences']}
-    # for nc_rna in data['features'].get(bc.FEATURE_NC_RNA, []):
+    # for nc_rna in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_NC_RNA]:
     #     nc_rnas = nc_rnas_per_sequence[nc_rna['sequence']]
     #     nc_rnas.append(nc_rna)
-    # for nc_rna in data['features'].get(bc.FEATURE_NC_RNA_REGION, []):
+    # for nc_rna in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_NC_RNA_REGION]:
     #     nc_rnas = nc_rnas_per_sequence[nc_rna['sequence']]
     #     nc_rnas.append(nc_rna)
 
     crispr_arrays_per_sequence = {seq['id']: [] for seq in data['sequences']}
-    for crispr_array in data['features'].get(bc.FEATURE_CRISPR, []):
+    for crispr_array in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_CRISPR]:
         crispr_arrays = crispr_arrays_per_sequence[crispr_array['sequence']]
         crispr_arrays.append(crispr_array)
 
     cdss_per_sequence = {k['id']: [] for k in data['sequences']}
-    for cds in data['features'].get(bc.FEATURE_CDS, []):
+    for cds in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_CDS]:
         cdss = cdss_per_sequence[cds['sequence']]
         cdss.append(cds)
 

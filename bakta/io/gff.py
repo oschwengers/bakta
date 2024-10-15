@@ -22,8 +22,8 @@ def write_features(data: dict, features_by_sequence: Dict[str, dict], gff3_path:
         fh.write('##gff-version 3\n')  # GFF version
         fh.write('##feature-ontology https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/v3.1/so.obo\n')  # SO feature version
 
-        if(data['taxon']):  # write organism info
-            fh.write(f"# organism {data['taxon']}\n")
+        if(data['genome']['taxon']):  # write organism info
+            fh.write(f"# organism {data['genome']['taxon']}\n")
 
         fh.write('# Annotated with Bakta\n')
         fh.write(f'# Software: v{bakta.__version__}\n')

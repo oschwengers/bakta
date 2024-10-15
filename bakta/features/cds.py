@@ -35,10 +35,10 @@ def predict(data: dict):
     # create Pyrodigal trainining file if not provided by the user
     prodigal_tf_path = cfg.prodigal_tf
     trainings_info = None
-    prodigal_metamode = cfg.meta  or  data['size'] < pyrodigal.MIN_SINGLE_GENOME  # 20_000 bp
+    prodigal_metamode = cfg.meta  or  data['stats']['size'] < pyrodigal.MIN_SINGLE_GENOME  # 20_000 bp
     log.debug('prodigal mode: meta=%s', prodigal_metamode)
     if(prodigal_tf_path is None):
-        closed = not data['complete']
+        closed = not data['genome']['complete']
         if(not prodigal_metamode):
             log.info('create prodigal training info object: meta=%s, closed=%s', prodigal_metamode, closed)
             gene_finder = pyrodigal.GeneFinder(meta=prodigal_metamode, closed=closed)
@@ -406,7 +406,7 @@ def revise_translational_exceptions(data: dict, cdss: Sequence[dict]):
     Revise translational exceptions as for istance selenocystein proteins.
     """
     no_revised = 0
-    if(bc.FEATURE_NC_RNA_REGION not in data['features']):  # check if ncRNA regions have been detected, otherwise skip analysis and return
+    if(len([feat for feat in data['features'] if feat['type'] == bc.FEATURE_NC_RNA_REGION]) == 0):  # check if ncRNA regions have been detected, otherwise skip analysis and return
         return no_revised
 
     sequences = {seq['id']: seq for seq in data['sequences']}
@@ -432,7 +432,7 @@ def revise_translational_exceptions(data: dict, cdss: Sequence[dict]):
                 cds_pairs = cds_pairs_per_sequence[cds_a['sequence']]
                 cds_pairs.append((cds_a, cds_b))
 
-    recoding_regions = [ncrna_region for ncrna_region in data['features'][bc.FEATURE_NC_RNA_REGION] if ncrna_region['class'] == so.SO_CIS_REG_RECODING_STIMULATION_REGION]  #  Selenocysteine insertion sequences
+    recoding_regions = [ncrna_region for ncrna_region in data['features'] if ncrna_region['type'] == bc.FEATURE_NC_RNA_REGION  and  ncrna_region['class'] == so.SO_CIS_REG_RECODING_STIMULATION_REGION]  #  Selenocysteine insertion sequences
     for recoding_region in recoding_regions:
         if('selenocysteine' in recoding_region.get('product', '').lower()):
             cds_pairs = cds_pairs_per_sequence[recoding_region['sequence']]
