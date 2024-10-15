@@ -45,8 +45,8 @@ def lookup(features: Sequence[dict]):
                 feature['ups'] = ups
                 features_found.append(feature)
                 log.debug(
-                    'lookup: contig=%s, start=%i, stop=%i, aa-length=%i, strand=%s, UniParc=%s, UniRef100=%s, NCBI NRP=%s',
-                    feature['contig'], feature['start'], feature['stop'], len(feature['aa']), feature['strand'], ups.get(DB_UPS_COL_UNIPARC, ''), ups.get(DB_UPS_COL_UNIREF100, ''), ups.get(DB_UPS_COL_REFSEQ_NRP, '')
+                    'lookup: seq=%s, start=%i, stop=%i, aa-length=%i, strand=%s, UniParc=%s, UniRef100=%s, NCBI NRP=%s',
+                    feature['sequence'], feature['start'], feature['stop'], len(feature['aa']), feature['strand'], ups.get(DB_UPS_COL_UNIPARC, ''), ups.get(DB_UPS_COL_UNIREF100, ''), ups.get(DB_UPS_COL_REFSEQ_NRP, '')
                 )
             else:
                 features_not_found.append(feature)

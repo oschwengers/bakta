@@ -17,13 +17,13 @@ RE_CRISPR = re.compile(r'(\d{1,8})\s+(\d{2})\s+(\d{1,3}\.\d)\s+(?:(\d{1,2})\s+)?
 log = logging.getLogger('CRISPR')
 
 
-def predict_crispr(genome: dict, contigs_path: Path):
+def predict_crispr(data: dict, sequences_path: Path):
     """Predict CRISPR arrays with PILER-CR."""
 
     output_path = cfg.tmp_path.joinpath('crispr.txt')
     cmd = [
         'pilercr',
-        '-in', str(contigs_path),
+        '-in', str(sequences_path),
         '-out', str(output_path),
         '-noinfo',  # omit help in output
         '-quiet'  # silent mode
@@ -44,10 +44,10 @@ def predict_crispr(genome: dict, contigs_path: Path):
 
     # parse crispr arrays
     crispr_arrays = {}
-    contigs = {c['id']: c for c in genome['contigs']}
+    sequences = {seq['id']: seq for seq in data['sequences']}
     with output_path.open() as fh:
         output_section = None
-        contig_id = None
+        sequence_id = None
         array_id = None
         skip_lines = True
         crispr_array = None
@@ -77,8 +77,8 @@ def predict_crispr(genome: dict, contigs_path: Path):
                         crispr_array['spacers'] = []
                         crispr_arrays[array_id] = crispr_array
                     elif(line[0] == '>'):
-                        contig_id = line[1:]
-                        crispr_array['contig'] = contig_id
+                        sequence_id = line[1:]
+                        crispr_array['sequence'] = sequence_id
                     elif(line[0] != '='):
                         m = RE_CRISPR.fullmatch(line)
                         if(m is not None):
@@ -102,20 +102,20 @@ def predict_crispr(genome: dict, contigs_path: Path):
                                 crispr_spacer['stop'] = position + repeat_length + spacer_length - 1 - gap_count
                                 crispr_spacer['sequence'] = spacer_seq
                                 crispr_array['spacers'].append(crispr_spacer)
-                                spacer_genome_seq = bu.extract_feature_sequence(crispr_spacer, contigs[contig_id])
+                                spacer_genome_seq = bu.extract_feature_sequence(crispr_spacer, sequences[sequence_id])
                                 log.debug('spacer: array-id=%s, start=%i, stop=%i, genome-seq=%s, spacer-seq=%s', array_id, crispr_spacer['start'], crispr_spacer['stop'], spacer_genome_seq, spacer_seq)
                                 assert spacer_seq == spacer_genome_seq  # assure PILER-CR provided sequence equals sequence extracted from genome
                 elif(output_section == 'POSITION'):
                     if(line[0] == '>'):
-                        contig_id = line[1:]
+                        sequence_id = line[1:]
                     elif(line[0] != 'A' and line[0] != '='):
                         cols = line.split()
                         if(len(cols) == 8):
-                            (array_id, contig, position, length, copies, repeat_length, spacer_length, repeat_consensus) = cols
+                            (array_id, sequence, position, length, copies, repeat_length, spacer_length, repeat_consensus) = cols
                         else:
-                            (array_id, contig, position, length, copies, repeat_length, spacer_length, distance, repeat_consensus) = cols
+                            (array_id, sequence, position, length, copies, repeat_length, spacer_length, distance, repeat_consensus) = cols
                         crispr_array = crispr_arrays[array_id]
-                        positions = [c['start'] for c in crispr_array['spacers']] + [c['stop'] for c in crispr_array['spacers']] + [c['start'] for c in crispr_array['repeats']] + [c['stop'] for c in crispr_array['repeats']]
+                        positions = [seq['start'] for seq in crispr_array['spacers']] + [seq['stop'] for seq in crispr_array['spacers']] + [seq['start'] for seq in crispr_array['repeats']] + [seq['stop'] for seq in crispr_array['repeats']]
                         crispr_array['start'] = min(positions)
                         crispr_array['stop'] = max(positions)
                         crispr_array['product'] = f'CRISPR array with {copies} repeats of length {repeat_length}, consensus sequence {repeat_consensus} and spacer length {spacer_length}'
@@ -125,11 +125,11 @@ def predict_crispr(genome: dict, contigs_path: Path):
                         crispr_array['repeat_consensus'] = repeat_consensus
                         crispr_array['db_xrefs'] = [so.SO_CRISPR.id]
 
-                        nt = bu.extract_feature_sequence(crispr_array, contigs[contig_id])  # extract nt sequences
+                        nt = bu.extract_feature_sequence(crispr_array, sequences[sequence_id])  # extract nt sequences
                         crispr_array['nt'] = nt
                         log.info(
-                            'contig=%s, start=%i, stop=%i, spacer-length=%i, repeat-length=%i, # repeats=%i, repeat-consensus=%s, nt=[%s..%s]',
-                            crispr_array['contig'], crispr_array['start'], crispr_array['stop'], crispr_array['spacer_length'], crispr_array['repeat_length'], len(crispr_array['repeats']), crispr_array['repeat_consensus'], nt[:10], nt[-10:]
+                            'seq=%s, start=%i, stop=%i, spacer-length=%i, repeat-length=%i, # repeats=%i, repeat-consensus=%s, nt=[%s..%s]',
+                            crispr_array['sequence'], crispr_array['start'], crispr_array['stop'], crispr_array['spacer_length'], crispr_array['repeat_length'], len(crispr_array['repeats']), crispr_array['repeat_consensus'], nt[:10], nt[-10:]
                         )
     crispr_arrays = crispr_arrays.values()                        
     log.info('predicted=%i', len(crispr_arrays))

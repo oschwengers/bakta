@@ -16,7 +16,7 @@ import bakta.pscc as bpscc
 log = logging.getLogger('TSV')
 
 
-def write_features(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_path: Path):
+def write_features(sequences: Sequence[dict], features_by_sequence: Dict[str, dict], tsv_path: Path):
     """Export features in TSV format."""
     log.info('write feature tsv: path=%s', tsv_path)
 
@@ -28,8 +28,8 @@ def write_features(contigs: Sequence[dict], features_by_contig: Dict[str, dict],
         fh.write(f'# URL: {bc.BAKTA_URL}\n')
         fh.write('#Sequence Id\tType\tStart\tStop\tStrand\tLocus Tag\tGene\tProduct\tDbXrefs\n')
 
-        for contig in contigs:
-            for feat in features_by_contig[contig['id']]:
+        for seq in sequences:
+            for feat in features_by_sequence[seq['id']]:
                 feat_type = feat['type']
                 if(feat_type == bc.FEATURE_GAP):
                     feat_type = bc.INSDC_FEATURE_ASSEMBLY_GAP if feat['length'] >= 100 else bc.INSDC_FEATURE_GAP
@@ -46,7 +46,7 @@ def write_features(contigs: Sequence[dict], features_by_contig: Dict[str, dict],
                     product = f"(partial) {product}"
                 fh.write('\t'.join(
                     [
-                        feat['contig'],
+                        feat['sequence'],
                         feat_type,
                         str(feat['start']),
                         str(feat['stop']),
@@ -62,20 +62,20 @@ def write_features(contigs: Sequence[dict], features_by_contig: Dict[str, dict],
                     i = 0
                     while i < len(feat['spacers']):
                         repeat = feat['repeats'][i]
-                        fh.write('\t'.join([feat['contig'], bc.FEATURE_CRISPR_REPEAT, str(repeat['start']), str(repeat['stop']), repeat['strand'], '', '', f"CRISPR repeat", '']))
+                        fh.write('\t'.join([feat['sequence'], bc.FEATURE_CRISPR_REPEAT, str(repeat['start']), str(repeat['stop']), repeat['strand'], '', '', f"CRISPR repeat", '']))
                         fh.write('\n')
                         spacer = feat['spacers'][i]
-                        fh.write('\t'.join([feat['contig'], bc.FEATURE_CRISPR_SPACER, str(spacer['start']), str(spacer['stop']), spacer['strand'], '', '', f"CRISPR spacer, sequence {spacer['sequence']}", '']))
+                        fh.write('\t'.join([feat['sequence'], bc.FEATURE_CRISPR_SPACER, str(spacer['start']), str(spacer['stop']), spacer['strand'], '', '', f"CRISPR spacer, sequence {spacer['sequence']}", '']))
                         fh.write('\n')
                         i += 1
                     if(len(feat['repeats']) - 1 == i):
                         repeat = feat['repeats'][i]
-                        fh.write('\t'.join([feat['contig'], bc.FEATURE_CRISPR_REPEAT, str(repeat['start']), str(repeat['stop']), repeat['strand'], '', '', f"CRISPR repeat", '']))
+                        fh.write('\t'.join([feat['sequence'], bc.FEATURE_CRISPR_REPEAT, str(repeat['start']), str(repeat['stop']), repeat['strand'], '', '', f"CRISPR repeat", '']))
                         fh.write('\n')
     return
 
 
-def write_feature_inferences(contigs: Sequence[dict], features_by_contig: Dict[str, dict], tsv_path: Path):
+def write_feature_inferences(sequences: Sequence[dict], features_by_sequence: Dict[str, dict], tsv_path: Path):
     """Export feature inference statistics in TSV format."""
     log.info('write tsv: path=%s', tsv_path)
 
@@ -87,8 +87,8 @@ def write_feature_inferences(contigs: Sequence[dict], features_by_contig: Dict[s
         fh.write(f'# URL: {bc.BAKTA_URL}\n')
         fh.write('#Sequence Id\tType\tStart\tStop\tStrand\tLocus Tag\tScore\tEvalue\tQuery Cov\tSubject Cov\tId\tAccession\n')
 
-        for contig in contigs:
-            for feat in features_by_contig[contig['id']]:
+        for seq in sequences:
+            for feat in features_by_sequence[seq['id']]:
                 if(feat['type'] in [bc.FEATURE_CDS, bc.FEATURE_SORF]):
                     score, evalue, query_cov, subject_cov, identity, accession = None, None, None, None, None, '-'
                     if('ups' in feat or 'ips' in feat):
@@ -107,7 +107,7 @@ def write_feature_inferences(contigs: Sequence[dict], features_by_contig: Dict[s
                         accession = f"{bc.DB_XREF_UNIREF}:{feat['psc'][bpsc.DB_PSC_COL_UNIREF90]}" if 'psc' in feat else f"{bc.DB_XREF_UNIREF}:{feat['pscc'][bpscc.DB_PSCC_COL_UNIREF50]}"
                     fh.write('\t'.join(
                         [
-                            feat['contig'],
+                            feat['sequence'],
                             feat['type'],
                             str(feat['start']),
                             str(feat['stop']),
@@ -126,7 +126,7 @@ def write_feature_inferences(contigs: Sequence[dict], features_by_contig: Dict[s
                     accession = '-' if feat['type'] == bc.FEATURE_T_RNA else [xref for xref in feat['db_xrefs'] if bc.DB_XREF_RFAM in xref][0]
                     fh.write('\t'.join(
                         [
-                            feat['contig'],
+                            feat['sequence'],
                             feat['type'],
                             str(feat['start']),
                             str(feat['stop']),
@@ -173,5 +173,5 @@ def write_hypotheticals(hypotheticals: Sequence[dict], tsv_path: Path):
             seq_stats = hypo['seq_stats']
             mol_weight = f"{(seq_stats['molecular_weight']/1000):.1f}" if seq_stats['molecular_weight'] else 'NA'
             iso_point = f"{seq_stats['isoelectric_point']:.1f}" if seq_stats['isoelectric_point'] else 'NA'
-            fh.write(f"{hypo['contig']}\t{hypo['start']}\t{hypo['stop']}\t{hypo['strand']}\t{hypo.get('locus', '')}\t{mol_weight}\t{iso_point}\t{', '.join(sorted(pfams))}\t{', '.join(sorted(hypo.get('db_xrefs', [])))}\n")
+            fh.write(f"{hypo['sequence']}\t{hypo['start']}\t{hypo['stop']}\t{hypo['strand']}\t{hypo.get('locus', '')}\t{mol_weight}\t{iso_point}\t{', '.join(sorted(pfams))}\t{', '.join(sorted(hypo.get('db_xrefs', [])))}\n")
     return

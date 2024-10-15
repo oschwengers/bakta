@@ -18,7 +18,7 @@ HIT_EVALUE = '1E-5'
 log = logging.getLogger('ORI')
 
 
-def predict_oris(genome: dict, contigs_path: Path, ori_type: str) -> Sequence[dict]:
+def predict_oris(data: dict, sequences_path: Path, ori_type: str) -> Sequence[dict]:
     """Search for oriT/C sequences."""
 
     database = 'oric.fna' if ori_type == bc.FEATURE_ORIC else 'orit.fna'
@@ -26,7 +26,7 @@ def predict_oris(genome: dict, contigs_path: Path, ori_type: str) -> Sequence[di
     cmd = [
         'blastn',
         '-query', str(cfg.db_path.joinpath(database)),
-        '-subject', str(contigs_path),
+        '-subject', str(sequences_path),
         '-culling_limit', '1',
         '-evalue', HIT_EVALUE,
         '-num_threads', str(cfg.threads),
@@ -57,33 +57,33 @@ def predict_oris(genome: dict, contigs_path: Path, ori_type: str) -> Sequence[di
                 'ori_start': int(cols[1]),
                 'ori_end': int(cols[2]),
                 'ori_length': int(cols[3]),
-                'contig': cols[4],
-                'contig_start': int(cols[5]),
-                'contig_stop': int(cols[6]),
+                'sequence': cols[4],
+                'sequence_start': int(cols[5]),
+                'sequence_stop': int(cols[6]),
                 'strand': bc.STRAND_FORWARD if cols[9] == 'plus' else bc.STRAND_REVERSE,
                 'coverage': int(cols[7]) / int(cols[3]),
                 'identity': int(cols[8]) / int(cols[7])
             }
             if(hit['strand'] == bc.STRAND_REVERSE):
-                hit['contig_start'], hit['contig_stop'] = hit['contig_stop'], hit['contig_start']
+                hit['sequence_start'], hit['sequence_stop'] = hit['sequence_stop'], hit['sequence_start']
             if(hit['coverage'] >= HIT_COVERAGE and hit['identity'] >= HIT_IDENTITY):
-                contig_hits = hits.get(hit['contig'], [])
-                contig_hits.append(hit)
-                if(len(contig_hits) == 1):
-                    hits[hit['contig']] = contig_hits
+                sequence_hits = hits.get(hit['sequence'], [])
+                sequence_hits.append(hit)
+                if(len(sequence_hits) == 1):
+                    hits[hit['sequence']] = sequence_hits
                 log.debug(
-                    'raw hit: type=%s, contig=%s, start=%i, stop=%i, strand=%s, coverage=%0.3f, identity=%0.3f',
-                    ori_type, hit['contig'], hit['contig_start'], hit['contig_stop'], hit['strand'], hit['coverage'], hit['identity']
+                    'raw hit: type=%s, seq=%s, start=%i, stop=%i, strand=%s, coverage=%0.3f, identity=%0.3f',
+                    ori_type, hit['sequence'], hit['sequence_start'], hit['sequence_stop'], hit['strand'], hit['coverage'], hit['identity']
                 )
 
     # combine overlapping hits (simple 1D array peak detection)
     oris = []
-    for contig in genome['contigs']:
-        contig_hits = hits.get(contig['id'], None)
-        if(contig_hits):
-            region_hits = [0] * (contig['length'] + 1)  # init with extra leading slot (start at 1)
-            for hit in contig_hits:
-                for i in range(hit['contig_start'], hit['contig_stop'] + 1):
+    for seq in data['sequences']:
+        sequence_hits = hits.get(seq['id'], None)
+        if(sequence_hits):
+            region_hits = [0] * (seq['length'] + 1)  # init with extra leading slot (start at 1)
+            for hit in sequence_hits:
+                for i in range(hit['sequence_start'], hit['sequence_stop'] + 1):
                     region_hits[i] += 1
             start = -1
             stop = -1
@@ -91,11 +91,11 @@ def predict_oris(genome: dict, contigs_path: Path, ori_type: str) -> Sequence[di
                 if(hit_count == 0):
                     if(start != -1):  # new stop
                         stop = i - 1
-                        if(ori_type == bc.FEATURE_ORIC and contig['type'] == bc.REPLICON_PLASMID):
+                        if(ori_type == bc.FEATURE_ORIC and seq['type'] == bc.REPLICON_PLASMID):
                             ori_type = bc.FEATURE_ORIV
                         ori = OrderedDict()
                         ori['type'] = ori_type
-                        ori['contig'] = contig['id']
+                        ori['sequence'] = seq['id']
                         ori['start'] = start
                         ori['stop'] = stop
                         ori['strand'] = bc.STRAND_UNKNOWN
@@ -109,12 +109,12 @@ def predict_oris(genome: dict, contigs_path: Path, ori_type: str) -> Sequence[di
                         else:
                             ori['product'] = 'origin of replication'
 
-                        nt = bu.extract_feature_sequence(ori, contig)  # extract nt sequences
+                        nt = bu.extract_feature_sequence(ori, seq)  # extract nt sequences
                         ori['nt'] = nt
 
                         log.info(
-                            'type=%s, contig=%s, start=%i, stop=%i, nt=[%s..%s]',
-                            ori_type, ori['contig'], ori['start'], ori['stop'], nt[:10], nt[-10:]
+                            'type=%s, seq=%s, start=%i, stop=%i, nt=[%s..%s]',
+                            ori_type, ori['sequence'], ori['start'], ori['stop'], nt[:10], nt[-10:]
                         )
                         start = -1
                         stop = -1

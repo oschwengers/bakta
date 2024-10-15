@@ -20,14 +20,14 @@ import bakta.so as so
 log = logging.getLogger('S_ORF')
 
 
-def extract(genome: dict):
+def extract(data: dict):
     """Predict open reading frames in mem via BioPython."""
     orfs = []
-    for contig in genome['contigs']:
-        dna_seq = Seq(contig['sequence'])
-        for strand, seq in [(bc.STRAND_FORWARD, dna_seq), (bc.STRAND_REVERSE, dna_seq.reverse_complement())]:  # strands +/-
+    for seq in data['sequences']:
+        nt_seq = Seq(seq['nt'])
+        for strand, strand_nt_seq in [(bc.STRAND_FORWARD, nt_seq), (bc.STRAND_REVERSE, nt_seq.reverse_complement())]:  # strands +/-
             for frame in range(3):  # frames 1/2/3 -> 0, 1, 2
-                seq_frame = seq[frame:]
+                seq_frame = strand_nt_seq[frame:]
 
                 # remove non-triplet tail nucleotides
                 residue = len(seq_frame) % 3
@@ -46,12 +46,12 @@ def extract(genome: dict):
                             dna_start = aa_start * 3 + frame + 1  # +1: 0 based idx to 1 based
                             dna_stop = aa_end * 3 + 2 + frame + 1
                         else:
-                            dna_start = len(seq) - frame - (aa_end + 1) * 3 + 1
-                            dna_stop = len(seq) - frame - aa_start * 3
+                            dna_start = len(strand_nt_seq) - frame - (aa_end + 1) * 3 + 1
+                            dna_stop = len(strand_nt_seq) - frame - aa_start * 3
                         
                         sorf = OrderedDict()
                         sorf['type'] = bc.FEATURE_SORF
-                        sorf['contig'] = contig['id']
+                        sorf['sequence'] = seq['id']
                         sorf['start'] = dna_start
                         sorf['stop'] = dna_stop
                         sorf['strand'] = strand
@@ -63,13 +63,13 @@ def extract(genome: dict):
                         sorf['aa_digest'] = aa_digest
                         sorf['aa_hexdigest'] = aa_hexdigest
                         
-                        nt = bu.extract_feature_sequence(sorf, contig)  # extract nt sequences
+                        nt = bu.extract_feature_sequence(sorf, seq)  # extract nt sequences
                         sorf['nt'] = nt
 
                         orfs.append(sorf)
                         log.debug(
-                            'contig=%s, start=%i, stop=%i, strand=%s, frame=%i, aa-length=%i, aa=%s, nt=[%s..%s]',
-                            contig['id'], sorf['start'], sorf['stop'], strand, frame, len(aa), aa, nt[:10], nt[-10:]
+                            'seq=%s, start=%i, stop=%i, strand=%s, frame=%i, aa-length=%i, aa=%s, nt=[%s..%s]',
+                            seq['id'], sorf['start'], sorf['stop'], strand, frame, len(aa), aa, nt[:10], nt[-10:]
                         )
                     aa_start = aa_seq.find('M', aa_start + 1)
                     if(aa_start > aa_end):
@@ -87,70 +87,70 @@ def get_feature_stop(feature: dict) -> int:
     return feature['stop'] if feature['strand'] == bc.STRAND_FORWARD else feature['start']
 
 
-def overlap_filter(genome: dict, orfs_raw: Sequence[dict]):
+def overlap_filter(data: dict, orfs_raw: Sequence[dict]):
     """Filter in-mem ORFs by overlapping CDSs."""
-    t_rnas_per_contig = {k['id']: [] for k in genome['contigs']}
-    for t_rna in genome['features'].get(bc.FEATURE_T_RNA, []):
-        t_rnas = t_rnas_per_contig[t_rna['contig']]
+    t_rnas_per_sequence = {seq['id']: [] for seq in data['sequences']}
+    for t_rna in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_T_RNA]:
+        t_rnas = t_rnas_per_sequence[t_rna['sequence']]
         t_rnas.append(t_rna)
-    for tm_rna in genome['features'].get(bc.FEATURE_TM_RNA, []):
-        t_rnas = t_rnas_per_contig[tm_rna['contig']]
+    for tm_rna in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_TM_RNA]:
+        t_rnas = t_rnas_per_sequence[tm_rna['sequence']]
         t_rnas.append(tm_rna)
 
-    r_rna_per_contig = {k['id']: [] for k in genome['contigs']}
-    for r_rna in genome['features'].get(bc.FEATURE_R_RNA, []):
-        r_rnas = r_rna_per_contig[r_rna['contig']]
+    r_rna_per_sequence = {seq['id']: [] for seq in data['sequences']}
+    for r_rna in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_R_RNA]:
+        r_rnas = r_rna_per_sequence[r_rna['sequence']]
         r_rnas.append(r_rna)
 
-    # nc_rnas_per_contig = {k['id']: [] for k in genome['contigs']}
-    # for nc_rna in genome['features'].get(bc.FEATURE_NC_RNA, []):
-    #     nc_rnas = nc_rnas_per_contig[nc_rna['contig']]
+    # nc_rnas_per_sequence = {seq['id']: [] for seq in data['sequences']}
+    # for nc_rna in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_NC_RNA]:
+    #     nc_rnas = nc_rnas_per_sequence[nc_rna['sequence']]
     #     nc_rnas.append(nc_rna)
-    # for nc_rna in genome['features'].get(bc.FEATURE_NC_RNA_REGION, []):
-    #     nc_rnas = nc_rnas_per_contig[nc_rna['contig']]
+    # for nc_rna in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_NC_RNA_REGION]:
+    #     nc_rnas = nc_rnas_per_sequence[nc_rna['sequence']]
     #     nc_rnas.append(nc_rna)
 
-    crispr_arrays_per_contig = {k['id']: [] for k in genome['contigs']}
-    for crispr_array in genome['features'].get(bc.FEATURE_CRISPR, []):
-        crispr_arrays = crispr_arrays_per_contig[crispr_array['contig']]
+    crispr_arrays_per_sequence = {seq['id']: [] for seq in data['sequences']}
+    for crispr_array in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_CRISPR]:
+        crispr_arrays = crispr_arrays_per_sequence[crispr_array['sequence']]
         crispr_arrays.append(crispr_array)
 
-    cdss_per_contig = {k['id']: [] for k in genome['contigs']}
-    for cds in genome['features'].get(bc.FEATURE_CDS, []):
-        cdss = cdss_per_contig[cds['contig']]
+    cdss_per_sequence = {seq['id']: [] for seq in data['sequences']}
+    for cds in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_CDS]:
+        cdss = cdss_per_sequence[cds['sequence']]
         cdss.append(cds)
 
-    sorfs_per_contig = {k['id']: [] for k in genome['contigs']}
+    sorfs_per_sequence = {seq['id']: [] for seq in data['sequences']}
     for sorf in orfs_raw:
-        orfs = sorfs_per_contig[sorf['contig']]
+        orfs = sorfs_per_sequence[sorf['sequence']]
         orfs.append(sorf)
 
     discarded_sorf_keys = set()
     with cf.ProcessPoolExecutor(max_workers=cfg.threads) as tpe:
         futures = []
-        for contig in genome['contigs']:
-            contig_sorfs = sorfs_per_contig[contig['id']]
-            log.debug('filter: contig=%s, # sORFs=%i', contig['id'], len(contig_sorfs))
-            if(len(contig_sorfs) < 100):  # execute sORF filter task
-                sorf_keys = filter_sorf(contig_sorfs, cdss_per_contig[contig['id']], r_rna_per_contig[contig['id']], t_rnas_per_contig[contig['id']], crispr_arrays_per_contig[contig['id']])
+        for seq in data['sequences']:
+            sequence_sorfs = sorfs_per_sequence[seq['id']]
+            log.debug('filter: seq=%s, # sORFs=%i', seq['id'], len(sequence_sorfs))
+            if(len(sequence_sorfs) < 100):  # execute sORF filter task
+                sorf_keys = filter_sorf(sequence_sorfs, cdss_per_sequence[seq['id']], r_rna_per_sequence[seq['id']], t_rnas_per_sequence[seq['id']], crispr_arrays_per_sequence[seq['id']])
                 for sorf_key in [sk for sk in sorf_keys if sk is not None]:
                     discarded_sorf_keys.add(sorf_key)
-            elif(len(contig_sorfs) < 1000):  # submit sORF filter task to thread pool
-                futures.append(tpe.submit(filter_sorf, contig_sorfs, cdss_per_contig[contig['id']], r_rna_per_contig[contig['id']], t_rnas_per_contig[contig['id']], crispr_arrays_per_contig[contig['id']]))
+            elif(len(sequence_sorfs) < 1000):  # submit sORF filter task to thread pool
+                futures.append(tpe.submit(filter_sorf, sequence_sorfs, cdss_per_sequence[seq['id']], r_rna_per_sequence[seq['id']], t_rnas_per_sequence[seq['id']], crispr_arrays_per_sequence[seq['id']]))
             else:  # submit sORF chunk filter tasks to thread pool
-                chunk_size = math.ceil(len(contig_sorfs) / cfg.threads) if (len(contig_sorfs) >= cfg.threads * 1000) else 1000
+                chunk_size = math.ceil(len(sequence_sorfs) / cfg.threads) if (len(sequence_sorfs) >= cfg.threads * 1000) else 1000
                 log.debug('filter: chunk-size=%i', chunk_size)
-                for i in range(0, len(contig_sorfs), chunk_size):
-                    sorf_chunk = contig_sorfs[i:i + chunk_size]
+                for i in range(0, len(sequence_sorfs), chunk_size):
+                    sorf_chunk = sequence_sorfs[i:i + chunk_size]
                     log.debug('filter chunk: i=%i, chunk-elements=%i', i, len(sorf_chunk))
-                    futures.append(tpe.submit(filter_sorf, sorf_chunk, cdss_per_contig[contig['id']], r_rna_per_contig[contig['id']], t_rnas_per_contig[contig['id']], crispr_arrays_per_contig[contig['id']]))
+                    futures.append(tpe.submit(filter_sorf, sorf_chunk, cdss_per_sequence[seq['id']], r_rna_per_sequence[seq['id']], t_rnas_per_sequence[seq['id']], crispr_arrays_per_sequence[seq['id']]))
         for f in futures:
             for sorf_key in [sk for sk in f.result() if sk is not None]:
                 discarded_sorf_keys.add(sorf_key)
 
     valid_sorfs = []
     discarded_sorfs = []
-    for sorfs in sorfs_per_contig.values():
+    for sorfs in sorfs_per_sequence.values():
         for sorf in sorfs:
             key = orf.get_orf_key(sorf)
             if(key in discarded_sorf_keys):
@@ -162,12 +162,12 @@ def overlap_filter(genome: dict, orfs_raw: Sequence[dict]):
     return valid_sorfs, discarded_sorfs
 
 
-def filter_sorf(sorf_chunk: Sequence[dict], contig_cdss: Sequence[dict], contig_r_rnas: Sequence[dict], contig_t_rnas: Sequence[dict], contig_crispr_arrays: Sequence[dict]):
+def filter_sorf(sorf_chunk: Sequence[dict], sequence_cdss: Sequence[dict], sequence_r_rnas: Sequence[dict], sequence_t_rnas: Sequence[dict], sequence_crispr_arrays: Sequence[dict]):
     discarded_sorf_keys = []
     for sorf in sorf_chunk:
         break_flag = False
         # filter CDS overlapping ORFs
-        for cds in contig_cdss:
+        for cds in sequence_cdss:
             # log.debug('filter short ORFs by CDS: %s%i[%i->%i]', cds['strand'], cds['frame'], cds['start'], cds['stop'])
             if(sorf['strand'] == cds['strand']):
                 if(sorf['frame'] == cds['frame']):
@@ -218,7 +218,7 @@ def filter_sorf(sorf_chunk: Sequence[dict], contig_cdss: Sequence[dict], contig_
             continue
 
         # filter rRNA overlapping ORFs
-        for r_rna in contig_r_rnas:
+        for r_rna in sequence_r_rnas:
             # log.debug('filter short ORFs by rRNA: %s[%i->%i]', r_rna['strand'], r_rna['start'], r_rna['stop'])
             # fast/simple overlap detection for rRNAs
             if(sorf['stop'] < r_rna['start'] or sorf['start'] > r_rna['stop']):
@@ -232,7 +232,7 @@ def filter_sorf(sorf_chunk: Sequence[dict], contig_cdss: Sequence[dict], contig_
 
         # filter tRNA overlapping ORFs
         # log.debug('filter short ORFs by tRNA: %s[%i->%i]', t_rna['strand'], t_rna['start'], t_rna['stop'])
-        for t_rna in contig_t_rnas:
+        for t_rna in sequence_t_rnas:
             # fast/simple overlap detection for tRNAs
             if(sorf['stop'] < t_rna['start'] or sorf['start'] > t_rna['stop']):
                 continue
@@ -245,7 +245,7 @@ def filter_sorf(sorf_chunk: Sequence[dict], contig_cdss: Sequence[dict], contig_
 
         # filter CRISPR array overlapping ORFs
         # log.debug('filter short ORFs by CRISPR: [%i->%i]', crispr['start'], crispr['stop'])
-        for crispr in contig_crispr_arrays:
+        for crispr in sequence_crispr_arrays:
             # fast/simple overlap detection for CRISPR
             if(sorf['stop'] < crispr['start'] or sorf['start'] > crispr['stop']):
                 continue
@@ -365,8 +365,8 @@ def search(sorfs: Sequence[dict], cluster_type: str):
                 result[psc.DB_PSC_COL_UNIREF90 if cluster_type == 'full' else pscc.DB_PSCC_COL_UNIREF50] = cluster_id
                 sorf['psc' if cluster_type == 'full' else 'pscc'] = result
                 log.info(
-                    'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, subject-cov=%0.3f, identity=%0.3f, score=%0.1f, evalue=%1.1e, UniRef=%s',
-                    sorf['contig'], sorf['start'], sorf['stop'], sorf['strand'], len(sorf['aa']), query_cov, subject_cov, identity, bitscore, evalue, cluster_id
+                    'homology: seq=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, subject-cov=%0.3f, identity=%0.3f, score=%0.1f, evalue=%1.1e, UniRef=%s',
+                    sorf['sequence'], sorf['start'], sorf['stop'], sorf['strand'], len(sorf['aa']), query_cov, subject_cov, identity, bitscore, evalue, cluster_id
                 )
 
     sorfs_found = []

@@ -128,7 +128,7 @@ def main():
     ############################################################################
     try:
         print('Parse protein sequences...')
-        aas = fasta.import_contigs(aa_path, False, False)
+        aas = fasta.import_sequences(aa_path, False, False)
         log.info('imported sequences=%i', len(aas))
         print(f'\timported: {len(aas)}')
     except:
@@ -137,9 +137,8 @@ def main():
     mock_start = 1
     for aa in aas:  # rename and mock feature attributes to reuse existing functions
         aa['type'] = bc.FEATURE_CDS
-        aa['aa'] = aa['sequence']
         aa['locus'] = aa['id']
-        aa['contig'] = '-'
+        aa['sequence'] = '-'
         aa['start'] = mock_start
         aa['stop'] = -1
         aa['strand'] = bc.STRAND_UNKNOWN
@@ -166,18 +165,18 @@ def main():
     tsv.write_protein_features(aas, header_columns, map_aa_columns, annotations_path)
     inference_path = output_path.joinpath(f'{cfg.prefix}.inference.tsv')
     print(f'\tfeature inferences (TSV): {inference_path}')
-    mock_contigs = [{'id': '-'}]
-    features_by_contig = {'-': aas}
-    tsv.write_feature_inferences(mock_contigs, features_by_contig, inference_path)
+    mock_sequences = [{'id': '-'}]
+    features_by_sequence = {'-': aas}
+    tsv.write_feature_inferences(mock_sequences, features_by_sequence, inference_path)
     for aa in aas:  # cleanup mock attributes
-        aa.pop('contig', None)
+        aa.pop('sequence', None)
         aa.pop('start', None)
         aa.pop('stop', None)
         aa.pop('strand', None)
         aa.pop('frame', None)
     full_annotations_path = output_path.joinpath(f'{cfg.prefix}.json')
     print(f'\tfull annotations (JSON): {full_annotations_path}')
-    json.write_json(None, aas, full_annotations_path)
+    json.write_json({'features': aas}, aas, full_annotations_path)
     hypotheticals_path = output_path.joinpath(f'{cfg.prefix}.hypotheticals.tsv')
     header_columns = ['ID', 'Length', 'Mol Weight [kDa]', 'Iso El. Point', 'Pfam hits']
     hypotheticals = hypotheticals = [aa for aa in aas if 'hypothetical' in aa]
@@ -200,12 +199,12 @@ def map_aa_columns(feat: dict) -> Sequence[str]:
         str(feat['length']),
         gene,
         feat['product'],
-        ','.join([k.replace('EC:', '') for k in feat['db_xrefs'] if 'EC:' in k]),
-        ','.join([k for k in feat['db_xrefs'] if 'GO:' in k]),
-        ','.join([k.replace('COG:', '') for k in feat['db_xrefs'] if 'COG:' in k]),
-        ','.join([k.replace('RefSeq:', '') for k in feat['db_xrefs'] if 'RefSeq:' in k]),
-        ','.join([k.replace('UniParc:', '') for k in feat['db_xrefs'] if 'UniParc:' in k]),
-        ','.join([k.replace('UniRef:', '') for k in feat['db_xrefs'] if 'UniRef' in k])
+        ','.join([dbxref.replace('EC:', '') for dbxref in feat['db_xrefs'] if 'EC:' in dbxref]),
+        ','.join([dbxref for dbxref in feat['db_xrefs'] if 'GO:' in dbxref]),
+        ','.join([dbxref.replace('COG:', '') for dbxref in feat['db_xrefs'] if 'COG:' in dbxref]),
+        ','.join([dbxref.replace('RefSeq:', '') for dbxref in feat['db_xrefs'] if 'RefSeq:' in dbxref]),
+        ','.join([dbxref.replace('UniParc:', '') for dbxref in feat['db_xrefs'] if 'UniParc:' in dbxref]),
+        ','.join([dbxref.replace('UniRef:', '') for dbxref in feat['db_xrefs'] if 'UniRef' in dbxref])
     ]
 
 
@@ -215,7 +214,7 @@ def map_hypothetical_columns(feat: dict) -> Sequence[str]:
         str(feat['length']),
         f"{(feat['seq_stats']['molecular_weight']/1000):.1f}" if feat['seq_stats']['molecular_weight'] else 'NA'
         f"{feat['seq_stats']['isoelectric_point']:.1f}" if feat['seq_stats']['isoelectric_point'] else 'NA'
-        ','.join([k.replace('PFAM:', '') for k in feat['db_xrefs'] if 'PFAM:' in k])
+        ','.join([dbxref.replace('PFAM:', '') for dbxref in feat['db_xrefs'] if 'PFAM:' in dbxref])
     ]
 
 

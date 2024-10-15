@@ -382,7 +382,7 @@ positional arguments:
 Input / Output:
   --db DB, -d DB        Database path (default = <bakta_path>/db). Can also be provided as BAKTA_DB environment variable.
   --min-contig-length MIN_CONTIG_LENGTH, -m MIN_CONTIG_LENGTH
-                        Minimum contig size (default = 1; 200 in compliant mode)
+                        Minimum contig/sequence size (default = 1; 200 in compliant mode)
   --prefix PREFIX, -p PREFIX
                         Prefix for output files
   --output OUTPUT, -o OUTPUT
@@ -409,7 +409,7 @@ Annotation:
                         Locus tag increment: 1/5/10 (default = 1)
 
   --keep-contig-headers
-                        Keep original contig headers
+                        Keep original contig/sequence headers
   --compliant           Force Genbank/ENA/DDJB compliance
   --replicons REPLICONS, -r REPLICONS
                         Replicon information table (tsv/csv)

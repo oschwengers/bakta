@@ -30,8 +30,8 @@ def search(cdss: Sequence[dict], user_hmms_path):
                 cds = orf_by_aa_digest[aa_identifier]
                 if hmm_query_hit.evalue > bc.MIN_HMM_EVALUE:
                     log.debug(
-                        'discard low evalue: contig=%s, start=%i, stop=%i, strand=%s, id=%s, evalue=%1.1e, bitscore=%f',
-                        cds['contig'], cds['start'], cds['stop'], cds['strand'], hmm_id, hmm_query_hit.evalue, hmm_query_hit.score
+                        'discard low evalue: seq=%s, start=%i, stop=%i, strand=%s, id=%s, evalue=%1.1e, bitscore=%f',
+                        cds['sequence'], cds['start'], cds['stop'], cds['strand'], hmm_id, hmm_query_hit.evalue, hmm_query_hit.score
                     )
                 else:
                     hit_domain_lengths_sum = sum([len(dom.alignment.hmm_sequence) for dom in hmm_query_hit.domains.included])
@@ -64,8 +64,8 @@ def search(cdss: Sequence[dict], user_hmms_path):
                     cds.setdefault('expert', [])
                     cds['expert'].append(hit)
                     log.debug(
-                        'hit: source=UserHMMs, rank=99, contig=%s, start=%i, stop=%i, strand=%s, query-cov=%0.3f, model-cov=%0.3f, hmm-id=%s, gene=%s, product=%s, evalue=%1.1e, bitscore=%f',
-                        cds['contig'], cds['start'], cds['stop'], cds['strand'], hit['aa_cov'], hit['hmm_cov'], hmm_id, hit['gene'], hit['product'], hit['evalue'], hit['score']
+                        'hit: source=UserHMMs, rank=99, seq=%s, start=%i, stop=%i, strand=%s, query-cov=%0.3f, model-cov=%0.3f, hmm-id=%s, gene=%s, product=%s, evalue=%1.1e, bitscore=%f',
+                        cds['sequence'], cds['start'], cds['stop'], cds['strand'], hit['aa_cov'], hit['hmm_cov'], hmm_id, hit['gene'], hit['product'], hit['evalue'], hit['score']
                     )
                     cds_found.add(aa_identifier)
 

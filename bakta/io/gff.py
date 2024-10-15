@@ -14,7 +14,7 @@ import bakta.so as so
 log = logging.getLogger('GFF')
 
 
-def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path: Path):
+def write_features(data: dict, features_by_sequence: Dict[str, dict], gff3_path: Path):
     """Export features in GFF3 format."""
     log.info('write features: path=%s', gff3_path)
 
@@ -22,8 +22,8 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
         fh.write('##gff-version 3\n')  # GFF version
         fh.write('##feature-ontology https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/v3.1/so.obo\n')  # SO feature version
 
-        if(genome['taxon']):  # write organism info
-            fh.write(f"# organism {genome['taxon']}\n")
+        if(data['genome']['taxon']):  # write organism info
+            fh.write(f"# organism {data['genome']['taxon']}\n")
 
         fh.write('# Annotated with Bakta\n')
         fh.write(f'# Software: v{bakta.__version__}\n')
@@ -31,24 +31,24 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
         fh.write(f'# DOI: {bc.BAKTA_DOI}\n')
         fh.write(f'# URL: {bc.BAKTA_URL}\n')
 
-        for contig in genome['contigs']:  # write features
-            fh.write(f"##sequence-region {contig['id']} 1 {contig['length']}\n")  # sequence region
+        for seq in data['sequences']:  # write features
+            fh.write(f"##sequence-region {seq['id']} 1 {seq['length']}\n")  # sequence region
 
             # write landmark region
             annotations = {
-                'ID': contig['id'],
-                'Name': contig['id']
+                'ID': seq['id'],
+                'Name': seq['id']
             }
-            if(contig['topology'] == bc.TOPOLOGY_CIRCULAR):
+            if(seq['topology'] == bc.TOPOLOGY_CIRCULAR):
                 annotations['Is_circular'] = 'true'
             annotations = encode_annotations(annotations)
-            fh.write(f"{contig['id']}\tBakta\tregion\t1\t{str(contig['length'])}\t.\t+\t.\t{annotations}\n")
+            fh.write(f"{seq['id']}\tBakta\tregion\t1\t{str(seq['length'])}\t.\t+\t.\t{annotations}\n")
 
-            for feat in features_by_contig[contig['id']]:
+            for feat in features_by_sequence[seq['id']]:
                 start = feat['start']
                 stop = feat['stop']
                 if('edge' in feat):
-                    stop += contig['length']
+                    stop += seq['length']
 
                 if(feat['type'] == bc.FEATURE_T_RNA):
                     annotations = {
@@ -82,9 +82,9 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                         if(bc.PSEUDOGENE in feat):
                             gene_annotations[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNKNOWN
                         gene_annotations = encode_annotations(gene_annotations)
-                        fh.write(f"{feat['contig']}\ttRNAscan-SE\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
+                        fh.write(f"{feat['sequence']}\ttRNAscan-SE\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\ttRNAscan-SE\t{so.SO_TRNA.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{feat['sequence']}\ttRNAscan-SE\t{so.SO_TRNA.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_TM_RNA):
                     annotations = {
                         'ID': feat['locus'],
@@ -110,9 +110,9 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                         if('truncated' in feat):
                             gene_annotations[bc.INSDC_FEATURE_PSEUDO] = True
                         gene_annotations = encode_annotations(gene_annotations)
-                        fh.write(f"{feat['contig']}\tAragorn\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
+                        fh.write(f"{feat['sequence']}\tAragorn\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\tAragorn\t{so.SO_TMRNA.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{feat['sequence']}\tAragorn\t{so.SO_TMRNA.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_R_RNA):
                     annotations = {
                         'ID': feat['locus'],
@@ -138,9 +138,9 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                         if('truncated' in feat):
                             gene_annotations[bc.INSDC_FEATURE_PSEUDO] = True
                         gene_annotations = encode_annotations(gene_annotations)
-                        fh.write(f"{feat['contig']}\tInfernal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
+                        fh.write(f"{feat['sequence']}\tInfernal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\tInfernal\t{so.SO_RRNA.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{feat['sequence']}\tInfernal\t{so.SO_RRNA.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_NC_RNA):
                     annotations = {
                         'ID': feat['locus'],
@@ -167,9 +167,9 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                         if('truncated' in feat):
                             gene_annotations[bc.INSDC_FEATURE_PSEUDO] = True
                         gene_annotations = encode_annotations(gene_annotations)
-                        fh.write(f"{feat['contig']}\tInfernal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
+                        fh.write(f"{feat['sequence']}\tInfernal\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\tInfernal\t{so.SO_NCRNA_GENE.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{feat['sequence']}\tInfernal\t{so.SO_NCRNA_GENE.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_NC_RNA_REGION):
                     annotations = {
                         'ID': feat['id'],
@@ -185,7 +185,7 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         annotations[bc.INSDC_FEATURE_REGULATORY_CLASS] = insdc.select_regulatory_class(feat)
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\tInfernal\t{so.SO_REGULATORY_REGION.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{feat['sequence']}\tInfernal\t{so.SO_REGULATORY_REGION.name}\t{start}\t{stop}\t{feat['evalue']}\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_CRISPR):
                     annotations = {
                         'ID': feat['id'],
@@ -201,7 +201,7 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                         annotations[bc.INSDC_FEATURE_REPEAT_TYPE] = 'direct'
                         annotations[bc.INSDC_FEATURE_REPEAT_UNIT_SEQ] = feat['repeat_consensus']
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\tPILER-CR\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{feat['sequence']}\tPILER-CR\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                     if(not cfg.compliant):
                         i = 0
                         while i < len(feat['spacers']):
@@ -211,7 +211,7 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                                 'Parent': feat['id']
                             }
                             annotations = encode_annotations(annotations)
-                            fh.write(f"{feat['contig']}\tPILER-CR\t{bc.FEATURE_CRISPR_REPEAT}\t{repeat['start']}\t{repeat['stop']}\t.\t{repeat['strand']}\t.\t{annotations}\n")
+                            fh.write(f"{feat['sequence']}\tPILER-CR\t{bc.FEATURE_CRISPR_REPEAT}\t{repeat['start']}\t{repeat['stop']}\t.\t{repeat['strand']}\t.\t{annotations}\n")
                             spacer = feat['spacers'][i]
                             annotations = {
                                 'ID': f"{feat['id']}_spacer_{i+1}",
@@ -219,13 +219,13 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                                 'sequence': spacer['sequence']
                             }
                             annotations = encode_annotations(annotations)
-                            fh.write(f"{feat['contig']}\tPILER-CR\t{bc.FEATURE_CRISPR_SPACER}\t{spacer['start']}\t{spacer['stop']}\t.\t{spacer['strand']}\t.\t{annotations}\n")
+                            fh.write(f"{feat['sequence']}\tPILER-CR\t{bc.FEATURE_CRISPR_SPACER}\t{spacer['start']}\t{spacer['stop']}\t.\t{spacer['strand']}\t.\t{annotations}\n")
                             i += 1
                         if(len(feat['repeats']) - 1 == i):
                             repeat = feat['repeats'][i]
                             annotations = { 'ID': f"{feat['id']}_repeat_{i+1}" }
                             annotations = encode_annotations(annotations)
-                            fh.write(f"{feat['contig']}\tPILER-CR\t{bc.FEATURE_CRISPR_REPEAT}\t{repeat['start']}\t{repeat['stop']}\t.\t{repeat['strand']}\t.\t{annotations}\n")
+                            fh.write(f"{feat['sequence']}\tPILER-CR\t{bc.FEATURE_CRISPR_REPEAT}\t{repeat['start']}\t{repeat['stop']}\t.\t{repeat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_CDS):
                     annotations = {
                         'ID': feat['locus'],
@@ -258,7 +258,7 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                         if(bc.PSEUDOGENE in feat):
                             gene_annotations[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNPROCESSED if feat[bc.PSEUDOGENE]['paralog'] else bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNITARY
                         gene_annotations = encode_annotations(gene_annotations)
-                        fh.write(f"{feat['contig']}\t{source}\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
+                        fh.write(f"{feat['sequence']}\t{source}\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     if('exception' in feat):
                         ex = feat['exception']
                         pos = f"{ex['start']}..{ex['stop']}"
@@ -270,7 +270,7 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                         if('Notes' not in annotations):
                             annotations['Note'] = notes
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\t{source}\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
+                    fh.write(f"{feat['sequence']}\t{source}\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
                     if(bc.FEATURE_SIGNAL_PEPTIDE in feat):
                         write_signal_peptide(fh, feat)
                 elif(feat['type'] == bc.FEATURE_SORF):
@@ -298,9 +298,9 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                         if(feat.get('gene', None)):
                             gene_annotations['gene'] = feat['gene']
                         gene_annotations = encode_annotations(gene_annotations)
-                        fh.write(f"{feat['contig']}\tBakta\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
+                        fh.write(f"{feat['sequence']}\tBakta\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\tBakta\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
+                    fh.write(f"{feat['sequence']}\tBakta\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
                     if(bc.FEATURE_SIGNAL_PEPTIDE in feat):
                         write_signal_peptide(fh, feat)
                 elif(feat['type'] == bc.FEATURE_GAP):
@@ -310,7 +310,7 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                         'product': f"gap ({feat['length']} bp)"
                     }
                     annotations = encode_annotations(annotations)
-                    fh.write(f"{feat['contig']}\tBakta\t{so.SO_GAP.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{feat['sequence']}\tBakta\t{so.SO_GAP.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_ORIC):
                     annotations = {
                         'ID': feat['id'],
@@ -323,7 +323,7 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                         annotations['inference'] = 'similar to DNA sequence'
                     annotations = encode_annotations(annotations)
                     feat_type = bc.INSDC_FEATURE_ORIGIN_REPLICATION if cfg.compliant else so.SO_ORIC.name
-                    fh.write(f"{feat['contig']}\tBLAST+\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{feat['sequence']}\tBLAST+\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_ORIV):
                     annotations = {
                         'ID': feat['id'],
@@ -336,7 +336,7 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                         annotations['inference'] = 'similar to DNA sequence'
                     annotations = encode_annotations(annotations)
                     feat_type = bc.INSDC_FEATURE_ORIGIN_REPLICATION if cfg.compliant else so.SO_ORIC.name
-                    fh.write(f"{feat['contig']}\tBLAST+\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{feat['sequence']}\tBLAST+\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_ORIT):
                     annotations = {
                         'ID': feat['id'],
@@ -349,13 +349,13 @@ def write_features(genome: dict, features_by_contig: Dict[str, dict], gff3_path:
                         annotations['inference'] = 'similar to DNA sequence'
                     annotations = encode_annotations(annotations)
                     feat_type = bc.INSDC_FEATURE_ORIGIN_TRANSFER if cfg.compliant else so.SO_ORIT.name
-                    fh.write(f"{feat['contig']}\tBLAST+\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{feat['sequence']}\tBLAST+\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
 
         if(not cfg.compliant):
             fh.write('##FASTA\n')
-            for contig in genome['contigs']:  # write sequences
-                fh.write(f">{contig['id']}\n")
-                fh.write(fasta.wrap_sequence(contig['sequence']))
+            for seq in data['sequences']:  # write sequences
+                fh.write(f">{seq['id']}\n")
+                fh.write(fasta.wrap_sequence(seq['nt']))
     return
 
 
@@ -393,4 +393,4 @@ def write_signal_peptide(fh, feat: dict):
         'Parent': feat['locus']
     }
     annotations = encode_annotations(annotations)
-    fh.write(f"{feat['contig']}\tDeepSig\t{so.SO_SIGNAL_PEPTIDE.name}\t{sig_peptide['start']}\t{sig_peptide['stop']}\t{sig_peptide['score']:.2f}\t{feat['strand']}\t.\t{annotations}\n")
+    fh.write(f"{feat['sequence']}\tDeepSig\t{so.SO_SIGNAL_PEPTIDE.name}\t{sig_peptide['start']}\t{sig_peptide['stop']}\t{sig_peptide['score']:.2f}\t{feat['strand']}\t.\t{annotations}\n")

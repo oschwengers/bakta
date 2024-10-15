@@ -29,8 +29,8 @@ def test_wrong_seq_id_failiing(tmpdir):
 @pytest.mark.parametrize(
     'keep_contig_headers',
     [
-        ([]),  # autogenerate contig ids
-        (['--keep-contig-headers'])  # keep contig headers
+        ([]),  # autogenerate sequence ids
+        (['--keep-contig-headers'])  # keep sequence headers
     ]
 )
 def test_regions_plasmid(regions, keep_contig_headers, tmpdir):

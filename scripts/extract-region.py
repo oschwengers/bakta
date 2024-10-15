@@ -41,11 +41,11 @@ args = parser.parse_args()
 print('Load annotated genome...')
 genome_path = Path(args.genome).resolve()
 with genome_path.open() as fh:
-    genome = json.load(fh)
+    data = json.load(fh)
 
-contig_id = args.sequence
-if(contig_id is None):  # take first sequence as default
-    contig_id = genome['sequences'][0]['id']
+sequence_id = args.sequence
+if(sequence_id is None):  # take first sequence as default
+    sequence_id = data['sequences'][0]['id']
 
 prefix = args.prefix
 if(prefix is None):  # use input file prefix as default
@@ -54,33 +54,33 @@ if(prefix is None):  # use input file prefix as default
 
 print('Extract features within selected region...')
 features_selected = []
-for feat in genome['features']:
-    if(feat['contig'] == contig_id):
+for feat in data['features']:
+    if(feat['sequence'] == sequence_id):
         if(feat['start'] >= args.min  and  feat['stop'] <= args.max):
             features_selected.append(feat)
-features_by_contig = {contig_id: features_selected}  # needed for GFF3 export
+features_by_sequence = {sequence_id: features_selected}  # needed for GFF3 export
 print(f'\t...selected features: {len(features_selected)}')
 
-genome['features'] = features_selected
-genome['contigs'] = [sequence for sequence in genome['sequences'] if sequence['id'] == contig_id]
-genome['genus'] = genome['genome']['genus']
-genome['species'] = genome['genome']['species']
-genome['strain'] = genome['genome']['strain']
-genome['taxon'] = f"{genome['genome']['genus']} {genome['genome']['species']} {genome['genome']['strain']}"
+data['features'] = features_selected
+data['sequences'] = [sequence for sequence in data['sequences'] if sequence['id'] == sequence_id]
+data['genus'] = data['genome']['genus']
+data['species'] = data['genome']['species']
+data['strain'] = data['genome']['strain']
+data['taxon'] = f"{data['genome']['genus']} {data['genome']['species']} {data['genome']['strain']}"
 cfg.db_info = {
-    'major': genome['version']['db']['version'].split('.')[0],
-    'minor': genome['version']['db']['version'].split('.')[1],
-    'type': genome['version']['db']['type']
+    'major': data['version']['db']['version'].split('.')[0],
+    'minor': data['version']['db']['version'].split('.')[1],
+    'type': data['version']['db']['type']
 }
 
 print('Write selected features...')
 output_path = Path(args.output).resolve()
 gff3_path = output_path.joinpath(f'{prefix}.gff3')
-gff.write_features(genome, features_by_contig, gff3_path)
+gff.write_features(data, features_by_sequence, gff3_path)
 print('\t...INSDC GenBank & EMBL')
 genbank_path = output_path.joinpath(f'{prefix}.gbff')
 embl_path = output_path.joinpath(f'{prefix}.embl')
-insdc.write_features(genome, features_selected, genbank_path, embl_path)
+insdc.write_features(data, features_selected, genbank_path, embl_path)
 print('\t...feature nucleotide sequences')
 ffn_path = output_path.joinpath(f'{prefix}.ffn')
 fasta.write_ffn(features_selected, ffn_path)

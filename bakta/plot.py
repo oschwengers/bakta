@@ -171,7 +171,7 @@ def main():
     with annotation_path.open('r') as fh:
         annotation = json.load(fh)
     features = annotation['features']
-    contigs = annotation['sequences']
+    sequences = annotation['sequences']
 
     # load colors if specified
     colors = COLORS
@@ -182,40 +182,40 @@ def main():
     print('Draw plots...')
     if args.sequences == 'all':  # write whole genome plot
         print(f'\tdraw circular genome plot (type={plot_type}) containing all sequences...')
-        write(features, contigs, output_path, colors, plot_type=plot_type)
+        write(features, sequences, output_path, colors, plot_type=plot_type)
     else:  # write genome plot containing provided sequences only
-        plot_contigs = []
+        plot_sequences = []
         sequence_identifiers = []
         for selected_sequence in args.sequences.split(','):
-            for i, contig in enumerate(contigs):
+            for i, seq in enumerate(sequences):
                 sequence_no = str(i + 1)
                 if selected_sequence == sequence_no:
-                    plot_contigs.append(contig)
+                    plot_sequences.append(seq)
                     sequence_identifiers.append(sequence_no)
-                elif selected_sequence.lower() == contig['id'].lower():
-                    plot_contigs.append(contig)
-                    sequence_identifiers.append(contig['id'])
-        if len(plot_contigs) > 0:
+                elif selected_sequence.lower() == seq['id'].lower():
+                    plot_sequences.append(seq)
+                    sequence_identifiers.append(seq['id'])
+        if len(plot_sequences) > 0:
             print(f'\tdraw circular genome plot (type={plot_type}) containing sequences: {sequence_identifiers}...')
             plot_name_suffix = '_'.join(sequence_identifiers)
-            plot_contig_ids = [c['id'] for c in plot_contigs]
-            features = [feat for feat in features if feat['contig'] in plot_contig_ids]
-            write(features, plot_contigs, output_path, colors, plot_name_suffix=plot_name_suffix, plot_type=plot_type)
+            plot_sequence_ids = [seq['id'] for seq in plot_sequences]
+            features = [feat for feat in features if feat['sequence'] in plot_sequence_ids]
+            write(features, plot_sequences, output_path, colors, plot_name_suffix=plot_name_suffix, plot_type=plot_type)
 
 
-def write(features, contigs, output_path, colors=COLORS, plot_name_suffix=None, plot_type=bc.PLOT_FEATURES):
+def write(features, sequences, output_path, colors=COLORS, plot_name_suffix=None, plot_type=bc.PLOT_FEATURES):
     # config paths
     circos_path = cfg.tmp_path.joinpath(f'circos')
     circos_path.mkdir(parents=True, exist_ok=True)
 
     # fix edge features because Circos cannot handle them correctly
     non_edge_features = [feat for feat in features if not feat.get('edge', False)]
-    contigs_by_id = {c['id']: c for c in contigs}
+    sequences_by_id = {seq['id']: seq for seq in sequences}
     for feat in [feat for feat in features if feat.get('edge', False)]:
-        contig = contigs_by_id[feat['contig']]
-        log.info('split edge feature: contig=%s, start=%i, stop=%i, strand=%s, edge=%s', contig['id'], feat['start'], feat['stop'], feat['strand'], feat['edge'])
+        seq = sequences_by_id[feat['sequence']]
+        log.info('split edge feature: seq=%s, start=%i, stop=%i, strand=%s, edge=%s', seq['id'], feat['start'], feat['stop'], feat['strand'], feat['edge'])
         feat_1 = feat.copy()
-        feat_1['stop'] = contig['length']
+        feat_1['stop'] = seq['length']
         feat_1['edge'] = False
         non_edge_features.append(feat_1)
         feat_2 = feat.copy()
@@ -226,19 +226,19 @@ def write(features, contigs, output_path, colors=COLORS, plot_name_suffix=None, 
 
     # write feature files
     if plot_type == bc.PLOT_COG:
-        feature_paths = write_features_type_cog(features, contigs, circos_path, colors)
+        feature_paths = write_features_type_cog(features, sequences, circos_path, colors)
     else:
-        feature_paths = write_features_type_feature(features, contigs, circos_path, colors)
+        feature_paths = write_features_type_feature(features, sequences, circos_path, colors)
 
     # write gc content and gc skew files
     tracks_path = circos_path.joinpath('tracks.conf')
     
-    gc_content_path, max_gc, gc_skew_path, max_gc_skew = write_gc_content_skew(contigs, circos_path, colors)
+    gc_content_path, max_gc, gc_skew_path, max_gc_skew = write_gc_content_skew(sequences, circos_path, colors)
     write_tracks(tracks_path, feature_paths, gc_content_path, max_gc, gc_skew_path, max_gc_skew)
 
     # write main config
     file_name = cfg.prefix if plot_name_suffix is None else f'{cfg.prefix}_{plot_name_suffix}'
-    main_conf_path = write_main_config(circos_path, output_path, tracks_path, contigs, file_name, colors)
+    main_conf_path = write_main_config(circos_path, output_path, tracks_path, sequences, file_name, colors)
     
     # execute Circos
     log.info('write circular genome plot: file-name=%s, output-dir=%s', file_name, output_path)
@@ -262,19 +262,19 @@ def write(features, contigs, output_path, colors=COLORS, plot_name_suffix=None, 
         raise Exception(f'circos error! error code: {proc.returncode}')
 
 
-def write_features_type_feature(features, contigs, circos_path, colors):
+def write_features_type_feature(features, sequences, circos_path, colors):
     features_plus = []
     features_minus = []
-    contig_ids = set([c['id'] for c in contigs])
+    sequence_ids = set([seq['id'] for seq in sequences])
     for feat in features:
-        if feat['contig'] not in contig_ids:
+        if feat['sequence'] not in sequence_ids:
             continue
-        contig, start, stop, type = feat['contig'], feat['start'], feat['stop'], feat['type']
+        seq, start, stop, type = feat['sequence'], feat['start'], feat['stop'], feat['type']
         color = colors['features'].get(type, colors['features']['misc'])
         if feat['strand'] == bc.STRAND_FORWARD:
-            features_plus.append(f"{contig} {start} {stop} {bc.STRAND_FORWARD} color={hex_to_rgb(color)}")
+            features_plus.append(f"{seq} {start} {stop} {bc.STRAND_FORWARD} color={hex_to_rgb(color)}")
         else:
-            features_minus.append(f"{contig} {start} {stop} {bc.STRAND_REVERSE} color={hex_to_rgb(color)}")
+            features_minus.append(f"{seq} {start} {stop} {bc.STRAND_REVERSE} color={hex_to_rgb(color)}")
     features_plus_path = circos_path.joinpath('features-plus.txt')
     with features_plus_path.open('w') as fh:
         fh.write('\n'.join(features_plus))
@@ -286,15 +286,15 @@ def write_features_type_feature(features, contigs, circos_path, colors):
     return [features_plus_path, features_minus_path]
 
 
-def write_features_type_cog(features, contigs, circos_path, colors):
+def write_features_type_cog(features, sequences, circos_path, colors):
     features_plus = []
     features_minus = []
     features_extra = []
-    contig_ids = set([c['id'] for c in contigs])
+    sequence_ids = set([seq['id'] for seq in sequences])
     for feat in features:
-        if feat['contig'] not in contig_ids:
+        if feat['sequence'] not in sequence_ids:
             continue
-        contig, start, stop = feat['contig'], feat['start'], feat['stop']
+        seq, start, stop = feat['sequence'], feat['start'], feat['stop']
         if feat['type'] == bc.FEATURE_CDS:
             color = colors['features'][bc.FEATURE_CDS]
             psc = feat.get('psc', None)
@@ -305,11 +305,11 @@ def write_features_type_cog(features, contigs, circos_path, colors):
                         cog = cog[:1]
                     color = colors['cog-classes'].get(cog.upper(), colors['cog-classes']['S'])
             if feat['strand'] == bc.STRAND_FORWARD:
-                features_plus.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
+                features_plus.append(f"{seq} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
             else:
-                features_minus.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
+                features_minus.append(f"{seq} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
         else:
-            features_extra.append(f"{contig} {start} {stop} {feat['strand']} color={hex_to_rgb(colors['features']['misc'])}")
+            features_extra.append(f"{seq} {start} {stop} {feat['strand']} color={hex_to_rgb(colors['features']['misc'])}")
     features_plus_path = circos_path.joinpath('features-plus.txt')
     with features_plus_path.open('w') as fh:
         fh.write('\n'.join(features_plus))
@@ -325,8 +325,8 @@ def write_features_type_cog(features, contigs, circos_path, colors):
     return [features_plus_path, features_minus_path, features_extra_path]
 
 
-def write_gc_content_skew(contigs, circos_path, colors):
-    sequence_length = sum([c['length'] for c in contigs])
+def write_gc_content_skew(sequences, circos_path, colors):
+    sequence_length = sum([seq['length'] for seq in sequences])
     step_size = int(sequence_length / 3600)  # 10 * 360°
     if step_size < 3:
         step_size = 3
@@ -338,33 +338,33 @@ def write_gc_content_skew(contigs, circos_path, colors):
     max_gc = 0
     max_gc_skew = 0
     if float(bp.__version__) >= 1.80:
-        gc_mean = SeqUtils.gc_fraction(''.join([c['sequence'] for c in contigs]))
+        gc_mean = SeqUtils.gc_fraction(''.join([seq['nt'] for seq in sequences]))
     else:
-        gc_mean = SeqUtils.GC(''.join([c['sequence'] for c in contigs])) / 100
-    for contig in contigs:
-        seq = contig['sequence']
-        for w in range(0, len(seq), step_size):
+        gc_mean = SeqUtils.GC(''.join([seq['nt'] for seq in sequences])) / 100
+    for seq in sequences:
+        nt = seq['nt']
+        for w in range(0, len(nt), step_size):
             start = w - window_size
             if start < 0:
-                start += len(seq)
+                start += len(nt)
             stop = w + window_size
-            if stop > len(seq):
-                stop -= len(seq)
-            subseq = seq[start:stop] if start < stop else seq[start:] + seq[:stop]
+            if stop > len(nt):
+                stop -= len(nt)
+            nt_subseq = nt[start:stop] if start < stop else nt[start:] + nt[:stop]
             if float(bp.__version__) >= 1.80:
-                gc_value = gc_mean - SeqUtils.gc_fraction(subseq)
+                gc_value = gc_mean - SeqUtils.gc_fraction(nt_subseq)
             else:
-                gc_value = gc_mean - (SeqUtils.GC(subseq) / 100)
+                gc_value = gc_mean - (SeqUtils.GC(nt_subseq) / 100)
             if max_gc < abs(gc_value):
                 max_gc = abs(gc_value)
             gc_color = colors['gc-positive'] if gc_value >= 0 else colors['gc-negative']
-            gc_contents.append(f"{contig['id']} {w} {w} {gc_value} fill_color={hex_to_rgb(gc_color)}")
-            g, c = subseq.count('G'), subseq.count('C')
+            gc_contents.append(f"{seq['id']} {w} {w} {gc_value} fill_color={hex_to_rgb(gc_color)}")
+            g, c = nt_subseq.count('G'), nt_subseq.count('C')
             gc_skew = gc_skew = (g - c) / float(g + c) if (g + c) > 0 else 0.0
             if max_gc_skew < abs(gc_skew):
                 max_gc_skew = abs(gc_skew)
             gc_skew_color = colors['gc-skew-positive'] if gc_skew >= 0 else colors['gc-skew-negative']
-            gc_skews.append(f"{contig['id']} {w} {w} {gc_skew} fill_color={hex_to_rgb(gc_skew_color)}")
+            gc_skews.append(f"{seq['id']} {w} {w} {gc_skew} fill_color={hex_to_rgb(gc_skew_color)}")
 
     log.debug('write gc config: seq-length=%i, step-size=%i, window-size=%i, max-gc=%i, max-gc-skew=%i', sequence_length, step_size, window_size, max_gc, max_gc_skew)
     gc_content_path = circos_path.joinpath('gc_content.txt')
@@ -430,9 +430,9 @@ def hex_to_rgb(hex_string):
     return ','.join(rgb)
 
 
-def write_main_config(circos_path, output_path, tracks_path, contigs, file_name, colors):
+def write_main_config(circos_path, output_path, tracks_path, sequences, file_name, colors):
     karyotype_path = circos_path.joinpath('karyotype.txt')
-    sequence_length = sum([c['length'] for c in contigs])
+    sequence_length = sum([seq['length'] for seq in sequences])
     chromosomes_units = round(sequence_length/(10**(len(str(sequence_length)) - 1)))*(10**(len(str(sequence_length)) - 1))
 
     if sequence_length > 10_000:
@@ -508,7 +508,7 @@ max_ideograms*   = 10000
 
     # write karyotype file
     karyotypes = []
-    for i, c in enumerate(contigs):
+    for i, c in enumerate(sequences):
         karyotypes.append(f"chr - {c['id']} {i + 1} 0 {c['length']} {hex_to_rgb(colors['backbone'])}")
     with karyotype_path.open('w') as fh:
         fh.write('\n'.join(karyotypes))
