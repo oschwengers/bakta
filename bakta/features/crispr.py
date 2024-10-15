@@ -17,7 +17,7 @@ RE_CRISPR = re.compile(r'(\d{1,8})\s+(\d{2})\s+(\d{1,3}\.\d)\s+(?:(\d{1,2})\s+)?
 log = logging.getLogger('CRISPR')
 
 
-def predict_crispr(genome: dict, sequences_path: Path):
+def predict_crispr(data: dict, sequences_path: Path):
     """Predict CRISPR arrays with PILER-CR."""
 
     output_path = cfg.tmp_path.joinpath('crispr.txt')
@@ -44,7 +44,7 @@ def predict_crispr(genome: dict, sequences_path: Path):
 
     # parse crispr arrays
     crispr_arrays = {}
-    sequences = {seq['id']: seq for seq in genome['sequences']}
+    sequences = {seq['id']: seq for seq in data['sequences']}
     with output_path.open() as fh:
         output_section = None
         sequence_id = None

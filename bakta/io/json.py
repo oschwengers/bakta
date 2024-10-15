@@ -13,7 +13,7 @@ import bakta.config as cfg
 log = logging.getLogger('JSON')
 
 
-def write_json(genome: dict, features: Sequence[dict], json_path: Path):
+def write_json(data: dict, features: Sequence[dict], json_path: Path):
     log.info('write JSON: path=%s', json_path)
 
     # clean feature attributes
@@ -33,30 +33,30 @@ def write_json(genome: dict, features: Sequence[dict], json_path: Path):
 
     # replace features type dict by sorted feature list
     output = OrderedDict()
-    if genome is not None:
+    if data is not None:
         ordered_genome = OrderedDict()
-        ordered_genome['genus'] = genome['genus']
-        ordered_genome['species'] = genome['species']
-        ordered_genome['strain'] = genome['strain']
-        if('plasmid' in genome):
-            ordered_genome['plasmid'] = genome['plasmid']
-        ordered_genome['complete'] = genome['complete']
-        ordered_genome['gram'] = genome['gram']
-        ordered_genome['translation_table'] = genome['translation_table']
+        ordered_genome['genus'] = data['genus']
+        ordered_genome['species'] = data['species']
+        ordered_genome['strain'] = data['strain']
+        if('plasmid' in data):
+            ordered_genome['plasmid'] = data['plasmid']
+        ordered_genome['complete'] = data['complete']
+        ordered_genome['gram'] = data['gram']
+        ordered_genome['translation_table'] = data['translation_table']
         output['genome'] = ordered_genome
 
         stats = OrderedDict()
-        stats['no_sequences'] = len(genome['sequences'])
-        stats['size'] = genome['size']
-        stats['gc'] = genome['gc']
-        stats['n_ratio'] = genome['n_ratio']
-        stats['n50'] = genome['n50']
-        stats['coding_ratio'] = genome['coding_ratio']
+        stats['no_sequences'] = len(data['sequences'])
+        stats['size'] = data['size']
+        stats['gc'] = data['gc']
+        stats['n_ratio'] = data['n_ratio']
+        stats['n50'] = data['n50']
+        stats['coding_ratio'] = data['coding_ratio']
         output['stats'] = stats
 
     output['features'] = features
-    if genome is not None:
-        output['sequences'] = genome['sequences']
+    if data is not None:
+        output['sequences'] = data['sequences']
 
     run = OrderedDict()
     run['start'] = cfg.run_start.strftime('%Y-%m-%d %H:%M:%S')

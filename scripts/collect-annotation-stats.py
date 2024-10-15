@@ -66,36 +66,36 @@ with output_path.open('w') as fh_out:
         )
     )
     fh_out.write('\n')
-    for genome in args.genomes:
-        genome_path = Path(genome).resolve()
+    for genome_file in args.genomes:
+        genome_path = Path(genome_file).resolve()
         try:
             with genome_path.open() as fh_in:
-                genome = json.load(fh_in)
+                data = json.load(fh_in)
             stats = [
                 genome_path.stem,
-                f"{' '.join([t for t in [genome['genome'].get('genus', None), genome['genome'].get('species', None), genome['genome'].get('strain', None)] if t is not None])}",
-                'y' if genome['genome']['complete'] else 'n',
-                f"{genome['genome']['translation_table']}",
-                f"{genome['stats']['no_sequences']}",
-                f"{genome['stats']['size']}",
-                f"{100 * genome['stats']['gc']:.1f}",
-                f"{100 * genome['stats']['n_ratio']:.1f}",
-                f"{genome['stats']['n50']}",
-                f"{100 * genome['stats']['coding_ratio']:.1f}",
-                f"{len([f for f in genome['features'] if f['type'] == bc.FEATURE_T_RNA])}",
-                f"{len([f for f in genome['features'] if f['type'] == bc.FEATURE_TM_RNA])}",
-                f"{len([f for f in genome['features'] if f['type'] == bc.FEATURE_R_RNA])}",
-                f"{len([f for f in genome['features'] if f['type'] == bc.FEATURE_NC_RNA])}",
-                f"{len([f for f in genome['features'] if f['type'] == bc.FEATURE_NC_RNA_REGION])}",
-                f"{len([f for f in genome['features'] if f['type'] == bc.FEATURE_CRISPR])}",
-                f"{len([f for f in genome['features'] if f['type'] == bc.FEATURE_CDS])}",
-                f"{len([f for f in genome['features'] if f['type'] == bc.FEATURE_CDS and 'hypothetical' in f])}",
-                f"{len([f for f in genome['features'] if f['type'] == bc.FEATURE_CDS and 'pseudogene' in f])}",
-                f"{len([f for f in genome['features'] if f['type'] == bc.FEATURE_SORF])}",
-                f"{len([f for f in genome['features'] if f['type'] == bc.FEATURE_GAP])}",
-                f"{len([f for f in genome['features'] if f['type'] == bc.FEATURE_ORIC])}",
-                f"{len([f for f in genome['features'] if f['type'] == bc.FEATURE_ORIV])}",
-                f"{len([f for f in genome['features'] if f['type'] == bc.FEATURE_ORIT])}",
+                f"{' '.join([t for t in [data['genome'].get('genus', None), data['genome'].get('species', None), data['genome'].get('strain', None)] if t is not None])}",
+                'y' if data['genome']['complete'] else 'n',
+                f"{data['genome']['translation_table']}",
+                f"{data['stats']['no_sequences']}",
+                f"{data['stats']['size']}",
+                f"{100 * data['stats']['gc']:.1f}",
+                f"{100 * data['stats']['n_ratio']:.1f}",
+                f"{data['stats']['n50']}",
+                f"{100 * data['stats']['coding_ratio']:.1f}",
+                f"{len([f for f in data['features'] if f['type'] == bc.FEATURE_T_RNA])}",
+                f"{len([f for f in data['features'] if f['type'] == bc.FEATURE_TM_RNA])}",
+                f"{len([f for f in data['features'] if f['type'] == bc.FEATURE_R_RNA])}",
+                f"{len([f for f in data['features'] if f['type'] == bc.FEATURE_NC_RNA])}",
+                f"{len([f for f in data['features'] if f['type'] == bc.FEATURE_NC_RNA_REGION])}",
+                f"{len([f for f in data['features'] if f['type'] == bc.FEATURE_CRISPR])}",
+                f"{len([f for f in data['features'] if f['type'] == bc.FEATURE_CDS])}",
+                f"{len([f for f in data['features'] if f['type'] == bc.FEATURE_CDS and 'hypothetical' in f])}",
+                f"{len([f for f in data['features'] if f['type'] == bc.FEATURE_CDS and 'pseudogene' in f])}",
+                f"{len([f for f in data['features'] if f['type'] == bc.FEATURE_SORF])}",
+                f"{len([f for f in data['features'] if f['type'] == bc.FEATURE_GAP])}",
+                f"{len([f for f in data['features'] if f['type'] == bc.FEATURE_ORIC])}",
+                f"{len([f for f in data['features'] if f['type'] == bc.FEATURE_ORIV])}",
+                f"{len([f for f in data['features'] if f['type'] == bc.FEATURE_ORIT])}",
             ]
             output_line = '\t'.join(stats)
             print(output_line)

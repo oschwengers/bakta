@@ -17,7 +17,7 @@ HIT_COVERAGE_TRUNCATED = 0.8
 log = logging.getLogger('R_RNA')
 
 
-def predict_r_rnas(genome: dict, sequences_path: Path):
+def predict_r_rnas(data: dict, sequences_path: Path):
     """Search for ribosomal RNA sequences."""
 
     output_path = cfg.tmp_path.joinpath('rrna.tsv')
@@ -31,9 +31,9 @@ def predict_r_rnas(genome: dict, sequences_path: Path):
         '--cpu', str(cfg.threads),
         '--tblout', str(output_path)
     ]
-    if(genome['size'] >= 1000000):
+    if(data['size'] >= 1000000):
         cmd.append('-Z')
-        cmd.append(str(2 * genome['size'] // 1000000))
+        cmd.append(str(2 * data['size'] // 1000000))
     cmd.append(str(cfg.db_path.joinpath('rRNA')))
     cmd.append(str(sequences_path))
     log.debug('cmd=%s', cmd)
@@ -51,7 +51,7 @@ def predict_r_rnas(genome: dict, sequences_path: Path):
         raise Exception(f'cmscan error! error code: {proc.returncode}')
 
     rrnas = []
-    sequences = {seq['id']: seq for seq in genome['sequences']}
+    sequences = {seq['id']: seq for seq in data['sequences']}
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):

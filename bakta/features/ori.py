@@ -18,7 +18,7 @@ HIT_EVALUE = '1E-5'
 log = logging.getLogger('ORI')
 
 
-def predict_oris(genome: dict, sequences_path: Path, ori_type: str) -> Sequence[dict]:
+def predict_oris(data: dict, sequences_path: Path, ori_type: str) -> Sequence[dict]:
     """Search for oriT/C sequences."""
 
     database = 'oric.fna' if ori_type == bc.FEATURE_ORIC else 'orit.fna'
@@ -78,7 +78,7 @@ def predict_oris(genome: dict, sequences_path: Path, ori_type: str) -> Sequence[
 
     # combine overlapping hits (simple 1D array peak detection)
     oris = []
-    for seq in genome['sequences']:
+    for seq in data['sequences']:
         sequence_hits = hits.get(seq['id'], None)
         if(sequence_hits):
             region_hits = [0] * (seq['length'] + 1)  # init with extra leading slot (start at 1)

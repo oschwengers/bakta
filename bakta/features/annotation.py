@@ -145,46 +145,46 @@ def combine_annotation(feature: dict):
     feature['db_xrefs'] = sorted(list(db_xrefs))
 
 
-def detect_feature_overlaps(genome: dict):
+def detect_feature_overlaps(data: dict):
     """Apply feature type specific hierarchical feature overlap filters.
     tRNA < tmRNA
     CDS < tmRNA, tRNA, rRNA, CRISPR
     sORF < mRNA, tRNA, rRNA, CRISPR, CDS (in-frame & entirely overlapping), sORF (shorter, weaker annotations)
     """
-    sequence_t_rnas = {k['id']: [] for k in genome['sequences']}
-    for t_rna in genome['features'].get(bc.FEATURE_T_RNA, []):
+    sequence_t_rnas = {k['id']: [] for k in data['sequences']}
+    for t_rna in data['features'].get(bc.FEATURE_T_RNA, []):
         t_rnas = sequence_t_rnas[t_rna['sequence']]
         t_rnas.append(t_rna)
-    sequence_tm_rnas = {k['id']: [] for k in genome['sequences']}
-    for tm_rna in genome['features'].get(bc.FEATURE_TM_RNA, []):
+    sequence_tm_rnas = {k['id']: [] for k in data['sequences']}
+    for tm_rna in data['features'].get(bc.FEATURE_TM_RNA, []):
         tm_rnas = sequence_tm_rnas[tm_rna['sequence']]
         tm_rnas.append(tm_rna)
-    sequence_r_rnas = {k['id']: [] for k in genome['sequences']}
-    for r_rna in genome['features'].get(bc.FEATURE_R_RNA, []):
+    sequence_r_rnas = {k['id']: [] for k in data['sequences']}
+    for r_rna in data['features'].get(bc.FEATURE_R_RNA, []):
         r_rnas = sequence_r_rnas[r_rna['sequence']]
         r_rnas.append(r_rna)
-    sequence_ncrna_regions = {k['id']: [] for k in genome['sequences']}
-    for ncRNA_region in genome['features'].get(bc.FEATURE_NC_RNA_REGION, []):
+    sequence_ncrna_regions = {k['id']: [] for k in data['sequences']}
+    for ncRNA_region in data['features'].get(bc.FEATURE_NC_RNA_REGION, []):
         ncRNA_regions = sequence_ncrna_regions[ncRNA_region['sequence']]
         ncRNA_regions.append(ncRNA_region)
-    sequence_crispr_arrays = {k['id']: [] for k in genome['sequences']}
-    for crispr_array in genome['features'].get(bc.FEATURE_CRISPR, []):
+    sequence_crispr_arrays = {k['id']: [] for k in data['sequences']}
+    for crispr_array in data['features'].get(bc.FEATURE_CRISPR, []):
         crispr_arrays = sequence_crispr_arrays[crispr_array['sequence']]
         crispr_arrays.append(crispr_array)
-    sequence_cdss = {k['id']: [] for k in genome['sequences']}
-    sequence_cdss_user_provided = {k['id']: [] for k in genome['sequences']}
-    for cds in genome['features'].get(bc.FEATURE_CDS, []):
+    sequence_cdss = {k['id']: [] for k in data['sequences']}
+    sequence_cdss_user_provided = {k['id']: [] for k in data['sequences']}
+    for cds in data['features'].get(bc.FEATURE_CDS, []):
         if(cds.get('source', None) == bc.CDS_SOURCE_USER):
             cdss = sequence_cdss_user_provided[cds['sequence']]
         else:
             cdss = sequence_cdss[cds['sequence']]
         cdss.append(cds)
-    sequence_sorfs = {k['id']: [] for k in genome['sequences']}
-    for sorf in genome['features'].get(bc.FEATURE_SORF, []):
+    sequence_sorfs = {k['id']: [] for k in data['sequences']}
+    for sorf in data['features'].get(bc.FEATURE_SORF, []):
         sorfs = sequence_sorfs[sorf['sequence']]
         sorfs.append(sorf)
 
-    for seq in genome['sequences']:  # find feature overlaps sequence-wise to increase the performance
+    for seq in data['sequences']:  # find feature overlaps sequence-wise to increase the performance
         log.debug('filter features on seq: %s', seq['id'])
 
         # mark tRNAs overlapping with tmRNAs

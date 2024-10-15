@@ -13,7 +13,7 @@ import bakta.utils as bu
 log = logging.getLogger('TM_RNA')
 
 
-def predict_tm_rnas(genome: dict, sequences_path: Path):
+def predict_tm_rnas(data: dict, sequences_path: Path):
     """Search for tmRNA sequences."""
 
     txt_output_path = cfg.tmp_path.joinpath('tmrna.tsv')
@@ -45,7 +45,7 @@ def predict_tm_rnas(genome: dict, sequences_path: Path):
         raise Exception(f'aragorn error! error code: {proc.returncode}')
 
     tmrnas = []
-    sequences = {seq['id']: seq for seq in genome['sequences']}
+    sequences = {seq['id']: seq for seq in data['sequences']}
     with txt_output_path.open() as fh:
         sequence_id = None
         for line in fh:

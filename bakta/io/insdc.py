@@ -18,11 +18,11 @@ import bakta.so as so
 log = logging.getLogger('INSDC')
 
 
-def write_features(genome: dict, features: Sequence[dict], genbank_output_path: Path, embl_output_path: Path):
+def write_features(data: dict, features: Sequence[dict], genbank_output_path: Path, embl_output_path: Path):
     log.debug('prepare: genbank=%s, embl=%s', genbank_output_path, embl_output_path)
 
     sequence_list = []
-    for seq in genome['sequences']:
+    for seq in data['sequences']:
         sequence_features = [feat for feat in features if feat['sequence'] == seq['id']]
         comment = (
             'Annotated with Bakta',
@@ -47,7 +47,7 @@ def write_features(genome: dict, features: Sequence[dict], genbank_output_path: 
         )
         sequence_annotations = {
             'molecule_type': 'DNA',
-            'source': genome['taxon'],
+            'source': data['taxon'],
             'date': date.today().strftime('%d-%b-%Y').upper(),
             'topology': seq['topology'],
             'data_file_division': 'HGT' if seq['type'] == bc.REPLICON_CONTIG else 'BCT',
@@ -61,12 +61,12 @@ def write_features(genome: dict, features: Sequence[dict], genbank_output_path: 
         }
 
         description = ''
-        if(genome['taxon']):
-            sequence_annotations['organism'] = genome['taxon']
-            source_qualifiers['organism'] = genome['taxon']
-            description = genome['taxon']
-        if(genome['strain']):
-            source_qualifiers['strain'] = genome['strain']
+        if(data['taxon']):
+            sequence_annotations['organism'] = data['taxon']
+            source_qualifiers['organism'] = data['taxon']
+            description = data['taxon']
+        if(data['strain']):
+            source_qualifiers['strain'] = data['strain']
 
         if(seq['type'] == bc.REPLICON_PLASMID):
             source_qualifiers['plasmid'] = seq['name'] if seq.get('name', None) else 'unnamed'

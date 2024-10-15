@@ -11,9 +11,9 @@ log = logging.getLogger('GAP')
 RE_ASSEMBLY_GAP = re.compile(r'N{1,}', flags=0)
 
 
-def detect_assembly_gaps(genome: dict) -> Sequence[dict]:
+def detect_assembly_gaps(data: dict) -> Sequence[dict]:
     gaps = []
-    for seq in genome['sequences']:
+    for seq in data['sequences']:
         m = RE_ASSEMBLY_GAP.search(seq['nt'])
         while m:
             start, end = m.span()

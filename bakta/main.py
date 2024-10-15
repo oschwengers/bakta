@@ -133,7 +133,7 @@ def main():
         sys.exit('Error: input file contains no valid sequences.')
     sequences_path = cfg.tmp_path.joinpath('sequences.fna')
     fasta.export_sequences(sequences, sequences_path)
-    genome = {
+    data = {
         'genus': cfg.genus,
         'species': cfg.species,
         'strain': cfg.strain,
@@ -146,7 +146,7 @@ def main():
         'sequences': sequences
     }
     if(cfg.plasmid):
-        genome['plasmid'] = cfg.plasmid
+        data['plasmid'] = cfg.plasmid
     print('\nStart annotation...')
 
     ############################################################################
@@ -157,8 +157,8 @@ def main():
     else:
         print('predict tRNAs...')
         log.debug('start tRNA prediction')
-        genome['features'][bc.FEATURE_T_RNA] = t_rna.predict_t_rnas(genome, sequences_path)
-        print(f"\tfound: {len(genome['features'][bc.FEATURE_T_RNA])}")
+        data['features'][bc.FEATURE_T_RNA] = t_rna.predict_t_rnas(data, sequences_path)
+        print(f"\tfound: {len(data['features'][bc.FEATURE_T_RNA])}")
 
     ############################################################################
     # tmRNA prediction
@@ -168,8 +168,8 @@ def main():
     else:
         print('predict tmRNAs...')
         log.debug('start tmRNA prediction')
-        genome['features'][bc.FEATURE_TM_RNA] = tm_rna.predict_tm_rnas(genome, sequences_path)
-        print(f"\tfound: {len(genome['features'][bc.FEATURE_TM_RNA])}")
+        data['features'][bc.FEATURE_TM_RNA] = tm_rna.predict_tm_rnas(data, sequences_path)
+        print(f"\tfound: {len(data['features'][bc.FEATURE_TM_RNA])}")
 
     ############################################################################
     # rRNA prediction
@@ -179,8 +179,8 @@ def main():
     else:
         print('predict rRNAs...')
         log.debug('start rRNA prediction')
-        genome['features'][bc.FEATURE_R_RNA] = r_rna.predict_r_rnas(genome, sequences_path)
-        print(f"\tfound: {len(genome['features'][bc.FEATURE_R_RNA])}")
+        data['features'][bc.FEATURE_R_RNA] = r_rna.predict_r_rnas(data, sequences_path)
+        print(f"\tfound: {len(data['features'][bc.FEATURE_R_RNA])}")
 
     ############################################################################
     # ncRNA gene prediction
@@ -190,8 +190,8 @@ def main():
     else:
         print('predict ncRNAs...')
         log.debug('start ncRNA prediction')
-        genome['features'][bc.FEATURE_NC_RNA] = nc_rna.predict_nc_rnas(genome, sequences_path)
-        print(f"\tfound: {len(genome['features'][bc.FEATURE_NC_RNA])}")
+        data['features'][bc.FEATURE_NC_RNA] = nc_rna.predict_nc_rnas(data, sequences_path)
+        print(f"\tfound: {len(data['features'][bc.FEATURE_NC_RNA])}")
 
     ############################################################################
     # ncRNA region prediction
@@ -201,8 +201,8 @@ def main():
     else:
         print('predict ncRNA regions...')
         log.debug('start ncRNA region prediction')
-        genome['features'][bc.FEATURE_NC_RNA_REGION] = nc_rna_region.predict_nc_rna_regions(genome, sequences_path)
-        print(f"\tfound: {len(genome['features'][bc.FEATURE_NC_RNA_REGION])}")
+        data['features'][bc.FEATURE_NC_RNA_REGION] = nc_rna_region.predict_nc_rna_regions(data, sequences_path)
+        print(f"\tfound: {len(data['features'][bc.FEATURE_NC_RNA_REGION])}")
 
     ############################################################################
     # CRISPR prediction
@@ -212,8 +212,8 @@ def main():
     else:
         print('predict CRISPR arrays...')
         log.debug('start CRISPR prediction')
-        genome['features'][bc.FEATURE_CRISPR] = crispr.predict_crispr(genome, sequences_path)
-        print(f"\tfound: {len(genome['features'][bc.FEATURE_CRISPR])}")
+        data['features'][bc.FEATURE_CRISPR] = crispr.predict_crispr(data, sequences_path)
+        print(f"\tfound: {len(data['features'][bc.FEATURE_CRISPR])}")
 
     ############################################################################
     # CDS prediction
@@ -230,7 +230,7 @@ def main():
     else:
         print('predict & annotate CDSs...')
         log.debug('predict CDS')
-        cdss = feat_cds.predict(genome)
+        cdss = feat_cds.predict(data)
         print(f"\tpredicted: {len(cdss)} ")
 
         if(len(cdss) > 0):
@@ -241,13 +241,13 @@ def main():
         
         if(len(cdss) > 0):
             log.debug('revise translational exceptions')
-            no_revised = feat_cds.revise_translational_exceptions(genome, cdss)
+            no_revised = feat_cds.revise_translational_exceptions(data, cdss)
             print(f'\trevised translational exceptions: {no_revised}')
             cdss = [cds for cds in cdss if 'discarded' not in cds]
         
         if(cfg.regions):
             log.debug('import user-provided CDS regions')
-            imported_cdss = feat_cds.import_user_cdss(genome, cfg.regions)
+            imported_cdss = feat_cds.import_user_cdss(data, cfg.regions)
             print(f'\timported CDS regions: {len(imported_cdss)}')
             cdss.extend(imported_cdss)
 
@@ -316,7 +316,7 @@ def main():
                     log.debug('search pseudogene candidates')
                     pseudo_candidates = feat_cds.predict_pseudo_candidates(hypotheticals)
                     print(f'\t\tcandidates: {len(pseudo_candidates)}')
-                    pseudogenes = feat_cds.detect_pseudogenes(pseudo_candidates, cdss, genome) if len(pseudo_candidates) > 0 else []
+                    pseudogenes = feat_cds.detect_pseudogenes(pseudo_candidates, cdss, data) if len(pseudo_candidates) > 0 else []
                     psc.lookup(pseudogenes, pseudo=True)
                     pscc.lookup(pseudogenes, pseudo=True)
                     for pseudogene in pseudogenes:
@@ -334,9 +334,9 @@ def main():
                 print('\t\tcalculated proteins statistics')
             
             print('\trevise special cases...')
-            feat_cds.revise_special_cases_annotated(genome, cdss)
+            feat_cds.revise_special_cases_annotated(data, cdss)
 
-        genome['features'][bc.FEATURE_CDS] = cdss
+        data['features'][bc.FEATURE_CDS] = cdss
 
     ############################################################################
     # sORF prediction
@@ -351,11 +351,11 @@ def main():
     else:
         print('detect & annotate sORF...')
         log.debug('extract sORF')
-        sorfs = s_orf.extract(genome)
+        sorfs = s_orf.extract(data)
         print(f'\tdetected: {len(sorfs)}')
 
         log.debug('apply sORF overlap filter')
-        sorfs, discarded_sorfs = s_orf.overlap_filter(genome, sorfs)
+        sorfs, discarded_sorfs = s_orf.overlap_filter(data, sorfs)
         print(f'\tdiscarded due to overlaps: {len(discarded_sorfs)}')
 
         if(len(sorfs) > 0):
@@ -396,7 +396,7 @@ def main():
         log.debug('combine sORF annotations')
         for feat in sorfs_filtered:
             anno.combine_annotation(feat)  # combine IPS and PSC annotations
-        genome['features'][bc.FEATURE_SORF] = sorfs_filtered
+        data['features'][bc.FEATURE_SORF] = sorfs_filtered
         print(f'\tfiltered sORFs: {len(sorfs_filtered)}')
         
         if(cfg.gram != bc.GRAM_UNKNOWN  and  len(sorfs_filtered) > 0):
@@ -417,8 +417,8 @@ def main():
     else:
         print('detect gaps...')
         log.debug('detect gaps')
-        assembly_gaps = gaps.detect_assembly_gaps(genome)
-        genome['features'][bc.FEATURE_GAP] = assembly_gaps
+        assembly_gaps = gaps.detect_assembly_gaps(data)
+        data['features'][bc.FEATURE_GAP] = assembly_gaps
         print(f'\tfound: {len(assembly_gaps)}')
 
     ############################################################################
@@ -429,14 +429,14 @@ def main():
     else:
         print('detect oriCs/oriVs...')
         log.debug('detect oriC/V')
-        oriCs = ori.predict_oris(genome, sequences_path, bc.FEATURE_ORIC)
-        genome['features'][bc.FEATURE_ORIC] = oriCs
+        oriCs = ori.predict_oris(data, sequences_path, bc.FEATURE_ORIC)
+        data['features'][bc.FEATURE_ORIC] = oriCs
         print(f'\tfound: {len(oriCs)}')
 
         print('detect oriTs...')
         log.debug('detect oriT')
-        oriTs = ori.predict_oris(genome, sequences_path, bc.FEATURE_ORIT)
-        genome['features'][bc.FEATURE_ORIT] = oriTs
+        oriTs = ori.predict_oris(data, sequences_path, bc.FEATURE_ORIT)
+        data['features'][bc.FEATURE_ORIT] = oriTs
         print(f'\tfound: {len(oriTs)}')
 
     ############################################################################
@@ -446,7 +446,7 @@ def main():
         print('skip feature overlap filters...')
     else:
         print('apply feature overlap filters...')
-        anno.detect_feature_overlaps(genome)
+        anno.detect_feature_overlaps(data)
 
     ############################################################################
     # Create annotations
@@ -456,10 +456,10 @@ def main():
     ############################################################################
     print('select features and create locus tags...')
     log.debug('start feature selection and creation of locus tags')
-    features_by_sequence = {k['id']: [] for k in genome['sequences']}
+    features_by_sequence = {k['id']: [] for k in data['sequences']}
     feature_id = 1
     feature_id_prefix = bu.create_locus_tag_prefix(sequences, length=10)
-    for feature_list in genome['features'].values():
+    for feature_list in data['features'].values():
         for feature in feature_list:
             if('discarded' not in feature):
                 feature['id'] = f'{feature_id_prefix}_{feature_id}'
@@ -467,7 +467,7 @@ def main():
                 seq_features = features_by_sequence.get(feature['sequence'])
                 seq_features.append(feature)
     features = []
-    for seq in genome['sequences']:
+    for seq in data['sequences']:
         seq_features = features_by_sequence[seq['id']]
         seq_features.sort(key=lambda k: k['start'])
         features.extend(seq_features)
@@ -498,9 +498,9 @@ def main():
     # - annotation stats
     ############################################################################
     print('\nGenome statistics:')
-    genome_stats = bu.calc_genome_stats(genome, features)
-    print(f"\tGenome size: {genome['size']:,} bp")
-    print(f"\tContigs/replicons: {len(genome['sequences'])}")
+    genome_stats = bu.calc_genome_stats(data, features)
+    print(f"\tGenome size: {data['size']:,} bp")
+    print(f"\tContigs/replicons: {len(data['sequences'])}")
     print(f"\tGC: {100 * genome_stats['gc']:.1f} %")
     print(f"\tN50: {genome_stats['n50']:,}")
     print(f"\tN ratio: {100 * genome_stats['n_ratio']:.1f} %")
@@ -533,20 +533,20 @@ def main():
     print(f'\nExport annotation results to: {cfg.output_path}')
     print('\thuman readable TSV...')
     tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.tsv')
-    tsv.write_features(genome['sequences'], features_by_sequence, tsv_path)
+    tsv.write_features(data['sequences'], features_by_sequence, tsv_path)
 
     print('\tGFF3...')
     gff3_path = cfg.output_path.joinpath(f'{cfg.prefix}.gff3')
-    gff.write_features(genome, features_by_sequence, gff3_path)
+    gff.write_features(data, features_by_sequence, gff3_path)
 
     print('\tINSDC GenBank & EMBL...')
     genbank_path = cfg.output_path.joinpath(f'{cfg.prefix}.gbff')
     embl_path = cfg.output_path.joinpath(f'{cfg.prefix}.embl')
-    insdc.write_features(genome, features, genbank_path, embl_path)
+    insdc.write_features(data, features, genbank_path, embl_path)
 
     print('\tgenome sequences...')
     fna_path = cfg.output_path.joinpath(f'{cfg.prefix}.fna')
-    fasta.export_sequences(genome['sequences'], fna_path, description=True, wrap=True)
+    fasta.export_sequences(data['sequences'], fna_path, description=True, wrap=True)
 
     print('\tfeature nucleotide sequences...')
     ffn_path = cfg.output_path.joinpath(f'{cfg.prefix}.ffn')
@@ -558,7 +558,7 @@ def main():
 
     print('\tfeature inferences...')
     tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.inference.tsv')
-    tsv.write_feature_inferences(genome['sequences'], features_by_sequence, tsv_path)
+    tsv.write_feature_inferences(data['sequences'], features_by_sequence, tsv_path)
 
     if(cfg.skip_plot  or  cfg.meta):
         print('\tskip generation of circular genome plot...')
@@ -579,7 +579,7 @@ def main():
     # measure runtime at the latest possible
     cfg.run_end = datetime.now()
     run_duration = (cfg.run_end - cfg.run_start).total_seconds()
-    genome['run'] = {
+    data['run'] = {
         'start': cfg.run_start.strftime('%Y-%m-%d %H:%M:%S'),
         'end': cfg.run_end.strftime('%Y-%m-%d %H:%M:%S'),
         'duration': f'{(run_duration / 60):.2f} min'
@@ -587,14 +587,14 @@ def main():
 
     print('\tmachine readable JSON...')
     json_path = cfg.output_path.joinpath(f'{cfg.prefix}.json')
-    json.write_json(genome, features, json_path)
+    json.write_json(data, features, json_path)
 
     print('\tGenome and annotation summary...')
     summary_path = cfg.output_path.joinpath(f'{cfg.prefix}.txt')
     with summary_path.open('w') as fh_out:
         fh_out.write('Sequence(s):\n')
-        fh_out.write(f"Length: {genome['size']:}\n")
-        fh_out.write(f"Count: {len(genome['sequences'])}\n")
+        fh_out.write(f"Length: {data['size']:}\n")
+        fh_out.write(f"Count: {len(data['sequences'])}\n")
         fh_out.write(f"GC: {100 * genome_stats['gc']:.1f}\n")
         fh_out.write(f"N50: {genome_stats['n50']:}\n")
         fh_out.write(f"N ratio: {100 * genome_stats['n_ratio']:.1f}\n")

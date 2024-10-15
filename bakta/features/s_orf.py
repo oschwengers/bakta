@@ -20,10 +20,10 @@ import bakta.so as so
 log = logging.getLogger('S_ORF')
 
 
-def extract(genome: dict):
+def extract(data: dict):
     """Predict open reading frames in mem via BioPython."""
     orfs = []
-    for seq in genome['sequences']:
+    for seq in data['sequences']:
         nt_seq = Seq(seq['nt'])
         for strand, strand_nt_seq in [(bc.STRAND_FORWARD, nt_seq), (bc.STRAND_REVERSE, nt_seq.reverse_complement())]:  # strands +/-
             for frame in range(3):  # frames 1/2/3 -> 0, 1, 2
@@ -87,40 +87,40 @@ def get_feature_stop(feature: dict) -> int:
     return feature['stop'] if feature['strand'] == bc.STRAND_FORWARD else feature['start']
 
 
-def overlap_filter(genome: dict, orfs_raw: Sequence[dict]):
+def overlap_filter(data: dict, orfs_raw: Sequence[dict]):
     """Filter in-mem ORFs by overlapping CDSs."""
-    t_rnas_per_sequence = {seq['id']: [] for seq in genome['sequences']}
-    for t_rna in genome['features'].get(bc.FEATURE_T_RNA, []):
+    t_rnas_per_sequence = {seq['id']: [] for seq in data['sequences']}
+    for t_rna in data['features'].get(bc.FEATURE_T_RNA, []):
         t_rnas = t_rnas_per_sequence[t_rna['sequence']]
         t_rnas.append(t_rna)
-    for tm_rna in genome['features'].get(bc.FEATURE_TM_RNA, []):
+    for tm_rna in data['features'].get(bc.FEATURE_TM_RNA, []):
         t_rnas = t_rnas_per_sequence[tm_rna['sequence']]
         t_rnas.append(tm_rna)
 
-    r_rna_per_sequence = {seq['id']: [] for seq in genome['sequences']}
-    for r_rna in genome['features'].get(bc.FEATURE_R_RNA, []):
+    r_rna_per_sequence = {seq['id']: [] for seq in data['sequences']}
+    for r_rna in data['features'].get(bc.FEATURE_R_RNA, []):
         r_rnas = r_rna_per_sequence[r_rna['sequence']]
         r_rnas.append(r_rna)
 
-    # nc_rnas_per_sequence = {k['id']: [] for k in genome['sequences']}
-    # for nc_rna in genome['features'].get(bc.FEATURE_NC_RNA, []):
+    # nc_rnas_per_sequence = {k['id']: [] for k in data['sequences']}
+    # for nc_rna in data['features'].get(bc.FEATURE_NC_RNA, []):
     #     nc_rnas = nc_rnas_per_sequence[nc_rna['sequence']]
     #     nc_rnas.append(nc_rna)
-    # for nc_rna in genome['features'].get(bc.FEATURE_NC_RNA_REGION, []):
+    # for nc_rna in data['features'].get(bc.FEATURE_NC_RNA_REGION, []):
     #     nc_rnas = nc_rnas_per_sequence[nc_rna['sequence']]
     #     nc_rnas.append(nc_rna)
 
-    crispr_arrays_per_sequence = {seq['id']: [] for seq in genome['sequences']}
-    for crispr_array in genome['features'].get(bc.FEATURE_CRISPR, []):
+    crispr_arrays_per_sequence = {seq['id']: [] for seq in data['sequences']}
+    for crispr_array in data['features'].get(bc.FEATURE_CRISPR, []):
         crispr_arrays = crispr_arrays_per_sequence[crispr_array['sequence']]
         crispr_arrays.append(crispr_array)
 
-    cdss_per_sequence = {k['id']: [] for k in genome['sequences']}
-    for cds in genome['features'].get(bc.FEATURE_CDS, []):
+    cdss_per_sequence = {k['id']: [] for k in data['sequences']}
+    for cds in data['features'].get(bc.FEATURE_CDS, []):
         cdss = cdss_per_sequence[cds['sequence']]
         cdss.append(cds)
 
-    sorfs_per_sequence = {seq['id']: [] for seq in genome['sequences']}
+    sorfs_per_sequence = {seq['id']: [] for seq in data['sequences']}
     for sorf in orfs_raw:
         orfs = sorfs_per_sequence[sorf['sequence']]
         orfs.append(sorf)
@@ -128,7 +128,7 @@ def overlap_filter(genome: dict, orfs_raw: Sequence[dict]):
     discarded_sorf_keys = set()
     with cf.ProcessPoolExecutor(max_workers=cfg.threads) as tpe:
         futures = []
-        for seq in genome['sequences']:
+        for seq in data['sequences']:
             sequence_sorfs = sorfs_per_sequence[seq['id']]
             log.debug('filter: seq=%s, # sORFs=%i', seq['id'], len(sequence_sorfs))
             if(len(sequence_sorfs) < 100):  # execute sORF filter task

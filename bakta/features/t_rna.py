@@ -42,7 +42,7 @@ AMINO_ACID_DICT = {
 }
 
 
-def predict_t_rnas(genome: dict, sequences_path: Path):
+def predict_t_rnas(data: dict, sequences_path: Path):
     """Search for tRNA sequences."""
 
     txt_output_path = cfg.tmp_path.joinpath('trna.tsv')
@@ -70,7 +70,7 @@ def predict_t_rnas(genome: dict, sequences_path: Path):
         raise Exception(f'tRNAscan-SE error! error code: {proc.returncode}')
 
     trnas = {}
-    sequences = {seq['id']: seq for seq in genome['sequences']}
+    sequences = {seq['id']: seq for seq in data['sequences']}
     with txt_output_path.open() as fh:
         for line in fh.readlines()[3:]:  # skip first 3 lines
             (sequence_id, trna_id, start, stop, trna_type, anti_codon, intron_begin, bounds_end, score, note) = line.split('\t')

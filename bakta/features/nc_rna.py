@@ -17,7 +17,7 @@ HIT_EVALUE = 1E-4
 log = logging.getLogger('NC_RNA')
 
 
-def predict_nc_rnas(genome: dict, sequences_path: Path):
+def predict_nc_rnas(data: dict, sequences_path: Path):
     """Search for non-coding RNA genes."""
 
     output_path = cfg.tmp_path.joinpath('ncrna-genes.tsv')
@@ -31,9 +31,9 @@ def predict_nc_rnas(genome: dict, sequences_path: Path):
         '--cpu', str(cfg.threads),
         '--tblout', str(output_path)
     ]
-    if(genome['size'] >= 1000000):
+    if(data['size'] >= 1000000):
         cmd.append('-Z')
-        cmd.append(str(2 * genome['size'] // 1000000))
+        cmd.append(str(2 * data['size'] // 1000000))
     cmd.append(str(cfg.db_path.joinpath('ncRNA-genes')))
     cmd.append(str(sequences_path))
     log.debug('cmd=%s', cmd)
@@ -61,7 +61,7 @@ def predict_nc_rnas(genome: dict, sequences_path: Path):
                 rfam2go[rfam] = [go]
 
     ncrnas = []
-    sequences = {seq['id']: seq for seq in genome['sequences']}
+    sequences = {seq['id']: seq for seq in data['sequences']}
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):

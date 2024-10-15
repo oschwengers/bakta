@@ -293,37 +293,37 @@ def has_annotation(feature: dict, attribute: str) -> bool:
         return False
 
 
-def calc_genome_stats(genome: dict, features: Sequence[dict]):
-    genome_size = genome['size']
+def calc_genome_stats(data: dict, features: Sequence[dict]):
+    genome_size = data['size']
     log.info('genome-size=%i', genome_size)
 
     # N50
     gc_sum = 0
     n_sum = 0
-    for seq in genome['sequences']:
+    for seq in data['sequences']:
         nt = seq['nt']
         gc_sum += nt.count('G') + nt.count('C')
         n_sum += nt.count('N')
     gc_ratio = gc_sum / (genome_size - n_sum)
-    genome['gc'] = gc_ratio
+    data['gc'] = gc_ratio
     log.info('GC=%0.3f', gc_ratio)
 
     n_ratio = n_sum / genome_size
-    genome['n_ratio'] = n_ratio
+    data['n_ratio'] = n_ratio
     log.info('N=%0.3f', n_ratio)
 
     n50 = 0
     sequence_length_sum = 0
-    for seq in sorted(genome['sequences'], key=lambda x: x['length'], reverse=True):
+    for seq in sorted(data['sequences'], key=lambda x: x['length'], reverse=True):
         nt_length = len(seq['nt'])
         sequence_length_sum += nt_length
         if(sequence_length_sum >= genome_size / 2):
             n50 = nt_length
             break
-    genome['n50'] = n50
+    data['n50'] = n50
     log.info('N50=%i', n50)
 
-    sequence_by_id = {seq['id']: seq for seq in genome['sequences']}
+    sequence_by_id = {seq['id']: seq for seq in data['sequences']}
     coding_nts = 0
     for feat in features:
         if(feat.get('edge', False)):
@@ -332,7 +332,7 @@ def calc_genome_stats(genome: dict, features: Sequence[dict]):
         else:
             coding_nts += feat['stop'] - feat['start'] + 1  # feature coding nucleotides
     coding_ratio = coding_nts / (genome_size - n_sum)
-    genome['coding_ratio'] = coding_ratio
+    data['coding_ratio'] = coding_ratio
     log.info('coding-ratio=%0.3f', coding_ratio)
 
     return {

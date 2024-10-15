@@ -94,13 +94,13 @@ def main():
         annotation = json.load(fh)
     features = annotation['features']
     sequences = annotation['sequences']
-    genome = {
+    data = {
         'features': features,
         'sequence': sequences,
         'taxon': annotation['genome']
     }
-    features_by_sequence = {k['id']: [] for k in genome['sequences']}
-    for feature in genome['features']:
+    features_by_sequence = {k['id']: [] for k in data['sequences']}
+    for feature in data['features']:
         sequence_features = features_by_sequence.get(feature['sequence'])
         sequence_features.append(feature)
 
@@ -114,20 +114,20 @@ def main():
     print(f'\nExport annotation results to: {cfg.output_path}')
     print('\thuman readable TSV...')
     tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.tsv')
-    tsv.write_features(genome['sequences'], features_by_sequence, tsv_path)
+    tsv.write_features(data['sequences'], features_by_sequence, tsv_path)
 
     print('\tGFF3...')
     gff3_path = cfg.output_path.joinpath(f'{cfg.prefix}.gff3')
-    gff.write_features(genome, features_by_sequence, gff3_path)
+    gff.write_features(data, features_by_sequence, gff3_path)
 
     print('\tINSDC GenBank & EMBL...')
     genbank_path = cfg.output_path.joinpath(f'{cfg.prefix}.gbff')
     embl_path = cfg.output_path.joinpath(f'{cfg.prefix}.embl')
-    insdc.write_features(genome, features, genbank_path, embl_path)
+    insdc.write_features(data, features, genbank_path, embl_path)
 
     print('\tgenome sequences...')
     fna_path = cfg.output_path.joinpath(f'{cfg.prefix}.fna')
-    fasta.export_sequences(genome['sequences'], fna_path, description=True, wrap=True)
+    fasta.export_sequences(data['sequences'], fna_path, description=True, wrap=True)
 
     print('\tfeature nucleotide sequences...')
     ffn_path = cfg.output_path.joinpath(f'{cfg.prefix}.ffn')
@@ -139,13 +139,13 @@ def main():
 
     print('\tfeature inferences...')
     tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.inference.tsv')
-    tsv.write_feature_inferences(genome['sequences'], features_by_sequence, tsv_path)
+    tsv.write_feature_inferences(data['sequences'], features_by_sequence, tsv_path)
 
     if(cfg.skip_plot  or  cfg.meta):
         print('\tskip generation of circular genome plot...')
     else:
         print('\tcircular genome plot...')
-        plot.write(features, genome['sequences'], cfg.output_path)
+        plot.write(features, data['sequences'], cfg.output_path)
 
     if(cfg.skip_cds is False):
         hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
@@ -160,10 +160,10 @@ def main():
     print('\tGenome and annotation summary...')
     summary_path = cfg.output_path.joinpath(f'{cfg.prefix}.txt')
     with summary_path.open('w') as fh_out:
-        genome_stats = bu.calc_genome_stats(genome, features)
+        genome_stats = bu.calc_genome_stats(data, features)
         fh_out.write('Sequence(s):\n')
-        fh_out.write(f"Length: {genome['size']:}\n")
-        fh_out.write(f"Count: {len(genome['sequences'])}\n")
+        fh_out.write(f"Length: {data['size']:}\n")
+        fh_out.write(f"Count: {len(data['sequences'])}\n")
         fh_out.write(f"GC: {100 * genome_stats['gc']:.1f}\n")
         fh_out.write(f"N50: {genome_stats['n50']:}\n")
         fh_out.write(f"N ratio: {100 * genome_stats['n_ratio']:.1f}\n")

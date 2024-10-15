@@ -14,7 +14,7 @@ import bakta.so as so
 log = logging.getLogger('GFF')
 
 
-def write_features(genome: dict, features_by_sequence: Dict[str, dict], gff3_path: Path):
+def write_features(data: dict, features_by_sequence: Dict[str, dict], gff3_path: Path):
     """Export features in GFF3 format."""
     log.info('write features: path=%s', gff3_path)
 
@@ -22,8 +22,8 @@ def write_features(genome: dict, features_by_sequence: Dict[str, dict], gff3_pat
         fh.write('##gff-version 3\n')  # GFF version
         fh.write('##feature-ontology https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/v3.1/so.obo\n')  # SO feature version
 
-        if(genome['taxon']):  # write organism info
-            fh.write(f"# organism {genome['taxon']}\n")
+        if(data['taxon']):  # write organism info
+            fh.write(f"# organism {data['taxon']}\n")
 
         fh.write('# Annotated with Bakta\n')
         fh.write(f'# Software: v{bakta.__version__}\n')
@@ -31,7 +31,7 @@ def write_features(genome: dict, features_by_sequence: Dict[str, dict], gff3_pat
         fh.write(f'# DOI: {bc.BAKTA_DOI}\n')
         fh.write(f'# URL: {bc.BAKTA_URL}\n')
 
-        for seq in genome['sequences']:  # write features
+        for seq in data['sequences']:  # write features
             fh.write(f"##sequence-region {seq['id']} 1 {seq['length']}\n")  # sequence region
 
             # write landmark region
@@ -353,7 +353,7 @@ def write_features(genome: dict, features_by_sequence: Dict[str, dict], gff3_pat
 
         if(not cfg.compliant):
             fh.write('##FASTA\n')
-            for seq in genome['sequences']:  # write sequences
+            for seq in data['sequences']:  # write sequences
                 fh.write(f">{seq['id']}\n")
                 fh.write(fasta.wrap_sequence(seq['nt']))
     return
