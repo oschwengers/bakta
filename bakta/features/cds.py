@@ -42,7 +42,7 @@ def predict(genome: dict):
         if(not prodigal_metamode):
             log.info('create prodigal training info object: meta=%s, closed=%s', prodigal_metamode, closed)
             gene_finder = pyrodigal.GeneFinder(meta=prodigal_metamode, closed=closed)
-            seqs = [seq['sequence'] for seq in genome['sequences']]
+            seqs = [seq['nt'] for seq in genome['sequences']]
             trainings_info = gene_finder.train(*seqs, translation_table=cfg.translation_table)
         else:
             log.info('skip creation of prodigal training info object: meta=%s, closed=%s', prodigal_metamode, closed)
@@ -64,7 +64,7 @@ def predict(genome: dict):
             gene_finder = pyrodigal.GeneFinder(meta=True, metagenomic_bins=None, closed=True, mask=True)
         else:
             gene_finder = pyrodigal.GeneFinder(trainings_info, meta=False, closed=True, mask=True)
-        sequences = [seq['sequence'] for seq in linear_sequences]
+        sequences = [seq['nt'] for seq in linear_sequences]
         with cf.ThreadPoolExecutor(max_workers=cfg.threads) as tpe:
             for seq, genes in zip(linear_sequences, tpe.map(gene_finder.find_genes, sequences)):
                 cdss_per_sequence = create_cdss(genes, seq)
@@ -77,7 +77,7 @@ def predict(genome: dict):
             gene_finder = pyrodigal.GeneFinder(meta=True, metagenomic_bins=None, closed=False, mask=True)
         else:
             gene_finder = pyrodigal.GeneFinder(trainings_info, meta=False, closed=False, mask=True)
-        sequences = [seq['sequence'] for seq in circular_sequences]
+        sequences = [seq['nt'] for seq in circular_sequences]
         with cf.ThreadPoolExecutor(max_workers=cfg.threads) as tpe:
             for seq, genes in zip(circular_sequences, tpe.map(gene_finder.find_genes, sequences)):
                 cdss_per_sequence = create_cdss(genes, seq)
@@ -790,7 +790,7 @@ def get_elongated_cds(cds: dict, sequence: dict, offset: int = bc.PSEUDOGENE_OFF
         'elongation_downstream': offset
     }
 
-    sequence_length = len(sequence['sequence'])
+    sequence_length = len(sequence['nt'])
     if sequence['topology'] == 'circular' and elongated_cds['start'] - offset < 0:
         elongated_cds['start'] = sequence_length + elongated_cds['start'] - offset
         elongated_cds['edge'] = True

@@ -265,7 +265,7 @@ def create_locus_tag_prefix(sequences: Sequence[dict], length: int=6) -> str:
     """Create either genus/species or sequence MD5 hex based locus tag prefix."""
     hash = hashlib.md5()
     for seq in sequences:
-        hash.update(str.encode(seq['sequence']))
+        hash.update(str.encode(seq['nt']))
     hexdigest = hash.hexdigest().upper()
     locus_prefix_chars = []
     i = 0
@@ -301,7 +301,7 @@ def calc_genome_stats(genome: dict, features: Sequence[dict]):
     gc_sum = 0
     n_sum = 0
     for seq in genome['sequences']:
-        nt = seq['sequence']
+        nt = seq['nt']
         gc_sum += nt.count('G') + nt.count('C')
         n_sum += nt.count('N')
     gc_ratio = gc_sum / (genome_size - n_sum)
@@ -315,7 +315,7 @@ def calc_genome_stats(genome: dict, features: Sequence[dict]):
     n50 = 0
     sequence_length_sum = 0
     for seq in sorted(genome['sequences'], key=lambda x: x['length'], reverse=True):
-        nt_length = len(seq['sequence'])
+        nt_length = len(seq['nt'])
         sequence_length_sum += nt_length
         if(sequence_length_sum >= genome_size / 2):
             n50 = nt_length
@@ -500,9 +500,9 @@ def qc_sequences(sequences: Sequence[dict], replicons: Dict[str, dict]) -> Tuple
 
 def extract_feature_sequence(feature: dict, sequence: dict) -> str:
     if(feature.get('edge', False)):
-        nt = sequence['sequence'][feature['start']-1:] + sequence['sequence'][:feature['stop']]
+        nt = sequence['nt'][feature['start']-1:] + sequence['nt'][:feature['stop']]
     else:
-        nt = sequence['sequence'][feature['start']-1:feature['stop']]
+        nt = sequence['nt'][feature['start']-1:feature['stop']]
     if(feature['strand'] == bc.STRAND_REVERSE):
         nt = str(Seq(nt).reverse_complement())
     return nt

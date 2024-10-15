@@ -24,7 +24,7 @@ def extract(genome: dict):
     """Predict open reading frames in mem via BioPython."""
     orfs = []
     for seq in genome['sequences']:
-        nt_seq = Seq(seq['sequence'])
+        nt_seq = Seq(seq['nt'])
         for strand, strand_nt_seq in [(bc.STRAND_FORWARD, nt_seq), (bc.STRAND_REVERSE, nt_seq.reverse_complement())]:  # strands +/-
             for frame in range(3):  # frames 1/2/3 -> 0, 1, 2
                 seq_frame = strand_nt_seq[frame:]

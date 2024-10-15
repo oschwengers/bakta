@@ -355,7 +355,7 @@ def write_features(genome: dict, features_by_sequence: Dict[str, dict], gff3_pat
             fh.write('##FASTA\n')
             for seq in genome['sequences']:  # write sequences
                 fh.write(f">{seq['id']}\n")
-                fh.write(fasta.wrap_sequence(seq['sequence']))
+                fh.write(fasta.wrap_sequence(seq['nt']))
     return
 
 

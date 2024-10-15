@@ -338,11 +338,11 @@ def write_gc_content_skew(sequences, circos_path, colors):
     max_gc = 0
     max_gc_skew = 0
     if float(bp.__version__) >= 1.80:
-        gc_mean = SeqUtils.gc_fraction(''.join([seq['sequence'] for seq in sequences]))
+        gc_mean = SeqUtils.gc_fraction(''.join([seq['nt'] for seq in sequences]))
     else:
-        gc_mean = SeqUtils.GC(''.join([seq['sequence'] for seq in sequences])) / 100
+        gc_mean = SeqUtils.GC(''.join([seq['nt'] for seq in sequences])) / 100
     for seq in sequences:
-        nt = seq['sequence']
+        nt = seq['nt']
         for w in range(0, len(nt), step_size):
             start = w - window_size
             if start < 0:

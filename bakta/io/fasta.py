@@ -43,7 +43,7 @@ def import_sequences(sequences_path: Path, is_genomic: bool=True, is_dna: bool=T
             sequence = {
                 'id': record.id,
                 'description': record.description.split(' ', maxsplit=1)[1] if ' ' in record.description else '',
-                'sequence': raw_sequence,
+                'nt': raw_sequence,
                 'length': len(raw_sequence)
             }
             if(is_genomic):
@@ -69,9 +69,9 @@ def export_sequences(sequences: Sequence[dict], fasta_path: Path, description: b
             else:
                 fh.write(f">{seq['id']}\n")
             if(wrap):
-                fh.write(wrap_sequence(seq['sequence']))
+                fh.write(wrap_sequence(seq['nt']))
             else:
-                fh.write(seq['sequence'])
+                fh.write(seq['nt'])
                 fh.write('\n')
 
 

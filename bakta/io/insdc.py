@@ -82,7 +82,7 @@ def write_features(genome: dict, features: Sequence[dict], genbank_output_path: 
         if(len(description) > 0 and description[0] == ' '):  # discard potential leading whitespace
             description = description[1:]
 
-        sequence_record = SeqIO.SeqRecord(id=seq['id'], name=seq['id'], description=description, annotations=sequence_annotations, seq=Seq(seq['sequence']))
+        sequence_record = SeqIO.SeqRecord(id=seq['id'], name=seq['id'], description=description, annotations=sequence_annotations, seq=Seq(seq['nt']))
 
         source = SeqFeature(FeatureLocation(0, seq['length'], strand=+1), type='source', qualifiers=source_qualifiers)
         seq_feature_list = [source]
