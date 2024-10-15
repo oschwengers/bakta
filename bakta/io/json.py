@@ -46,7 +46,7 @@ def write_json(genome: dict, features: Sequence[dict], json_path: Path):
         output['genome'] = ordered_genome
 
         stats = OrderedDict()
-        stats['no_sequences'] = len(genome['contigs'])
+        stats['no_sequences'] = len(genome['sequences'])
         stats['size'] = genome['size']
         stats['gc'] = genome['gc']
         stats['n_ratio'] = genome['n_ratio']
@@ -56,7 +56,7 @@ def write_json(genome: dict, features: Sequence[dict], json_path: Path):
 
     output['features'] = features
     if genome is not None:
-        output['sequences'] = genome['contigs']
+        output['sequences'] = genome['sequences']
 
     run = OrderedDict()
     run['start'] = cfg.run_start.strftime('%Y-%m-%d %H:%M:%S')

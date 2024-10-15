@@ -7,7 +7,7 @@ SO = namedtuple('SO', ['name', 'id'])
 SO_REPLICON = SO('replicon', 'SO:0001235')
 SO_REPLICON_CHROMOSOME = SO('chromosome', 'SO:0000340')
 SO_REPLICON_PLASMID = SO('plasmid', 'SO:0000155')
-SO_CONTIG = SO('contig', 'SO:0000149')
+SO_CONTIG = SO('sequence', 'SO:0000149')
 
 SO_OPERON = SO('operon', 'SO:0000178')
 SO_PROMOTER = SO('promoter', 'SO:0000167')

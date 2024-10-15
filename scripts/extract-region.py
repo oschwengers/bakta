@@ -43,9 +43,9 @@ genome_path = Path(args.genome).resolve()
 with genome_path.open() as fh:
     genome = json.load(fh)
 
-contig_id = args.sequence
-if(contig_id is None):  # take first sequence as default
-    contig_id = genome['sequences'][0]['id']
+sequence_id = args.sequence
+if(sequence_id is None):  # take first sequence as default
+    sequence_id = genome['sequences'][0]['id']
 
 prefix = args.prefix
 if(prefix is None):  # use input file prefix as default
@@ -55,14 +55,14 @@ if(prefix is None):  # use input file prefix as default
 print('Extract features within selected region...')
 features_selected = []
 for feat in genome['features']:
-    if(feat['contig'] == contig_id):
+    if(feat['sequence'] == sequence_id):
         if(feat['start'] >= args.min  and  feat['stop'] <= args.max):
             features_selected.append(feat)
-features_by_contig = {contig_id: features_selected}  # needed for GFF3 export
+features_by_sequence = {sequence_id: features_selected}  # needed for GFF3 export
 print(f'\t...selected features: {len(features_selected)}')
 
 genome['features'] = features_selected
-genome['contigs'] = [sequence for sequence in genome['sequences'] if sequence['id'] == contig_id]
+genome['sequences'] = [sequence for sequence in genome['sequences'] if sequence['id'] == sequence_id]
 genome['genus'] = genome['genome']['genus']
 genome['species'] = genome['genome']['species']
 genome['strain'] = genome['genome']['strain']
@@ -76,7 +76,7 @@ cfg.db_info = {
 print('Write selected features...')
 output_path = Path(args.output).resolve()
 gff3_path = output_path.joinpath(f'{prefix}.gff3')
-gff.write_features(genome, features_by_contig, gff3_path)
+gff.write_features(genome, features_by_sequence, gff3_path)
 print('\t...INSDC GenBank & EMBL')
 genbank_path = output_path.joinpath(f'{prefix}.gbff')
 embl_path = output_path.joinpath(f'{prefix}.embl')

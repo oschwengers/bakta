@@ -128,7 +128,7 @@ def main():
     ############################################################################
     try:
         print('Parse protein sequences...')
-        aas = fasta.import_contigs(aa_path, False, False)
+        aas = fasta.import_sequences(aa_path, False, False)
         log.info('imported sequences=%i', len(aas))
         print(f'\timported: {len(aas)}')
     except:
@@ -139,7 +139,7 @@ def main():
         aa['type'] = bc.FEATURE_CDS
         aa['aa'] = aa['sequence']
         aa['locus'] = aa['id']
-        aa['contig'] = '-'
+        aa['sequence'] = '-'
         aa['start'] = mock_start
         aa['stop'] = -1
         aa['strand'] = bc.STRAND_UNKNOWN
@@ -166,11 +166,11 @@ def main():
     tsv.write_protein_features(aas, header_columns, map_aa_columns, annotations_path)
     inference_path = output_path.joinpath(f'{cfg.prefix}.inference.tsv')
     print(f'\tfeature inferences (TSV): {inference_path}')
-    mock_contigs = [{'id': '-'}]
-    features_by_contig = {'-': aas}
-    tsv.write_feature_inferences(mock_contigs, features_by_contig, inference_path)
+    mock_sequences = [{'id': '-'}]
+    features_by_sequence = {'-': aas}
+    tsv.write_feature_inferences(mock_sequences, features_by_sequence, inference_path)
     for aa in aas:  # cleanup mock attributes
-        aa.pop('contig', None)
+        aa.pop('sequence', None)
         aa.pop('start', None)
         aa.pop('stop', None)
         aa.pop('strand', None)

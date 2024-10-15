@@ -79,7 +79,7 @@ def main():
         if(cfg.force): print(f'\tforce: {cfg.force}')
         print(f'\ttmp directory: {cfg.tmp_path}')
         if(cfg.compliant): print(f'\tINSDC compliant: {cfg.compliant}')
-        if(cfg.keep_contig_headers): print(f'\tkeep contig headers: {cfg.keep_contig_headers}')
+        if(cfg.keep_sequence_headers): print(f'\tkeep/sequence headers: {cfg.keep_sequence_headers}')
         print(f'\tprefix: {cfg.prefix}')
         print(f'\tthreads: {cfg.threads}')
         if(cfg.debug): print(f'\tdebug: {cfg.debug}')
@@ -104,35 +104,35 @@ def main():
 
     ############################################################################
     # Import genome
-    # - parse contigs in Fasta file
-    # - apply contig length filter
-    # - rename contigs
+    # - parse sequences in Fasta file
+    # - apply sequence length filter
+    # - rename sequences
     ############################################################################
     print('Parse genome sequences...')
     try:
-        contigs = fasta.import_contigs(cfg.genome_path)
-        log.info('imported sequences=%i', len(contigs))
-        print(f'\timported: {len(contigs)}')
+        sequences = fasta.import_sequences(cfg.genome_path)
+        log.info('imported sequences=%i', len(sequences))
+        print(f'\timported: {len(sequences)}')
     except:
         log.error('wrong genome file format!', exc_info=True)
         sys.exit('ERROR: wrong genome file format!')
     replicons = bu.parse_replicon_table(cfg.replicons) if cfg.replicons else None
-    contigs, complete_genome = bu.qc_contigs(contigs, replicons)
-    print(f'\tfiltered & revised: {len(contigs)}')
-    no_chromosomes = len([c for c in contigs if c['type'] == bc.REPLICON_CHROMOSOME])
+    sequences, complete_genome = bu.qc_sequences(sequences, replicons)
+    print(f'\tfiltered & revised: {len(sequences)}')
+    no_chromosomes = len([seq for seq in sequences if seq['type'] == bc.REPLICON_CHROMOSOME])
     if(no_chromosomes > 0):
         print(f"\tchromosomes: {no_chromosomes}")
-    no_plasmids = len([c for c in contigs if c['type'] == bc.REPLICON_PLASMID])
+    no_plasmids = len([seq for seq in sequences if seq['type'] == bc.REPLICON_PLASMID])
     if(no_plasmids > 0):
         print(f"\tplasmids: {no_plasmids}")
-    no_contigs = len([c for c in contigs if c['type'] == bc.REPLICON_CONTIG])
+    no_contigs = len([seq for seq in sequences if seq['type'] == bc.REPLICON_CONTIG])
     if(no_contigs > 0):
         print(f"\tcontigs: {no_contigs}")
-    if(len(contigs) == 0):
-        log.warning('no valid contigs!')
-        sys.exit('Error: input file contains no valid contigs.')
-    contigs_path = cfg.tmp_path.joinpath('contigs.fna')
-    fasta.export_contigs(contigs, contigs_path)
+    if(len(sequences) == 0):
+        log.warning('no valid sequences!')
+        sys.exit('Error: input file contains no valid sequences.')
+    sequences_path = cfg.tmp_path.joinpath('sequences.fna')
+    fasta.export_sequences(sequences, sequences_path)
     genome = {
         'genus': cfg.genus,
         'species': cfg.species,
@@ -140,10 +140,10 @@ def main():
         'taxon': cfg.taxon,
         'gram': cfg.gram,
         'translation_table': cfg.translation_table,
-        'size': sum([c['length'] for c in contigs]),
+        'size': sum([seq['length'] for seq in sequences]),
         'complete': cfg.complete or complete_genome,
         'features': {},
-        'contigs': contigs
+        'sequences': sequences
     }
     if(cfg.plasmid):
         genome['plasmid'] = cfg.plasmid
@@ -157,7 +157,7 @@ def main():
     else:
         print('predict tRNAs...')
         log.debug('start tRNA prediction')
-        genome['features'][bc.FEATURE_T_RNA] = t_rna.predict_t_rnas(genome, contigs_path)
+        genome['features'][bc.FEATURE_T_RNA] = t_rna.predict_t_rnas(genome, sequences_path)
         print(f"\tfound: {len(genome['features'][bc.FEATURE_T_RNA])}")
 
     ############################################################################
@@ -168,7 +168,7 @@ def main():
     else:
         print('predict tmRNAs...')
         log.debug('start tmRNA prediction')
-        genome['features'][bc.FEATURE_TM_RNA] = tm_rna.predict_tm_rnas(genome, contigs_path)
+        genome['features'][bc.FEATURE_TM_RNA] = tm_rna.predict_tm_rnas(genome, sequences_path)
         print(f"\tfound: {len(genome['features'][bc.FEATURE_TM_RNA])}")
 
     ############################################################################
@@ -179,7 +179,7 @@ def main():
     else:
         print('predict rRNAs...')
         log.debug('start rRNA prediction')
-        genome['features'][bc.FEATURE_R_RNA] = r_rna.predict_r_rnas(genome, contigs_path)
+        genome['features'][bc.FEATURE_R_RNA] = r_rna.predict_r_rnas(genome, sequences_path)
         print(f"\tfound: {len(genome['features'][bc.FEATURE_R_RNA])}")
 
     ############################################################################
@@ -190,7 +190,7 @@ def main():
     else:
         print('predict ncRNAs...')
         log.debug('start ncRNA prediction')
-        genome['features'][bc.FEATURE_NC_RNA] = nc_rna.predict_nc_rnas(genome, contigs_path)
+        genome['features'][bc.FEATURE_NC_RNA] = nc_rna.predict_nc_rnas(genome, sequences_path)
         print(f"\tfound: {len(genome['features'][bc.FEATURE_NC_RNA])}")
 
     ############################################################################
@@ -201,7 +201,7 @@ def main():
     else:
         print('predict ncRNA regions...')
         log.debug('start ncRNA region prediction')
-        genome['features'][bc.FEATURE_NC_RNA_REGION] = nc_rna_region.predict_nc_rna_regions(genome, contigs_path)
+        genome['features'][bc.FEATURE_NC_RNA_REGION] = nc_rna_region.predict_nc_rna_regions(genome, sequences_path)
         print(f"\tfound: {len(genome['features'][bc.FEATURE_NC_RNA_REGION])}")
 
     ############################################################################
@@ -212,7 +212,7 @@ def main():
     else:
         print('predict CRISPR arrays...')
         log.debug('start CRISPR prediction')
-        genome['features'][bc.FEATURE_CRISPR] = crispr.predict_crispr(genome, contigs_path)
+        genome['features'][bc.FEATURE_CRISPR] = crispr.predict_crispr(genome, sequences_path)
         print(f"\tfound: {len(genome['features'][bc.FEATURE_CRISPR])}")
 
     ############################################################################
@@ -403,7 +403,7 @@ def main():
             sorf_aa_path = cfg.tmp_path.joinpath('sorfs.faa')
             with sorf_aa_path.open(mode='wt') as fh:
                 for sorf in sorfs_filtered:
-                    fh.write(f">{sorf['aa_hexdigest']}-{sorf['contig']}-{sorf['start']}\n{sorf['aa']}\n")
+                    fh.write(f">{sorf['aa_hexdigest']}-{sorf['sequence']}-{sorf['start']}\n{sorf['aa']}\n")
             sig_peptides_found = sig_peptides.search(sorfs_filtered, sorf_aa_path)
             print(f"\tsignal peptides: {len(sig_peptides_found)}")
 
@@ -429,13 +429,13 @@ def main():
     else:
         print('detect oriCs/oriVs...')
         log.debug('detect oriC/V')
-        oriCs = ori.predict_oris(genome, contigs_path, bc.FEATURE_ORIC)
+        oriCs = ori.predict_oris(genome, sequences_path, bc.FEATURE_ORIC)
         genome['features'][bc.FEATURE_ORIC] = oriCs
         print(f'\tfound: {len(oriCs)}')
 
         print('detect oriTs...')
         log.debug('detect oriT')
-        oriTs = ori.predict_oris(genome, contigs_path, bc.FEATURE_ORIT)
+        oriTs = ori.predict_oris(genome, sequences_path, bc.FEATURE_ORIT)
         genome['features'][bc.FEATURE_ORIT] = oriTs
         print(f'\tfound: {len(oriTs)}')
 
@@ -456,40 +456,26 @@ def main():
     ############################################################################
     print('select features and create locus tags...')
     log.debug('start feature selection and creation of locus tags')
-    features_by_contig = {k['id']: [] for k in genome['contigs']}
+    features_by_sequence = {k['id']: [] for k in genome['sequences']}
     feature_id = 1
-    feature_id_prefix = bu.create_locus_tag_prefix(contigs, length=10)
-    for feature_type in [
-            bc.FEATURE_T_RNA,
-            bc.FEATURE_TM_RNA,
-            bc.FEATURE_R_RNA,
-            bc.FEATURE_NC_RNA,
-            bc.FEATURE_NC_RNA_REGION,
-            bc.FEATURE_CRISPR,
-            bc.FEATURE_CDS,
-            bc.FEATURE_SORF,
-            bc.FEATURE_GAP,
-            bc.FEATURE_ORIC,
-            bc.FEATURE_ORIV,
-            bc.FEATURE_ORIT
-        ]:
-        feature_list = genome['features'].get(feature_type, [])
+    feature_id_prefix = bu.create_locus_tag_prefix(sequences, length=10)
+    for feature_list in genome['features'].values():
         for feature in feature_list:
             if('discarded' not in feature):
                 feature['id'] = f'{feature_id_prefix}_{feature_id}'
                 feature_id += 1
-                contig_features = features_by_contig.get(feature['contig'])
-                contig_features.append(feature)
+                seq_features = features_by_sequence.get(feature['sequence'])
+                seq_features.append(feature)
     features = []
-    for contig in genome['contigs']:
-        contig_features = features_by_contig[contig['id']]
-        contig_features.sort(key=lambda k: k['start'])
-        features.extend(contig_features)
+    for seq in genome['sequences']:
+        seq_features = features_by_sequence[seq['id']]
+        seq_features.sort(key=lambda k: k['start'])
+        features.extend(seq_features)
     log.info('selected features=%i', len(features))
     print(f'\tselected: {len(features)}')
 
     # use user provided locus tag if not None/non-empty or generate a sequence based locus prefix
-    locus_tag_prefix = cfg.locus_tag if cfg.locus_tag else bu.create_locus_tag_prefix(contigs)
+    locus_tag_prefix = cfg.locus_tag if cfg.locus_tag else bu.create_locus_tag_prefix(sequences)
     log.info('locus tag prefix=%s', locus_tag_prefix)
     locus_tag_nr = cfg.locus_tag_increment
     for feature in features:
@@ -514,7 +500,7 @@ def main():
     print('\nGenome statistics:')
     genome_stats = bu.calc_genome_stats(genome, features)
     print(f"\tGenome size: {genome['size']:,} bp")
-    print(f"\tContigs/replicons: {len(genome['contigs'])}")
+    print(f"\tContigs/replicons: {len(genome['sequences'])}")
     print(f"\tGC: {100 * genome_stats['gc']:.1f} %")
     print(f"\tN50: {genome_stats['n50']:,}")
     print(f"\tN ratio: {100 * genome_stats['n_ratio']:.1f} %")
@@ -547,11 +533,11 @@ def main():
     print(f'\nExport annotation results to: {cfg.output_path}')
     print('\thuman readable TSV...')
     tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.tsv')
-    tsv.write_features(genome['contigs'], features_by_contig, tsv_path)
+    tsv.write_features(genome['sequences'], features_by_sequence, tsv_path)
 
     print('\tGFF3...')
     gff3_path = cfg.output_path.joinpath(f'{cfg.prefix}.gff3')
-    gff.write_features(genome, features_by_contig, gff3_path)
+    gff.write_features(genome, features_by_sequence, gff3_path)
 
     print('\tINSDC GenBank & EMBL...')
     genbank_path = cfg.output_path.joinpath(f'{cfg.prefix}.gbff')
@@ -560,7 +546,7 @@ def main():
 
     print('\tgenome sequences...')
     fna_path = cfg.output_path.joinpath(f'{cfg.prefix}.fna')
-    fasta.export_contigs(genome['contigs'], fna_path, description=True, wrap=True)
+    fasta.export_sequences(genome['sequences'], fna_path, description=True, wrap=True)
 
     print('\tfeature nucleotide sequences...')
     ffn_path = cfg.output_path.joinpath(f'{cfg.prefix}.ffn')
@@ -572,13 +558,13 @@ def main():
 
     print('\tfeature inferences...')
     tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.inference.tsv')
-    tsv.write_feature_inferences(genome['contigs'], features_by_contig, tsv_path)
+    tsv.write_feature_inferences(genome['sequences'], features_by_sequence, tsv_path)
 
     if(cfg.skip_plot  or  cfg.meta):
         print('\tskip generation of circular genome plot...')
     else:
         print('\tcircular genome plot...')
-        plot.write(features, contigs, cfg.output_path)
+        plot.write(features, sequences, cfg.output_path)
 
     if(cfg.skip_cds is False):
         hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
@@ -608,7 +594,7 @@ def main():
     with summary_path.open('w') as fh_out:
         fh_out.write('Sequence(s):\n')
         fh_out.write(f"Length: {genome['size']:}\n")
-        fh_out.write(f"Count: {len(genome['contigs'])}\n")
+        fh_out.write(f"Count: {len(genome['sequences'])}\n")
         fh_out.write(f"GC: {100 * genome_stats['gc']:.1f}\n")
         fh_out.write(f"N50: {genome_stats['n50']:}\n")
         fh_out.write(f"N ratio: {100 * genome_stats['n_ratio']:.1f}\n")

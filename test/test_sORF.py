@@ -22,13 +22,13 @@ CONTIG_3 = {
 }
 
 GENOME_1 = {
-    'contigs': [CONTIG_1]
+    'sequences': [CONTIG_1]
 }
 GENOME_2 = {
-    'contigs': [CONTIG_2]
+    'sequences': [CONTIG_2]
 }
 GENOME_3 = {
-    'contigs': [CONTIG_3]
+    'sequences': [CONTIG_3]
 }
 
 

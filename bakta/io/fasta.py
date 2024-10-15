@@ -18,60 +18,60 @@ FASTA_DNA_SEQUENCE_PATTERN = re.compile(r'[ATGCNMRWSYKVHDBN]+', re.IGNORECASE)
 FASTA_LINE_WRAPPING = 60
 
 
-def import_contigs(contigs_path: Path, is_genomic: bool=True, is_dna: bool=True) -> Sequence[dict]:
-    """Import raw contigs."""
-    contigs = []
-    with xopen(str(contigs_path), threads=0) as fh:
+def import_sequences(sequences_path: Path, is_genomic: bool=True, is_dna: bool=True) -> Sequence[dict]:
+    """Import raw sequences from Fasta file."""
+    sequences = []
+    with xopen(str(sequences_path), threads=0) as fh:
         for record in SeqIO.parse(fh, 'fasta'):
-            seq = str(record.seq).upper()
-            if('-' in seq):
-                dash_count = seq.count('-')
-                seq = seq.replace('-', '')
+            raw_sequence = str(record.seq).upper()
+            if('-' in raw_sequence):
+                dash_count = raw_sequence.count('-')
+                raw_sequence = raw_sequence.replace('-', '')
                 log.info('import: Discarded alignment gaps (dashes): id=%s, occurences=%i', record.id, dash_count)
             if(is_dna):
-                if(FASTA_DNA_SEQUENCE_PATTERN.fullmatch(seq) is None):
+                if(FASTA_DNA_SEQUENCE_PATTERN.fullmatch(raw_sequence) is None):
                     log.error('import: Fasta sequence contains invalid DNA characters! id=%s', record.id)
                     raise ValueError(f'Fasta sequence contains invalid DNA characters! id={record.id}')
             else:
-                if(seq[-1] == '*'):  # remove trailing stop asterik
-                    seq = seq[:-1]
-                    log.debug('import: Removed trailing asterik! id=%s, seq=%s', record.id, seq)
-                if(FASTA_AA_SEQUENCE_PATTERN.fullmatch(seq) is None):
-                    log.error('import: Fasta sequence contains invalid AA characters! id=%s, seq=%s', record.id, seq)
+                if(raw_sequence[-1] == '*'):  # remove trailing stop asterik
+                    raw_sequence = raw_sequence[:-1]
+                    log.debug('import: Removed trailing asterik! id=%s, seq=%s', record.id, raw_sequence)
+                if(FASTA_AA_SEQUENCE_PATTERN.fullmatch(raw_sequence) is None):
+                    log.error('import: Fasta sequence contains invalid AA characters! id=%s, seq=%s', record.id, raw_sequence)
                     raise ValueError(f'Fasta sequence contains invalid AA characters! id={record.id}')
 
-            contig = {
+            sequence = {
                 'id': record.id,
                 'description': record.description.split(' ', maxsplit=1)[1] if ' ' in record.description else '',
-                'sequence': seq,
-                'length': len(seq)
+                'sequence': raw_sequence,
+                'length': len(raw_sequence)
             }
             if(is_genomic):
-                contig['complete'] = False
-                contig['type'] = bc.REPLICON_CONTIG
-                contig['topology'] = bc.TOPOLOGY_LINEAR
+                sequence['complete'] = False
+                sequence['type'] = bc.REPLICON_CONTIG
+                sequence['topology'] = bc.TOPOLOGY_LINEAR
             log.info(
                 'imported: id=%s, length=%i, description=%s, genomic=%s, dna=%s',
-                contig['id'], contig['length'], contig['description'], is_genomic, is_dna
+                sequence['id'], sequence['length'], sequence['description'], is_genomic, is_dna
             )
-            contigs.append(contig)
-    return contigs
+            sequences.append(sequence)
+    return sequences
 
 
-def export_contigs(contigs: Sequence[dict], fasta_path: Path, description: bool=False, wrap: bool=False):
-    """Write contigs to Fasta file."""
+def export_sequences(sequences: Sequence[dict], fasta_path: Path, description: bool=False, wrap: bool=False):
+    """Write sequences to Fasta file."""
     log.info('write genome sequences: path=%s, description=%s, wrap=%s', fasta_path, description, wrap)
 
     with fasta_path.open('wt') as fh:
-        for contig in contigs:
+        for seq in sequences:
             if(description):
-                fh.write(f">{contig['id']} {contig['description']}\n")
+                fh.write(f">{seq['id']} {seq['description']}\n")
             else:
-                fh.write(f">{contig['id']}\n")
+                fh.write(f">{seq['id']}\n")
             if(wrap):
-                fh.write(wrap_sequence(contig['sequence']))
+                fh.write(wrap_sequence(seq['sequence']))
             else:
-                fh.write(contig['sequence'])
+                fh.write(seq['sequence'])
                 fh.write('\n')
 
 

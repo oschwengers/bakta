@@ -17,7 +17,7 @@ HIT_COVERAGE_TRUNCATED = 0.8
 log = logging.getLogger('R_RNA')
 
 
-def predict_r_rnas(genome: dict, contigs_path: Path):
+def predict_r_rnas(genome: dict, sequences_path: Path):
     """Search for ribosomal RNA sequences."""
 
     output_path = cfg.tmp_path.joinpath('rrna.tsv')
@@ -35,7 +35,7 @@ def predict_r_rnas(genome: dict, contigs_path: Path):
         cmd.append('-Z')
         cmd.append(str(2 * genome['size'] // 1000000))
     cmd.append(str(cfg.db_path.joinpath('rRNA')))
-    cmd.append(str(contigs_path))
+    cmd.append(str(sequences_path))
     log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
@@ -51,12 +51,12 @@ def predict_r_rnas(genome: dict, contigs_path: Path):
         raise Exception(f'cmscan error! error code: {proc.returncode}')
 
     rrnas = []
-    contigs = {c['id']: c for c in genome['contigs']}
+    sequences = {seq['id']: seq for seq in genome['sequences']}
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
                 (
-                    subject, accession, contig_id, contig_acc, mdl, mdl_from, mdl_to,
+                    subject, accession, sequence_id, sequence_acc, mdl, mdl_from, mdl_to,
                     start, stop, strand, trunc, passed, gc, bias, score, evalue,
                     inc, description
                 ) = bc.RE_MULTIWHITESPACE.split(line.strip(), maxsplit=17)
@@ -89,8 +89,8 @@ def predict_r_rnas(genome: dict, contigs_path: Path):
                     consensus_length = 2925
                 else:
                     log.warning(
-                        'unknown rRNA detected! accession=%s, contig=%s, start=%i, stop=%i, strand=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
-                        accession, contig_id, start, stop, strand, length, truncated, score, evalue
+                        'unknown rRNA detected! accession=%s, seq=%s, start=%i, stop=%i, strand=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
+                        accession, sequence_id, start, stop, strand, length, truncated, score, evalue
                     )
                     continue
 
@@ -100,13 +100,13 @@ def predict_r_rnas(genome: dict, contigs_path: Path):
 
                 if(coverage < HIT_COVERAGE):
                     log.debug(
-                        'discard low coverage: contig=%s, rRNA=%s, start=%i, stop=%i, strand=%s, length=%i, coverage=%0.3f, truncated=%s, score=%1.1f, evalue=%1.1e',
-                        contig_id, rrna_tag, start, stop, strand, length, coverage, truncated, score, evalue
+                        'discard low coverage: seq=%s, rRNA=%s, start=%i, stop=%i, strand=%s, length=%i, coverage=%0.3f, truncated=%s, score=%1.1f, evalue=%1.1e',
+                        sequence_id, rrna_tag, start, stop, strand, length, coverage, truncated, score, evalue
                     )
                 else:
                     rrna = OrderedDict()
                     rrna['type'] = bc.FEATURE_R_RNA
-                    rrna['contig'] = contig_id
+                    rrna['sequence'] = sequence_id
                     rrna['start'] = start
                     rrna['stop'] = stop
                     rrna['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
@@ -126,13 +126,13 @@ def predict_r_rnas(genome: dict, contigs_path: Path):
                     rrna['evalue'] = evalue
                     rrna['db_xrefs'] = db_xrefs
 
-                    nt = bu.extract_feature_sequence(rrna, contigs[contig_id])  # extract nt sequences
+                    nt = bu.extract_feature_sequence(rrna, sequences[sequence_id])  # extract nt sequences
                     rrna['nt'] = nt
 
                     rrnas.append(rrna)
                     log.info(
-                        'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, length=%i, coverage=%0.3f, truncated=%s, score=%1.1f, evalue=%1.1e, nt=[%s..%s]',
-                        rrna['contig'], rrna['start'], rrna['stop'], rrna['strand'], rrna['gene'], rrna['product'], length, coverage, truncated, score, evalue, nt[:10], nt[-10:]
+                        'seq=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, length=%i, coverage=%0.3f, truncated=%s, score=%1.1f, evalue=%1.1e, nt=[%s..%s]',
+                        rrna['sequence'], rrna['start'], rrna['stop'], rrna['strand'], rrna['gene'], rrna['product'], length, coverage, truncated, score, evalue, nt[:10], nt[-10:]
                     )
 
     log.info('predicted=%i', len(rrnas))

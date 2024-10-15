@@ -17,7 +17,7 @@ HIT_EVALUE = 1E-4
 log = logging.getLogger('NC_RNA')
 
 
-def predict_nc_rnas(genome: dict, contigs_path: Path):
+def predict_nc_rnas(genome: dict, sequences_path: Path):
     """Search for non-coding RNA genes."""
 
     output_path = cfg.tmp_path.joinpath('ncrna-genes.tsv')
@@ -35,7 +35,7 @@ def predict_nc_rnas(genome: dict, contigs_path: Path):
         cmd.append('-Z')
         cmd.append(str(2 * genome['size'] // 1000000))
     cmd.append(str(cfg.db_path.joinpath('ncRNA-genes')))
-    cmd.append(str(contigs_path))
+    cmd.append(str(sequences_path))
     log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
@@ -61,12 +61,12 @@ def predict_nc_rnas(genome: dict, contigs_path: Path):
                 rfam2go[rfam] = [go]
 
     ncrnas = []
-    contigs = {c['id']: c for c in genome['contigs']}
+    sequences = {seq['id']: seq for seq in genome['sequences']}
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
                 (
-                    subject, accession, contig_id, contig_acc, mdl, mdl_from, mdl_to,
+                    subject, accession, sequence_id, sequence_acc, mdl, mdl_from, mdl_to,
                     start, stop, strand, trunc, passed, gc, bias, score, evalue,
                     inc, description
                 ) = bc.RE_MULTIWHITESPACE.split(line.strip(), maxsplit=17)
@@ -86,8 +86,8 @@ def predict_nc_rnas(genome: dict, contigs_path: Path):
 
                 if(evalue > HIT_EVALUE):
                     log.debug(
-                        'discard low E value: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
-                        contig_id, start, stop, strand, subject, length, truncated, score, evalue
+                        'discard low E value: seq=%s, start=%i, stop=%i, strand=%s, gene=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
+                        sequence_id, start, stop, strand, subject, length, truncated, score, evalue
                     )
                 else:
                     rfam_id = f'{bc.DB_XREF_RFAM}:{accession}'
@@ -98,7 +98,7 @@ def predict_nc_rnas(genome: dict, contigs_path: Path):
                     ncrna = OrderedDict()
                     ncrna['type'] = bc.FEATURE_NC_RNA
                     ncrna['class'] = determine_class(description)
-                    ncrna['contig'] = contig_id
+                    ncrna['sequence'] = sequence_id
                     ncrna['start'] = start
                     ncrna['stop'] = stop
                     ncrna['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
@@ -122,13 +122,13 @@ def predict_nc_rnas(genome: dict, contigs_path: Path):
                     ncrna['evalue'] = evalue
                     ncrna['db_xrefs'] = db_xrefs
 
-                    nt = bu.extract_feature_sequence(ncrna, contigs[contig_id])  # extract nt sequences
+                    nt = bu.extract_feature_sequence(ncrna, sequences[sequence_id])  # extract nt sequences
                     ncrna['nt'] = nt
 
                     ncrnas.append(ncrna)
                     log.info(
-                        'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e, nt=[%s..%s]',
-                        ncrna['contig'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['gene'], ncrna['product'], length, truncated, ncrna['score'], ncrna['evalue'], nt[:10], nt[-10:]
+                        'seq=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e, nt=[%s..%s]',
+                        ncrna['sequence'], ncrna['start'], ncrna['stop'], ncrna['strand'], ncrna['gene'], ncrna['product'], length, truncated, ncrna['score'], ncrna['evalue'], nt[:10], nt[-10:]
                     )
     log.info('predicted=%i', len(ncrnas))
     return ncrnas

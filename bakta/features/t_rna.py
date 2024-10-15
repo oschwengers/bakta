@@ -42,7 +42,7 @@ AMINO_ACID_DICT = {
 }
 
 
-def predict_t_rnas(genome: dict, contigs_path: Path):
+def predict_t_rnas(genome: dict, sequences_path: Path):
     """Search for tRNA sequences."""
 
     txt_output_path = cfg.tmp_path.joinpath('trna.tsv')
@@ -53,7 +53,7 @@ def predict_t_rnas(genome: dict, contigs_path: Path):
         '--output', str(txt_output_path),
         '--fasta', str(fasta_output_path),
         '--thread', str(cfg.threads),
-        str(contigs_path)
+        str(sequences_path)
     ]
     log.debug('cmd=%s', cmd)
     proc = sp.run(
@@ -70,20 +70,20 @@ def predict_t_rnas(genome: dict, contigs_path: Path):
         raise Exception(f'tRNAscan-SE error! error code: {proc.returncode}')
 
     trnas = {}
-    contigs = {c['id']: c for c in genome['contigs']}
+    sequences = {seq['id']: seq for seq in genome['sequences']}
     with txt_output_path.open() as fh:
         for line in fh.readlines()[3:]:  # skip first 3 lines
-            (contig_id, trna_id, start, stop, trna_type, anti_codon, intron_begin, bounds_end, score, note) = line.split('\t')
+            (sequence_id, trna_id, start, stop, trna_type, anti_codon, intron_begin, bounds_end, score, note) = line.split('\t')
 
             start, stop, strand = int(start), int(stop), bc.STRAND_FORWARD
             if(start > stop):  # reverse
                 start, stop = stop, start
                 strand = bc.STRAND_REVERSE
-            contig_id = contig_id.strip()  # bugfix for extra single whitespace in tRNAscan-SE output
+            sequence_id = sequence_id.strip()  # bugfix for extra single whitespace in tRNAscan-SE output
 
             trna = OrderedDict()
             trna['type'] = bc.FEATURE_T_RNA
-            trna['contig'] = contig_id
+            trna['sequence'] = sequence_id
             trna['start'] = start
             trna['stop'] = stop
             trna['strand'] = strand
@@ -101,7 +101,7 @@ def predict_t_rnas(genome: dict, contigs_path: Path):
 
             trna['score'] = float(score)
 
-            nt = bu.extract_feature_sequence(trna, contigs[contig_id])  # extract nt sequences
+            nt = bu.extract_feature_sequence(trna, sequences[sequence_id])  # extract nt sequences
             trna['nt'] = nt
 
             trna['db_xrefs'] = []
@@ -109,11 +109,11 @@ def predict_t_rnas(genome: dict, contigs_path: Path):
             if(so_term):
                 trna['db_xrefs'].append(so_term.id)
 
-            key = f'{contig_id}.trna{trna_id}'
+            key = f'{sequence_id}.trna{trna_id}'
             trnas[key] = trna
             log.info(
-                'contig=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, score=%1.1f, nt=[%s..%s]',
-                trna['contig'], trna['start'], trna['stop'], trna['strand'], trna.get('gene', ''), trna['product'], trna['score'], nt[:10], nt[-10:]
+                'seq=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, score=%1.1f, nt=[%s..%s]',
+                trna['sequence'], trna['start'], trna['stop'], trna['strand'], trna.get('gene', ''), trna['product'], trna['score'], nt[:10], nt[-10:]
             )
 
     with fasta_output_path.open() as fh:

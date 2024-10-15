@@ -27,7 +27,7 @@ def test_bakta_cds_nt_sequence(tmpdir):
         results = json.load(fh)
 
     for feat in results['features']:
-        if(feat['contig'] != 'dummy'):
+        if(feat['sequence'] != 'dummy'):
             assert feat['nt'] == CDS
 
 

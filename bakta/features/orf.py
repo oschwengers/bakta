@@ -25,8 +25,8 @@ def detect_spurious(orfs: Sequence[dict]):
                 orf = orf_by_aa_digest[hit.name.decode()]
                 if hit.evalue > bc.MIN_HMM_EVALUE:
                     log.debug(
-                        'discard low spurious E value: contig=%s, start=%i, stop=%i, strand=%s, subject=%s, evalue=%1.1e, bitscore=%f',
-                        orf['contig'], orf['start'], orf['stop'], orf['strand'], hit.best_domain.alignment.hmm_name.decode(), hit.evalue, hit.score
+                        'discard low spurious E value: seq=%s, start=%i, stop=%i, strand=%s, subject=%s, evalue=%1.1e, bitscore=%f',
+                        orf['sequence'], orf['start'], orf['stop'], orf['strand'], hit.best_domain.alignment.hmm_name.decode(), hit.evalue, hit.score
                     )
                 else:
                     discard = OrderedDict()
@@ -38,8 +38,8 @@ def detect_spurious(orfs: Sequence[dict]):
                     orf['discarded'] = discard
                     discarded_orfs.append(orf)
                     log.info(
-                        'discard spurious: contig=%s, start=%i, stop=%i, strand=%s, homology=%s, evalue=%1.1e, bitscore=%f',
-                        orf['contig'], orf['start'], orf['stop'], orf['strand'], hit.best_domain.alignment.hmm_name.decode(), hit.evalue, hit.score
+                        'discard spurious: seq=%s, start=%i, stop=%i, strand=%s, homology=%s, evalue=%1.1e, bitscore=%f',
+                        orf['sequence'], orf['start'], orf['stop'], orf['strand'], hit.best_domain.alignment.hmm_name.decode(), hit.evalue, hit.score
                     )
     log.info('discarded=%i', len(discarded_orfs))
     return discarded_orfs
@@ -47,7 +47,7 @@ def detect_spurious(orfs: Sequence[dict]):
 
 def get_orf_key(orf: dict) -> str:
     """Generate a standardized and unique ORF-like feature key for internal store/analyze/parse/retrieval cycles."""
-    return f"{orf['aa_hexdigest']}-{orf['contig']}-{orf['start']}-{orf['stop']}-{orf['strand']}-{orf.get('source', 'internal')}"
+    return f"{orf['aa_hexdigest']}-{orf['sequence']}-{orf['start']}-{orf['stop']}-{orf['strand']}-{orf.get('source', 'internal')}"
 
 
 def get_orf_dictionary(orfs: Sequence[dict]) -> Dict[str, dict]:

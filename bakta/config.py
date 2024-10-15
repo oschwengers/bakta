@@ -30,7 +30,7 @@ db_path = None
 db_info = None
 tmp_path = None
 genome_path = None
-min_contig_length = None
+min_sequence_length = None
 prefix = None
 output_path = None
 force = None
@@ -46,7 +46,7 @@ taxon = None
 complete = None
 prodigal_tf = None
 translation_table = None
-keep_contig_headers = None
+keep_sequence_headers = None
 locus = None
 locus_tag = None
 locus_tag_increment = None
@@ -92,7 +92,7 @@ def setup(args):
         verbose = True
 
     # input / output path configurations
-    global db_path, db_info, tmp_path, genome_path, min_contig_length, prefix, output_path, force
+    global db_path, db_info, tmp_path, genome_path, min_sequence_length, prefix, output_path, force
     db_path = check_db_path(args)
     tmp_path = check_tmp_path(args)
 
@@ -108,11 +108,11 @@ def setup(args):
     log.info('genome-path=%s', genome_path)
 
     # input / output configurations
-    min_contig_length = args.min_contig_length
-    if(min_contig_length <= 0):
-        log.error("wrong argument for 'min-contig-length' parameter! min_contig_length=%s", min_contig_length)
-        sys.exit(f"ERROR: wrong argument ({min_contig_length}) for 'min- contig-length' parameter! Value must be larger than 0")
-    log.info('min_contig_length=%s', min_contig_length)
+    min_sequence_length = args.min_contig_length
+    if(min_sequence_length <= 0):
+        log.error("wrong argument for 'min-contig-length' parameter! min_contig_length=%s", min_sequence_length)
+        sys.exit(f"ERROR: wrong argument ({min_sequence_length}) for 'min- contig-length' parameter! Value must be larger than 0")
+    log.info('min_contig_length=%s', min_sequence_length)
     log.info('prefix=%s', prefix)  # set in main.py before global logger config
     log.info('output-path=%s', output_path)
     force = args.force
@@ -163,7 +163,7 @@ def setup(args):
         taxon = None
 
     # annotation configurations
-    global complete, prodigal_tf, translation_table, keep_contig_headers, locus, locus_tag, locus_tag_increment, gram, replicons, compliant, user_proteins, user_hmms, meta, regions
+    global complete, prodigal_tf, translation_table, keep_sequence_headers, locus, locus_tag, locus_tag_increment, gram, replicons, compliant, user_proteins, user_hmms, meta, regions
     complete = args.complete
     log.info('complete=%s', complete)
     prodigal_tf = args.prodigal_tf
@@ -186,8 +186,8 @@ def setup(args):
     compliant = args.compliant
     log.info('compliant=%s', compliant)
     if(compliant):
-        min_contig_length = 200
-        log.info('compliant mode! min_contig_length=%s', min_contig_length)
+        min_sequence_length = 200
+        log.info('compliant mode! min_contig_length=%s', min_sequence_length)
     meta = args.meta
     log.info('meta=%s', meta)
     locus = args.locus
@@ -221,8 +221,8 @@ def setup(args):
     log.info('locus-tag=%s', locus_tag)
     locus_tag_increment = args.locus_tag_increment
     log.info('locus-tag-increment=%s', locus_tag_increment)
-    keep_contig_headers = args.keep_contig_headers
-    log.info('keep_contig_headers=%s', keep_contig_headers)
+    keep_sequence_headers = args.keep_contig_headers
+    log.info('keep_contig_headers=%s', keep_sequence_headers)
     replicons = args.replicons
     if(replicons is not None):
         try:

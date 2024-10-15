@@ -84,8 +84,8 @@ def search(cdss: Sequence[dict]) -> Tuple[Sequence[dict], Sequence[dict], Sequen
                     'valid': identity >= bc.MIN_PSC_IDENTITY  # whether a valid PSC hit (id > 90%)
                 }
                 log.debug(
-                    'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, subject-cov=%0.3f, identity=%0.3f, score=%0.1f, evalue=%1.1e, UniRef90=%s',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, subject_cov, identity, bitscore, evalue, cluster_id
+                    'homology: seq=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, subject-cov=%0.3f, identity=%0.3f, score=%0.1f, evalue=%1.1e, UniRef90=%s',
+                    cds['sequence'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, subject_cov, identity, bitscore, evalue, cluster_id
                 )
 
     pscs_found = []
@@ -142,8 +142,8 @@ def lookup(features: Sequence[dict], pseudo: bool = False):
                         feature['psc'] = psc
                 no_psc_lookups += 1
                 log.debug(
-                    'lookup: contig=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, gene=%s, product=%s',
-                    feature['contig'], feature['start'], feature['stop'], feature['strand'], psc.get(DB_PSC_COL_UNIREF90, ''), psc.get(DB_PSC_COL_EC, ''), psc.get(DB_PSC_COL_GENE, ''), psc.get(DB_PSC_COL_PRODUCT, '')
+                    'lookup: seq=%s, start=%i, stop=%i, strand=%s, UniRef90=%s, EC=%s, gene=%s, product=%s',
+                    feature['sequence'], feature['start'], feature['stop'], feature['strand'], psc.get(DB_PSC_COL_UNIREF90, ''), psc.get(DB_PSC_COL_EC, ''), psc.get(DB_PSC_COL_GENE, ''), psc.get(DB_PSC_COL_PRODUCT, '')
                 )
             else:
                 log.debug('lookup: ID not found! uniref90_id=%s', uniref90_id)

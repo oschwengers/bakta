@@ -62,8 +62,8 @@ def search(orfs: Sequence[dict], orf_aa_path: Path):
                         orf[bc.FEATURE_SIGNAL_PEPTIDE] = {}
                     orf[bc.FEATURE_SIGNAL_PEPTIDE] = sig_pep
                     log.debug(
-                        'hit: contig=%s, nt-start=%i, nt-stop=%i, aa-start=%i, aa-stop=%i, score=%0.2f',
-                        orf['contig'], start_nt, stop_nt, start_aa, stop_aa, score
+                        'hit: seq=%s, nt-start=%i, nt-stop=%i, aa-start=%i, aa-stop=%i, score=%0.2f',
+                        orf['sequence'], start_nt, stop_nt, start_aa, stop_aa, score
                     )
                     sig_peps.append(sig_pep)
                 else:

@@ -21,9 +21,9 @@ log = logging.getLogger('INSDC')
 def write_features(genome: dict, features: Sequence[dict], genbank_output_path: Path, embl_output_path: Path):
     log.debug('prepare: genbank=%s, embl=%s', genbank_output_path, embl_output_path)
 
-    contig_list = []
-    for contig in genome['contigs']:
-        contig_features = [feat for feat in features if feat['contig'] == contig['id']]
+    sequence_list = []
+    for seq in genome['sequences']:
+        sequence_features = [feat for feat in features if feat['sequence'] == seq['id']]
         comment = (
             'Annotated with Bakta',
             f"Software: v{bakta.__version__}\n",
@@ -33,24 +33,24 @@ def write_features(genome: dict, features: Sequence[dict], genbank_output_path: 
             '\n',
             '##Genome Annotation Summary:##\n',
             f"{'Annotation Date':<30} :: {datetime.now().strftime('%m/%d/%Y, %H:%M:%S')}\n",
-            f"{'CDSs':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_CDS or feat['type'] == bc.FEATURE_SORF]):5,}\n",
-            f"{'tRNAs':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_T_RNA]):5,}\n",
-            f"{'tmRNAs':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_TM_RNA]):5,}\n",
-            f"{'rRNAs':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_R_RNA]):5,}\n",
-            f"{'ncRNAs':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_NC_RNA]):5,}\n",
-            f"{'regulatory ncRNAs':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_NC_RNA_REGION]):5,}\n",
-            f"{'CRISPR Arrays':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_CRISPR]):5,}",
-            f"{'oriCs/oriVs':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_ORIC or feat['type'] == bc.FEATURE_ORIV]):5,}",
-            f"{'oriTs':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_ORIT]):5,}",
-            f"{'gaps':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_GAP]):5,}",
-            f"{'pseudogenes':<30} :: {len([feat for feat in contig_features if feat['type'] == bc.FEATURE_CDS and bc.PSEUDOGENE in feat]):5,}\n"
+            f"{'CDSs':<30} :: {len([feat for feat in sequence_features if feat['type'] == bc.FEATURE_CDS or feat['type'] == bc.FEATURE_SORF]):5,}\n",
+            f"{'tRNAs':<30} :: {len([feat for feat in sequence_features if feat['type'] == bc.FEATURE_T_RNA]):5,}\n",
+            f"{'tmRNAs':<30} :: {len([feat for feat in sequence_features if feat['type'] == bc.FEATURE_TM_RNA]):5,}\n",
+            f"{'rRNAs':<30} :: {len([feat for feat in sequence_features if feat['type'] == bc.FEATURE_R_RNA]):5,}\n",
+            f"{'ncRNAs':<30} :: {len([feat for feat in sequence_features if feat['type'] == bc.FEATURE_NC_RNA]):5,}\n",
+            f"{'regulatory ncRNAs':<30} :: {len([feat for feat in sequence_features if feat['type'] == bc.FEATURE_NC_RNA_REGION]):5,}\n",
+            f"{'CRISPR Arrays':<30} :: {len([feat for feat in sequence_features if feat['type'] == bc.FEATURE_CRISPR]):5,}",
+            f"{'oriCs/oriVs':<30} :: {len([feat for feat in sequence_features if feat['type'] == bc.FEATURE_ORIC or feat['type'] == bc.FEATURE_ORIV]):5,}",
+            f"{'oriTs':<30} :: {len([feat for feat in sequence_features if feat['type'] == bc.FEATURE_ORIT]):5,}",
+            f"{'gaps':<30} :: {len([feat for feat in sequence_features if feat['type'] == bc.FEATURE_GAP]):5,}",
+            f"{'pseudogenes':<30} :: {len([feat for feat in sequence_features if feat['type'] == bc.FEATURE_CDS and bc.PSEUDOGENE in feat]):5,}\n"
         )
-        contig_annotations = {
+        sequence_annotations = {
             'molecule_type': 'DNA',
             'source': genome['taxon'],
             'date': date.today().strftime('%d-%b-%Y').upper(),
-            'topology': contig['topology'],
-            'data_file_division': 'HGT' if contig['type'] == bc.REPLICON_CONTIG else 'BCT',
+            'topology': seq['topology'],
+            'data_file_division': 'HGT' if seq['type'] == bc.REPLICON_CONTIG else 'BCT',
             # 'accession': '*',  # hold back until EMBL output bug is fixed in BioPython (https://github.com/biopython/biopython/pull/3572)
             'comment': comment
             # TODO: taxonomy
@@ -62,32 +62,32 @@ def write_features(genome: dict, features: Sequence[dict], genbank_output_path: 
 
         description = ''
         if(genome['taxon']):
-            contig_annotations['organism'] = genome['taxon']
+            sequence_annotations['organism'] = genome['taxon']
             source_qualifiers['organism'] = genome['taxon']
             description = genome['taxon']
         if(genome['strain']):
             source_qualifiers['strain'] = genome['strain']
 
-        if(contig['type'] == bc.REPLICON_PLASMID):
-            source_qualifiers['plasmid'] = contig['name'] if contig.get('name', None) else 'unnamed'
-            description = f"{description} plasmid {contig.get('name', 'unnamed')}"
-            description += ', complete sequence' if contig['complete'] else ', whole genome shotgun sequence'
-        elif(contig['type'] == bc.REPLICON_CHROMOSOME):
-            if contig.get('name', None):
-                source_qualifiers['chromosome'] = contig['name']
-            description = f'{description} chromosome, complete genome' if contig['complete'] else f"{description} chromosome {contig['id']}, whole genome shotgun sequence"
+        if(seq['type'] == bc.REPLICON_PLASMID):
+            source_qualifiers['plasmid'] = seq['name'] if seq.get('name', None) else 'unnamed'
+            description = f"{description} plasmid {seq.get('name', 'unnamed')}"
+            description += ', complete sequence' if seq['complete'] else ', whole genome shotgun sequence'
+        elif(seq['type'] == bc.REPLICON_CHROMOSOME):
+            if seq.get('name', None):
+                source_qualifiers['chromosome'] = seq['name']
+            description = f'{description} chromosome, complete genome' if seq['complete'] else f"{description} chromosome {seq['id']}, whole genome shotgun sequence"
         else:
-            description += f" {contig['id']}, whole genome shotgun sequence"
+            description += f" {seq['id']}, whole genome shotgun sequence"
 
         if(len(description) > 0 and description[0] == ' '):  # discard potential leading whitespace
             description = description[1:]
 
-        contig_rec = SeqIO.SeqRecord(id=contig['id'], name=contig['id'], description=description, annotations=contig_annotations, seq=Seq(contig['sequence']))
+        sequence_record = SeqIO.SeqRecord(id=seq['id'], name=seq['id'], description=description, annotations=sequence_annotations, seq=Seq(seq['sequence']))
 
-        source = SeqFeature(FeatureLocation(0, contig['length'], strand=+1), type='source', qualifiers=source_qualifiers)
+        source = SeqFeature(FeatureLocation(0, seq['length'], strand=+1), type='source', qualifiers=source_qualifiers)
         seq_feature_list = [source]
 
-        for feature in contig_features:
+        for feature in sequence_features:
             insdc_feature_type = None
             qualifiers = {
                 'note': []
@@ -226,7 +226,7 @@ def write_features(genome: dict, features: Sequence[dict], genbank_output_path: 
             start = feature['start'] - 1
             stop = feature['stop']
             if('edge' in feature):
-                fl_1 = FeatureLocation(start, contig['length'], strand=strand)
+                fl_1 = FeatureLocation(start, seq['length'], strand=strand)
                 fl_2 = FeatureLocation(0, stop, strand=strand)
                 if(feature['strand'] == bc.STRAND_REVERSE):
                     feature_location = CompoundLocation([fl_2, fl_1])
@@ -273,16 +273,16 @@ def write_features(genome: dict, features: Sequence[dict], genbank_output_path: 
             seq_feature_list.append(feat_seqfeat)
             for acc_feature in accompanying_features:  # add accompanying features, e.g. signal peptides
                 seq_feature_list.append(acc_feature)
-        contig_rec.features = seq_feature_list
-        contig_list.append(contig_rec)
+        sequence_record.features = seq_feature_list
+        sequence_list.append(sequence_record)
 
     with genbank_output_path.open('wt', encoding='utf-8') as fh:
         log.info('write GenBank: path=%s', genbank_output_path)
-        SeqIO.write(contig_list, fh, format='genbank')
+        SeqIO.write(sequence_list, fh, format='genbank')
 
     with embl_output_path.open('wt', encoding='utf-8') as fh:
         log.info('write EMBL: path=%s', embl_output_path)
-        SeqIO.write(contig_list, fh, format='embl')
+        SeqIO.write(sequence_list, fh, format='embl')
 
 
 def select_ncrna_class(feature: dict) -> str:

@@ -16,7 +16,7 @@ HIT_EVALUE = 1E-4
 log = logging.getLogger('NC_RNA_REGION')
 
 
-def predict_nc_rna_regions(genome: dict, contigs_path: Path):
+def predict_nc_rna_regions(genome: dict, sequences_path: Path):
     """Search for non-coding RNA regions."""
 
     output_path = cfg.tmp_path.joinpath('ncrna-regions.tsv')
@@ -34,7 +34,7 @@ def predict_nc_rna_regions(genome: dict, contigs_path: Path):
         cmd.append('-Z')
         cmd.append(str(2 * genome['size'] // 1000000))
     cmd.append(str(cfg.db_path.joinpath('ncRNA-regions')))
-    cmd.append(str(contigs_path))
+    cmd.append(str(sequences_path))
     log.debug('cmd=%s', cmd)
     proc = sp.run(
         cmd,
@@ -60,11 +60,11 @@ def predict_nc_rna_regions(genome: dict, contigs_path: Path):
                 rfam2go[rfam] = [go]
 
     ncrnas = []
-    contigs = {c['id']: c for c in genome['contigs']}
+    sequences = {seq['id']: seq for seq in genome['sequences']}
     with output_path.open() as fh:
         for line in fh:
             if(line[0] != '#'):
-                (subject, accession, contig_id, contig_acc, mdl, mdl_from, mdl_to,
+                (subject, accession, sequence_id, sequence_acc, mdl, mdl_from, mdl_to,
                     start, stop, strand, trunc, passed, gc, bias, score, evalue,
                     inc, description) = bc.RE_MULTIWHITESPACE.split(line.strip(), maxsplit=17)
 
@@ -83,8 +83,8 @@ def predict_nc_rna_regions(genome: dict, contigs_path: Path):
 
                 if(evalue > HIT_EVALUE):
                     log.debug(
-                        'discard low E value: contig=%s, start=%i, stop=%i, strand=%s, gene=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
-                        contig_id, start, stop, strand, subject, length, truncated, score, evalue
+                        'discard low E value: seq=%s, start=%i, stop=%i, strand=%s, gene=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
+                        sequence_id, start, stop, strand, subject, length, truncated, score, evalue
                     )
                 else:
                     rfam_id = f'{bc.DB_XREF_RFAM}:{accession}'
@@ -95,7 +95,7 @@ def predict_nc_rna_regions(genome: dict, contigs_path: Path):
                     ncrna_region = OrderedDict()
                     ncrna_region['type'] = bc.FEATURE_NC_RNA_REGION
                     ncrna_region['class'] = determine_class(description)
-                    ncrna_region['contig'] = contig_id
+                    ncrna_region['sequence'] = sequence_id
                     ncrna_region['start'] = start
                     ncrna_region['stop'] = stop
                     ncrna_region['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
@@ -114,13 +114,13 @@ def predict_nc_rna_regions(genome: dict, contigs_path: Path):
                     ncrna_region['evalue'] = evalue
                     ncrna_region['db_xrefs'] = db_xrefs
 
-                    nt = bu.extract_feature_sequence(ncrna_region, contigs[contig_id])  # extract nt sequences
+                    nt = bu.extract_feature_sequence(ncrna_region, sequences[sequence_id])  # extract nt sequences
                     ncrna_region['nt'] = nt
 
                     ncrnas.append(ncrna_region)
                     log.info(
-                        'contig=%s, start=%i, stop=%i, strand=%s, label=%s, product=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
-                        ncrna_region['contig'], ncrna_region['start'], ncrna_region['stop'], ncrna_region['strand'], ncrna_region['label'], ncrna_region['product'], length, truncated, ncrna_region['score'], ncrna_region['evalue']
+                        'seq=%s, start=%i, stop=%i, strand=%s, label=%s, product=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
+                        ncrna_region['sequence'], ncrna_region['start'], ncrna_region['stop'], ncrna_region['strand'], ncrna_region['label'], ncrna_region['product'], length, truncated, ncrna_region['score'], ncrna_region['evalue']
                     )
     log.info('predicted=%i', len(ncrnas))
     return ncrnas

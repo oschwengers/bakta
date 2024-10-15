@@ -76,8 +76,8 @@ def search(cdss: Sequence[dict]) -> Tuple[Sequence[dict], Sequence[dict], Sequen
                     'evalue': evalue
                 }
                 log.debug(
-                    'homology: contig=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, subject-cov=%0.3f, identity=%0.3f, score=%0.1f, evalue=%1.1e, UniRef50=%s',
-                    cds['contig'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, subject_cov, identity, bitscore, evalue, cluster_id
+                    'homology: seq=%s, start=%i, stop=%i, strand=%s, aa-length=%i, query-cov=%0.3f, subject-cov=%0.3f, identity=%0.3f, score=%0.1f, evalue=%1.1e, UniRef50=%s',
+                    cds['sequence'], cds['start'], cds['stop'], cds['strand'], len(cds['aa']), query_cov, subject_cov, identity, bitscore, evalue, cluster_id
                 )
 
     psccs_found = []
@@ -129,8 +129,8 @@ def lookup(features: Sequence[dict], pseudo: bool = False):
                         feature['pscc'] = pscc  # add PSCC annotation info
                 no_pscc_lookups += 1
                 log.debug(
-                    'lookup: contig=%s, start=%i, stop=%i, strand=%s, UniRef50=%s, product=%s',
-                    feature['contig'], feature['start'], feature['stop'], feature['strand'], pscc.get(DB_PSCC_COL_UNIREF50, ''), pscc.get(DB_PSCC_COL_PRODUCT, '')
+                    'lookup: seq=%s, start=%i, stop=%i, strand=%s, UniRef50=%s, product=%s',
+                    feature['sequence'], feature['start'], feature['stop'], feature['strand'], pscc.get(DB_PSCC_COL_UNIREF50, ''), pscc.get(DB_PSCC_COL_PRODUCT, '')
                 )
             else:
                 log.debug('lookup: ID not found! uniref50_id=%s', uniref50_id)

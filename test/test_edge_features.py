@@ -7,7 +7,7 @@ from bakta import constants as bc
 
 
 def test_bakta_edge_features(tmpdir):
-    # test edge lable on mock CDS contig
+    # test edge lable on mock CDS sequence
     proc = run(
         [
             'bin/bakta', '--db', 'test/db', '--output', tmpdir, '--force', '--prefix', 'test',
@@ -26,9 +26,9 @@ def test_bakta_edge_features(tmpdir):
         results = json.load(fh)
 
     for feat in results['features']:
-        if(feat['contig'] != 'dummy'):
-            if('forward' in feat['contig']):
+        if(feat['sequence'] != 'dummy'):
+            if('forward' in feat['sequence']):
                 assert feat['strand'] == bc.STRAND_FORWARD
-            elif('reverse' in feat['contig']):
+            elif('reverse' in feat['sequence']):
                 assert feat['strand'] == bc.STRAND_REVERSE
-            assert feat.get('edge', False) == ('edge' in feat['contig'])
+            assert feat.get('edge', False) == ('edge' in feat['sequence'])

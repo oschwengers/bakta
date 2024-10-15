@@ -12,7 +12,7 @@ import pytest
             'MKEGQFVGY-FKMKEQRKIPLTHIMIIGAFIFAFLQVVLLASLVHAVNVNNEIQEGLFQSGRIMVESLQHILSVQTGIN',
             #            *
             {
-                'contig': 'foo',
+                'sequence': 'foo',
                 'start': 37,
                 'stop': 100,
                 'strand': bc.STRAND_FORWARD,
@@ -36,7 +36,7 @@ import pytest
             'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKNVIWDYPKDFIAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL\\KIIA\\AVANNYMPGVASYAG',
             'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKDVIWDYPKDFMAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL-KIIA-PVANDYMPGVDSYAG',
             {
-                'contig': 'foo',
+                'sequence': 'foo',
                 'start': 1,
                 'stop': 100,
                 'strand': bc.STRAND_FORWARD,
@@ -59,7 +59,7 @@ import pytest
             'MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
             'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASQGSWYNF',
 {
-                'contig': 'foo',
+                'sequence': 'foo',
                 'start': 1,
                 'stop': 100,
                 'strand': bc.STRAND_FORWARD,
@@ -82,7 +82,7 @@ import pytest
             'MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
             'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASUGSWYNF',
             {
-                'contig': 'foo',
+                'sequence': 'foo',
                 'start': 1,
                 'stop': 100,
                 'strand': bc.STRAND_FORWARD,
@@ -105,7 +105,7 @@ import pytest
             'MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
             'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASOGSWYNF',
             {
-                'contig': 'foo',
+                'sequence': 'foo',
                 'start': 1,
                 'stop': 100,
                 'strand': bc.STRAND_FORWARD,
@@ -128,7 +128,7 @@ import pytest
             'MLSIQSNRDWLSMSIFSDYSSSSEMHNNLTIDYYLALSSTKGSGITNIISIILQQAQDYDVAKIT',
             'MLSIQSNRDWLSASIFSDYSSSSEMHNNLTIDYYLALSSTKGSGITNIISIILQQAQDYDVAKIT',
             {
-                'contig': 'foo',
+                'sequence': 'foo',
                 'start': 40,
                 'stop': 100,
                 'strand': bc.STRAND_FORWARD,
@@ -153,7 +153,7 @@ import pytest
             'MKEGQFVGY-FKMKEQRKIPLTHIMIIGAFIFAFLQVVLLASLVHAVNVNNEIQEGLFQSGRIMVESLQHILSVQTGIN',
             #            *
             {
-                'contig': 'foo',
+                'sequence': 'foo',
                 'start': 10,
                 'stop': 200,
                 'strand': bc.STRAND_REVERSE,
@@ -177,7 +177,7 @@ import pytest
             'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKNVIWDYPKDFIAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL\\KIIA\\AVANNYMPGVASYAG',
             'MTQRPWSKLQREIYDLLTPTINLQIHCTRYPMRSQNGGSTDLPRYWITLDKDVIWDYPKDFMAGNGGVRNFHGETCWYPYLTDICSISDLLREYIDTPKAELLTKQFTSDKWGLVNILRAADRRIGMRRLDQLRRKTHNIAAL-KIIA-PVANDYMPGVDSYAG',
             {
-                'contig': 'foo',
+                'sequence': 'foo',
                 'start': 1,
                 'stop': 500,
                 'strand': bc.STRAND_REVERSE,
@@ -200,7 +200,7 @@ import pytest
             'MSLYIKLILSIVREISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNDAS*GSWYNF',
             'MPLYIKLILSIVRRISVNTICSLIVVVALSLLSFSSVAKTITAVGSTINSTEKEISLQAEKQGKSYKILGAFFKNRVYMIAKLTPVSKNNASQGSWYNF',
 {
-                'contig': 'foo',
+                'sequence': 'foo',
                 'start': 100,
                 'stop': 500,
                 'strand': bc.STRAND_REVERSE,
@@ -223,7 +223,7 @@ import pytest
             'MLSIQSNRDWLSMSIFSDYSSSSEMHNNLTIDYYLALSSTKGSGITNIISIILQQAQDYDVAKIT',
             'MLSIQSNRDWLSASIFSDYSSSSEMHNNLTIDYYLALSSTKGSGITNIISIILQQAQDYDVAKIT',
             {
-                'contig': 'foo',
+                'sequence': 'foo',
                 'start': 40,
                 'stop': 100,
                 'strand': bc.STRAND_REVERSE,
@@ -262,7 +262,7 @@ def test_compare_alignments(alignment, ref_alignment, cds, coordinates, expected
     assert observations == expected_result
 
 
-@pytest.mark.parametrize('cds, contig, expected_result', [
+@pytest.mark.parametrize('cds, sequence, expected_result', [
         (
             {
               'start': 310,  # linear fits cutoff
@@ -327,5 +327,5 @@ def test_compare_alignments(alignment, ref_alignment, cds, coordinates, expected
         )
     ]
 )
-def test_get_elongated_cds(cds, contig, expected_result):
-    assert feat_cds.get_elongated_cds(cds, contig, offset=300) == expected_result
+def test_get_elongated_cds(cds, sequence, expected_result):
+    assert feat_cds.get_elongated_cds(cds, sequence, offset=300) == expected_result
