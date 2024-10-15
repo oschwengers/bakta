@@ -91,15 +91,9 @@ def main():
     ############################################################################
     print('Parse genome annotations...')
     with annotation_path.open('r') as fh:
-        annotation = json.load(fh)
-    features = annotation['features']
-    sequences = annotation['sequences']
-    data = {
-        'features': features,
-        'sequence': sequences,
-        'taxon': annotation['genome']
-    }
-    features_by_sequence = {k['id']: [] for k in data['sequences']}
+        data = json.load(fh)
+    features = data['features']
+    features_by_sequence = {seq['id']: [] for seq in data['sequences']}
     for feature in data['features']:
         sequence_features = features_by_sequence.get(feature['sequence'])
         sequence_features.append(feature)
