@@ -199,12 +199,12 @@ def map_aa_columns(feat: dict) -> Sequence[str]:
         str(feat['length']),
         gene,
         feat['product'],
-        ','.join([k.replace('EC:', '') for k in feat['db_xrefs'] if 'EC:' in k]),
-        ','.join([k for k in feat['db_xrefs'] if 'GO:' in k]),
-        ','.join([k.replace('COG:', '') for k in feat['db_xrefs'] if 'COG:' in k]),
-        ','.join([k.replace('RefSeq:', '') for k in feat['db_xrefs'] if 'RefSeq:' in k]),
-        ','.join([k.replace('UniParc:', '') for k in feat['db_xrefs'] if 'UniParc:' in k]),
-        ','.join([k.replace('UniRef:', '') for k in feat['db_xrefs'] if 'UniRef' in k])
+        ','.join([dbxref.replace('EC:', '') for dbxref in feat['db_xrefs'] if 'EC:' in dbxref]),
+        ','.join([dbxref for dbxref in feat['db_xrefs'] if 'GO:' in dbxref]),
+        ','.join([dbxref.replace('COG:', '') for dbxref in feat['db_xrefs'] if 'COG:' in dbxref]),
+        ','.join([dbxref.replace('RefSeq:', '') for dbxref in feat['db_xrefs'] if 'RefSeq:' in dbxref]),
+        ','.join([dbxref.replace('UniParc:', '') for dbxref in feat['db_xrefs'] if 'UniParc:' in dbxref]),
+        ','.join([dbxref.replace('UniRef:', '') for dbxref in feat['db_xrefs'] if 'UniRef' in dbxref])
     ]
 
 
@@ -214,7 +214,7 @@ def map_hypothetical_columns(feat: dict) -> Sequence[str]:
         str(feat['length']),
         f"{(feat['seq_stats']['molecular_weight']/1000):.1f}" if feat['seq_stats']['molecular_weight'] else 'NA'
         f"{feat['seq_stats']['isoelectric_point']:.1f}" if feat['seq_stats']['isoelectric_point'] else 'NA'
-        ','.join([k.replace('PFAM:', '') for k in feat['db_xrefs'] if 'PFAM:' in k])
+        ','.join([dbxref.replace('PFAM:', '') for dbxref in feat['db_xrefs'] if 'PFAM:' in dbxref])
     ]
 
 

@@ -81,7 +81,7 @@ def test_bakta_plasmid(tmpdir):
         bc.FEATURE_ORIT: 0
     }
     for type, count in feature_counts_expected.items():
-        assert len([f for f in features if f['type'] == type]) == count
+        assert len([feat for feat in features if feat['type'] == type]) == count
 
 
 @pytest.mark.parametrize(
@@ -142,5 +142,5 @@ def test_bakta_genome(db, tmpdir):
         bc.FEATURE_ORIT: 0
     }
     for type, count in feature_counts_expected.items():
-        assert len([f for f in features if f['type'] == type]) == count
+        assert len([feat for feat in features if feat['type'] == type]) == count
 
