@@ -102,7 +102,7 @@ def overlap_filter(data: dict, orfs_raw: Sequence[dict]):
         r_rnas = r_rna_per_sequence[r_rna['sequence']]
         r_rnas.append(r_rna)
 
-    # nc_rnas_per_sequence = {k['id']: [] for k in data['sequences']}
+    # nc_rnas_per_sequence = {seq['id']: [] for seq in data['sequences']}
     # for nc_rna in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_NC_RNA]:
     #     nc_rnas = nc_rnas_per_sequence[nc_rna['sequence']]
     #     nc_rnas.append(nc_rna)
@@ -115,7 +115,7 @@ def overlap_filter(data: dict, orfs_raw: Sequence[dict]):
         crispr_arrays = crispr_arrays_per_sequence[crispr_array['sequence']]
         crispr_arrays.append(crispr_array)
 
-    cdss_per_sequence = {k['id']: [] for k in data['sequences']}
+    cdss_per_sequence = {seq['id']: [] for seq in data['sequences']}
     for cds in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_CDS]:
         cdss = cdss_per_sequence[cds['sequence']]
         cdss.append(cds)

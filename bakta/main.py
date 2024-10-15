@@ -466,7 +466,7 @@ def main():
     ############################################################################
     print('select features and create locus tags...')
     log.debug('start feature selection and creation of locus tags')
-    features_by_sequence = {k['id']: [] for k in data['sequences']}
+    features_by_sequence = {seq['id']: [] for seq in data['sequences']}
     feature_id = 1
     feature_id_prefix = bu.create_locus_tag_prefix(sequences, length=10)
     for feature in data['features']:

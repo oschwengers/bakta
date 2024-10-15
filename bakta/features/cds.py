@@ -411,12 +411,12 @@ def revise_translational_exceptions(data: dict, cdss: Sequence[dict]):
 
     sequences = {seq['id']: seq for seq in data['sequences']}
     # detect splitted orphan ORFs of selenocystein proteins that are subject to stop codon recoding.
-    cdss_per_sequences = {k['id']: [] for k in data['sequences']}  # get CDS per sequence
+    cdss_per_sequences = {seq['id']: [] for seq in data['sequences']}  # get CDS per sequence
     for cds in cdss:
         cdss_per_sequence = cdss_per_sequences[cds['sequence']]
         if('truncated' not in cds):  # exclude truncated CDS for now
             cdss_per_sequence.append(cds)
-    cds_pairs_per_sequence = {k['id']: [] for k in data['sequences']}  # extract inframe primate CDS neighbouring pairs
+    cds_pairs_per_sequence = {seq['id']: [] for seq in data['sequences']}  # extract inframe primate CDS neighbouring pairs
     for id, cdss_per_sequence in cdss_per_sequences.items():
         cdss_per_sequence = sorted(cdss_per_sequence, key=lambda k: k['start'])
         for i in range(1, len(cdss_per_sequence)):

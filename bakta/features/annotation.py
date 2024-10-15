@@ -151,35 +151,35 @@ def detect_feature_overlaps(data: dict):
     CDS < tmRNA, tRNA, rRNA, CRISPR
     sORF < mRNA, tRNA, rRNA, CRISPR, CDS (in-frame & entirely overlapping), sORF (shorter, weaker annotations)
     """
-    sequence_t_rnas = {k['id']: [] for k in data['sequences']}
+    sequence_t_rnas = {seq['id']: [] for seq in data['sequences']}
     for trna in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_T_RNA]:
         t_rnas = sequence_t_rnas[trna['sequence']]
         t_rnas.append(trna)
-    sequence_tm_rnas = {k['id']: [] for k in data['sequences']}
+    sequence_tm_rnas = {seq['id']: [] for seq in data['sequences']}
     for tm_rna in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_TM_RNA]:
         tm_rnas = sequence_tm_rnas[tm_rna['sequence']]
         tm_rnas.append(tm_rna)
-    sequence_r_rnas = {k['id']: [] for k in data['sequences']}
+    sequence_r_rnas = {seq['id']: [] for seq in data['sequences']}
     for r_rna in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_R_RNA]:
         r_rnas = sequence_r_rnas[r_rna['sequence']]
         r_rnas.append(r_rna)
-    sequence_ncrna_regions = {k['id']: [] for k in data['sequences']}
+    sequence_ncrna_regions = {seq['id']: [] for seq in data['sequences']}
     for ncRNA_region in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_NC_RNA_REGION]:
         ncRNA_regions = sequence_ncrna_regions[ncRNA_region['sequence']]
         ncRNA_regions.append(ncRNA_region)
-    sequence_crispr_arrays = {k['id']: [] for k in data['sequences']}
+    sequence_crispr_arrays = {seq['id']: [] for seq in data['sequences']}
     for crispr_array in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_CRISPR]:
         crispr_arrays = sequence_crispr_arrays[crispr_array['sequence']]
         crispr_arrays.append(crispr_array)
-    sequence_cdss = {k['id']: [] for k in data['sequences']}
-    sequence_cdss_user_provided = {k['id']: [] for k in data['sequences']}
+    sequence_cdss = {seq['id']: [] for seq in data['sequences']}
+    sequence_cdss_user_provided = {seq['id']: [] for seq in data['sequences']}
     for cds in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_CDS]:
         if(cds.get('source', None) == bc.CDS_SOURCE_USER):
             cdss = sequence_cdss_user_provided[cds['sequence']]
         else:
             cdss = sequence_cdss[cds['sequence']]
         cdss.append(cds)
-    sequence_sorfs = {k['id']: [] for k in data['sequences']}
+    sequence_sorfs = {seq['id']: [] for seq in data['sequences']}
     for sorf in [feat for feat in data['features'] if feat['type'] == bc.FEATURE_SORF]:
         sorfs = sequence_sorfs[sorf['sequence']]
         sorfs.append(sorf)
