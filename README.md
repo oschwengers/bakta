@@ -347,7 +347,7 @@ Of note, Bakta provides all detailed (internal) information on each annotated fe
         {
             "id": "c1",
             "description": "[organism=Escherichia coli] [completeness=complete] [topology=circular]",
-            "sequence": "AGCTTT...",
+            "nt": "AGCTTT...",
             "length": 5498578,
             "complete": true,
             "type": "chromosome",
