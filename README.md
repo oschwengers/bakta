@@ -309,10 +309,10 @@ Annotation results are provided in standard bioinformatics file formats:
 - `<prefix>.inference.tsv`: inference metrics (score, evalue, coverage, identity) for annotated accessions as TSV
 - `<prefix>.hypotheticals.tsv`: further information on hypothetical protein CDS as simple human readble tab separated values
 - `<prefix>.hypotheticals.faa`: hypothetical protein CDS amino acid sequences as FASTA
-- `<prefix>.json`: all (internal) annotation & sequence information as JSON
 - `<prefix>.txt`: summary as TXT
 - `<prefix>.png`: circular genome annotation plot as PNG
 - `<prefix>.svg`: circular genome annotation plot as SVG
+- `<prefix>.json`: all (internal) annotation & sequence information as JSON
 
 The `<prefix>` can be set via `--prefix <prefix>`. If no prefix is set, Bakta uses the input file prefix.
 
@@ -357,6 +357,14 @@ Of note, Bakta provides all detailed (internal) information on each annotated fe
         ...
     ]
 }
+```
+
+Bakta provides a helper function to create above mentioned output files from the (GNU-zipped) *JSON* result file, thus helping potential long-term or large-scale annotation projects to reduce overall storage requirements.
+
+```bash
+bakta_io --output <output-path> --prefix <prefix> result.json.gz
+
+bakta_io --help
 ```
 
 Exemplary annotation result files for several genomes (mostly ESKAPE species) are hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4770026.svg)](https://doi.org/10.5281/zenodo.4770026)
