@@ -534,11 +534,13 @@ def main():
 
     ############################################################################
     # Write output files
-    # - write optional output files in GFF3/GenBank/EMBL formats
     # - measure runtime
+    # - write optional output files in GFF3/GenBank/EMBL formats
     # - write comprehensive annotation results as JSON
     # - remove temp directory
     ############################################################################
+    cfg.run_end = datetime.now()  # measure runtime
+
     print(f'\nExport annotation results to: {cfg.output_path}')
     print('\thuman readable TSV...')
     tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.tsv')
@@ -585,8 +587,7 @@ def main():
         faa_path = cfg.output_path.joinpath(f'{cfg.prefix}.hypotheticals.faa')
         fasta.write_faa(hypotheticals, faa_path)
 
-    # measure runtime at the latest possible
-    cfg.run_end = datetime.now()
+    # calc & store runtime
     run_duration = (cfg.run_end - cfg.run_start).total_seconds()
     data['run'] = {
         'start': cfg.run_start.strftime('%Y-%m-%d %H:%M:%S'),
