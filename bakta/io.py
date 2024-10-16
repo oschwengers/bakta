@@ -49,7 +49,7 @@ def main():
     cfg.force = args.force
     log.info('force=%s', args.force)
     
-    bu.setup_logger(output_path, cfg.prefix, args)
+    bu.setup_logger(output_path, f'{cfg.prefix}.reconstruction', args)
     log.info('prefix=%s', cfg.prefix)
     log.info('output=%s', output_path)
 
