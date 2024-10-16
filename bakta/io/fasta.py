@@ -93,12 +93,13 @@ def write_faa(features: Sequence[dict], faa_path: Path):
 
 
 def write_ffn(features: Sequence[dict], ffn_path: Path):
-    """Write translated CDS sequences to Fasta file."""
+    """Write annotated nucleotide sequences to Fasta file."""
     log.info('write feature nucleotide sequences: path=%s', ffn_path)
     with ffn_path.open('wt') as fh:
         for feat in features:
-            if('locus' in feat):
+            if(feat['type'] in [bc.FEATURE_T_RNA, bc.FEATURE_TM_RNA, bc.FEATURE_R_RNA, bc.FEATURE_NC_RNA, bc.FEATURE_NC_RNA_REGION, bc.FEATURE_CRISPR, bc.FEATURE_CDS, bc.FEATURE_SORF, bc.FEATURE_ORIC, bc.FEATURE_ORIV, bc.FEATURE_ORIT]):
+                identifier = feat['locus'] if 'locus' in feat else feat['id']
                 if(feat.get('product', '') != ''):
-                    fh.write(f">{feat['locus']} {feat['product']}\n{feat['nt']}\n")
+                    fh.write(f">{identifier} {feat['product']}\n{feat['nt']}\n")
                 else:
-                    fh.write(f">{feat['locus']}\n{feat['nt']}\n")
+                    fh.write(f">{identifier}\n{feat['nt']}\n")
