@@ -40,7 +40,7 @@ setup(
             'bakta_proteins=bakta.proteins:main',
             'bakta_db=bakta.db:main',
             'bakta_plot=bakta.plot:main',
-            'bakta_io=bakta.io:main'
+            'bakta_io=bakta.json_io:main'
         ]
     },
     classifiers=[
