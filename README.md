@@ -1,11 +1,16 @@
 [![DOI:10.1099/mgen.0.000685](https://zenodo.org/badge/DOI/10.1099/mgen.0.000685.svg)](https://doi.org/10.1099/mgen.0.000685)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-brightgreen.svg)](https://github.com/oschwengers/bakta/blob/master/LICENSE)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/bakta.svg)
 ![PyPI - Status](https://img.shields.io/pypi/status/bakta.svg)
 ![GitHub release](https://img.shields.io/github/release/oschwengers/bakta.svg)
+
 [![PyPI](https://img.shields.io/pypi/v/bakta.svg)](https://pypi.org/project/bakta)
-[![Conda](https://img.shields.io/conda/v/bioconda/bakta.svg)](https://bioconda.github.io/recipes/bakta/README.html)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
+[![Conda](https://img.shields.io/conda/vn/bioconda/bakta.svg)](https://bioconda.github.io/recipes/bakta/README.html)
+[![Docker Image Version](https://img.shields.io/docker/v/oschwengers/bakta?sort=semver&label=docker)](https://hub.docker.com/r/oschwengers/bakta)
+[![Spack](https://img.shields.io/spack/v/py-bakta)](https://packages.spack.io/package.html?name=py-bakta)
+[![Galaxy Toolshed - Tool Version](https://img.shields.io/galaxytoolshed/v/bakta/iuc/bakta?label=usegalaxy.eu)](https://usegalaxy.eu/root?tool_id=bakta)
+[![Static Badge](https://img.shields.io/badge/bio.tools-v1.9.4-blue?link=https%3A%2F%2Fbio.tools%2Fbakta)](https://bio.tools/bakta)
 
 # Bakta: rapid & standardized annotation of bacterial genomes, MAGs & plasmids
 
