@@ -114,7 +114,10 @@ def create_cdss(genes, sequence):
         cds = create_cds(sequence, gene.begin, gene.end, strand, False, '', '')
         cds['start_type'] = gene.start_type
         cds['rbs_motif'] = gene.rbs_motif
-        if gene.partial_begin:
+        if gene.partial_begin  and  gene.partial_end:
+            cds['truncated'] = bc.FEATURE_END_BOTH
+            partial_cdss_per_sequence.append(cds)
+        elif gene.partial_begin:
             cds['truncated'] = bc.FEATURE_END_5_PRIME if cds['strand'] == bc.STRAND_FORWARD else bc.FEATURE_END_3_PRIME
             partial_cdss_per_sequence.append(cds)
         elif gene.partial_end:
