@@ -129,7 +129,7 @@ def create_cdss(genes, sequence):
         else:
             aa = gene.translate(translation_table=cfg.translation_table).upper()
         
-        if('truncated' not in cds or cds['truncated'] == bc.FEATURE_END_5_PRIME):
+        if(aa[-1] == '*'):
             aa = aa[:-1]  # discard trailing asterisk
         cds['aa'] = aa
         cds['aa_digest'], cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
