@@ -6,6 +6,7 @@ FILES = [
     'test.txt',
     'test.json',
     'test.tsv',
+    'test.inference.tsv',
     'test.gff3',
     'test.gbff',
     'test.embl',
