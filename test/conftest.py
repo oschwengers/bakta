@@ -16,6 +16,18 @@ FILES = [
     'test.svg'
 ]
 
+FILES_IO = [
+    'test.txt',
+    'test.tsv',
+    'test.gff3',
+    'test.gbff',
+    'test.embl',
+    'test.fna',
+    'test.faa',
+    'test.png',
+    'test.svg'
+]
+
 SKIP_PARAMETERS = [
     '--skip-tmrna',
     '--skip-trna',

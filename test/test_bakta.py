@@ -8,7 +8,7 @@ import pytest
 
 import bakta.constants as bc
 
-from .conftest import FILES, SKIP_PARAMETERS
+from .conftest import FILES, FILES_IO, SKIP_PARAMETERS
 
 
 def check_deepsig():
@@ -87,18 +87,19 @@ def test_bakta_plasmid(tmpdir):
 @pytest.mark.parametrize(
     'db',
     [
-        ('db'),  # full DB
+        pytest.param('db', marks=pytest.mark.dependency(name="test_bakta_genome")),  # full DB
         ('db-light')  # light DB
     ]
 )
-def test_bakta_genome(db, tmpdir):
+def test_bakta_genome(db, tmpdir, request):
     # full test on complete genome in compliant mode
+    output_path = Path(tmpdir).joinpath(db)
     proc = run(
         [
             'bin/bakta',
             '--db', f'test/{db}',
             '--verbose',
-            '--output', tmpdir,
+            '--output', str(output_path),
             '--force',
             '--prefix', 'test',
             '--min-contig-length', '200',
@@ -115,13 +116,15 @@ def test_bakta_genome(db, tmpdir):
     )
     assert proc.returncode == 0
 
-    tmpdir_path = Path(tmpdir)
     for file in FILES:
-        output_path = tmpdir_path.joinpath(file)
-        assert Path.exists(output_path)
-        assert output_path.stat().st_size > 0
+        file_path = output_path.joinpath(file)
+        assert Path.exists(file_path)
+        assert file_path.stat().st_size > 0
 
-    results_path = tmpdir_path.joinpath('test.json')
+    results_path = output_path.joinpath('test.json')
+    if(db == 'db'):
+        request.config.cache.set('test_bakta_json', str(results_path))  # cache for later re-usage
+
     results = None
     with results_path.open() as fh:
         results = json.load(fh)
@@ -144,3 +147,28 @@ def test_bakta_genome(db, tmpdir):
     for type, count in feature_counts_expected.items():
         assert len([feat for feat in features if feat['type'] == type]) == count
 
+
+@pytest.mark.dependency(depends=['test_bakta_genome'])
+def test_bakta_io(tmpdir, request):
+    test_bakta_json = request.config.cache.get('test_bakta_json', None)
+    assert test_bakta_json is not None
+    result_path = Path(test_bakta_json)
+    assert Path.exists(result_path)
+
+    output_path = Path(tmpdir)
+    proc = run(
+        [
+            'bin/bakta_io',
+            '--verbose',
+            '--output', str(output_path),
+            '--force',
+            '--prefix', 'test',
+            test_bakta_json
+        ]
+    )
+    assert proc.returncode == 0
+
+    for file in FILES_IO:
+        file_path = output_path.joinpath(file)
+        assert Path.exists(file_path)
+        assert file_path.stat().st_size > 0

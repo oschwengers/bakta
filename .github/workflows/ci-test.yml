@@ -39,7 +39,7 @@ jobs:
         cache-downloads: true
         post-cleanup: 'all'
     - name: Install PyTest
-      run: micromamba install pytest
+      run: micromamba install pytest pytest-dependency
       shell: bash -l {0}
     - name: Mamba info
       run: |
