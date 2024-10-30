@@ -47,7 +47,7 @@ DEPENDENCY_PYHMMER = (Version(0, 10, 15), Version(VERSION_MAX_DIGIT, VERSION_MAX
 DEPENDENCY_DIAMOND = (Version(2, 1, 10), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Diamond', ('diamond', 'help'), ['--skip-cds', '--skip-sorf'])
 DEPENDENCY_DEEPSIG = (Version(1, 2, 5), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'DeepSig', ('deepsig', '--version'), ['--gram ?'])
 DEPENDENCY_BLASTN = (Version(2, 14, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Blastn', ('blastn', '-version'), ['--skip-ori'])
-DEPENDENCY_AMRFINDERPLUS = (Version(3, 11, 26), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'AMRFinderPlus', ('amrfinder', '--version'), ['--skip-cds'])
+DEPENDENCY_AMRFINDERPLUS = (Version(4, 0, 3), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'AMRFinderPlus', ('amrfinder', '--version'), ['--skip-cds'])
 DEPENDENCY_CIRCOS = (Version(0, 69, 8), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Circos', ('circos', '--version'), ['--skip-plot'])
 
 
