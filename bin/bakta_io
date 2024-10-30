@@ -1,0 +1,6 @@
+#!/bin/bash
+
+SCRIPT_DIR=$(dirname $(realpath $0))
+BAKTA_PATH=$(realpath "${SCRIPT_DIR}/..")
+export PYTHONPATH="${BAKTA_PATH}:${PYTHONPATH}"
+python3 -m bakta.json_io "$@"
