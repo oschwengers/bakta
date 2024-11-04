@@ -1,7 +1,7 @@
 import logging
 import re
 
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 from typing import Sequence, Tuple
 
@@ -283,6 +283,8 @@ def write_features(data: dict, features: Sequence[dict], genbank_output_path: Pa
     with embl_output_path.open('wt', encoding='utf-8') as fh:
         log.info('write EMBL: path=%s', embl_output_path)
         SeqIO.write(sequence_list, fh, format='embl')
+    
+    return sequence_list
 
 
 def select_ncrna_class(feature: dict) -> str:

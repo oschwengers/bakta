@@ -553,7 +553,7 @@ def main():
     print('\tINSDC GenBank & EMBL...')
     genbank_path = cfg.output_path.joinpath(f'{cfg.prefix}.gbff')
     embl_path = cfg.output_path.joinpath(f'{cfg.prefix}.embl')
-    insdc.write_features(data, features, genbank_path, embl_path)
+    biopython_sequences = insdc.write_features(data, features, genbank_path, embl_path)
 
     print('\tgenome sequences...')
     fna_path = cfg.output_path.joinpath(f'{cfg.prefix}.fna')
@@ -575,7 +575,7 @@ def main():
         print('\tskip generation of circular genome plot...')
     else:
         print('\tcircular genome plot...')
-        plot.write(features, sequences, cfg.output_path)
+        plot.write(biopython_sequences, sequences, cfg.output_path)
 
     if(cfg.skip_cds is False):
         hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]

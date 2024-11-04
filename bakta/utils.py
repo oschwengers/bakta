@@ -258,7 +258,7 @@ def test_dependencies():
         test_dependency(DEPENDENCY_BLASTN)
     
     if(cfg.skip_plot is not None and cfg.skip_plot is False):
-        test_dependency(DEPENDENCY_CIRCOS)
+        test_dependency(DEPENDENCY_PYCIRCLIZE)
 
 
 def create_locus_tag_prefix(sequences: Sequence[dict], length: int=6) -> str:
