@@ -48,7 +48,7 @@ DEPENDENCY_DIAMOND = (Version(2, 1, 10), Version(VERSION_MAX_DIGIT, VERSION_MAX_
 DEPENDENCY_DEEPSIG = (Version(1, 2, 5), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'DeepSig', ('deepsig', '--version'), ['--gram ?'])
 DEPENDENCY_BLASTN = (Version(2, 14, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Blastn', ('blastn', '-version'), ['--skip-ori'])
 DEPENDENCY_AMRFINDERPLUS = (Version(4, 0, 3), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'AMRFinderPlus', ('amrfinder', '--version'), ['--skip-cds'])
-DEPENDENCY_CIRCOS = (Version(0, 69, 8), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Circos', ('circos', '--version'), ['--skip-plot'])
+DEPENDENCY_PYCIRCLIZE = (Version(1, 7, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'pyCirclize', (sys.executable, '-c', 'import pycirclize; print(pycirclize.__version__)'), ['--skip-plot'])
 
 
 def init_parser(sub_command: str=''):

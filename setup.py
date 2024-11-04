@@ -32,7 +32,8 @@ setup(
         'alive-progress >= 3.0.1',
         'PyYAML >= 6.0',
         'pyrodigal >= 3.5.0',
-        'pyhmmer >= 0.10.15'
+        'pyhmmer >= 0.10.15',
+        'pycirclize >= 1.7.0'
     ],
     entry_points={
         'console_scripts': [
