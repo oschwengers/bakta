@@ -17,5 +17,5 @@ dependencies:
   - pyhmmer>=0.10.15
   - diamond>=2.1.10
   - blast>=2.14.0
-  - ncbi-amrfinderplus>=3.11.26
+  - ncbi-amrfinderplus>=4.0.3
   - circos>=0.69.8

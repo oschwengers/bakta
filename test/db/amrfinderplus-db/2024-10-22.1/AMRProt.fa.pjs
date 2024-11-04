@@ -1,0 +1,22 @@
+{
+  "version": "1.2",
+  "dbname": "AMRProt.fa",
+  "dbtype": "Protein",
+  "db-version": 5,
+  "description": "/tmp/amrfinder_index.e6b30A/db/AMRProt.fa",
+  "number-of-letters": 3040158,
+  "number-of-sequences": 8776,
+  "last-updated": "2024-10-30T14:36:00",
+  "number-of-volumes": 1,
+  "bytes-total": 4986731,
+  "bytes-to-cache": 3119271,
+  "files": [
+    "AMRProt.fa.pdb",
+    "AMRProt.fa.phr",
+    "AMRProt.fa.pin",
+    "AMRProt.fa.pot",
+    "AMRProt.fa.psq",
+    "AMRProt.fa.ptf",
+    "AMRProt.fa.pto"
+  ]
+}
