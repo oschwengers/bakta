@@ -18,9 +18,7 @@ import bakta.so as so
 log = logging.getLogger('INSDC')
 
 
-def write_features(data: dict, features: Sequence[dict], genbank_output_path: Path, embl_output_path: Path):
-    log.debug('prepare: genbank=%s, embl=%s', genbank_output_path, embl_output_path)
-
+def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
     sequence_list = []
     for seq in data['sequences']:
         sequence_features = [feat for feat in features if feat['sequence'] == seq['id']]
@@ -275,7 +273,13 @@ def write_features(data: dict, features: Sequence[dict], genbank_output_path: Pa
                 seq_feature_list.append(acc_feature)
         sequence_record.features = seq_feature_list
         sequence_list.append(sequence_record)
+    return sequence_list
 
+
+def write_features(data: dict, features: Sequence[dict], genbank_output_path: Path, embl_output_path: Path):
+    log.debug('prepare: genbank=%s, embl=%s', genbank_output_path, embl_output_path)
+
+    sequence_list = build_biopython_sequence_list(data, features)
     with genbank_output_path.open('wt', encoding='utf-8') as fh:
         log.info('write GenBank: path=%s', genbank_output_path)
         SeqIO.write(sequence_list, fh, format='genbank')
@@ -283,8 +287,6 @@ def write_features(data: dict, features: Sequence[dict], genbank_output_path: Pa
     with embl_output_path.open('wt', encoding='utf-8') as fh:
         log.info('write EMBL: path=%s', embl_output_path)
         SeqIO.write(sequence_list, fh, format='embl')
-    
-    return sequence_list
 
 
 def select_ncrna_class(feature: dict) -> str:
