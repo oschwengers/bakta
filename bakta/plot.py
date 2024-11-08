@@ -249,14 +249,14 @@ def write_features_type_feature(data, sequence_list, colors):
     circos.text(f"{taxon}", r=5, size=15)
     for sector in circos.sectors:
         # build tracks
-        outer_track = sector.add_track((99, 100))
-        feature_forward_track = sector.add_track((85, 95), r_pad_ratio=0.1)
-        feature_reverse_track = sector.add_track((75, 85), r_pad_ratio=0.1)
-        gc_content_track = sector.add_track((55, 63))
-        gc_skew_track = sector.add_track((45, 53))
+        outer_track = sector.add_track((99.5, 100))
+        feature_forward_track = sector.add_track((87, 97), r_pad_ratio=0.1)
+        feature_reverse_track = sector.add_track((77, 87), r_pad_ratio=0.1)
+        gc_content_track = sector.add_track((62, 72))
+        gc_skew_track = sector.add_track((50, 60))
 
         # plot outer track
-        outer_track.axis(fc="lightgrey")
+        outer_track.axis(fc=colors['backbone'])
         major_interval = 500_000
         minor_interval = int(major_interval / 5)
         if sector.size > minor_interval:
@@ -269,25 +269,25 @@ def write_features_type_feature(data, sequence_list, colors):
             if feature.type == bc.INSDC_FEATURE_CDS:
                 track.genomic_features([feature], fc=colors['features'][bc.FEATURE_CDS])
             elif feature.type == bc.INSDC_FEATURE_T_RNA:
-                track.genomic_features([feature], fc=colors['features'][bc.FEATURE_T_RNA], lw=0.1)
+                track.genomic_features([feature], fc=colors['features'][bc.FEATURE_T_RNA])
             elif feature.type == bc.INSDC_FEATURE_TM_RNA:
-                track.genomic_features([feature], fc=colors['features'][bc.FEATURE_TM_RNA], lw=0.1)
+                track.genomic_features([feature], fc=colors['features'][bc.FEATURE_TM_RNA])
             elif feature.type == bc.INSDC_FEATURE_R_RNA:
                 track.genomic_features([feature], fc=colors['features'][bc.FEATURE_R_RNA])
             elif feature.type == bc.INSDC_FEATURE_NC_RNA:
-                track.genomic_features([feature], fc=colors['features'][bc.FEATURE_NC_RNA], lw=0.1)
+                track.genomic_features([feature], fc=colors['features'][bc.FEATURE_NC_RNA])
             elif feature.type == bc.INSDC_FEATURE_REGULATORY:
-                track.genomic_features([feature], fc=colors['features'][bc.FEATURE_NC_RNA_REGION], lw=0.1)
+                track.genomic_features([feature], fc=colors['features'][bc.FEATURE_NC_RNA_REGION])
             elif feature.type == bc.INSDC_FEATURE_REPEAT_REGION:
-                track.genomic_features([feature], fc=colors['features'][bc.FEATURE_CRISPR], lw=0.1)
+                track.genomic_features([feature], fc=colors['features'][bc.FEATURE_CRISPR])
             elif feature.type == bc.INSDC_FEATURE_GAP:
-                track.genomic_features([feature], fc=colors['features'][bc.FEATURE_GAP], lw=0.1)
+                track.genomic_features([feature], fc=colors['features'][bc.FEATURE_GAP])
             elif feature.type == bc.INSDC_FEATURE_ORIGIN_REPLICATION:
-                gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=5, labels=['oriC'], label_orientation='vertical', line_kws={'ec':'darkred'}, text_kws={'color':'darkred'})  # oriC/V
+                gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=5, labels=['oriC'], label_orientation='vertical')  # oriC/V
             elif feature.type == bc.INSDC_FEATURE_ORIGIN_TRANSFER:
                 gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=5, labels=['oriT'], label_orientation='vertical')  # oriT
             else:
-                track.genomic_features([feature], fc=colors['features']['misc'], lw=0.1)
+                track.genomic_features([feature], fc=colors['features']['misc'])
     
         seq = str(seqid2seq[sector.name])
         
