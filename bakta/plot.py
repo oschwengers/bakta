@@ -8,10 +8,8 @@ import sys
 from pathlib import Path
 
 import yaml
-import Bio as bp
 import numpy as np
 
-from Bio import SeqUtils
 from Bio.SeqFeature import FeatureLocation, CompoundLocation, AfterPosition, BeforePosition
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
