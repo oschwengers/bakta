@@ -429,6 +429,7 @@ def build_legend(circos, colors):
         Patch(color=colors['features'][bc.FEATURE_T_RNA], label='tRNA'),
         Patch(color=colors['features'][bc.FEATURE_R_RNA], label='rRNA'),
         Patch(color=colors['features'][bc.FEATURE_NC_RNA], label='ncRNA'),
+        Patch(color=colors['features'][bc.FEATURE_NC_RNA_REGION], label='ncRNA reg'),
         Patch(color=colors['features'][bc.FEATURE_CRISPR], label='CRISPR'),
         Line2D([], [], color=colors['gc-positive'], label="+ GC", marker="^", ms=5, ls="None"),
         Line2D([], [], color=colors['gc-negative'], label="- GC", marker="v", ms=5, ls="None"),
