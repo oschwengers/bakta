@@ -240,17 +240,18 @@ def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plo
 
     # select style
     if plot_type == bc.PLOT_COG:
-        plot = write_features_type_cog(data, sequence_list, colors)
+        plot = build_features_type_cog(data, sequence_list, colors)
     else:
-        plot = write_features_type_feature(data, sequence_list, colors)
+        plot = build_features_type_feature(data, sequence_list, colors)
     file_name = cfg.prefix if plot_name_suffix is None else f'{cfg.prefix}_{plot_name_suffix}'
     for file_type in ['png', 'svg']:
         file_path = output_path.joinpath(f'{file_name}.{file_type}')
         plot.savefig(file_path)
 
 
-def write_features_type_feature(data, sequence_list, colors):
+def build_features_type_feature(data, sequence_list, colors):
     # Get contig genome seqid & size, features dict
+    total_sequence_length = sum([len(seq['nt']) for seq in data['sequences']])
     seqid2seq = {rec.id:rec.seq for rec in sequence_list}
     seqid2size = {rec.id:len(rec.seq) for rec in sequence_list}
     seqid2features = {rec.id:rec.features for rec in sequence_list}
@@ -267,12 +268,7 @@ def write_features_type_feature(data, sequence_list, colors):
         gc_skew_track = sector.add_track((50, 60))
 
         # plot outer track
-        outer_track.axis(fc=colors['backbone'])
-        major_interval = 500_000
-        minor_interval = int(major_interval / 5)
-        if sector.size > minor_interval:
-            outer_track.xticks_by_interval(major_interval, label_formatter=lambda v: f"{v / 1000000:.1f} Mbp")
-            outer_track.xticks_by_interval(minor_interval, tick_length=1, show_label=False)
+        build_sequence_backbone_track(sector, outer_track, total_sequence_length, colors)
 
         # plot feature tracks
         for feature in seqid2features[sector.name]:
@@ -320,29 +316,13 @@ def write_features_type_feature(data, sequence_list, colors):
         gc_skew_track.fill_between(pos_list, negative_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-negative'])
 
     fig = circos.plotfig(dpi=600, figsize=(8,8))
-    handles=[
-        Patch(color=colors['features'][bc.FEATURE_CDS], label='CDS'),
-        Patch(color=colors['features'][bc.FEATURE_T_RNA], label='tRNA'),
-        Patch(color=colors['features'][bc.FEATURE_R_RNA], label='rRNA'),
-        Patch(color=colors['features'][bc.FEATURE_NC_RNA], label='ncRNA'),
-        Patch(color=colors['features'][bc.FEATURE_CRISPR], label='CRISPR'),
-        Line2D([], [], color=colors['gc-positive'], label="+ GC", marker="^", ms=5, ls="None"),
-        Line2D([], [], color=colors['gc-negative'], label="- GC", marker="v", ms=5, ls="None"),
-        Line2D([], [], color=colors['gc-skew-positive'], label="+ GC Skew", marker="^", ms=5, ls="None"),
-        Line2D([], [], color=colors['gc-skew-negative'], label="- GC Skew", marker="v", ms=5, ls="None")
-    ]
-    _ = circos.ax.legend(
-        handles=handles,
-        bbox_to_anchor=(0.5, 0.45),
-        loc='center',
-        ncols=2,
-        fontsize=6
-    )
+    build_legend(circos, colors)
     return fig
 
 
-def write_features_type_cog(data, sequence_list, colors):
+def build_features_type_cog(data, sequence_list, colors):
     # Get contig genome seqid & size, features dict
+    total_sequence_length = sum([len(seq['nt']) for seq in data['sequences']])
     seqid2seq = {rec.id:rec.seq for rec in sequence_list}
     seqid2size = {rec.id:len(rec.seq) for rec in sequence_list}
     seqid2features = {rec.id:rec.features for rec in sequence_list}
@@ -360,12 +340,7 @@ def write_features_type_cog(data, sequence_list, colors):
         gc_skew_track = sector.add_track((45, 55))
 
         # plot outer track
-        outer_track.axis(fc=colors['backbone'])
-        major_interval = 500_000
-        minor_interval = int(major_interval / 5)
-        if sector.size > minor_interval:
-            outer_track.xticks_by_interval(major_interval, label_formatter=lambda v: f"{v / 1000000:.1f} Mbp")
-            outer_track.xticks_by_interval(minor_interval, tick_length=1, show_label=False)
+        build_sequence_backbone_track(sector, outer_track, total_sequence_length, colors)
 
         # plot feature tracks
         for feature in seqid2features[sector.name]:
@@ -423,6 +398,32 @@ def write_features_type_cog(data, sequence_list, colors):
         gc_skew_track.fill_between(pos_list, negative_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-negative'])
 
     fig = circos.plotfig(dpi=600, figsize=(8,8))
+    build_legend(circos, colors)
+    return fig
+
+
+def build_sequence_backbone_track(sector, outer_track, total_sequence_length, colors):
+    outer_track.axis(fc=colors['backbone'])
+    label_formatter=lambda v: f'{v / 1000:.1f} kbp'
+    if total_sequence_length >= 1_000_000:
+        major_interval = 500_000
+        minor_interval = int(major_interval / 5)
+        label_formatter=lambda v: f'{v / 1_000_000:.1f} Mbp'
+    elif total_sequence_length >= 100_000:
+        major_interval = 100_000
+        minor_interval = int(major_interval / 10)
+    elif total_sequence_length >= 10_000:
+        major_interval = 10_000
+        minor_interval = int(major_interval / 10)
+    elif total_sequence_length >= 1_000:
+        major_interval = 1_000
+        minor_interval = int(major_interval / 10)
+    if sector.size > minor_interval:
+        outer_track.xticks_by_interval(major_interval, label_formatter=label_formatter)
+        outer_track.xticks_by_interval(minor_interval, tick_length=1, show_label=False)
+
+
+def build_legend(circos, colors):
     handles=[
         Patch(color=colors['features'][bc.FEATURE_CDS], label='CDS'),
         Patch(color=colors['features'][bc.FEATURE_T_RNA], label='tRNA'),
@@ -441,7 +442,6 @@ def write_features_type_cog(data, sequence_list, colors):
         ncols=2,
         fontsize=6
     )
-    return fig
 
 
 def calc_gc_content(seq: str):
