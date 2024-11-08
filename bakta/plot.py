@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -174,6 +175,17 @@ def main():
     print('Parse genome annotations...')
     with annotation_path.open('r') as fh:
         data = json.load(fh)
+    
+    # set global config objects based on information from imported JSON document
+    cfg.db_info = {
+        'type': data['version']['db']['type'],
+        'major': data['version']['db']['version'].split('.')[0],
+        'minor': data['version']['db']['version'].split('.')[1]
+    }
+    cfg.translation_table = data['genome']['translation_table']
+    cfg.run_start = datetime.strptime(data['run']['start'], '%Y-%m-%d %H:%M:%S')
+    cfg.run_end = datetime.strptime(data['run']['end'], '%Y-%m-%d %H:%M:%S')
+
     features = data['features']
     sequences = data['sequences']
 
@@ -228,8 +240,7 @@ def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plo
 
     # select style
     if plot_type == bc.PLOT_COG:
-        print('ÄTSCH')
-        # plot = write_features_type_cog(sequence_list, colors)
+        plot = write_features_type_cog(data, sequence_list, colors)
     else:
         plot = write_features_type_feature(data, sequence_list, colors)
     file_name = cfg.prefix if plot_name_suffix is None else f'{cfg.prefix}_{plot_name_suffix}'
@@ -308,7 +319,7 @@ def write_features_type_feature(data, sequence_list, colors):
         gc_skew_track.fill_between(pos_list, positive_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-positive'])
         gc_skew_track.fill_between(pos_list, negative_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-negative'])
 
-    fig = circos.plotfig(dpi=600)
+    fig = circos.plotfig(dpi=600, figsize=(8,8))
     handles=[
         Patch(color=colors['features'][bc.FEATURE_CDS], label='CDS'),
         Patch(color=colors['features'][bc.FEATURE_T_RNA], label='tRNA'),
@@ -330,30 +341,107 @@ def write_features_type_feature(data, sequence_list, colors):
     return fig
 
 
-# def write_features_type_cog(features, sequences, circos_path, colors):
-#     features_plus = []
-#     features_minus = []
-#     features_extra = []
-#     sequence_ids = set([seq['id'] for seq in sequences])
-#     for feat in features:
-#         if feat['sequence'] not in sequence_ids:
-#             continue
-#         seq, start, stop = feat['sequence'], feat['start'], feat['stop']
-#         if feat['type'] == bc.FEATURE_CDS:
-#             color = colors['features'][bc.FEATURE_CDS]
-#             psc = feat.get('psc', None)
-#             if psc is not None:
-#                 cog = psc.get('cog_category', None)
-#                 if cog is not None:
-#                     if len(cog) != 1:
-#                         cog = cog[:1]
-#                     color = colors['cog-classes'].get(cog.upper(), colors['cog-classes']['S'])
-#             if feat['strand'] == bc.STRAND_FORWARD:
-#                 features_plus.append(f"{seq} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
-#             else:
-#                 features_minus.append(f"{seq} {start} {stop} {feat['strand']} color={hex_to_rgb(color)}")
-#         else:
-#             features_extra.append(f"{seq} {start} {stop} {feat['strand']} color={hex_to_rgb(colors['features']['misc'])}")
+def write_features_type_cog(data, sequence_list, colors):
+    # Get contig genome seqid & size, features dict
+    seqid2seq = {rec.id:rec.seq for rec in sequence_list}
+    seqid2size = {rec.id:len(rec.seq) for rec in sequence_list}
+    seqid2features = {rec.id:rec.features for rec in sequence_list}
+
+    circos = Circos(seqid2size, space=2)
+    taxon = data['genome']['taxon'] if data['genome']['taxon'] else ''
+    circos.text(f"{taxon}", r=5, size=15)
+    for sector in circos.sectors:
+        # build tracks
+        outer_track = sector.add_track((99.5, 100))
+        feature_forward_track = sector.add_track((87, 97), r_pad_ratio=0.1)
+        feature_reverse_track = sector.add_track((77, 87), r_pad_ratio=0.1)
+        non_cds_feature_track = sector.add_track((67, 77), r_pad_ratio=0.1)
+        gc_content_track = sector.add_track((57, 67))
+        gc_skew_track = sector.add_track((45, 55))
+
+        # plot outer track
+        outer_track.axis(fc=colors['backbone'])
+        major_interval = 500_000
+        minor_interval = int(major_interval / 5)
+        if sector.size > minor_interval:
+            outer_track.xticks_by_interval(major_interval, label_formatter=lambda v: f"{v / 1000000:.1f} Mbp")
+            outer_track.xticks_by_interval(minor_interval, tick_length=1, show_label=False)
+
+        # plot feature tracks
+        for feature in seqid2features[sector.name]:
+            if feature.type == bc.INSDC_FEATURE_CDS:
+                color = colors['features'][bc.FEATURE_CDS]
+                dbxrefs = feature.qualifiers.get('db_xref', None)
+                if dbxrefs is not None:
+                    for dbxref in dbxrefs:
+                        if bc.DB_PREFIX_COG in dbxref:
+                            cog = dbxref.split(':')[1]
+                            if len(cog) != 7:  # skip COG clusters
+                                if len(cog) != 1:  # select first of two COG categories
+                                    cog = cog[:1]
+                                color = colors['cog-classes'].get(cog.upper(), colors['cog-classes']['S'])
+                track = feature_forward_track if feature.location.strand == 1 else feature_reverse_track
+                track.genomic_features([feature], fc=color)
+            elif feature.type == bc.INSDC_FEATURE_T_RNA:
+                non_cds_feature_track.genomic_features([feature], fc=colors['features'][bc.FEATURE_T_RNA])
+            elif feature.type == bc.INSDC_FEATURE_TM_RNA:
+                non_cds_feature_track.genomic_features([feature], fc=colors['features'][bc.FEATURE_TM_RNA])
+            elif feature.type == bc.INSDC_FEATURE_R_RNA:
+                non_cds_feature_track.genomic_features([feature], fc=colors['features'][bc.FEATURE_R_RNA])
+            elif feature.type == bc.INSDC_FEATURE_NC_RNA:
+                non_cds_feature_track.genomic_features([feature], fc=colors['features'][bc.FEATURE_NC_RNA])
+            elif feature.type == bc.INSDC_FEATURE_REGULATORY:
+                non_cds_feature_track.genomic_features([feature], fc=colors['features'][bc.FEATURE_NC_RNA_REGION])
+            elif feature.type == bc.INSDC_FEATURE_REPEAT_REGION:
+                non_cds_feature_track.genomic_features([feature], fc=colors['features'][bc.FEATURE_CRISPR])
+            elif feature.type == bc.INSDC_FEATURE_GAP:
+                non_cds_feature_track.genomic_features([feature], fc=colors['features'][bc.FEATURE_GAP])
+            elif feature.type == bc.INSDC_FEATURE_ORIGIN_REPLICATION:
+                gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=5, labels=['oriC'], label_orientation='vertical')  # oriC/V
+            elif feature.type == bc.INSDC_FEATURE_ORIGIN_TRANSFER:
+                gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=5, labels=['oriT'], label_orientation='vertical')  # oriT
+            else:
+                non_cds_feature_track.genomic_features([feature], fc=colors['features']['misc'])
+    
+        seq = str(seqid2seq[sector.name])
+        
+        # plot GC content
+        pos_list, gc_contents = calc_gc_content(seq)
+        gc_contents = gc_contents - gc_fraction(seq) * 100
+        positive_gc_contents = np.where(gc_contents > 0, gc_contents, 0)
+        negative_gc_contents = np.where(gc_contents < 0, gc_contents, 0)
+        abs_max_gc_content = np.max(np.abs(gc_contents))
+        gc_content_track.fill_between(pos_list, positive_gc_contents, 0, vmin=-abs_max_gc_content, vmax=abs_max_gc_content, color=colors['gc-positive'])
+        gc_content_track.fill_between(pos_list, negative_gc_contents, 0, vmin=-abs_max_gc_content, vmax=abs_max_gc_content, color=colors['gc-negative'])
+
+        # plot GC skew
+        pos_list, gc_skews = calc_gc_skew(seq)
+        positive_gc_skews = np.where(gc_skews > 0, gc_skews, 0)
+        negative_gc_skews = np.where(gc_skews < 0, gc_skews, 0)
+        abs_max_gc_skew = np.max(np.abs(gc_skews))
+        gc_skew_track.fill_between(pos_list, positive_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-positive'])
+        gc_skew_track.fill_between(pos_list, negative_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-negative'])
+
+    fig = circos.plotfig(dpi=600, figsize=(8,8))
+    handles=[
+        Patch(color=colors['features'][bc.FEATURE_CDS], label='CDS'),
+        Patch(color=colors['features'][bc.FEATURE_T_RNA], label='tRNA'),
+        Patch(color=colors['features'][bc.FEATURE_R_RNA], label='rRNA'),
+        Patch(color=colors['features'][bc.FEATURE_NC_RNA], label='ncRNA'),
+        Patch(color=colors['features'][bc.FEATURE_CRISPR], label='CRISPR'),
+        Line2D([], [], color=colors['gc-positive'], label="+ GC", marker="^", ms=5, ls="None"),
+        Line2D([], [], color=colors['gc-negative'], label="- GC", marker="v", ms=5, ls="None"),
+        Line2D([], [], color=colors['gc-skew-positive'], label="+ GC Skew", marker="^", ms=5, ls="None"),
+        Line2D([], [], color=colors['gc-skew-negative'], label="- GC Skew", marker="v", ms=5, ls="None")
+    ]
+    _ = circos.ax.legend(
+        handles=handles,
+        bbox_to_anchor=(0.5, 0.45),
+        loc='center',
+        ncols=2,
+        fontsize=6
+    )
+    return fig
 
 
 def calc_gc_content(seq: str):
