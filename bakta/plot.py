@@ -250,8 +250,14 @@ def write_features_type_feature(data, sequence_list, colors):
     taxon = data['genome']['taxon'] if data['genome']['taxon'] else ''
     circos.text(f"{taxon}", r=5, size=15)
     for sector in circos.sectors:
-        # Plot outer track
+        # build tracks
         outer_track = sector.add_track((99, 100))
+        feature_forward_track = sector.add_track((85, 95), r_pad_ratio=0.1)
+        feature_reverse_track = sector.add_track((75, 85), r_pad_ratio=0.1)
+        gc_content_track = sector.add_track((55, 63))
+        gc_skew_track = sector.add_track((45, 53))
+
+        # plot outer track
         outer_track.axis(fc="lightgrey")
         major_interval = 500_000
         minor_interval = int(major_interval / 5)
@@ -259,9 +265,7 @@ def write_features_type_feature(data, sequence_list, colors):
             outer_track.xticks_by_interval(major_interval, label_formatter=lambda v: f"{v / 1000000:.1f} Mbp")
             outer_track.xticks_by_interval(minor_interval, tick_length=1, show_label=False)
 
-        # Plot feature tracks
-        feature_forward_track = sector.add_track((85, 95), r_pad_ratio=0.1)
-        feature_reverse_track = sector.add_track((75, 85), r_pad_ratio=0.1)
+        # plot feature tracks
         for feature in seqid2features[sector.name]:
             track = feature_forward_track if feature.location.strand == 1 else feature_reverse_track
             if feature.type == bc.INSDC_FEATURE_CDS:
@@ -280,13 +284,16 @@ def write_features_type_feature(data, sequence_list, colors):
                 track.genomic_features([feature], fc=colors['features'][bc.FEATURE_CRISPR], lw=0.1)
             elif feature.type == bc.INSDC_FEATURE_GAP:
                 track.genomic_features([feature], fc=colors['features'][bc.FEATURE_GAP], lw=0.1)
+            elif feature.type == bc.INSDC_FEATURE_ORIGIN_REPLICATION:
+                gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=5, labels=['oriC'], label_orientation='vertical', line_kws={'ec':'darkred'}, text_kws={'color':'darkred'})  # oriC/V
+            elif feature.type == bc.INSDC_FEATURE_ORIGIN_TRANSFER:
+                gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=5, labels=['oriT'], label_orientation='vertical')  # oriT
             else:
                 track.genomic_features([feature], fc=colors['features']['misc'], lw=0.1)
     
         seq = str(seqid2seq[sector.name])
         
-        # GC content
-        gc_content_track = sector.add_track((55, 63))
+        # plot GC content
         pos_list, gc_contents = calc_gc_content(seq)
         gc_contents = gc_contents - gc_fraction(seq) * 100
         positive_gc_contents = np.where(gc_contents > 0, gc_contents, 0)
@@ -295,15 +302,14 @@ def write_features_type_feature(data, sequence_list, colors):
         gc_content_track.fill_between(pos_list, positive_gc_contents, 0, vmin=-abs_max_gc_content, vmax=abs_max_gc_content, color=colors['gc-positive'])
         gc_content_track.fill_between(pos_list, negative_gc_contents, 0, vmin=-abs_max_gc_content, vmax=abs_max_gc_content, color=colors['gc-negative'])
 
-        # Plot GC skew
-        gc_skew_track = sector.add_track((45, 53))
+        # plot GC skew
         pos_list, gc_skews = calc_gc_skew(seq)
         positive_gc_skews = np.where(gc_skews > 0, gc_skews, 0)
         negative_gc_skews = np.where(gc_skews < 0, gc_skews, 0)
         abs_max_gc_skew = np.max(np.abs(gc_skews))
         gc_skew_track.fill_between(pos_list, positive_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-positive'])
         gc_skew_track.fill_between(pos_list, negative_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-negative'])
-    
+
     fig = circos.plotfig(dpi=600)
     handles=[
         Patch(color=colors['features'][bc.FEATURE_CDS], label='CDS'),
