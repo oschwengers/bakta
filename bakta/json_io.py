@@ -149,7 +149,7 @@ def main():
     tsv.write_feature_inferences(data['sequences'], features_by_sequence, tsv_path)
 
     print('\tcircular genome plot...')
-    plot.write(features, data['sequences'], cfg.output_path)
+    plot.write(data, features, cfg.output_path)
 
     hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
     print('\thypothetical TSV...')
