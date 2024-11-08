@@ -251,7 +251,7 @@ def write_features_type_feature(data, sequence_list, colors):
     circos.text(f"{taxon}", r=5, size=15)
     for sector in circos.sectors:
         # Plot outer track
-        outer_track = sector.add_track((98, 100))
+        outer_track = sector.add_track((99, 100))
         outer_track.axis(fc="lightgrey")
         major_interval = 500_000
         minor_interval = int(major_interval / 5)
@@ -311,10 +311,10 @@ def write_features_type_feature(data, sequence_list, colors):
         Patch(color=colors['features'][bc.FEATURE_R_RNA], label='rRNA'),
         Patch(color=colors['features'][bc.FEATURE_NC_RNA], label='ncRNA'),
         Patch(color=colors['features'][bc.FEATURE_CRISPR], label='CRISPR'),
-        Line2D([], [], color=colors['gc-positive'], label="+ GC", marker="^", ms=6, ls="None"),
-        Line2D([], [], color=colors['gc-negative'], label="- GC", marker="v", ms=6, ls="None"),
-        Line2D([], [], color=colors['gc-skew-positive'], label="+ GC Skew", marker="^", ms=6, ls="None"),
-        Line2D([], [], color=colors['gc-skew-negative'], label="- GC Skew", marker="v", ms=6, ls="None")
+        Line2D([], [], color=colors['gc-positive'], label="+ GC", marker="^", ms=5, ls="None"),
+        Line2D([], [], color=colors['gc-negative'], label="- GC", marker="v", ms=5, ls="None"),
+        Line2D([], [], color=colors['gc-skew-positive'], label="+ GC Skew", marker="^", ms=5, ls="None"),
+        Line2D([], [], color=colors['gc-skew-negative'], label="- GC Skew", marker="v", ms=5, ls="None")
     ]
     _ = circos.ax.legend(
         handles=handles,
@@ -362,8 +362,10 @@ def calc_gc_content(seq: str):
     for pos in pos_list:
         window_start_pos = pos - int(window_size / 2)
         window_end_pos = pos + int(window_size / 2)
-        window_start_pos = 0 if window_start_pos < 0 else window_start_pos
-        window_end_pos = len(seq) if window_end_pos > len(seq) else window_end_pos
+        if window_start_pos < 0:
+            window_start_pos = 0
+        if window_end_pos > len(seq):
+            window_end_pos = len(seq)
         subseq = seq[window_start_pos:window_end_pos]
         gc_content = gc_fraction(subseq) * 100
         gc_content_list.append(gc_content)
@@ -390,7 +392,7 @@ def calc_gc_skew(seq: str):
 
 
 def gc_fraction(seq: str):
-    gc = sum(seq.count(x) for x in 'CGS')
+    gc = seq.count('C') + seq.count('G') + seq.count('S')
     length = len(seq)
     return 0 if length == 0 else gc / length
 
