@@ -296,24 +296,9 @@ def build_features_type_feature(data, sequence_list, colors):
             else:
                 track.genomic_features([feature], fc=colors['features']['misc'])
     
+        # plot GC content and GC skew
         seq = str(seqid2seq[sector.name])
-        
-        # plot GC content
-        pos_list, gc_contents = calc_gc_content(seq)
-        gc_contents = gc_contents - gc_fraction(seq) * 100
-        positive_gc_contents = np.where(gc_contents > 0, gc_contents, 0)
-        negative_gc_contents = np.where(gc_contents < 0, gc_contents, 0)
-        abs_max_gc_content = np.max(np.abs(gc_contents))
-        gc_content_track.fill_between(pos_list, positive_gc_contents, 0, vmin=-abs_max_gc_content, vmax=abs_max_gc_content, color=colors['gc-positive'])
-        gc_content_track.fill_between(pos_list, negative_gc_contents, 0, vmin=-abs_max_gc_content, vmax=abs_max_gc_content, color=colors['gc-negative'])
-
-        # plot GC skew
-        pos_list, gc_skews = calc_gc_skew(seq)
-        positive_gc_skews = np.where(gc_skews > 0, gc_skews, 0)
-        negative_gc_skews = np.where(gc_skews < 0, gc_skews, 0)
-        abs_max_gc_skew = np.max(np.abs(gc_skews))
-        gc_skew_track.fill_between(pos_list, positive_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-positive'])
-        gc_skew_track.fill_between(pos_list, negative_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-negative'])
+        build_gc_content_skew(seq, colors, gc_content_track, gc_skew_track)
 
     fig = circos.plotfig(dpi=600, figsize=(8,8))
     build_legend(circos, colors)
@@ -378,24 +363,9 @@ def build_features_type_cog(data, sequence_list, colors):
             else:
                 non_cds_feature_track.genomic_features([feature], fc=colors['features']['misc'])
     
+        # plot GC content and GC skew
         seq = str(seqid2seq[sector.name])
-        
-        # plot GC content
-        pos_list, gc_contents = calc_gc_content(seq)
-        gc_contents = gc_contents - gc_fraction(seq) * 100
-        positive_gc_contents = np.where(gc_contents > 0, gc_contents, 0)
-        negative_gc_contents = np.where(gc_contents < 0, gc_contents, 0)
-        abs_max_gc_content = np.max(np.abs(gc_contents))
-        gc_content_track.fill_between(pos_list, positive_gc_contents, 0, vmin=-abs_max_gc_content, vmax=abs_max_gc_content, color=colors['gc-positive'])
-        gc_content_track.fill_between(pos_list, negative_gc_contents, 0, vmin=-abs_max_gc_content, vmax=abs_max_gc_content, color=colors['gc-negative'])
-
-        # plot GC skew
-        pos_list, gc_skews = calc_gc_skew(seq)
-        positive_gc_skews = np.where(gc_skews > 0, gc_skews, 0)
-        negative_gc_skews = np.where(gc_skews < 0, gc_skews, 0)
-        abs_max_gc_skew = np.max(np.abs(gc_skews))
-        gc_skew_track.fill_between(pos_list, positive_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-positive'])
-        gc_skew_track.fill_between(pos_list, negative_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-negative'])
+        build_gc_content_skew(seq, colors, gc_content_track, gc_skew_track)
 
     fig = circos.plotfig(dpi=600, figsize=(8,8))
     build_legend(circos, colors)
@@ -421,6 +391,23 @@ def build_sequence_backbone_track(sector, outer_track, total_sequence_length, co
     if sector.size > minor_interval:
         outer_track.xticks_by_interval(major_interval, label_formatter=label_formatter)
         outer_track.xticks_by_interval(minor_interval, tick_length=1, show_label=False)
+
+
+def build_gc_content_skew(sequence, colors, gc_content_track, gc_skew_track):
+    pos_list, gc_contents = calc_gc_content(sequence)
+    gc_contents = gc_contents - gc_fraction(sequence) * 100
+    positive_gc_contents = np.where(gc_contents > 0, gc_contents, 0)
+    negative_gc_contents = np.where(gc_contents < 0, gc_contents, 0)
+    abs_max_gc_content = np.max(np.abs(gc_contents))
+    gc_content_track.fill_between(pos_list, positive_gc_contents, 0, vmin=-abs_max_gc_content, vmax=abs_max_gc_content, color=colors['gc-positive'])
+    gc_content_track.fill_between(pos_list, negative_gc_contents, 0, vmin=-abs_max_gc_content, vmax=abs_max_gc_content, color=colors['gc-negative'])
+
+    pos_list, gc_skews = calc_gc_skew(sequence)
+    positive_gc_skews = np.where(gc_skews > 0, gc_skews, 0)
+    negative_gc_skews = np.where(gc_skews < 0, gc_skews, 0)
+    abs_max_gc_skew = np.max(np.abs(gc_skews))
+    gc_skew_track.fill_between(pos_list, positive_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-positive'])
+    gc_skew_track.fill_between(pos_list, negative_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-negative'])
 
 
 def build_legend(circos, colors):
