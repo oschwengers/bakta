@@ -732,7 +732,7 @@ It accepts the results of a former annotation process in JSON format and allows 
 ### Usage
 
 ```bash
-usage: bakta_plot [--config CONFIG] [--output OUTPUT] [--prefix PREFIX] [--sequences SEQUENCES] [--type {features,cog}] [--help] [--verbose] [--debug] [--tmp-dir TMP_DIR] [--version] <input>
+usage: bakta_plot [--config CONFIG] [--output OUTPUT] [--prefix PREFIX] [--sequences SEQUENCES] [--type {features,cog}] [--label LABEL] [--help] [--verbose] [--debug] [--tmp-dir TMP_DIR] [--version] <input>
 
 Rapid & standardized annotation of bacterial genomes, MAGs & plasmids
 
@@ -752,6 +752,7 @@ Plotting:
                         Sequences to plot: comma separated number or name (default = all, numbers one-based)
   --type {features,cog}
                         Plot type: feature/cog (default = features)
+  --label LABEL         Plot center label (for line breaks use '|')
 
 General:
   --help, -h            Show this help message and exit
@@ -777,6 +778,12 @@ Currently, there are two types of plots: `features` (the default) and `cog`. In 
 In the `cog` mode, all protein-coding genes (CDS) are colored due to assigned COG functional categories. To better distinguish non-coding genes, these are plotted on an additional 3rd ring.
 
 In addition, both plot types share two innermost GC content and GC skew rings. The first ring represents the GC content per sliding window over the entire sequence(s) in green (`#33a02c`) and red `#e31a1c` representing GC above and below average, respectively. The 2nd ring represents the GC skew in orange (`#fdbf6f`) and blue (`#1f78b4`). The GC skew gives hints on a replicon's replication bubble and hence, on the completeness of the assembly. On a complete & circular bacterial chromosome, you normally see two inflection points at the origin of replication and at its opposite region -> [Wikipedia](https://en.wikipedia.org/wiki/GC_skew)
+
+Custom plot labels (text in the center) can be provided via `--label`:
+
+```bash
+bakta_plot --sequences 2 --label="line 1|line 2|line 3" input.json
+```
 
 ## Auxiliary scripts
 

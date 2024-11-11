@@ -89,6 +89,7 @@ def main():
     arg_group_plot = parser.add_argument_group('Plotting')
     arg_group_plot.add_argument('--sequences', action='store', default='all', help='Sequences to plot: comma separated number or name (default = all, numbers one-based)')
     arg_group_plot.add_argument('--type', action='store', type=str, default=bc.PLOT_FEATURES, choices=[bc.PLOT_FEATURES, bc.PLOT_COG], help=f'Plot type (default = {bc.PLOT_FEATURES})')
+    arg_group_plot.add_argument('--label', action='store', type=str, default=None, help=f"Plot center label (for line breaks use '|')")
 
     arg_group_general = parser.add_argument_group('General')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
@@ -198,7 +199,7 @@ def main():
     print('Draw plots...')
     if args.sequences == 'all':  # write whole genome plot
         print(f'\tdraw circular genome plot (type={plot_type}) containing all sequences...')
-        write(data, features, output_path, colors, plot_type=plot_type)
+        write(data, features, output_path, colors, plot_type=plot_type, plot_label=args.label)
     else:  # write genome plot containing provided sequences only
         plot_sequences = []
         sequence_identifiers = []
@@ -217,10 +218,10 @@ def main():
             plot_sequence_ids = [seq['id'] for seq in plot_sequences]
             data['features'] = [feat for feat in features if feat['sequence'] in plot_sequence_ids]  # reduce feature list in data object
             data['sequences'] = [seq for seq in sequences if seq['id'] in plot_sequence_ids]  # reduce sequence list in data object
-            write(data, features, output_path, colors, plot_name_suffix=plot_name_suffix, plot_type=plot_type)
+            write(data, features, output_path, colors, plot_name_suffix=plot_name_suffix, plot_type=plot_type, plot_label=args.label)
 
 
-def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plot_type=bc.PLOT_FEATURES):
+def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plot_type=bc.PLOT_FEATURES, plot_label=None):
     sequence_list = insdc.build_biopython_sequence_list(data, features)
     for seq in sequence_list:  # fix edge features because PyCirclize cannot handle them correctly
         seq.features = [feat for feat in seq.features if feat.type != 'gene' and feat.type != 'source']
@@ -239,13 +240,13 @@ def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plo
                 feat.location = FeatureLocation(feat_loc.start, int(str(feat_loc.end)[1:]), strand=feat.strand)
 
     # build lable
-    plot_lable = build_label(data)
+    plot_label = build_label(data) if plot_label is None else plot_label.replace('|', '\n')
 
     # select style
     if plot_type == bc.PLOT_COG:
-        plot = build_features_type_cog(data, sequence_list, plot_lable, colors)
+        plot = build_features_type_cog(data, sequence_list, plot_label, colors)
     else:
-        plot = build_features_type_feature(data, sequence_list, plot_lable, colors)
+        plot = build_features_type_feature(data, sequence_list, plot_label, colors)
     file_name = cfg.prefix if plot_name_suffix is None else f'{cfg.prefix}_{plot_name_suffix}'
     for file_type in ['png', 'svg']:
         file_path = output_path.joinpath(f'{file_name}.{file_type}')
