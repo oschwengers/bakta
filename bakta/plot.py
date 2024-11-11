@@ -238,18 +238,56 @@ def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plo
             elif isinstance(feat_loc.end, AfterPosition) or isinstance(feat_loc.end, BeforePosition):
                 feat.location = FeatureLocation(feat_loc.start, int(str(feat_loc.end)[1:]), strand=feat.strand)
 
+    # build lable
+    plot_lable = build_label(data)
+
     # select style
     if plot_type == bc.PLOT_COG:
-        plot = build_features_type_cog(data, sequence_list, colors)
+        plot = build_features_type_cog(data, sequence_list, plot_lable, colors)
     else:
-        plot = build_features_type_feature(data, sequence_list, colors)
+        plot = build_features_type_feature(data, sequence_list, plot_lable, colors)
     file_name = cfg.prefix if plot_name_suffix is None else f'{cfg.prefix}_{plot_name_suffix}'
     for file_type in ['png', 'svg']:
         file_path = output_path.joinpath(f'{file_name}.{file_type}')
         plot.savefig(file_path)
 
 
-def build_features_type_feature(data, sequence_list, colors):
+def build_label(data):
+    genus = data['genome'].get('genus', '') if data['genome'].get('genus', None) else ''
+    species = data['genome'].get('species', '') if data['genome'].get('species', None) else ''
+    taxon = ' '.join([genus, species]).replace('  ', ' ')
+    if taxon == '' or taxon == ' ':
+        taxon = None
+    strain = data['genome'].get('strain', '') if data['genome'].get('strain', None) else ''
+    genome_size = sum([len(seq['nt']) for seq in data['sequences']])
+    genome_size_lable = f'{(genome_size/(10**6)):0.1f} Mbp' if genome_size >= 10**6 else f'{(genome_size/(10**3)):0.1f} kbp'
+    label_list = []
+    sequence_number = len(data['sequences'])
+    if sequence_number == 1:
+        seq_type = bc.REPLICON_CONTIG
+        for seq in data['sequences']:
+            if seq['id'] == data['sequences'][0]['id']:
+                seq_type = seq['type']
+        if seq_type == bc.REPLICON_CHROMOSOME:
+            label_list.append(taxon)
+            label_list.append(strain)
+            label_list.append(f'chromosome, {genome_size_lable}')
+        elif seq_type == bc.REPLICON_PLASMID:
+            plasmid_name = data['genome'].get('plasmid', None)
+            label_list.append(plasmid_name if plasmid_name else seq['id'])
+            label_list.append(f'plasmid, {genome_size_lable}')
+        else:  # a single contig
+            label_list.append(taxon)
+            label_list.append(strain)
+            label_list.append(f"{seq['id']}, {genome_size_lable}")
+    else:  # full (draft) genome
+        label_list.append(taxon)
+        label_list.append(strain)
+        label_list.append(f'{sequence_number} sequences, {genome_size_lable}')
+    return '\n'.join([lable for lable in label_list if lable is not None])
+
+
+def build_features_type_feature(data, sequence_list, label, colors):
     # Get contig genome seqid & size, features dict
     total_sequence_length = sum([len(seq['nt']) for seq in data['sequences']])
     seqid2seq = {rec.id:rec.seq for rec in sequence_list}
@@ -257,8 +295,7 @@ def build_features_type_feature(data, sequence_list, colors):
     seqid2features = {rec.id:rec.features for rec in sequence_list}
 
     circos = Circos(seqid2size, space=2)
-    taxon = data['genome']['taxon'] if data['genome']['taxon'] else ''
-    circos.text(f"{taxon}", r=5, size=15)
+    circos.text(label, r=7, size=15, linespacing=1.5)
     for sector in circos.sectors:
         # build tracks
         outer_track = sector.add_track((99.5, 100))
@@ -305,7 +342,7 @@ def build_features_type_feature(data, sequence_list, colors):
     return fig
 
 
-def build_features_type_cog(data, sequence_list, colors):
+def build_features_type_cog(data, sequence_list, label, colors):
     # Get contig genome seqid & size, features dict
     total_sequence_length = sum([len(seq['nt']) for seq in data['sequences']])
     seqid2seq = {rec.id:rec.seq for rec in sequence_list}
@@ -313,8 +350,7 @@ def build_features_type_cog(data, sequence_list, colors):
     seqid2features = {rec.id:rec.features for rec in sequence_list}
 
     circos = Circos(seqid2size, space=2)
-    taxon = data['genome']['taxon'] if data['genome']['taxon'] else ''
-    circos.text(f"{taxon}", r=5, size=15)
+    circos.text(label, r=5, size=15)
     for sector in circos.sectors:
         # build tracks
         outer_track = sector.add_track((99.5, 100))
@@ -425,7 +461,7 @@ def build_legend(circos, colors):
     ]
     _ = circos.ax.legend(
         handles=handles,
-        bbox_to_anchor=(0.5, 0.45),
+        bbox_to_anchor=(0.5, 0.4),
         loc='center',
         ncols=2,
         fontsize=6
