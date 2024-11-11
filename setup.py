@@ -22,7 +22,7 @@ setup(
     author_email='oliver.schwengers@computational.bio.uni-giessen.de',
     url='https://github.com/oschwengers/bakta',
     packages=find_packages(include=['bakta', 'bakta.*']),
-    python_requires='>=3.8, <3.11',
+    python_requires='>=3.9, <3.11',
     include_package_data=False,
     zip_safe=False,
     install_requires=[
@@ -47,7 +47,6 @@ setup(
     classifiers=[
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Development Status :: 5 - Production/Stable',
