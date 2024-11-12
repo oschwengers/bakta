@@ -308,7 +308,7 @@ def build_features_type_feature(data, sequence_list, colors, plot_label, plot_si
     if plot_size == 4:
         text_size = 6
     elif plot_size == 8:
-        text_size = 16
+        text_size = 12
     else:
         text_size = 30
     circos = Circos(seqid2size, space=2)
@@ -366,8 +366,14 @@ def build_features_type_cog(data, sequence_list, colors, plot_label, plot_size, 
     seqid2size = {rec.id:len(rec.seq) for rec in sequence_list}
     seqid2features = {rec.id:rec.features for rec in sequence_list}
 
+    if plot_size == 4:
+        text_size = 6
+    elif plot_size == 8:
+        text_size = 12
+    else:
+        text_size = 30
     circos = Circos(seqid2size, space=2)
-    circos.text(plot_label, r=5, size=15)
+    circos.text(plot_label, r=7, size=text_size, linespacing=1.5)
     for sector in circos.sectors:
         # build tracks
         outer_track = sector.add_track((99.5, 100))
@@ -410,9 +416,9 @@ def build_features_type_cog(data, sequence_list, colors, plot_label, plot_size, 
             elif feature.type == bc.INSDC_FEATURE_GAP:
                 non_cds_feature_track.genomic_features([feature], fc=colors['features'][bc.FEATURE_GAP])
             elif feature.type == bc.INSDC_FEATURE_ORIGIN_REPLICATION:
-                gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=5, labels=['oriC'], label_orientation='vertical')  # oriC/V
+                gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=text_size/2, labels=['oriC'], label_orientation='vertical')  # oriC/V
             elif feature.type == bc.INSDC_FEATURE_ORIGIN_TRANSFER:
-                gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=5, labels=['oriT'], label_orientation='vertical')  # oriT
+                gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=text_size/2, labels=['oriT'], label_orientation='vertical')  # oriT
             else:
                 non_cds_feature_track.genomic_features([feature], fc=colors['features']['misc'])
     
@@ -421,7 +427,7 @@ def build_features_type_cog(data, sequence_list, colors, plot_label, plot_size, 
         build_gc_content_skew(seq, colors, gc_content_track, gc_skew_track)
 
     fig = circos.plotfig(dpi=plot_dpi, figsize=(plot_size,plot_size))
-    build_legend(circos, colors)
+    build_legend(circos, colors, plot_size)
     return fig
 
 
