@@ -90,6 +90,8 @@ def main():
     arg_group_plot.add_argument('--sequences', action='store', default='all', help='Sequences to plot: comma separated number or name (default = all, numbers one-based)')
     arg_group_plot.add_argument('--type', action='store', type=str, default=bc.PLOT_FEATURES, choices=[bc.PLOT_FEATURES, bc.PLOT_COG], help=f'Plot type (default = {bc.PLOT_FEATURES})')
     arg_group_plot.add_argument('--label', action='store', type=str, default=None, help=f"Plot center label (for line breaks use '|')")
+    arg_group_plot.add_argument('--size', action='store', type=int, default=6, choices=[4, 8, 16], help='Plot size in inches: 4/8/16 (default = 4)')
+    arg_group_plot.add_argument('--dpi', action='store', type=int, default=300, choices=[150, 300, 600], help='Plot resolution as dots per inch: 150/300/600 (default = 300)')
 
     arg_group_general = parser.add_argument_group('General')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
@@ -133,6 +135,12 @@ def main():
     log.info('verbose=%s', cfg.verbose)
     plot_type = args.type
     log.info('plot-type=%s', plot_type)
+    plot_label = args.label
+    log.info('plot-label=%s', plot_label)
+    plot_size = args.size
+    log.info('plot-size=%s', plot_size)
+    plot_dpi = args.dpi
+    log.info('plot-dpi=%s', plot_dpi)
 
     # check and open configuration file
     if args.config is not None:
@@ -162,6 +170,9 @@ def main():
         if(cfg.force): print(f'\tforce: {cfg.force}')
         print(f'\ttmp directory: {cfg.tmp_path}')
         print(f'\tprefix: {cfg.prefix}')
+        print(f'\tlabel: {plot_label}')
+        print(f'\tsize: {plot_size}')
+        print(f'\tDPI: {plot_dpi}')
 
     if(cfg.debug):
         print(f"\nBakta runs in DEBUG mode! Temporary data will not be destroyed at: {cfg.tmp_path}")
@@ -199,7 +210,7 @@ def main():
     print('Draw plots...')
     if args.sequences == 'all':  # write whole genome plot
         print(f'\tdraw circular genome plot (type={plot_type}) containing all sequences...')
-        write(data, features, output_path, colors, plot_type=plot_type, plot_label=args.label)
+        write(data, features, output_path, colors, plot_type=plot_type, plot_label=plot_label, plot_size=plot_size, plot_dpi=plot_dpi)
     else:  # write genome plot containing provided sequences only
         plot_sequences = []
         sequence_identifiers = []
@@ -218,14 +229,13 @@ def main():
             plot_sequence_ids = [seq['id'] for seq in plot_sequences]
             data['features'] = [feat for feat in features if feat['sequence'] in plot_sequence_ids]  # reduce feature list in data object
             data['sequences'] = [seq for seq in sequences if seq['id'] in plot_sequence_ids]  # reduce sequence list in data object
-            write(data, features, output_path, colors, plot_name_suffix=plot_name_suffix, plot_type=plot_type, plot_label=args.label)
+            write(data, features, output_path, colors, plot_name_suffix=plot_name_suffix, plot_type=plot_type, plot_label=plot_label, plot_size=plot_size, plot_dpi=plot_dpi)
 
 
-def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plot_type=bc.PLOT_FEATURES, plot_label=None):
+def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plot_type=bc.PLOT_FEATURES, plot_label=None, plot_size=300, plot_dpi=300):
     sequence_list = insdc.build_biopython_sequence_list(data, features)
     for seq in sequence_list:  # fix edge features because PyCirclize cannot handle them correctly
         seq.features = [feat for feat in seq.features if feat.type != 'gene' and feat.type != 'source']
-        # seq.features = [feat for feat in seq.features if isinstance(feat.location, FeatureLocation)]# and isinstance(feat.location.start, str) and isinstance(feat.location.end, str)]
         for feat in seq.features:
             feat_loc = feat.location
             if isinstance(feat_loc, CompoundLocation):
@@ -244,9 +254,9 @@ def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plo
 
     # select style
     if plot_type == bc.PLOT_COG:
-        plot = build_features_type_cog(data, sequence_list, plot_label, colors)
+        plot = build_features_type_cog(data, sequence_list, colors, plot_label, plot_size, plot_dpi)
     else:
-        plot = build_features_type_feature(data, sequence_list, plot_label, colors)
+        plot = build_features_type_feature(data, sequence_list, colors, plot_label, plot_size, plot_dpi)
     file_name = cfg.prefix if plot_name_suffix is None else f'{cfg.prefix}_{plot_name_suffix}'
     for file_type in ['png', 'svg']:
         file_path = output_path.joinpath(f'{file_name}.{file_type}')
@@ -288,15 +298,21 @@ def build_label(data):
     return '\n'.join([lable for lable in label_list if lable is not None])
 
 
-def build_features_type_feature(data, sequence_list, label, colors):
+def build_features_type_feature(data, sequence_list, colors, plot_label, plot_size, plot_dpi):
     # Get contig genome seqid & size, features dict
     total_sequence_length = sum([len(seq['nt']) for seq in data['sequences']])
     seqid2seq = {rec.id:rec.seq for rec in sequence_list}
     seqid2size = {rec.id:len(rec.seq) for rec in sequence_list}
     seqid2features = {rec.id:rec.features for rec in sequence_list}
 
+    if plot_size == 4:
+        text_size = 6
+    elif plot_size == 8:
+        text_size = 16
+    else:
+        text_size = 30
     circos = Circos(seqid2size, space=2)
-    circos.text(label, r=7, size=15, linespacing=1.5)
+    circos.text(plot_label, r=7, size=text_size, linespacing=1.5)
     for sector in circos.sectors:
         # build tracks
         outer_track = sector.add_track((99.5, 100))
@@ -306,7 +322,7 @@ def build_features_type_feature(data, sequence_list, label, colors):
         gc_skew_track = sector.add_track((50, 60))
 
         # plot outer track
-        build_sequence_backbone_track(sector, outer_track, total_sequence_length, colors)
+        build_sequence_backbone_track(sector, outer_track, total_sequence_length, colors, plot_size)
 
         # plot feature tracks
         for feature in seqid2features[sector.name]:
@@ -328,9 +344,9 @@ def build_features_type_feature(data, sequence_list, label, colors):
             elif feature.type == bc.INSDC_FEATURE_GAP:
                 track.genomic_features([feature], fc=colors['features'][bc.FEATURE_GAP])
             elif feature.type == bc.INSDC_FEATURE_ORIGIN_REPLICATION:
-                gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=5, labels=['oriC'], label_orientation='vertical')  # oriC/V
+                gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=text_size/2, labels=['oriC'], label_orientation='vertical')  # oriC/V
             elif feature.type == bc.INSDC_FEATURE_ORIGIN_TRANSFER:
-                gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=5, labels=['oriT'], label_orientation='vertical')  # oriT
+                gc_skew_track.xticks([(feature.location.start + feature.location.end)/2], outer=False, label_size=text_size/2, labels=['oriT'], label_orientation='vertical')  # oriT
             else:
                 track.genomic_features([feature], fc=colors['features']['misc'])
     
@@ -338,12 +354,12 @@ def build_features_type_feature(data, sequence_list, label, colors):
         seq = str(seqid2seq[sector.name])
         build_gc_content_skew(seq, colors, gc_content_track, gc_skew_track)
 
-    fig = circos.plotfig(dpi=600, figsize=(8,8))
-    build_legend(circos, colors)
+    fig = circos.plotfig(dpi=plot_dpi, figsize=(plot_size,plot_size))
+    build_legend(circos, colors, plot_size)
     return fig
 
 
-def build_features_type_cog(data, sequence_list, label, colors):
+def build_features_type_cog(data, sequence_list, colors, plot_label, plot_size, plot_dpi):
     # Get contig genome seqid & size, features dict
     total_sequence_length = sum([len(seq['nt']) for seq in data['sequences']])
     seqid2seq = {rec.id:rec.seq for rec in sequence_list}
@@ -351,7 +367,7 @@ def build_features_type_cog(data, sequence_list, label, colors):
     seqid2features = {rec.id:rec.features for rec in sequence_list}
 
     circos = Circos(seqid2size, space=2)
-    circos.text(label, r=5, size=15)
+    circos.text(plot_label, r=5, size=15)
     for sector in circos.sectors:
         # build tracks
         outer_track = sector.add_track((99.5, 100))
@@ -362,7 +378,7 @@ def build_features_type_cog(data, sequence_list, label, colors):
         gc_skew_track = sector.add_track((45, 55))
 
         # plot outer track
-        build_sequence_backbone_track(sector, outer_track, total_sequence_length, colors)
+        build_sequence_backbone_track(sector, outer_track, total_sequence_length, colors, plot_size)
 
         # plot feature tracks
         for feature in seqid2features[sector.name]:
@@ -404,12 +420,12 @@ def build_features_type_cog(data, sequence_list, label, colors):
         seq = str(seqid2seq[sector.name])
         build_gc_content_skew(seq, colors, gc_content_track, gc_skew_track)
 
-    fig = circos.plotfig(dpi=600, figsize=(8,8))
+    fig = circos.plotfig(dpi=plot_dpi, figsize=(plot_size,plot_size))
     build_legend(circos, colors)
     return fig
 
 
-def build_sequence_backbone_track(sector, outer_track, total_sequence_length, colors):
+def build_sequence_backbone_track(sector, outer_track, total_sequence_length, colors, plot_size):
     outer_track.axis(fc=colors['backbone'])
     label_formatter=lambda v: f'{v / 1000:.1f} kbp'
     if total_sequence_length >= 1_000_000:
@@ -425,9 +441,17 @@ def build_sequence_backbone_track(sector, outer_track, total_sequence_length, co
     elif total_sequence_length >= 1_000:
         major_interval = 1_000
         minor_interval = int(major_interval / 10)
+    
+    if plot_size == 4:
+        text_size = 4
+    elif plot_size == 8:
+        text_size = 8
+    else:
+        text_size = 16
+    
     if sector.size > minor_interval:
-        outer_track.xticks_by_interval(major_interval, label_formatter=label_formatter)
-        outer_track.xticks_by_interval(minor_interval, tick_length=1, show_label=False)
+        outer_track.xticks_by_interval(major_interval, label_formatter=label_formatter, label_size=text_size)
+        outer_track.xticks_by_interval(minor_interval, tick_length=1, show_label=False, label_size=text_size)
 
 
 def build_gc_content_skew(sequence, colors, gc_content_track, gc_skew_track):
@@ -447,7 +471,18 @@ def build_gc_content_skew(sequence, colors, gc_content_track, gc_skew_track):
     gc_skew_track.fill_between(pos_list, negative_gc_skews, 0, vmin=-abs_max_gc_skew, vmax=abs_max_gc_skew, color=colors['gc-skew-negative'])
 
 
-def build_legend(circos, colors):
+def build_legend(circos, colors, plot_size):
+
+    if plot_size == 4:
+        text_size = 3
+        marker_size = 1
+    elif plot_size == 8:
+        text_size = 6
+        marker_size = 5
+    else:
+        text_size = 12
+        marker_size = 9
+
     handles=[
         Patch(color=colors['features'][bc.FEATURE_CDS], label='CDS'),
         Patch(color=colors['features'][bc.FEATURE_T_RNA], label='tRNA'),
@@ -455,17 +490,17 @@ def build_legend(circos, colors):
         Patch(color=colors['features'][bc.FEATURE_NC_RNA], label='ncRNA'),
         Patch(color=colors['features'][bc.FEATURE_NC_RNA_REGION], label='ncRNA reg'),
         Patch(color=colors['features'][bc.FEATURE_CRISPR], label='CRISPR'),
-        Line2D([], [], color=colors['gc-positive'], label="+ GC", marker="^", ms=5, ls="None"),
-        Line2D([], [], color=colors['gc-negative'], label="- GC", marker="v", ms=5, ls="None"),
-        Line2D([], [], color=colors['gc-skew-positive'], label="+ GC Skew", marker="^", ms=5, ls="None"),
-        Line2D([], [], color=colors['gc-skew-negative'], label="- GC Skew", marker="v", ms=5, ls="None")
+        Line2D([], [], color=colors['gc-positive'], label="+ GC", marker="^", ms=marker_size, ls="None"),
+        Line2D([], [], color=colors['gc-negative'], label="- GC", marker="v", ms=marker_size, ls="None"),
+        Line2D([], [], color=colors['gc-skew-positive'], label="+ GC Skew", marker="^", ms=marker_size, ls="None"),
+        Line2D([], [], color=colors['gc-skew-negative'], label="- GC Skew", marker="v", ms=marker_size, ls="None")
     ]
     _ = circos.ax.legend(
         handles=handles,
         bbox_to_anchor=(0.5, 0.4),
         loc='center',
         ncols=2,
-        fontsize=6
+        fontsize=text_size
     )
 
 
