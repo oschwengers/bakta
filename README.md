@@ -784,7 +784,7 @@ In addition, both plot types share two innermost GC content and GC skew rings. T
 Custom plot labels (text in the center) can be provided via `--label`:
 
 ```bash
---sequences 2 --dpi 150 --size 4 --prefix plot-cog-p2 --type cog --label="pO157|plasmid, 92.7 kbp"
+bakta_plot --sequences 2 --dpi 150 --size 4 --prefix plot-cog-p2 --type cog --label="pO157|plasmid, 92.7 kbp"
 ```
 
 ![Plot example of Bakta test genome.](/examples/plot-cog-p2.png)
