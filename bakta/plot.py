@@ -90,7 +90,7 @@ def main():
     arg_group_plot.add_argument('--sequences', action='store', default='all', help='Sequences to plot: comma separated number or name (default = all, numbers one-based)')
     arg_group_plot.add_argument('--type', action='store', type=str, default=bc.PLOT_FEATURES, choices=[bc.PLOT_FEATURES, bc.PLOT_COG], help=f'Plot type (default = {bc.PLOT_FEATURES})')
     arg_group_plot.add_argument('--label', action='store', type=str, default=None, help=f"Plot center label (for line breaks use '|')")
-    arg_group_plot.add_argument('--size', action='store', type=int, default=6, choices=[4, 8, 16], help='Plot size in inches: 4/8/16 (default = 4)')
+    arg_group_plot.add_argument('--size', action='store', type=int, default=4, choices=[4, 8, 16], help='Plot size in inches: 4/8/16 (default = 4)')
     arg_group_plot.add_argument('--dpi', action='store', type=int, default=300, choices=[150, 300, 600], help='Plot resolution as dots per inch: 150/300/600 (default = 300)')
 
     arg_group_general = parser.add_argument_group('General')
@@ -232,7 +232,7 @@ def main():
             write(data, features, output_path, colors, plot_name_suffix=plot_name_suffix, plot_type=plot_type, plot_label=plot_label, plot_size=plot_size, plot_dpi=plot_dpi)
 
 
-def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plot_type=bc.PLOT_FEATURES, plot_label=None, plot_size=300, plot_dpi=300):
+def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plot_type=bc.PLOT_FEATURES, plot_label=None, plot_size=4, plot_dpi=300):
     sequence_list = insdc.build_biopython_sequence_list(data, features)
     for seq in sequence_list:  # fix edge features because PyCirclize cannot handle them correctly
         seq.features = [feat for feat in seq.features if feat.type != 'gene' and feat.type != 'source']
