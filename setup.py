@@ -22,7 +22,7 @@ setup(
     author_email='oliver.schwengers@computational.bio.uni-giessen.de',
     url='https://github.com/oschwengers/bakta',
     packages=find_packages(include=['bakta', 'bakta.*']),
-    python_requires='>=3.8, <3.11',
+    python_requires='>=3.9, <3.11',
     include_package_data=False,
     zip_safe=False,
     install_requires=[
@@ -32,7 +32,8 @@ setup(
         'alive-progress >= 3.0.1',
         'PyYAML >= 6.0',
         'pyrodigal >= 3.5.0',
-        'pyhmmer >= 0.10.15'
+        'pyhmmer >= 0.10.15',
+        'pycirclize >= 1.7.0'
     ],
     entry_points={
         'console_scripts': [
@@ -46,7 +47,6 @@ setup(
     classifiers=[
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Development Status :: 5 - Production/Stable',

@@ -11,18 +11,6 @@ import bakta.constants as bc
 from .conftest import FILES, FILES_IO, SKIP_PARAMETERS
 
 
-def check_deepsig():
-    command = ('deepsig', '--version')
-    is_available = False
-    try:
-        # tool_output = str(sp.check_output(command, stderr=sp.STDOUT))  # stderr must be added in case the tool output is not piped into stdout
-        sp.check_output(command, stderr=sp.STDOUT)  # stderr must be added in case the tool output is not piped into stdout
-        is_available = True
-    except:
-        print(f"WARNING: {command[0]} not found or not executable! Skip dependen test.")
-    return is_available
-
-
 @pytest.mark.parametrize(
     'db',
     [
@@ -45,7 +33,6 @@ def test_bakta_mock_skipped_features(db, tmpdir):
         assert Path.exists(tmpdir_path.joinpath(file))
 
 
-@pytest.mark.skipif(check_deepsig() == False, reason=f'Skip on unavailable DeepSig')
 def test_bakta_plasmid(tmpdir):
     # full test on plasmid
     proc = run(

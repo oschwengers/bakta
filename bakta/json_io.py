@@ -149,7 +149,7 @@ def main():
     tsv.write_feature_inferences(data['sequences'], features_by_sequence, tsv_path)
 
     print('\tcircular genome plot...')
-    plot.write(features, data['sequences'], cfg.output_path)
+    plot.write(data, features, cfg.output_path)
 
     hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
     print('\thypothetical TSV...')
@@ -181,7 +181,6 @@ def main():
         fh_out.write(f"CDSs: {len(cdss)}\n")
         fh_out.write(f"pseudogenes: {len([cds for cds in cdss if 'pseudogene' in cds])}\n")
         fh_out.write(f"hypotheticals: {len([cds for cds in cdss if 'hypothetical' in cds])}\n")
-        fh_out.write(f"signal peptides: {len([cds for cds in cdss if bc.FEATURE_SIGNAL_PEPTIDE in cds])}\n")
         fh_out.write(f"sORFs: {len([feat for feat in features if feat['type'] == bc.FEATURE_SORF])}\n")
         fh_out.write(f"gaps: {len([feat for feat in features if feat['type'] == bc.FEATURE_GAP])}\n")
         fh_out.write(f"oriCs: {len([feat for feat in features if feat['type'] == bc.FEATURE_ORIC])}\n")

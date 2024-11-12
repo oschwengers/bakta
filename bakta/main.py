@@ -25,7 +25,6 @@ import bakta.features.nc_rna_region as nc_rna_region
 import bakta.features.crispr as crispr
 import bakta.features.orf as orf
 import bakta.features.cds as feat_cds
-import bakta.features.signal_peptides as sig_peptides
 import bakta.features.s_orf as s_orf
 import bakta.features.gaps as gaps
 import bakta.features.ori as ori
@@ -310,10 +309,6 @@ def main():
                 user_hmm_found = exp_aa_hmms.search(cdss, cfg.user_hmms)
                 print(f'\t\tuser HMM sequences: {len(user_hmm_found)}')
 
-            if(cfg.gram != bc.GRAM_UNKNOWN):
-                sig_peptides_found = sig_peptides.search(cdss, cds_aa_path)
-                print(f'\tsignal peptides: {len(sig_peptides_found)}')
-
             print('\tcombine annotations and mark hypotheticals...')
             log.debug('combine CDS annotations')
             for cds in cdss:
@@ -408,14 +403,6 @@ def main():
             anno.combine_annotation(feat)  # combine IPS and PSC annotations
         data['features'].extend(sorfs_filtered)
         print(f'\tfiltered sORFs: {len(sorfs_filtered)}')
-        
-        if(cfg.gram != bc.GRAM_UNKNOWN  and  len(sorfs_filtered) > 0):
-            sorf_aa_path = cfg.tmp_path.joinpath('sorfs.faa')
-            with sorf_aa_path.open(mode='wt') as fh:
-                for sorf in sorfs_filtered:
-                    fh.write(f">{sorf['aa_hexdigest']}-{sorf['sequence']}-{sorf['start']}\n{sorf['aa']}\n")
-            sig_peptides_found = sig_peptides.search(sorfs_filtered, sorf_aa_path)
-            print(f"\tsignal peptides: {len(sig_peptides_found)}")
 
     ############################################################################
     # gap annotation
@@ -526,7 +513,6 @@ def main():
     print(f"\tCDSs: {len(cdss)}")
     print(f"\t\thypotheticals: {len([cds for cds in cdss if 'hypothetical' in cds])}")
     print(f"\t\tpseudogenes: {len([cds for cds in cdss if 'pseudogene' in cds])}")
-    print(f"\t\tsignal peptides: {len([cds for cds in cdss if bc.FEATURE_SIGNAL_PEPTIDE in cds])}")
     print(f"\tsORFs: {len([feat for feat in features if feat['type'] == bc.FEATURE_SORF])}")
     print(f"\tgaps: {len([feat for feat in features if feat['type'] == bc.FEATURE_GAP])}")
     print(f"\toriCs/oriVs: {len([feat for feat in features if (feat['type'] == bc.FEATURE_ORIC or feat['type'] == bc.FEATURE_ORIV)])}")
@@ -575,7 +561,7 @@ def main():
         print('\tskip generation of circular genome plot...')
     else:
         print('\tcircular genome plot...')
-        plot.write(features, sequences, cfg.output_path)
+        plot.write(data, features, cfg.output_path)
 
     if(cfg.skip_cds is False):
         hypotheticals = [feat for feat in features if feat['type'] == bc.FEATURE_CDS and 'hypothetical' in feat]
@@ -619,7 +605,6 @@ def main():
         fh_out.write(f"CDSs: {len(cdss)}\n")
         fh_out.write(f"pseudogenes: {len([cds for cds in cdss if 'pseudogene' in cds])}\n")
         fh_out.write(f"hypotheticals: {len([cds for cds in cdss if 'hypothetical' in cds])}\n")
-        fh_out.write(f"signal peptides: {len([cds for cds in cdss if bc.FEATURE_SIGNAL_PEPTIDE in cds])}\n")
         fh_out.write(f"sORFs: {len([feat for feat in features if feat['type'] == bc.FEATURE_SORF])}\n")
         fh_out.write(f"gaps: {len([feat for feat in features if feat['type'] == bc.FEATURE_GAP])}\n")
         fh_out.write(f"oriCs: {len([feat for feat in features if feat['type'] == bc.FEATURE_ORIC])}\n")

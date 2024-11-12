@@ -17,7 +17,6 @@ RUN apk update && apk add wget tar bash \
     && cp /root/.bashrc /opt/conda/bashrc
 
 COPY environment.yml /tmp/
-RUN echo -e '\n  - deepsig>=1.2.5' >> /tmp/environment.yml
 
 SHELL ["bash", "-l" ,"-c"]
 

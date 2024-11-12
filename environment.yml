@@ -18,4 +18,4 @@ dependencies:
   - diamond>=2.1.10
   - blast>=2.14.0
   - ncbi-amrfinderplus>=4.0.3
-  - circos>=0.69.8
+  - pycirclize>=1.7.0
