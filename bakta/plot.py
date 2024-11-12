@@ -8,8 +8,8 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-import yaml
 import numpy as np
+import yaml
 
 from Bio.SeqFeature import FeatureLocation, CompoundLocation, AfterPosition, BeforePosition
 from matplotlib.patches import Patch

@@ -2,11 +2,12 @@
 import logging
 import re
 
+from typing import Sequence
+
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.io.insdc as insdc
 
-from typing import Sequence
 
 log = logging.getLogger('ANNOTATION')
 

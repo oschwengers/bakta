@@ -10,8 +10,9 @@ import tarfile
 
 from pathlib import Path
 
-from alive_progress import alive_bar
 import requests
+
+from alive_progress import alive_bar
 
 import bakta
 import bakta.config as cfg

@@ -36,6 +36,7 @@ import bakta.psc as psc
 import bakta.pscc as pscc
 import bakta.plot as plot
 
+
 def main():
     args = bu.parse_arguments()  # parse arguments
 
