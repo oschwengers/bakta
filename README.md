@@ -753,6 +753,8 @@ Plotting:
   --type {features,cog}
                         Plot type: feature/cog (default = features)
   --label LABEL         Plot center label (for line breaks use '|')
+  --size {4,8,16}       Plot size in inches: 4/8/16 (default = 4)
+  --dpi {150,300,600}   Plot resolution as dots per inch: 150/300/600 (default = 300)
 
 General:
   --help, -h            Show this help message and exit
