@@ -241,20 +241,20 @@ def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plo
             feat_loc = feat.location
             if isinstance(feat_loc, CompoundLocation):
                 log.debug('split edge feature: seq=%s, start=%i, stop=%i, strand=%s', seq.id, feat_loc.start, feat_loc.end, '+' if feat_loc.strand==1 else '-')
-                if(feat.location.strand == +1):
-                    feat.location = FeatureLocation(feat_loc.parts[0].start, len(seq.seq), strand=feat.location.strand)
+                if(feat_loc.strand == +1):
+                    feat.location = FeatureLocation(feat_loc.parts[0].start, len(seq.seq), strand=feat_loc.strand)
                     feat_2 = copy.deepcopy(feat)
-                    feat_2.location = FeatureLocation(0, feat_loc.parts[1].end, strand=feat.location.strand)
+                    feat_2.location = FeatureLocation(0, feat_loc.parts[1].end, strand=feat_loc.strand)
                     seq.features.append(feat_2)
-                elif(feat.location.strand == -1):
-                    feat.location = FeatureLocation(0, feat_loc.parts[0].end, strand=feat.strand)
+                elif(feat_loc.strand == -1):
+                    feat.location = FeatureLocation(0, feat_loc.parts[0].end, strand=feat_loc.strand)
                     feat_2 = copy.deepcopy(feat)
-                    feat_2.location = FeatureLocation(feat_loc.parts[1].start,  len(seq.seq), strand=feat.strand)
+                    feat_2.location = FeatureLocation(feat_loc.parts[1].start,  len(seq.seq), strand=feat_loc.strand)
                     seq.features.append(feat_2)
             elif isinstance(feat_loc.start, AfterPosition) or isinstance(feat_loc.start, BeforePosition):
-                feat.location = FeatureLocation(int(str(feat_loc.start)[1:]), feat_loc.end, strand=feat.strand)
+                feat.location = FeatureLocation(int(str(feat_loc.start)[1:]), feat_loc.end, strand=feat_loc.strand)
             elif isinstance(feat_loc.end, AfterPosition) or isinstance(feat_loc.end, BeforePosition):
-                feat.location = FeatureLocation(feat_loc.start, int(str(feat_loc.end)[1:]), strand=feat.strand)
+                feat.location = FeatureLocation(feat_loc.start, int(str(feat_loc.end)[1:]), strand=feat_loc.strand)
 
     # build lable
     plot_label = build_label(data) if plot_label is None else plot_label.replace('|', '\n')
