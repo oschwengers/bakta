@@ -62,6 +62,7 @@ def predict_tm_rnas(data: dict, sequences_path: Path):
                 (start, stop) = location[1:-1].split(',')
                 start = int(start)
                 stop = int(stop)
+                tag_start, tag_stop = [int(pos) for pos in tag_location.split(',')]
 
                 if(start > 0 and stop > 0):  # prevent edge tmRNA on linear sequences
                     tmrna = OrderedDict()
@@ -72,11 +73,19 @@ def predict_tm_rnas(data: dict, sequences_path: Path):
                     tmrna['strand'] = strand
                     tmrna['gene'] = 'ssrA'
                     tmrna['product'] = 'transfer-messenger RNA, SsrA'
-                    tmrna['tag_aa'] = tag_aa.replace('*', '')
                     tmrna['db_xrefs'] = [so.SO_TMRNA.id]
+                    tmrna['tag'] = {
+                        'start': start + tag_start - 1,
+                        'stop': start + tag_stop - 1,
+                        'aa': tag_aa.replace('*', '')
+                    }
 
                     nt = bu.extract_feature_sequence(tmrna, sequences[sequence_id])  # extract nt sequences
                     tmrna['nt'] = nt
+
+                    tag = tmrna['tag']
+                    tag_nt = bu.extract_feature_sequence({'start': tag['start'], 'stop': tag['stop'], 'strand': strand}, sequences[sequence_id])  # extract nt sequences
+                    tag['nt'] = tag_nt
 
                     if(start > stop):
                         tmrna['edge'] = True  # mark tmRNA as edge feature

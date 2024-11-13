@@ -186,7 +186,9 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
                     qualifiers[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNKNOWN
             elif(feature['type'] == bc.FEATURE_TM_RNA):
                 qualifiers['inference'] = 'profile:aragorn:1.2'
-                qualifiers['tag_peptide'] = feature['tag_aa']
+                qualifiers['tag_peptide'] = f"{feature['tag']['start']}..{feature['tag']['stop']}"
+                if feature['strand'] == bc.STRAND_REVERSE:
+                    qualifiers['tag_peptide'] = f"complement({qualifiers['tag_peptide']})"
                 insdc_feature_type = bc.INSDC_FEATURE_TM_RNA
             elif(feature['type'] == bc.FEATURE_R_RNA):
                 for rfam_id in [dbxref.split(':')[1] for dbxref in feature['db_xrefs'] if dbxref.split(':')[0] == bc.DB_XREF_RFAM]:
