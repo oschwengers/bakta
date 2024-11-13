@@ -169,7 +169,7 @@ def write_features(data: dict, features_by_sequence: Dict[str, dict], gff3_path:
                         if(ba.RE_GENE_SYMBOL.fullmatch(feat['gene'])):  # discard non-standard ncRNA gene symbols
                             gene_annotations['gene'] = feat['gene']
                         else:
-                            annotations.pop('gene')
+                            annotations.pop('gene', None)
                         if('truncated' in feat):
                             gene_annotations[bc.INSDC_FEATURE_PSEUDO] = True
                         gene_annotations = encode_annotations(gene_annotations)
