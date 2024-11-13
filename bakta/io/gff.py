@@ -8,6 +8,7 @@ import bakta.config as cfg
 import bakta.constants as bc
 import bakta.io.fasta as fasta
 import bakta.io.insdc as insdc
+import bakta.features.annotation as ba
 import bakta.so as so
 
 
@@ -165,6 +166,10 @@ def write_features(data: dict, features_by_sequence: Dict[str, dict], gff3_path:
                             'locus_tag': feat['locus'],
                             'gene': feat['gene']
                         }
+                        if(ba.RE_GENE_SYMBOL.fullmatch(feat['gene'])):  # discard non-standard ncRNA gene symbols
+                            gene_annotations['gene'] = feat['gene']
+                        else:
+                            annotations.pop('gene')
                         if('truncated' in feat):
                             gene_annotations[bc.INSDC_FEATURE_PSEUDO] = True
                         gene_annotations = encode_annotations(gene_annotations)

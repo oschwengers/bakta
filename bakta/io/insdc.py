@@ -12,6 +12,7 @@ from Bio.SeqFeature import SeqFeature, FeatureLocation, CompoundLocation, AfterP
 import bakta
 import bakta.config as cfg
 import bakta.constants as bc
+import bakta.features.annotation as ba
 import bakta.so as so
 
 
@@ -258,8 +259,14 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
                     'locus_tag': feature['locus']
                 }
                 if(feature.get('gene', None)):
-                    qualifiers['gene'] = feature['gene']
-                    gene_qualifier['gene'] = feature['gene']
+                    if(cfg.compliant):
+                        if(ba.RE_GENE_SYMBOL.fullmatch(feature['gene'])):  # discard non-standard gene symbols
+                            gene_qualifier['gene'] = feature['gene']
+                        else:
+                            qualifiers.pop('gene')
+                    else:
+                        qualifiers['gene'] = feature['gene']
+                        gene_qualifier['gene'] = feature['gene']
                 if(bc.PSEUDOGENE in feature):
                     if(feature['type'] == bc.FEATURE_CDS):
                         gene_qualifier[bc.INSDC_FEATURE_PSEUDOGENE] = bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNPROCESSED if feature[bc.PSEUDOGENE]['paralog'] else bc.INSDC_FEATURE_PSEUDOGENE_TYPE_UNITARY
