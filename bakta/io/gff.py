@@ -246,7 +246,7 @@ def write_features(data: dict, features_by_sequence: Dict[str, dict], gff3_path:
                         annotations[bc.INSDC_FEATURE_PSEUDO] = True
                     if(feat.get('gene', None)):  # add gene annotation if available
                         annotations['gene'] = feat['gene']
-                    source = '?' if feat.get('source', None) == bc.CDS_SOURCE_USER else 'Prodigal'
+                    source = '?' if feat.get('source', None) == bc.CDS_SOURCE_USER else 'Pyrodigal'
                     if(cfg.compliant):
                         gene_id = f"{feat['locus']}_gene"
                         annotations['Parent'] = gene_id
