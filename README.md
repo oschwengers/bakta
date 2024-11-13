@@ -623,7 +623,7 @@ $ gunzip mac.table2asn.gz
 $ chmod 755 linux64.table2asn.gz mac.table2asn.gz
 
 # create the SQN file:
-$ linux64.table2asn -M n -J -c w -t template.txt -V vbt -l paired-ends -i GCF_000008865.2.fna -f GCF_000008865.2.gff3 -o GCF_000008865.2.sqn -Z
+$ linux64.table2asn -Z -W -M n -J -c w -t template.txt -V vbt -l paired-ends -i GCF_000008865.2.fna -f GCF_000008865.2.gff3 -o GCF_000008865.2.sqn
 ```
 
 ### ENA
@@ -633,17 +633,17 @@ Please have all additional files (manifest.tsv, chrom-list.tsv) prepared as desc
 
 ```bash
 # download ENA Webin-CLI
-$ wget https://github.com/enasequence/webin-cli/releases/download/v4.0.0/webin-cli-4.0.0.jar
+$ wget https://github.com/enasequence/webin-cli/releases/download/8.1.0/webin-cli-8.1.0.jar
 
 $ gzip -k GCF_000008865.2.embl
 $ gzip -k chrom-list.tsv
-$ java -jar webin-cli-4.0.0.jar -submit -userName=<EMAIL> -password <PWD> -context genome -manifest manifest.tsv
+$ java -jar webin-cli-8.1.0.jar -submit -userName=<LOGIN> -password <PWD> -context genome -manifest manifest.tsv
 ```
 
 Exemplarey manifest.tsv and chrom-list.tsv files might look like:
 
 ```bash
-$ cat chrom-list.tsv
+$ cat manifest.tsv
 STUDY    PRJEB44484
 SAMPLE    ERS6291240
 ASSEMBLYNAME    GCF
