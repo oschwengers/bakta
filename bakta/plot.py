@@ -15,6 +15,7 @@ from Bio.SeqFeature import FeatureLocation, CompoundLocation, AfterPosition, Bef
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 from pycirclize import Circos
+from xopen import xopen
 
 import bakta
 import bakta.utils as bu
@@ -185,7 +186,7 @@ def main():
 
     # load genome annotations
     print('Parse genome annotations...')
-    with annotation_path.open('r') as fh:
+    with xopen(str(annotation_path), threads=0) as fh:
         data = json.load(fh)
     
     # set global config objects based on information from imported JSON document
