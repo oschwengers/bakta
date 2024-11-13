@@ -250,7 +250,7 @@ def write_features(data: dict, features_by_sequence: Dict[str, dict], gff3_path:
                     if(cfg.compliant):
                         gene_id = f"{feat['locus']}_gene"
                         annotations['Parent'] = gene_id
-                        annotations['inference'] = 'EXISTENCE:non-experimental evidence, no additional details recorded' if feat.get('source', None) == bc.CDS_SOURCE_USER else 'ab initio prediction:Prodigal:2.6'
+                        annotations['inference'] = 'EXISTENCE:non-experimental evidence, no additional details recorded' if feat.get('source', None) == bc.CDS_SOURCE_USER else 'ab initio prediction:Pyrodigal:3.5'
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
                         annotations['Note'], ec_number = insdc.extract_ec_from_notes_insdc(annotations, 'Note')
                         if(ec_number is not None):
