@@ -1,2 +1,2 @@
-__version__ = '1.10.0-beta'
+__version__ = '1.10.0'
 __db_schema_version__ = 5

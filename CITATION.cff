@@ -6,8 +6,8 @@ authors:
     given-names: Oliver
     orcid: https://orcid.org/0000-0003-4216-2721
 title: "Bakta: rapid & standardized annotation of bacterial genomes, MAGs & plasmids"
-version: 1.9.4
-date-released: 2024-07-17
+version: 1.10.0
+date-released: 2024-11-14
 keywords: 
   - bioinformatics
   - "genome-annotation"
