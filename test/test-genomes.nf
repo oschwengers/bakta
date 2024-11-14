@@ -59,12 +59,60 @@ process bakta {
     tuple path('assembly.fna'), val(accession), val(genus), val(species), val(strain), val(complete) from chBakta
 
     output:
+    tuple val(accession), path("${accession}.json.gz") into chBaktaIO, chBaktaPlot
     path("${accession}.*") into chFinalBakta
-    publishDir pattern: "${accession}.*", path: "${pathOutput}/${accession}/", mode: 'copy'
+    publishDir pattern: "${accession}.*", path: "${pathOutput}/${accession}/annotation/", mode: 'copy'
 
     script:
     completeOption = complete ? '--complete' : ''
     """
     ${baseDir}/../bin/bakta --db ${pathDb} --verbose --prefix ${accession} --genus ${genus} --species "${species}" --strain "${strain}" --keep-contig-headers --threads ${task.cpus} --force ${completeOption} assembly.fna
+    gzip -k ${accession}.json
+    """
+}
+
+process bakta_io {
+
+    tag "${accession}"
+
+    errorStrategy 'retry'
+    maxRetries 3
+    cpus 1
+    memory 1.GB 
+    conda "${baseDir}/../environment.yml"
+
+    input:
+    tuple val(accession), path('genome.json.gz') from chBaktaIO
+
+    output:
+    path("${accession}.*") into chFinalBaktaIO
+    publishDir pattern: "${accession}.*", path: "${pathOutput}/${accession}/io", mode: 'copy'
+
+    script:
+    """
+    ${baseDir}/../bin/bakta_io --verbose --prefix ${accession} --force genome.json.gz
+    """
+}
+
+process bakta_plot {
+
+    tag "${accession}"
+
+    errorStrategy 'retry'
+    maxRetries 3
+    cpus 1
+    memory 1.GB 
+    conda "${baseDir}/../environment.yml"
+
+    input:
+    tuple val(accession), path('genome.json.gz') from chBaktaPlot
+
+    output:
+    path("${accession}.*") into chFinalBaktaPlot
+    publishDir pattern: "${accession}.*", path: "${pathOutput}/${accession}/plot", mode: 'copy'
+
+    script:
+    """
+    ${baseDir}/../bin/bakta_plot --verbose --sequences all --type cog --prefix ${accession} --force genome.json.gz
     """
 }
