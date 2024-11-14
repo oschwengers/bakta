@@ -112,16 +112,16 @@ python3 -m pip install --user bakta
 
 Bakta requires the following 3rd party software tools which must be installed and executable to use the full set of features:
 
-- tRNAscan-SE (2.0.8) <https://doi.org/10.1101/614032> <http://lowelab.ucsc.edu/tRNAscan-SE>
-- Aragorn (1.2.38) <http://dx.doi.org/10.1093/nar/gkh152> <http://130.235.244.92/ARAGORN>
+- tRNAscan-SE (2.0.11) <https://doi.org/10.1101/614032> <http://lowelab.ucsc.edu/tRNAscan-SE>
+- Aragorn (1.2.41) <http://dx.doi.org/10.1093/nar/gkh152> <http://130.235.244.92/ARAGORN>
 - INFERNAL (1.1.4) <https://dx.doi.org/10.1093%2Fbioinformatics%2Fbtt509> <http://eddylab.org/infernal>
 - PILER-CR (1.06) <https://doi.org/10.1186/1471-2105-8-18> <http://www.drive5.com/pilercr>
-- Pyrodigal (2.1.0) <https://doi.org/10.21105/joss.04296> <https://github.com/althonos/pyrodigal>
-- PyHMMER (0.10.0) <https://doi.org/10.21105/joss.04296> <https://github.com/althonos/pyhmmer>
-- Diamond (2.0.14) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
-- Blast+ (2.12.0) <https://www.ncbi.nlm.nih.gov/pubmed/2231712> <https://blast.ncbi.nlm.nih.gov>
-- AMRFinderPlus (3.10.23) <https://github.com/ncbi/amr>
-- DeepSig (1.2.5) <https://doi.org/10.1093/bioinformatics/btx818>
+- Pyrodigal (3.5.0) <https://doi.org/10.21105/joss.04296> <https://github.com/althonos/pyrodigal>
+- PyHMMER (0.10.15) <https://doi.org/10.21105/joss.04296> <https://github.com/althonos/pyhmmer>
+- Diamond (2.1.10) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
+- Blast+ (2.14.0) <https://www.ncbi.nlm.nih.gov/pubmed/2231712> <https://blast.ncbi.nlm.nih.gov>
+- AMRFinderPlus (4.0.3) <https://github.com/ncbi/amr>
+- pyCirclize (1.7.0) https://github.com/moshi4/pyCirclize
 
 ### Database download
 
@@ -687,7 +687,10 @@ The `<prefix>` can be set via `--prefix <prefix>`. If no prefix is set, Bakta us
 ### Usage
 
 ```bash
-usage: bakta_proteins [--db DB] [--output OUTPUT] [--prefix PREFIX] [--force] [--proteins PROTEINS] [--help] [--verbose] [--debug] [--threads THREADS] [--tmp-dir TMP_DIR] [--version] <input>
+usage: bakta_proteins [--db DB] [--output OUTPUT] [--prefix PREFIX] [--force]
+                      [--proteins PROTEINS]
+                      [--help] [--verbose] [--debug] [--threads THREADS] [--tmp-dir TMP_DIR] [--version]
+                      <input>
 
 Rapid & standardized annotation of bacterial genomes, MAGs & plasmids
 
@@ -717,7 +720,7 @@ General:
 
 ## Genome plots
 
-Bakta allows the creation of circular genome plots via [Circos](http://circos.ca). Plots are generated as part of the default workflow and saved as `PNG` and `SVG` files. In addition to the default workflow, Bakta provides a dedicated CLI entry point `bakta_plot`:
+Bakta allows the creation of circular genome plots via [pyCirclize](https://github.com/moshi4/pyCirclize). Plots are generated as part of the default workflow and saved as `PNG` and `SVG` files. In addition to the default workflow, Bakta provides a dedicated CLI entry point `bakta_plot`:
 
 Examples:
 
@@ -732,12 +735,15 @@ It accepts the results of a former annotation process in JSON format and allows 
 ### Usage
 
 ```bash
-usage: bakta_plot [--config CONFIG] [--output OUTPUT] [--prefix PREFIX] [--sequences SEQUENCES] [--type {features,cog}] [--label LABEL] [--help] [--verbose] [--debug] [--tmp-dir TMP_DIR] [--version] <input>
+usage: bakta_plot [--config CONFIG] [--output OUTPUT] [--prefix PREFIX]
+                  [--sequences SEQUENCES] [--type {features,cog}] [--label LABEL] [--size {4,8,16}] [--dpi {150,300,600}]
+                  [--help] [--verbose] [--debug] [--tmp-dir TMP_DIR] [--version]
+                  <input>
 
 Rapid & standardized annotation of bacterial genomes, MAGs & plasmids
 
 positional arguments:
-  <input>               Bakta annotations in JSON format
+  <input>               Bakta annotations in (zipped) JSON format
 
 Input / Output:
   --config CONFIG, -c CONFIG
@@ -824,8 +830,7 @@ Bakta is *standing on the shoulder of giants* taking advantage of many great sof
 - BLAST+ <https://doi.org/10.1186/1471-2105-10-421>
 - PyHMMER <https://doi.org/10.21105/joss.04296> HMMER <https://doi.org/10.1371/journal.pcbi.1002195>
 - AMRFinderPlus <https://doi.org/10.1038/s41598-021-91456-0>
-- DeepSig <https://doi.org/10.1093/bioinformatics/btx818>
-- Circos <https://doi.org/10.1101/gr.092759.109>
+- pyCirclize https://github.com/moshi4/pyCirclize
 
 ### Databases
 
@@ -849,7 +854,7 @@ Bakta is *standing on the shoulder of giants* taking advantage of many great sof
 If AMRFinder constantly crashes even on fresh setups and Bakta's database was downloaded manually, then AMRFinder needs to setup its own internal database. This is required only once: `amrfinder_update --force_update --database <bakta-db>/amrfinderplus-db`. You could also try Bakta's internal database download logic automatically taking care of this: `bakta_db download --output <bakta-db>`
 
 - **DeepSig not found in Conda environment**
-For the prediction of signal predictions, Bakta uses DeepSig that is currently not available for MacOS. Therefore, we decided to exclude DeepSig from Bakta's default Conda dependencies because otherwise it would not be installable on MacOS systems. On Linux systems it can be installed via `conda install -c conda-forge -c bioconda python=3.8 deepsig`.
+For the prediction of signal predictions, Bakta uses DeepSig that is currently not available for MacOS and only up to Bakta v1.9.4. Therefore, we decided to exclude DeepSig from Bakta's default Conda dependencies because otherwise it would not be installable on MacOS systems. On Linux systems it can be installed via `conda install -c conda-forge -c bioconda python=3.8 deepsig`.
 
 - **Nice, but I'm mising XYZ...**
 Bakta is quite new and we're keen to constantly improve it and further expand its feature set. In case there's anything missing, please do not hesitate to open an issue and ask for it!
