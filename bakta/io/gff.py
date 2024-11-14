@@ -93,17 +93,19 @@ def write_features(data: dict, features_by_sequence: Dict[str, dict], gff3_path:
                         'locus_tag': feat['locus'],
                         'gene': feat['gene'],
                         'product': feat['product'],
-                        'tag_peptide': feat['tag']['aa'],
                         'Dbxref': feat['db_xrefs']
                     }
+                    if('tag' in feat):
+                        annotations['tag_peptide'] = feat['tag']['aa']
                     if('truncated' in feat):
                         annotations[bc.INSDC_FEATURE_PSEUDO] = True
                     if(cfg.compliant):
                         gene_id = f"{feat['locus']}_gene"
                         annotations['Parent'] = gene_id
                         annotations['inference'] = 'profile:aragorn:1.2'
-                        annotations['tag_peptide'] = f"{feat['tag']['start']}..{feat['tag']['stop']}" if feat['strand'] == bc.STRAND_FORWARD else f"complement({feat['tag']['start']}..{feat['tag']['stop']})"
                         annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
+                        if('tag' in feat):
+                            annotations['tag_peptide'] = f"{feat['tag']['start']}..{feat['tag']['stop']}" if feat['strand'] == bc.STRAND_FORWARD else f"complement({feat['tag']['start']}..{feat['tag']['stop']})"
                         gene_annotations = {
                             'ID': gene_id,
                             'locus_tag': feat['locus'],
