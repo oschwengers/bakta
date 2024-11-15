@@ -309,16 +309,19 @@ def calc_genome_stats(data: dict):
     data['stats']['n_ratio'] = n_ratio
     log.info('N=%0.3f', n_ratio)
 
-    n50 = 0
     sequence_length_sum = 0
     for seq in sorted(data['sequences'], key=lambda x: x['length'], reverse=True):
         nt_length = len(seq['nt'])
         sequence_length_sum += nt_length
-        if(sequence_length_sum >= genome_size / 2):
-            n50 = nt_length
-            break
-    data['stats']['n50'] = n50
-    log.info('N50=%i', n50)
+        if(sequence_length_sum >= genome_size * 0.5):
+            if 'n50' not in data['stats']:
+                data['stats']['n50'] = nt_length
+                log.info('N50=%i', nt_length)
+        if(sequence_length_sum >= genome_size * 0.9):
+            if 'n90' not in data['stats']:
+                data['stats']['n90'] = nt_length
+                log.info('N90=%i', nt_length)
+    
 
     sequence_by_id = {seq['id']: seq for seq in data['sequences']}
     coding_nts = 0
