@@ -235,6 +235,10 @@ def main():
 
 def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plot_type=bc.PLOT_FEATURES, plot_label=None, plot_size=8, plot_dpi=300):
     sequence_list = insdc.build_biopython_sequence_list(data, features)
+    clipped = False
+    if(len(sequence_list) > 20):
+        sequence_list = sorted(sequence_list, key=lambda a: len(a.seq), reverse=True)[:20]  # select longest 20 sequences in draft mode
+        clipped = True
     for seq in sequence_list:  # fix edge features because PyCirclize cannot handle them correctly
         seq.features = [feat for feat in seq.features if feat.type != 'gene' and feat.type != 'source']
         for feat in seq.features:
@@ -261,9 +265,9 @@ def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plo
 
     # select style
     if plot_type == bc.PLOT_COG:
-        plot = build_features_type_cog(data, sequence_list, colors, plot_label, plot_size, plot_dpi)
+        plot = build_features_type_cog(data, sequence_list, clipped, colors, plot_label, plot_size, plot_dpi)
     else:
-        plot = build_features_type_feature(data, sequence_list, colors, plot_label, plot_size, plot_dpi)
+        plot = build_features_type_feature(data, sequence_list, clipped, colors, plot_label, plot_size, plot_dpi)
     file_name = cfg.prefix if plot_name_suffix is None else f'{cfg.prefix}_{plot_name_suffix}'
     for file_type in ['png', 'svg']:
         file_path = output_path.joinpath(f'{file_name}.{file_type}')
@@ -305,7 +309,7 @@ def build_label(data):
     return '\n'.join([lable for lable in label_list if lable is not None])
 
 
-def build_features_type_feature(data, sequence_list, colors, plot_label, plot_size, plot_dpi):
+def build_features_type_feature(data, sequence_list, clipped, colors, plot_label, plot_size, plot_dpi):
     # Get contig genome seqid & size, features dict
     total_sequence_length = sum([len(seq['nt']) for seq in data['sequences']])
     seqid2seq = {rec.id:rec.seq for rec in sequence_list}
@@ -318,7 +322,12 @@ def build_features_type_feature(data, sequence_list, colors, plot_label, plot_si
         text_size = 12
     else:
         text_size = 30
-    circos = Circos(seqid2size, space=2)
+    
+    if(clipped):
+        circos = Circos(seqid2size, space=2, start=10, end=350)
+        circos.text('...', r=99.5, color=colors['backbone'], ha='center', va='center', size=10)
+    else:
+        circos = Circos(seqid2size, space=2)
     circos.text(plot_label, r=7, size=text_size, linespacing=1.5)
     for sector in circos.sectors:
         # build tracks
@@ -366,7 +375,7 @@ def build_features_type_feature(data, sequence_list, colors, plot_label, plot_si
     return fig
 
 
-def build_features_type_cog(data, sequence_list, colors, plot_label, plot_size, plot_dpi):
+def build_features_type_cog(data, sequence_list, clipped, colors, plot_label, plot_size, plot_dpi):
     # Get contig genome seqid & size, features dict
     total_sequence_length = sum([len(seq['nt']) for seq in data['sequences']])
     seqid2seq = {rec.id:rec.seq for rec in sequence_list}
@@ -379,7 +388,12 @@ def build_features_type_cog(data, sequence_list, colors, plot_label, plot_size, 
         text_size = 12
     else:
         text_size = 30
-    circos = Circos(seqid2size, space=2)
+    
+    if(clipped):
+        circos = Circos(seqid2size, space=2, start=10, end=350)
+        circos.text('...', r=99.5, color=colors['backbone'], ha='center', va='center', size=6)
+    else:
+        circos = Circos(seqid2size, space=2)
     circos.text(plot_label, r=7, size=text_size, linespacing=1.5)
     for sector in circos.sectors:
         # build tracks
