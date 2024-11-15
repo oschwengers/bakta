@@ -109,7 +109,7 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
                 # TODO: Add fuzzy positions for oriC/oriV
                 insdc_feature_type = bc.INSDC_FEATURE_ORIGIN_REPLICATION
                 qualifiers['inference'] = 'similar to DNA sequence'
-                qualifiers['note'] = feature['product']
+                qualifiers['note'].append(feature['product'])
                 if('product' in qualifiers):
                     qualifiers['note'] = feature['product']
                     del qualifiers['product']
@@ -117,7 +117,7 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
                 # TODO: Add fuzzy positions for oriT
                 insdc_feature_type = bc.INSDC_FEATURE_ORIGIN_TRANSFER
                 qualifiers['inference'] = 'similar to DNA sequence'
-                qualifiers['note'] = feature['product']
+                qualifiers['note'].append(feature['product'])
                 if('product' in qualifiers):
                     del qualifiers['product']
             elif(feature['type'] == bc.FEATURE_CDS) or (feature['type'] == bc.FEATURE_SORF):
@@ -180,7 +180,7 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
                         anti_codon_pos = feature['anti_codon_pos']
                         qualifiers['anticodon'] = f"(pos:{anti_codon_pos[0]}..{anti_codon_pos[1]},aa:{feature['amino_acid']},seq:{feature['anti_codon']})"
                     else:
-                        qualifiers['note'] = f"tRNA-{feature['amino_acid']} ({feature['anti_codon']})"
+                        qualifiers['note'].append(f"tRNA-{feature['amino_acid']} ({feature['anti_codon']})")
                 qualifiers['inference'] = 'profile:tRNAscan:2.0'
                 insdc_feature_type = bc.INSDC_FEATURE_T_RNA
                 if(bc.PSEUDOGENE in feature):
@@ -206,7 +206,7 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
                     qualifiers['inference'] = f'profile:Rfam:{rfam_id}'
                 qualifiers[bc.INSDC_FEATURE_REGULATORY_CLASS] = select_regulatory_class(feature)
                 insdc_feature_type = bc.INSDC_FEATURE_REGULATORY
-                qualifiers['note'] = feature['product']
+                qualifiers['note'].append(feature['product'])
                 qualifiers.pop('product', None)
             elif(feature['type'] == bc.FEATURE_CRISPR):
                 qualifiers[bc.INSDC_FEATURE_REPEAT_FAMILY] = 'CRISPR'
@@ -214,7 +214,7 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
                 qualifiers[bc.INSDC_FEATURE_REPEAT_UNIT_SEQ] = feature['repeat_consensus']
                 qualifiers['inference'] = 'COORDINATES:alignment:pilercr:1.02'
                 insdc_feature_type = bc.INSDC_FEATURE_REPEAT_REGION
-                qualifiers['note'] = feature['product']
+                qualifiers['note'].append(feature['product'])
                 qualifiers.pop('product', None)
 
             strand = None
