@@ -454,6 +454,9 @@ def build_sequence_backbone_track(sector, outer_track, total_sequence_length, co
     elif total_sequence_length >= 1_000:
         major_interval = 1_000
         minor_interval = int(major_interval / 10)
+    else:
+        major_interval = 100
+        minor_interval = int(major_interval / 10)
     
     if plot_size == 4:
         text_size = 4
