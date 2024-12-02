@@ -22,7 +22,7 @@ log = logging.getLogger('INSDC')
 def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
     sequence_list = []
     for seq in data['sequences']:
-        sequence_features = [feat for feat in features if feat['sequence'] == seq['id']]
+        sequence_features = [feat for feat in features if feat['sequence'] == seq['id']] if 'sequence' in features[0] else [feat for feat in features if feat['contig'] == seq['id']]  # <1.10.0 compatibility
         comment = (
             'Annotated with Bakta',
             f"Software: v{bakta.__version__}\n",
@@ -46,7 +46,7 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
         )
         sequence_annotations = {
             'molecule_type': 'DNA',
-            'source': data['genome']['taxon'],
+            'source': data['genome'].get('taxon', ''),
             'date': date.today().strftime('%d-%b-%Y').upper(),
             'topology': seq['topology'],
             'data_file_division': 'HGT' if seq['type'] == bc.REPLICON_CONTIG else 'BCT',
@@ -60,7 +60,7 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
         }
 
         description = ''
-        if(data['genome']['taxon']):
+        if(data['genome'].get('taxon', None)):
             sequence_annotations['organism'] = data['genome']['taxon']
             source_qualifiers['organism'] = data['genome']['taxon']
             description = data['genome']['taxon']
@@ -81,7 +81,8 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
         if(len(description) > 0 and description[0] == ' '):  # discard potential leading whitespace
             description = description[1:]
 
-        sequence_record = SeqIO.SeqRecord(id=seq['id'], name=seq['id'], description=description, annotations=sequence_annotations, seq=Seq(seq['nt']))
+        seq_bio = Seq(seq['nt']) if 'nt' in seq else Seq(seq['sequence'])  # <1.10.0 compatibility
+        sequence_record = SeqIO.SeqRecord(id=seq['id'], name=seq['id'], description=description, annotations=sequence_annotations, seq=seq_bio)
 
         source = SeqFeature(FeatureLocation(0, seq['length'], strand=+1), type='source', qualifiers=source_qualifiers)
         seq_feature_list = [source]
@@ -189,8 +190,8 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
                 qualifiers['inference'] = 'profile:aragorn:1.2'
                 if('tag' in feature):
                     qualifiers['tag_peptide'] = f"{feature['tag']['start']}..{feature['tag']['stop']}"
-                if feature['strand'] == bc.STRAND_REVERSE:
-                    qualifiers['tag_peptide'] = f"complement({qualifiers['tag_peptide']})"
+                    if feature['strand'] == bc.STRAND_REVERSE:
+                        qualifiers['tag_peptide'] = f"complement({qualifiers['tag_peptide']})"
                 insdc_feature_type = bc.INSDC_FEATURE_TM_RNA
             elif(feature['type'] == bc.FEATURE_R_RNA):
                 for rfam_id in [dbxref.split(':')[1] for dbxref in feature['db_xrefs'] if dbxref.split(':')[0] == bc.DB_XREF_RFAM]:

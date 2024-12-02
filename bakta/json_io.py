@@ -98,7 +98,8 @@ def main():
     features = data['features']
     features_by_sequence = {seq['id']: [] for seq in data['sequences']}
     for feature in data['features']:
-        sequence_features = features_by_sequence.get(feature['sequence'])
+        seq_id = feature['sequence'] if 'sequence' in feature else feature['contig']  # <1.10.0 compatibility
+        sequence_features = features_by_sequence.get(seq_id)
         sequence_features.append(feature)
     
     # set global config objects based on information from imported JSON document

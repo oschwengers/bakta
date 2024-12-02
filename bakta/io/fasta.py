@@ -70,7 +70,7 @@ def export_sequences(sequences: Sequence[dict], fasta_path: Path, description: b
             else:
                 fh.write(f">{seq['id']}\n")
             if(wrap):
-                fh.write(wrap_sequence(seq['nt']))
+                fh.write(wrap_sequence(seq['nt'] if 'nt' in seq else seq['sequence']))  # <1.10.0 compatibility
             else:
                 fh.write(seq['nt'])
                 fh.write('\n')

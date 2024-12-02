@@ -30,6 +30,7 @@ def write_features(sequences: Sequence[dict], features_by_sequence: Dict[str, di
 
         for seq in sequences:
             for feat in features_by_sequence[seq['id']]:
+                seq_id = feat['sequence'] if 'sequence' in feat else feat['contig']  # <1.10.0 compatibility
                 feat_type = feat['type']
                 if(feat_type == bc.FEATURE_GAP):
                     feat_type = bc.INSDC_FEATURE_ASSEMBLY_GAP if feat['length'] >= 100 else bc.INSDC_FEATURE_GAP
@@ -46,7 +47,7 @@ def write_features(sequences: Sequence[dict], features_by_sequence: Dict[str, di
                     product = f"(partial) {product}"
                 fh.write('\t'.join(
                     [
-                        feat['sequence'],
+                        seq_id,
                         feat_type,
                         str(feat['start']),
                         str(feat['stop']),
@@ -62,15 +63,15 @@ def write_features(sequences: Sequence[dict], features_by_sequence: Dict[str, di
                     i = 0
                     while i < len(feat['spacers']):
                         repeat = feat['repeats'][i]
-                        fh.write('\t'.join([feat['sequence'], bc.FEATURE_CRISPR_REPEAT, str(repeat['start']), str(repeat['stop']), repeat['strand'], '', '', f"CRISPR repeat", '']))
+                        fh.write('\t'.join([seq_id, bc.FEATURE_CRISPR_REPEAT, str(repeat['start']), str(repeat['stop']), repeat['strand'], '', '', f"CRISPR repeat", '']))
                         fh.write('\n')
                         spacer = feat['spacers'][i]
-                        fh.write('\t'.join([feat['sequence'], bc.FEATURE_CRISPR_SPACER, str(spacer['start']), str(spacer['stop']), spacer['strand'], '', '', f"CRISPR spacer, sequence {spacer['sequence']}", '']))
+                        fh.write('\t'.join([seq_id, bc.FEATURE_CRISPR_SPACER, str(spacer['start']), str(spacer['stop']), spacer['strand'], '', '', f"CRISPR spacer, sequence {spacer['sequence']}", '']))
                         fh.write('\n')
                         i += 1
                     if(len(feat['repeats']) - 1 == i):
                         repeat = feat['repeats'][i]
-                        fh.write('\t'.join([feat['sequence'], bc.FEATURE_CRISPR_REPEAT, str(repeat['start']), str(repeat['stop']), repeat['strand'], '', '', f"CRISPR repeat", '']))
+                        fh.write('\t'.join([seq_id, bc.FEATURE_CRISPR_REPEAT, str(repeat['start']), str(repeat['stop']), repeat['strand'], '', '', f"CRISPR repeat", '']))
                         fh.write('\n')
     return
 
@@ -100,14 +101,14 @@ def write_feature_inferences(sequences: Sequence[dict], features_by_sequence: Di
                     elif('psc' in feat or 'pscc' in feat):
                         psc_type = 'psc' if 'psc' in feat else 'pscc'
                         query_cov = feat[psc_type]['query_cov']
-                        subject_cov = feat[psc_type]['subject_cov']
+                        subject_cov = feat[psc_type].get('subject_cov', -1)
                         identity = feat[psc_type]['identity']
-                        score = feat[psc_type]['score']
-                        evalue = feat[psc_type]['evalue']
+                        score = feat[psc_type].get('score', -1)
+                        evalue = feat[psc_type].get('evalue', -1)
                         accession = f"{bc.DB_XREF_UNIREF}:{feat['psc'][bpsc.DB_PSC_COL_UNIREF90]}" if 'psc' in feat else f"{bc.DB_XREF_UNIREF}:{feat['pscc'][bpscc.DB_PSCC_COL_UNIREF50]}"
                     fh.write('\t'.join(
                         [
-                            feat['sequence'],
+                            feat['sequence'] if 'sequence' in feat else feat['contig'],  # <1.10.0 compatibility
                             feat['type'],
                             str(feat['start']),
                             str(feat['stop']),
@@ -126,7 +127,7 @@ def write_feature_inferences(sequences: Sequence[dict], features_by_sequence: Di
                     accession = '-' if feat['type'] == bc.FEATURE_T_RNA else [xref for xref in feat['db_xrefs'] if bc.DB_XREF_RFAM in xref][0]
                     fh.write('\t'.join(
                         [
-                            feat['sequence'],
+                            feat['sequence'] if 'sequence' in feat else feat['contig'],  # <1.10.0 compatibility
                             feat['type'],
                             str(feat['start']),
                             str(feat['stop']),
@@ -173,5 +174,6 @@ def write_hypotheticals(hypotheticals: Sequence[dict], tsv_path: Path):
             seq_stats = hypo['seq_stats']
             mol_weight = f"{(seq_stats['molecular_weight']/1000):.1f}" if seq_stats['molecular_weight'] else 'NA'
             iso_point = f"{seq_stats['isoelectric_point']:.1f}" if seq_stats['isoelectric_point'] else 'NA'
-            fh.write(f"{hypo['sequence']}\t{hypo['start']}\t{hypo['stop']}\t{hypo['strand']}\t{hypo.get('locus', '')}\t{mol_weight}\t{iso_point}\t{', '.join(sorted(pfams))}\t{', '.join(sorted(hypo.get('db_xrefs', [])))}\n")
+            seq_id = hypo['sequence'] if 'sequence' in hypo else hypo['contig']  # <1.10.0 compatibility
+            fh.write(f"{seq_id}\t{hypo['start']}\t{hypo['stop']}\t{hypo['strand']}\t{hypo.get('locus', '')}\t{mol_weight}\t{iso_point}\t{', '.join(sorted(pfams))}\t{', '.join(sorted(hypo.get('db_xrefs', [])))}\n")
     return

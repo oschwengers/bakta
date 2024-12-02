@@ -281,7 +281,7 @@ def build_label(data):
     if taxon == '' or taxon == ' ':
         taxon = None
     strain = data['genome'].get('strain', '') if data['genome'].get('strain', None) else ''
-    genome_size = sum([len(seq['nt']) for seq in data['sequences']])
+    genome_size = sum([len(seq['nt']) for seq in data['sequences']]) if 'nt' in data['sequences'][0] else sum([len(seq['sequence']) for seq in data['sequences']])  # <1.10.0 compatibility
     genome_size_lable = f'{(genome_size/(10**6)):0.1f} Mbp' if genome_size >= 10**6 else f'{(genome_size/(10**3)):0.1f} kbp'
     label_list = []
     sequence_number = len(data['sequences'])
@@ -311,7 +311,7 @@ def build_label(data):
 
 def build_features_type_feature(data, sequence_list, clipped, colors, plot_label, plot_size, plot_dpi):
     # Get contig genome seqid & size, features dict
-    total_sequence_length = sum([len(seq['nt']) for seq in data['sequences']])
+    total_sequence_length = sum([len(seq['nt']) for seq in data['sequences']]) if 'nt' in data['sequences'][0] else sum([len(seq['sequence']) for seq in data['sequences']])  # <1.10.0 compatibility
     seqid2seq = {rec.id:rec.seq for rec in sequence_list}
     seqid2size = {rec.id:len(rec.seq) for rec in sequence_list}
     seqid2features = {rec.id:rec.features for rec in sequence_list}
