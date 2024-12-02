@@ -191,7 +191,7 @@ GRAM_UNKNOWN = '?'
 ############################################################################
 REPLICON_CHROMOSOME = 'chromosome'
 REPLICON_PLASMID = 'plasmid'
-REPLICON_CONTIG = 'sequence'
+REPLICON_CONTIG = 'contig'
 REPLICON_LENGTH_THRESHOLD_PLASMID = 112_000  # Nasuia deltocephalinicola -> DOI: 10.1093/gbe/evt118
 REPLICON_LENGTH_THRESHOLD_CHROMOSOME = 2_800_000  # max plasmid length (except 1 outlier-> https://ccb-microbe.cs.uni-saarland.de/plsdb/plasmids/
 TOPOLOGY_CIRCULAR = 'circular'
