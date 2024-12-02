@@ -242,8 +242,8 @@ def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plo
     for seq in sequence_list:  # fix edge features because PyCirclize cannot handle them correctly
         seq.features = [feat for feat in seq.features if feat.type != 'gene' and feat.type != 'source']
         for feat in seq.features:
-            feat_loc = feat.location
-            if isinstance(feat_loc, CompoundLocation):
+            if isinstance(feat.location, CompoundLocation):
+                feat_loc = feat.location
                 log.debug('split edge feature: seq=%s, start=%i, stop=%i, strand=%s', seq.id, feat_loc.start, feat_loc.end, '+' if feat_loc.strand==1 else '-')
                 if(feat_loc.strand == +1):
                     feat.location = FeatureLocation(feat_loc.parts[0].start, len(seq.seq), strand=feat_loc.strand)
@@ -255,10 +255,11 @@ def write(data, features, output_path, colors=COLORS, plot_name_suffix=None, plo
                     feat_2 = copy.deepcopy(feat)
                     feat_2.location = FeatureLocation(feat_loc.parts[1].start,  len(seq.seq), strand=feat_loc.strand)
                     seq.features.append(feat_2)
-            elif isinstance(feat_loc.start, AfterPosition) or isinstance(feat_loc.start, BeforePosition):
-                feat.location = FeatureLocation(int(str(feat_loc.start)[1:]), feat_loc.end, strand=feat_loc.strand)
-            elif isinstance(feat_loc.end, AfterPosition) or isinstance(feat_loc.end, BeforePosition):
-                feat.location = FeatureLocation(feat_loc.start, int(str(feat_loc.end)[1:]), strand=feat_loc.strand)
+            else:
+                if isinstance(feat.location.start, AfterPosition) or isinstance(feat.location.start, BeforePosition):
+                    feat.location = FeatureLocation(int(str(feat.location.start)[1:]), feat.location.end, strand=feat.location.strand)
+                if isinstance(feat.location.end, AfterPosition) or isinstance(feat.location.end, BeforePosition):
+                    feat.location = FeatureLocation(feat.location.start, int(str(feat.location.end)[1:]), strand=feat.location.strand)
 
     # build lable
     plot_label = build_label(data) if plot_label is None else plot_label.replace('|', '\n')
