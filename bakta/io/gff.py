@@ -46,7 +46,7 @@ def write_features(data: dict, features_by_sequence: Dict[str, dict], gff3_path:
             fh.write(f"{seq['id']}\tBakta\tregion\t1\t{str(seq['length'])}\t.\t+\t.\t{annotations}\n")
 
             for feat in features_by_sequence[seq['id']]:
-                seq_id = seq_id if 'sequence' in feat else feat['contig']  # <1.10.0 compatibility
+                seq_id = feat['sequence'] if 'sequence' in feat else feat['contig']  # <1.10.0 compatibility
                 start = feat['start']
                 stop = feat['stop']
                 if('edge' in feat):

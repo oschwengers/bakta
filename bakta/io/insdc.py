@@ -22,7 +22,9 @@ log = logging.getLogger('INSDC')
 def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
     sequence_list = []
     for seq in data['sequences']:
-        sequence_features = [feat for feat in features if feat['sequence'] == seq['id']] if 'sequence' in features[0] else [feat for feat in features if feat['contig'] == seq['id']]  # <1.10.0 compatibility
+        sequence_features = []
+        if len(features) > 0:
+            [feat for feat in features if feat['sequence'] == seq['id']] if 'sequence' in features[0] else [feat for feat in features if feat['contig'] == seq['id']]  # <1.10.0 compatibility
         comment = (
             'Annotated with Bakta',
             f"Software: v{bakta.__version__}\n",
