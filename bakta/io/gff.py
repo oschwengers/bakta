@@ -403,5 +403,5 @@ def write_signal_peptide(fh, feat: dict):  # <1.10.0 compatibility
         'Parent': feat['locus']
     }
     annotations = encode_annotations(annotations)
-    seq_id = seq_id if 'sequence' in feat else feat['contig']
+    seq_id = feat['sequence'] if 'sequence' in feat else feat['contig']  # <1.10.0 compatibility
     fh.write(f"{seq_id}\tDeepSig\t{so.SO_SIGNAL_PEPTIDE.name}\t{sig_peptide['start']}\t{sig_peptide['stop']}\t{sig_peptide['score']:.2f}\t{feat['strand']}\t.\t{annotations}\n")
