@@ -54,7 +54,7 @@ def init_parser(sub_command: str=''):
     parser = argparse.ArgumentParser(
         prog=f'bakta{sub_command}',
         description='Rapid & standardized annotation of bacterial genomes, MAGs & plasmids',
-        epilog=f'Version: {bakta.__version__}\nDOI: {bc.BAKTA_DOI}\nURL: github.com/oschwengers/bakta\n\nCitation:\n{bc.BAKTA_CITATION}',
+        epilog=f'Version: {cfg.version}\nDOI: {bc.BAKTA_DOI}\nURL: github.com/oschwengers/bakta\n\nCitation:\n{bc.BAKTA_CITATION}',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         add_help=False
     )
@@ -115,7 +115,7 @@ def parse_arguments():
     arg_group_general.add_argument('--debug', action='store_true', help='Run Bakta in debug mode. Temp data will not be removed.')
     arg_group_general.add_argument('--threads', '-t', action='store', type=int, default=0, help='Number of threads to use (default = number of available CPUs)')
     arg_group_general.add_argument('--tmp-dir', action='store', default=None, dest='tmp_dir', help='Location for temporary files (default = system dependent auto detection)')
-    arg_group_general.add_argument('--version', action='version', version=f'%(prog)s {bakta.__version__}')
+    arg_group_general.add_argument('--version', action='version', version=f'%(prog)s {cfg.version}')
     return parser.parse_args()
 
 
@@ -127,7 +127,7 @@ def setup_logger(output_path: Path, prefix: str, args: Namespace):
         datefmt='%H:%M:%S',
         level=logging.DEBUG if args.debug else logging.INFO
     )
-    log.info('version=%s', bakta.__version__)
+    log.info('version=%s', cfg.version)
     log.info('developer: Oliver Schwengers, github.com/oschwengers')
     log.info('command: %s', ' '.join(sys.argv))
     log.info('local time: %s', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))

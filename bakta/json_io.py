@@ -38,7 +38,7 @@ def main():
     arg_group_general.add_argument('--verbose', '-v', action='store_true', help='Print verbose information')
     arg_group_general.add_argument('--debug', action='store_true', help='Run Bakta in debug mode. Temp data will not be removed.')
     arg_group_general.add_argument('--tmp-dir', action='store', default=None, dest='tmp_dir', help='Location for temporary files (default = system dependent auto detection)')
-    arg_group_general.add_argument('--version', '-V', action='version', version=f'%(prog)s {bakta.__version__}')
+    arg_group_general.add_argument('--version', '-V', action='version', version=f'%(prog)s {cfg.version}')
     args = parser.parse_args()
 
     ############################################################################
@@ -77,7 +77,7 @@ def main():
     log.info('verbose=%s', cfg.verbose)
     
     if(cfg.verbose):
-        print(f'Bakta v{bakta.__version__}')
+        print(f'Bakta v{cfg.version}')
         print('Options and arguments:')
         print(f'\tinput: {annotation_path}')
         print(f'\toutput: {cfg.output_path}')
@@ -103,6 +103,7 @@ def main():
         sequence_features.append(feature)
     
     # set global config objects based on information from imported JSON document
+    cfg.version = data['version']['bakta']
     cfg.db_info = {
         'type': data['version']['db']['type'],
         'major': data['version']['db']['version'].split('.')[0],
@@ -188,7 +189,7 @@ def main():
         fh_out.write(f"oriVs: {len([feat for feat in features if feat['type'] == bc.FEATURE_ORIV])}\n")
         fh_out.write(f"oriTs: {len([feat for feat in features if feat['type'] == bc.FEATURE_ORIT])}\n")
         fh_out.write('\nBakta:\n')
-        fh_out.write(f'Software: v{bakta.__version__}\n')
+        fh_out.write(f'Software: v{cfg.version}\n')
         fh_out.write(f"Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}\n")
         fh_out.write('DOI: 10.1099/mgen.0.000685\n')
         fh_out.write('URL: github.com/oschwengers/bakta\n')

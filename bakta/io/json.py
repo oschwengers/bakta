@@ -32,7 +32,7 @@ def write_json(data: dict, features: Sequence[dict], json_path: Path):
                 psc.pop('db_xrefs')
 
     version = OrderedDict()
-    version['bakta'] = bakta.__version__
+    version['bakta'] = cfg.version
     version['db'] = {
         'version': f"{cfg.db_info['major']}.{cfg.db_info['minor']}",
         'type': cfg.db_info['type']

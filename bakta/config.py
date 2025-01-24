@@ -9,6 +9,7 @@ from argparse import Namespace
 from datetime import datetime
 from pathlib import Path
 
+import bakta
 import bakta.constants as bc
 
 
@@ -26,6 +27,7 @@ verbose = None
 debug = None
 
 # input / output configuration
+version = bakta.__version__
 db_path = None
 db_info = None
 tmp_path = None

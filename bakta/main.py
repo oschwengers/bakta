@@ -58,7 +58,7 @@ def main():
     cfg.db_info = db.check(cfg.db_path)
     bu.test_dependencies()
     if(cfg.verbose):
-        print(f'Bakta v{bakta.__version__}')
+        print(f'Bakta v{cfg.version}')
         print('Options and arguments:')
         print(f'\tinput: {cfg.genome_path}')
         print(f"\tdb: {cfg.db_path}, version {cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}")
@@ -614,7 +614,7 @@ def main():
         fh_out.write(f"oriVs: {len([feat for feat in features if feat['type'] == bc.FEATURE_ORIV])}\n")
         fh_out.write(f"oriTs: {len([feat for feat in features if feat['type'] == bc.FEATURE_ORIT])}\n")
         fh_out.write('\nBakta:\n')
-        fh_out.write(f'Software: v{bakta.__version__}\n')
+        fh_out.write(f'Software: v{cfg.version}\n')
         fh_out.write(f"Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}\n")
         fh_out.write('DOI: 10.1099/mgen.0.000685\n')
         fh_out.write('URL: github.com/oschwengers/bakta\n')

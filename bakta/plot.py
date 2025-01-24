@@ -99,7 +99,7 @@ def main():
     arg_group_general.add_argument('--verbose', '-v', action='store_true', help='Print verbose information')
     arg_group_general.add_argument('--debug', action='store_true', help='Run Bakta in debug mode. Temp data will not be removed.')
     arg_group_general.add_argument('--tmp-dir', action='store', default=None, dest='tmp_dir', help='Location for temporary files (default = system dependent auto detection)')
-    arg_group_general.add_argument('--version', action='version', version=f'%(prog)s {bakta.__version__}')
+    arg_group_general.add_argument('--version', action='version', version=f'%(prog)s {cfg.version}')
     args = parser.parse_args()
 
     ############################################################################
@@ -163,7 +163,7 @@ def main():
 
     bu.test_dependencies()
     if(cfg.verbose):
-        print(f'Bakta v{bakta.__version__}')
+        print(f'Bakta v{cfg.version}')
         print('Options and arguments:')
         print(f'\tinput: {annotation_path}')
         if(args.config): print(f'\tconfig: {args.config}')

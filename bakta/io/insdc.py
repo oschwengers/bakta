@@ -9,7 +9,6 @@ from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqFeature import SeqFeature, FeatureLocation, CompoundLocation, AfterPosition, BeforePosition
 
-import bakta
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.features.annotation as ba
@@ -27,7 +26,7 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
             sequence_features = [feat for feat in features if feat['sequence'] == seq['id']] if 'sequence' in features[0] else [feat for feat in features if feat['contig'] == seq['id']]  # <1.10.0 compatibility
         comment = (
             'Annotated with Bakta',
-            f"Software: v{bakta.__version__}\n",
+            f"Software: v{cfg.version}\n",
             f"Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}\n",
             f'DOI: {bc.BAKTA_DOI}\n',
             f'URL: {bc.BAKTA_URL}\n',
@@ -49,7 +48,7 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
         sequence_annotations = {
             'molecule_type': 'DNA',
             'source': data['genome'].get('taxon', ''),
-            'date': date.today().strftime('%d-%b-%Y').upper(),
+            'date': cfg.run_end.strftime('%d-%b-%Y').upper(),
             'topology': seq['topology'],
             'data_file_division': 'HGT' if seq['type'] == bc.REPLICON_CONTIG else 'BCT',
             # 'accession': '*',  # hold back until EMBL output bug is fixed in BioPython (https://github.com/biopython/biopython/pull/3572)
@@ -140,7 +139,7 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
                     else:
                         inference.append('ab initio prediction:Prodigal:2.6')
                 else:
-                    inference.append(f"ab initio prediction:Bakta:{'.'.join(bakta.__version__.split('.')[0:2])}")
+                    inference.append(f"ab initio prediction:Bakta:{'.'.join(cfg.version.split('.')[0:2])}")
                 if('ncbi_nrp_id' in feature.get('ups', {})):
                     nrp_id = feature['ups']['ncbi_nrp_id']
                     inference.append(f'similar to AA sequence:{bc.DB_XREF_REFSEQ_NRP}:{nrp_id}')

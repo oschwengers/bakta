@@ -51,7 +51,7 @@ def main():
     arg_group_general.add_argument('--debug', action='store_true', help='Run Bakta in debug mode. Temp data will not be removed.')
     arg_group_general.add_argument('--threads', '-t', action='store', type=int, default=0, help='Number of threads to use (default = number of available CPUs)')
     arg_group_general.add_argument('--tmp-dir', action='store', default=None, dest='tmp_dir', help='Location for temporary files (default = system dependent auto detection)')
-    arg_group_general.add_argument('--version', '-V', action='version', version=f'%(prog)s {bakta.__version__}')
+    arg_group_general.add_argument('--version', '-V', action='version', version=f'%(prog)s {cfg.version}')
     args = parser.parse_args()
 
     ############################################################################
@@ -108,7 +108,7 @@ def main():
     
     bu.test_dependencies()
     if(cfg.verbose):
-        print(f'Bakta v{bakta.__version__}')
+        print(f'Bakta v{cfg.version}')
         print('Options and arguments:')
         print(f'\tinput: {aa_path}')
         print(f"\tdb: {cfg.db_path}, version {cfg.db_info['major']}.{cfg.db_info['minor']}")
