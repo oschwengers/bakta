@@ -170,6 +170,8 @@ def main():
         fh_out.write(f"Count: {len(data['sequences'])}\n")
         fh_out.write(f"GC: {100 * data['stats']['gc']:.1f}\n")
         fh_out.write(f"N50: {data['stats']['n50']:}\n")
+        if('n90' in data['stats']):
+            fh_out.write(f"N90: {data['stats']['n90']:}\n")
         fh_out.write(f"N ratio: {100 * data['stats']['n_ratio']:.1f}\n")
         fh_out.write(f"coding density: {100 * data['stats']['coding_ratio']:.1f}\n")
         fh_out.write('\nAnnotation:\n')
