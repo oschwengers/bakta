@@ -75,7 +75,7 @@ pscc_sorf_seqs = 0
 pscc_total = 0
 uniref50_uniparc_ids = {}
 print('parse & store PSCC information...')
-with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, xopen(str(uniref50_path), mode='rb') as fh_xml, pscc_path.open(mode='wt') as fh_fasta_pscc, pscc_sorf_path.open(mode='wt') as fh_fasta_pscc_sorf, alive_bar() as bar:
+with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, xopen(str(uniref50_path), mode='rb', threads=2) as fh_xml, pscc_path.open(mode='wt') as fh_fasta_pscc, pscc_sorf_path.open(mode='wt') as fh_fasta_pscc_sorf, alive_bar() as bar:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
@@ -169,7 +169,7 @@ print('\n')
 
 print(f'UniParc ({len(uniref50_uniparc_ids)})...')
 log_pscc.debug('lookup non-representative UniParc seed sequences: %s', len(uniref50_uniparc_ids))
-with xopen(str(uniparc_path), mode='rt') as fh_uniparc, pscc_path.open(mode='at') as fh_fasta_psc, pscc_sorf_path.open(mode='at') as fh_fasta_sorf, alive_bar() as bar:
+with xopen(str(uniparc_path), mode='rt', threads=2) as fh_uniparc, pscc_path.open(mode='at') as fh_fasta_psc, pscc_sorf_path.open(mode='at') as fh_fasta_sorf, alive_bar() as bar:
     for record in SeqIO.parse(fh_uniparc, 'fasta'):
         uniref50_id = uniref50_uniparc_ids.get(record.id, None)
         if(uniref50_id):
