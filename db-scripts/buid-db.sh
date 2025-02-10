@@ -211,10 +211,10 @@ rm -rf profiles ko_list.gz kofam* hmmsearch.kofam.* hmms*
 printf "\n13/20: download RefSeq nonredundant proteins and clusters ...\n"
 wget https://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_proteins.txt
 wget https://ftp.ncbi.nlm.nih.gov/genomes/CLUSTERS/PCLA_clusters.txt
-for i in {1..360}; do
-    wget https://ftp.ncbi.nlm.nih.gov/refseq/release/bacteria/bacteria.nonredundant_protein.${i}.protein.faa.gz
-    pigz -dc bacteria.nonredundant_protein.${i}.protein.faa.gz | seqtk seq -CU >> refseq-bacteria-nrp.trimmed.faa
-    rm bacteria.nonredundant_protein.${i}.protein.faa.gz
+for i in {1..652}; do
+    wget https://ftp.ncbi.nih.gov/refseq/release/bacteria/bacteria.wp_protein.${i}.protein.faa.gz
+    pigz -dc bacteria.wp_protein.${i}.protein.faa.gz | seqtk seq -CU >> refseq-bacteria-nrp.trimmed.faa
+    rm bacteria.wp_protein.${i}.protein.faa.gz
 done
 printf "\n13/20: annotate IPSs and PSCs ...\n"
 python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-nrp.py --db bakta.db --nrp refseq-bacteria-nrp.trimmed.faa --pcla-proteins PCLA_proteins.txt --pcla-clusters PCLA_clusters.txt
