@@ -106,15 +106,6 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, xopen(s
                         product = product.get('value')
                         if(product.lower() in DISCARDED_PRODUCTS):
                             product = None
-                    # print(f"\n{i}")
-                    # print(f"id={uniref50_id}")
-                    # print(f"member_count={member_count}")
-                    # print(f"common_tax_id={common_tax_id}")
-                    # print(f"rep_member={rep_member}")
-                    # print(f"rep_member_dbref={rep_member_dbref}")
-                    # print(f"rep_member_organism={rep_member_organism}")
-                    # print(f"rep_member_tax_id={rep_member_tax_id}")
-                    # print(f"product={product}")
                     # lookup seed sequence
                     is_seed = rep_member_dbref.find('./{*}property[@type="isSeed"]')
                     if(is_seed is not None):  # representative is seed sequence
