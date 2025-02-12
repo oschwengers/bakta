@@ -89,14 +89,14 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                 if('Fragment' not in elem.find('./{*}name').text):  # skip protein fragments
                     common_tax_id = elem.find('./{*}property[@type="common taxon ID"]')
                     common_tax_id = common_tax_id.get('value') if common_tax_id is not None else 1
-    
+
                     rep_member_dbref = elem.find('./{*}representativeMember/{*}dbReference')
                     rep_member_organism = rep_member_dbref.find('./{*}property[@type="source organism"]')  # source organism
                     rep_member_organism = rep_member_organism.get('value') if rep_member_organism is not None else ''
-    
+
                     rep_member_tax_id = rep_member_dbref.find('./{*}property[@type="NCBI taxonomy"]')
                     rep_member_tax_id = rep_member_tax_id.get('value') if rep_member_tax_id is not None else 1
-    
+
                     # filter for bacterial or phage protein sequences
                     if(is_taxon_child(common_tax_id, '2', taxonomy) or is_taxon_child(rep_member_tax_id, '2', taxonomy) or 'phage' in rep_member_organism.lower()):
                         uniref100_id = elem.attrib['id'][10:]
@@ -124,7 +124,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                             product = product.get('value')
                             if(product.lower() in DISCARDED_PRODUCTS):
                                 product = None
-    
+
                         uniref90_id = rep_member_dbref.find('./{*}property[@type="UniRef90 ID"]')
                         if(uniref90_id is not None):
                             uniref90_id = uniref90_id.attrib['value'][9:]
@@ -132,7 +132,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                             if(rec_psc is not None):
                                 if(rec_psc['product'] is not None):
                                     product = None  # skip IPS product and use the PSC/UniRef90 product annotation
-    
+
                         ips = (
                             uniref100_id,
                             uniref90_id,
@@ -151,7 +151,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                             else:  # use DBRef type (either UniParc or UniProtKB)
                                 seed_db_type = member_dbref.get('type')
                                 seed_db_id = member_dbref.get('id')
-    
+
                             if(seed_db_type == 'UniParc ID'):
                                 if(seed_db_id not in uniparc_to_uniref100):
                                     uniparc_to_uniref100[seed_db_id] = uniref100_id
@@ -171,7 +171,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     print(f'UniParc ({len(uniparc_to_uniref100)})...')
     log_ups.debug('lookup non-representative UniParc member sequences: %s', len(uniparc_to_uniref100))
     db_updates = 0
-    with xopen(str(uniparc_path), mode='rt', threads=2) as fh_uniparc, alive_bar() as bar:
+    with xopen(str(uniparc_path), mode='rt') as fh_uniparc, alive_bar() as bar:
         for record in SeqIO.parse(fh_uniparc, 'fasta'):
             uniparc_id = record.id
             uniref100_id = uniparc_to_uniref100.get(uniparc_id, None)

@@ -168,7 +168,7 @@ print('\n')
 
 print(f'UniParc ({len(uniref90_uniparc_ids)})...')
 log_psc.debug('lookup non-representative UniParc seed sequences: %s', len(uniref90_uniparc_ids))
-with xopen(str(uniparc_path), mode='rt', threads=2) as fh_uniparc, psc_path.open(mode='at') as fh_fasta_psc, psc_sorf_path.open(mode='at') as fh_fasta_sorf, alive_bar() as bar:
+with xopen(str(uniparc_path), mode='rt') as fh_uniparc, psc_path.open(mode='at') as fh_fasta_psc, psc_sorf_path.open(mode='at') as fh_fasta_sorf, alive_bar() as bar:
     for record in SeqIO.parse(fh_uniparc, 'fasta'):
         uniref90_id = uniref90_uniparc_ids.get(record.id, None)
         if(uniref90_id):
