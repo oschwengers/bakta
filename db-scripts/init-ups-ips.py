@@ -83,7 +83,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     db_updates = 0
     ups_seqs = 0
     ips_seqs = 0
-    with xopen(str(uniref100_path), mode='rb') as fh_xml, ips_path.open(mode='wt') as fh_fasta_ips, alive_bar() as bar:
+    with xopen(str(uniref100_path), mode='rb') as fh_xml, ips_path.open(mode='wt') as fh_fasta_ips, alive_bar(enrich_print=False) as bar:
         for event, elem in et.iterparse(fh_xml, events=('end',)):
             if elem.tag == '{http://uniprot.org/uniref}entry':
                 if('Fragment' not in elem.find('./{*}name').text):  # skip protein fragments
@@ -171,7 +171,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     print(f'UniParc ({len(uniparc_to_uniref100)})...')
     log_ups.debug('lookup non-representative UniParc member sequences: %s', len(uniparc_to_uniref100))
     db_updates = 0
-    with xopen(str(uniparc_path), mode='rt') as fh_uniparc, alive_bar() as bar:
+    with xopen(str(uniparc_path), mode='rt') as fh_uniparc, alive_bar(enrich_print=False) as bar:
         for record in SeqIO.parse(fh_uniparc, 'fasta'):
             uniparc_id = record.id
             uniref100_id = uniparc_to_uniref100.get(uniparc_id, None)
