@@ -48,8 +48,10 @@ with cog_ids_path.open() as fh:
                 product = None
             if(gene == ''):
                 gene = None
+            if(cat == ''):
+                cat = None
             cogs_by_id[id] = {
-                'id': id[3:],
+                'id': id,
                 'cat': cat,
                 'product': product,
                 'gene': gene
@@ -64,7 +66,7 @@ with nrp_cog_mapping_path.open() as fh:
         # (gene_id, assembly_id, gb_id, protein_length, footprint_coordinates_protein, cog_footprint_length, cog_id, reserved_, cog_membership_class, bitscore, evalue, profile_length, footprint_coordinates_profile)
         cog_id = cols[6]
         nrp_id = cols[2]
-        if nrp_id.startswith('WP_') and cog_id in cogs_by_id:
+        if cog_id != ''  and  nrp_id.startswith('WP_') and cog_id in cogs_by_id:
             nrp_to_cog[nrp_id] = cog_id
 print(f'\tmapped COG IDs: {len(nrp_to_cog)}')
 
@@ -98,39 +100,38 @@ with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='
         rec_ups = conn.execute('SELECT length, uniref100_id FROM ups WHERE hash=?', (seq_hash_digest,)).fetchone()
         if(rec_ups is not None):
             assert rec_ups['length'] == len(seq), f"Detected hash duplicate with different seq length! hash={seq_hash_hexdigest}, NCRBI-NRP-id={nrp_id}, UniParc-id={rec_ups['uniparc_id']}, NCRBI-NRP-length={rec_ups['length']}, db-length={rec_ups['length']}"
+            conn.execute('UPDATE ups SET ncbi_nrp_id=? WHERE hash=?', (nrp_id[3:], seq_hash_digest))  # annotate UPS with NCBI nrp id (WP_*)
+            log_ups.info('UPDATE ups SET ncbi_nrp_id=%s WHERE hash=%s', nrp_id[3:], seq_hash_hexdigest)
+            ups_updated += 1
             if(rec_ups['uniref100_id']):
                 rec_ips = conn.execute('SELECT * FROM ips WHERE uniref100_id=?', (rec_ups['uniref100_id'],)).fetchone()
                 if(rec_ips is not None):
-                    conn.execute('UPDATE ups SET ncbi_nrp_id=? WHERE hash=?', (nrp_id[3:], seq_hash_digest))  # annotate UPS with NCBI nrp id (WP_*)
-                    log_ups.info('UPDATE ups SET ncbi_nrp_id=%s WHERE hash=%s', nrp_id[3:], seq_hash_hexdigest)
-                    ups_updated += 1
                     uniref90_id = rec_ips['uniref90_id']
                     cog_id = nrp_to_cog.get(nrp_id, None)
                     if(uniref90_id is not None  and  cog_id is not None  and  uniref90_id not in uniref90_with_cog_annotations):  # skip known PSC/COG annotations
                         uniref90_with_cog_annotations.add(uniref90_id)
                         cog = cogs_by_id[cog_id]  # assured in line 67
-                        if cog_id != ''  and  cog['cat'] != '':
-                            conn.execute('UPDATE psc SET cog_id=?, cog_category=? WHERE uniref90_id=?', (cog_id[3:], cog['cat'], uniref90_id))
-                            log_psc.info('UPDATE psc SET cog_id=%s, cog_category=%s WHERE uniref90_id=%s', cog_id[3:], cog['cat'], uniref90_id)
-                        gene = cog.get('gene', None)
-
-                        rec_psc = conn.execute('SELECT * FROM psc WHERE uniref90_id=?', (uniref90_id,)).fetchone()  # get current PSC gene/product annotation
-                        if(gene is not None  and  rec_psc is not None  and  rec_psc['gene'] is None):  # update PSC gene annotation if non-existent
-                            conn.execute('UPDATE psc SET gene=? WHERE uniref90_id=?', (gene, uniref90_id))
-                            log_psc.info('UPDATE psc SET gene=%s WHERE uniref90_id=%s', gene, uniref90_id)
-                            psc_updated_gene += 1
-                        product = cog.get('product', None)
-                        if(product is not None  and  rec_psc is not None  and  rec_psc['product'] is None):  # update PSC product annotation if non-existent
-                            conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (product, uniref90_id))
-                            log_psc.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', product, uniref90_id)
-                            psc_updated_product += 1
+                        conn.execute('UPDATE psc SET cog_id=?, cog_category=? WHERE uniref90_id=?', (cog['id'][3:], cog['cat'], uniref90_id))
+                        conn.execute('UPDATE psc SET cog_id=?, cog_category=? WHERE uniref90_id=?', (cog['id'][3:], cog['cat'], uniref90_id))
+                        log_psc.info('UPDATE psc SET cog_id=%s, cog_category=%s WHERE uniref90_id=%s', cog['id'], cog['cat'], uniref90_id)
+                        
+                        rec_psc = conn.execute('SELECT gene, product FROM psc WHERE uniref90_id=?', (uniref90_id,)).fetchone()  # get current PSC gene/product annotation
+                        if(rec_psc is not None):
+                            if(cog['gene'] is not None  and  rec_psc['gene'] is None):  # update PSC gene annotation if non-existent
+                                conn.execute('UPDATE psc SET gene=? WHERE uniref90_id=?', (cog['gene'], uniref90_id))
+                                log_psc.info('UPDATE psc SET gene=%s WHERE uniref90_id=%s', cog['gene'], uniref90_id)
+                                psc_updated_gene += 1
+                            if(cog['product'] is not None  and  rec_psc['product'] is None):  # update PSC product annotation if non-existent
+                                conn.execute('UPDATE psc SET product=? WHERE uniref90_id=?', (cog['product'], uniref90_id))
+                                log_psc.info('UPDATE psc SET product=%s WHERE uniref90_id=%s', cog['product'], uniref90_id)
+                                psc_updated_product += 1
                 else:
                     nrps_wo_ips += 1
             else:
                 nrps_wo_ips += 1
         else:
             nrps_not_found += 1
-        if((nrps_processed % 1000000) == 0):
+        if((nrps_processed % 1_000_000) == 0):
             conn.commit()
         bar()
     conn.commit()
