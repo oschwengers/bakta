@@ -47,6 +47,7 @@ with output_path.open('w') as fh_out:
                 'Size',
                 'GC',
                 'N ratio',
+                'N50',
                 'Coding ratio',
                 'tRNA',
                 'tmRNA',
