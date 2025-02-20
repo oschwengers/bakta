@@ -45,7 +45,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA threads = 2;')
     conn.commit()
 
-    with ips_alignments_path.open() as fh, alive_bar() as bar:
+    with ips_alignments_path.open() as fh, alive_bar(enrich_print=False) as bar:
         for line in fh:
             (uniref100_id, sseqid, stitle, length, pident, qlen, slen, evalue) = line.strip().split('\t')
             length = int(length)
@@ -73,7 +73,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     log_ips.debug('summary: IPS annotated=%i', ips_updated)
 
 
-    with psc_alignments_path.open() as fh, alive_bar() as bar:
+    with psc_alignments_path.open() as fh, alive_bar(enrich_print=False) as bar:
         for line in fh:
             (uniref90_id, sseqid, stitle, length, pident, qlen, slen, evalue) = line.strip().split('\t')
             length = int(length)

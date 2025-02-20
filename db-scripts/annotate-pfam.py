@@ -53,7 +53,7 @@ with hmms_path.open() as fh, alive_bar() as bar:
 print('parse Pfam hits...')
 psc_ids = set()
 best_hits = {}
-with hmm_result_path.open() as fh, alive_bar() as bar:
+with hmm_result_path.open() as fh, alive_bar(enrich_print=False) as bar:
     for line in fh:
         if(line[0] != '#'):
             cols = re.split(r'\s+', line.strip(), maxsplit=18)
@@ -74,7 +74,7 @@ print(f'best PFAM hits: {len(best_hits)}')
 print('\n')
 
 psc_annotated = 0
-with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, alive_bar(total=len(best_hits)) as bar:
+with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, alive_bar(total=len(best_hits), enrich_print=False) as bar:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')

@@ -80,7 +80,7 @@ psc_updated_gene = 0
 psc_updated_product = 0
 ncbi_nrp_path = Path(args.nrp).resolve()
 uniref90_with_cog_annotations = set()
-with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, alive_bar() as bar:
+with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, alive_bar(enrich_print=False) as bar:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
@@ -111,7 +111,6 @@ with ncbi_nrp_path.open() as fh, sqlite3.connect(str(db_path), isolation_level='
                     if(uniref90_id is not None  and  cog_id is not None  and  uniref90_id not in uniref90_with_cog_annotations):  # skip known PSC/COG annotations
                         uniref90_with_cog_annotations.add(uniref90_id)
                         cog = cogs_by_id[cog_id]  # assured in line 67
-                        conn.execute('UPDATE psc SET cog_id=?, cog_category=? WHERE uniref90_id=?', (cog['id'][3:], cog['cat'], uniref90_id))
                         conn.execute('UPDATE psc SET cog_id=?, cog_category=? WHERE uniref90_id=?', (cog['id'][3:], cog['cat'], uniref90_id))
                         log_psc.info('UPDATE psc SET cog_id=%s, cog_category=%s WHERE uniref90_id=%s', cog['id'], cog['cat'], uniref90_id)
                         

@@ -70,7 +70,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
     conn.execute('PRAGMA threads = 2;')
     conn.commit()
     conn.row_factory = sqlite3.Row
-    with xopen(str(xml_path), mode="rb") as fh, alive_bar() as bar:
+    with xopen(str(xml_path), mode="rb") as fh, alive_bar(enrich_print=False) as bar:
         ups_entries = []
         i = 0
         for event, elem in et.iterparse(fh, tag='{*}entry'):
