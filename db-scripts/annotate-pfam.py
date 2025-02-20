@@ -34,7 +34,7 @@ pfam_descriptions = {}
 PFAM_ACC_PATTERN = re.compile(r'^ACC\s{3}(PF.+)\n')
 PFAM_DESC_PATTERN = re.compile(r'^DESC\s{2}(.+)\n')
 print('parse PFAM entries...')
-with hmms_path.open() as fh, alive_bar() as bar:
+with hmms_path.open() as fh, alive_bar(enrich_print=False) as bar:
     acc = None
     for line in fh:
         if(acc is None):

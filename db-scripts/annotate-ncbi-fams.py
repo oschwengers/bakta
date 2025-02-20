@@ -37,32 +37,33 @@ family_type_ranks = {
 
 print('parse NCBIfam HMMs...')
 hmms = {}
-with hmms_path.open() as fh, alive_bar() as bar:
+with hmms_path.open() as fh, alive_bar(enrich_print=False) as bar:
     for line in fh:
         (
-            ncbi_accession, 
-            source_identifier, 
-            label, 
-            sequence_cutoff, 
-            domain_cutoff, 
-            hmm_length, 
-            family_type, 
-            for_structural_annotation, 
-            for_naming, 
-            for_AMRFinder, 
-            product_name, 
-            gene_symbol, 
-            ec_numbers, 
-            go_terms, 
-            pmids, 
-            taxonomic_range, 
-            taxonomic_range_name, 
-            taxonomic_rank_name, 
-            n_refseq_protein_hits, 
-            source, 
+            ncbi_accession,
+            source_identifier,
+            label,
+            sequence_cutoff,
+            domain_cutoff,
+            hmm_length,
+            family_type,
+            for_structural_annotation,
+            for_naming,
+            for_AMRFinder,
+            product_name,
+            gene_symbol,
+            gene_synonyms,
+            ec_numbers,
+            go_terms,
+            pmids,
+            taxonomic_range,
+            taxonomic_range_name,
+            taxonomic_rank_name,
+            n_refseq_protein_hits,
+            source,
             name_orig,
-            _1,
-            _2
+            hmm_name,
+            comment
         ) = line.split('\t')
         if(family_type in family_type_ranks.keys() and for_naming == 'Y'):  # only accept exception/equivalog HMMs eligible for naming proteins
             hmm = {
@@ -84,7 +85,7 @@ print('\n')
 
 print('parse NCBIfam hits...')
 hit_per_psc = {}
-with hmm_result_path.open() as fh, alive_bar() as bar:
+with hmm_result_path.open() as fh, alive_bar(enrich_print=False) as bar:
     for line in fh:
         if(line[0] != '#'):
             (psc_id, _, hmm_name, hmm_id, evalue, bitscore, _) = re.split(r'\s+', line.strip(), maxsplit=6)
@@ -116,7 +117,7 @@ psc_annotated = 0
 psc_with_gene = 0
 psc_with_ec = 0
 psc_with_go = 0
-with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, alive_bar(total=len(hit_per_psc)) as bar:
+with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, alive_bar(total=len(hit_per_psc), enrich_print=False) as bar:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')
