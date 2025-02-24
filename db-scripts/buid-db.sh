@@ -322,6 +322,6 @@ rm -r 4.2.2/ 4.2.2.tgz IS.faa VFDB_setA_pro.fas expert-protein-sequences.faa
 
 # Cleanup
 ls -l bakta.db
-python3 ${BAKTA_DB_SCRIPTS}/optimize-db.py --db bakta.db
+python3 ${BAKTA_DB_SCRIPTS}/optimize-db.py --db bakta.db --tmp /var/scratch/
 ls -l bakta.db
 rm psc.faa sorf.faa node.dmp
