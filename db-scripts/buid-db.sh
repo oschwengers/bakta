@@ -226,7 +226,7 @@ hmmfetch -f -o ncbifams hmm_PGAP.LIB hmms.ids.txt
 hmmpress ncbifams
 printf "\n14/19: annotate PSCs...\n"
 mkdir -p work/tblout work/domtblout
-nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in psc.faa --db ncbifams --out hmmsearch.ncbifams.tblout
+nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in psc.faa --db ncbifams --block 10000 --out hmmsearch.ncbifams.tblout
 python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-fams.py --db bakta.db --hmms hmms.ncbi.selected.tsv --hmm-results hmmsearch.ncbifams.tblout
 rm ncbifams* hmms.* hmm_PGAP.* hmmsearch.ncbifams.tblout
 
@@ -246,7 +246,7 @@ python3 ${BAKTA_DB_SCRIPTS}/extract-phrogs.py --annotation phrog_annot_v4.tsv --
 diamond makedb --in phrogs.faa --db phrog
 printf "\n15/19: annotate PSCs...\n"
 python3 ${BAKTA_DB_SCRIPTS}/extract-hypotheticals.py --psc psc.faa --db bakta.db --hypotheticals hypotheticals.faa
-nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in hypotheticals.faa --db phrog.dmnd --block 1000000 --id 90 --qcov 80 --scov 80 --out diamond.phrog.psc.tsv
+nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in hypotheticals.faa --db phrog.dmnd --block 100000 --id 90 --qcov 80 --scov 80 --out diamond.phrog.psc.tsv
 python3 ${BAKTA_DB_SCRIPTS}/annotate-phrogs.py --db bakta.db --annotation phrog_annot_v4.tsv --psc-alignments diamond.phrog.psc.tsv
 rm -r FAA_phrog.tar.gz phrog_annot_v4.tsv FAA_phrog phrogs-raw.faa phrogs.faa phrog.dmnd hypotheticals.faa
 
@@ -274,8 +274,8 @@ wget https://github.com/oschwengers/ISfinder-sequences/raw/2e9162bd5e3448c86ec15
 python3 ${BAKTA_DB_SCRIPTS}/extract-is.py --input IS.faa --output is.transposase.faa
 printf "\n17/19: annotate IPSs/PCSs ...\n"
 diamond makedb --in is.transposase.faa --db is
-nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in ips.faa --db is.dmnd --block 1000000 --id 95 --qcov 90 --scov 90 --out diamond.is.ips.tsv
-nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db is.dmnd --block 1000000 --id 90 --qcov 80 --scov 80 --out diamond.is.psc.tsv
+nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in ips.faa --db is.dmnd --block 100000 --id 95 --qcov 90 --scov 90 --out diamond.is.ips.tsv
+nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db is.dmnd --block 100000 --id 90 --qcov 80 --scov 80 --out diamond.is.psc.tsv
 python3 ${BAKTA_DB_SCRIPTS}/annotate-is.py --db bakta.db --ips-alignments diamond.is.ips.tsv --psc-alignments diamond.is.psc.tsv
 rm is.transposase.faa is.dmnd diamond.is.ips.tsv diamond.is.psc.tsv
 
@@ -298,7 +298,7 @@ hmmfetch -o pfam -f Pfam-A.hmm pfam.non-families.tsv
 hmmpress pfam
 python3 ${BAKTA_DB_SCRIPTS}/extract-hypotheticals.py --psc psc.faa --db bakta.db --hypotheticals hypotheticals.faa
 mkdir -p work/tblout work/domtblout
-nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in hypotheticals.faa --db pfam-families --out hmmsearch.pfam-families.tblout
+nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in hypotheticals.faa --db pfam-families --block 10000 --out hmmsearch.pfam-families.tblout
 python3 ${BAKTA_DB_SCRIPTS}/annotate-pfam.py --db bakta.db --hmms pfam-families --hmm-results hmmsearch.pfam-families.tblout
 rm pfam-families* pfam *.tsv Pfam* hmmsearch.pfam-families.tblout
 
