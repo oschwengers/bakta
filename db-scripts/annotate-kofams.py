@@ -61,7 +61,7 @@ print(f'read {len(hmms)} HMMs')
 
 print('parse Kofam hits...')
 hit_per_psc = {}
-with hmm_result_path.open() as fh, alive_bar() as bar:
+with hmm_result_path.open() as fh, alive_bar(enrich_print=False) as bar:
     for line in fh:
         if(line[0] != '#'):
             (psc_id, _, hmm_name, hmm_id, evalue, bitscore, _) = re.split(r'\s+', line.strip(), maxsplit=6)
@@ -84,7 +84,7 @@ print('\n')
 
 psc_annotated = 0
 ecs_added = 0
-with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, alive_bar(total=len(hit_per_psc)) as bar:
+with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, alive_bar(total=len(hit_per_psc), enrich_print=False) as bar:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')

@@ -34,7 +34,7 @@ pfam_descriptions = {}
 PFAM_ACC_PATTERN = re.compile(r'^ACC\s{3}(PF.+)\n')
 PFAM_DESC_PATTERN = re.compile(r'^DESC\s{2}(.+)\n')
 print('parse PFAM entries...')
-with hmms_path.open() as fh, alive_bar() as bar:
+with hmms_path.open() as fh, alive_bar(enrich_print=False) as bar:
     acc = None
     for line in fh:
         if(acc is None):
@@ -53,7 +53,7 @@ with hmms_path.open() as fh, alive_bar() as bar:
 print('parse Pfam hits...')
 psc_ids = set()
 best_hits = {}
-with hmm_result_path.open() as fh, alive_bar() as bar:
+with hmm_result_path.open() as fh, alive_bar(enrich_print=False) as bar:
     for line in fh:
         if(line[0] != '#'):
             cols = re.split(r'\s+', line.strip(), maxsplit=18)
@@ -74,7 +74,7 @@ print(f'best PFAM hits: {len(best_hits)}')
 print('\n')
 
 psc_annotated = 0
-with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, alive_bar(total=len(best_hits)) as bar:
+with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, alive_bar(total=len(best_hits), enrich_print=False) as bar:
     conn.execute('PRAGMA page_size = 4096;')
     conn.execute('PRAGMA cache_size = 100000;')
     conn.execute('PRAGMA locking_mode = EXCLUSIVE;')

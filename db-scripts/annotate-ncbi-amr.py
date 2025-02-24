@@ -48,7 +48,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
 
     print('lookup IPS by AMR NRP id (WP_*) and update gene/product annotations...')
     conn.row_factory = sqlite3.Row
-    with genes_path.open() as fh, alive_bar() as bar:
+    with genes_path.open() as fh, alive_bar(enrich_print=False) as bar:
         for line in fh:
             nrps_processed += 1
             (

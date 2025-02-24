@@ -30,7 +30,7 @@ log = logging.getLogger('PSC')
 
 
 non_families = 0
-with xopen(str(pfam_path), threads=2) as fh_pfam, family_path.open('w') as fh_family, non_family_path.open('w') as fh_non_family:
+with xopen(str(pfam_path)) as fh_pfam, family_path.open('w') as fh_family, non_family_path.open('w') as fh_non_family:
     entries = fh_pfam.read().split('//')
     for entry_text in entries:
         id = None
