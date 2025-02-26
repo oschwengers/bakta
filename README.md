@@ -46,7 +46,7 @@ Bakta exactly identifies known identical protein sequences (**IPS**) from RefSeq
 This AFSI approach substantially accellerates the annotation process by avoiding computationally expensive homology searches for identified genes. Thus, Bakta can annotate a typical bacterial genome in 10 &plusmn;5 min on a laptop, plasmids in a couple of seconds/minutes.
 
 - **Database cross-references**
-Fostering the [FAIR](https://www.go-fair.org/fair-principles) principles, Bakta exploits its AFSI approach to annotate CDS with database cross-references (**dbxref**) to RefSeq (`WP_*`), UniRef100 (`UniRef100_*`) and UniParc (`UPI*`). By doing so, IPS allow the surveillance of distinct gene alleles and streamlining comparative analysis as well as posterior (external) annotations of `putative` & `hypothetical` protein sequences which can be mapped back to existing CDS via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)). Currently, Bakta identifies ~214.8 mio, ~199 mio and ~161 mio distinct protein sequences from UniParc, UniRef100 and RefSeq, respectively. Hence, for certain genomes, up to 99 % of all CDS can be identified this way, skipping computationally expensive sequence alignments.
+Fostering the [FAIR](https://www.go-fair.org/fair-principles) principles, Bakta exploits its AFSI approach to annotate CDS with database cross-references (**dbxref**) to RefSeq (`WP_*`), UniRef100 (`UniRef100_*`) and UniParc (`UPI*`). By doing so, IPS allow the surveillance of distinct gene alleles and streamlining comparative analysis as well as posterior (external) annotations of `putative` & `hypothetical` protein sequences which can be mapped back to existing CDS via these exact & stable identifiers (*E. coli* gene [ymiA](https://www.uniprot.org/uniprot/P0CB62) [...more](https://www.uniprot.org/help/dubious_sequences)). Currently, Bakta identifies ~350 mio, ~330 mio and ~290 mio distinct protein sequences from UniParc, UniRef100 and RefSeq, respectively. Hence, for certain genomes, up to 99 % of all CDS can be identified this way, skipping computationally expensive sequence alignments.
 
 - **FAIR annotations**
 To provide standardized annotations adhearing to FAIR principles, Bakta utilizes a versioned custom annotation database comprising UniProt's [UniRef100 & UniRef90](https://www.uniprot.org/uniref/) protein clusters (FAIR -> [DOI](http://dx.doi.org/10.1038/s41597-019-0180-9)/[DOI](https://doi.org/10.1093/nar/gkaa1100)) enriched with dbxrefs (`GO`, `COG`, `EC`) and annotated by specialized niche databases. For each DB version we provide a comprehensive log file of all imported sequences and annotations.
@@ -141,12 +141,11 @@ To download the most recent compatible database version we recommend to use the 
 bakta_db download --output <output-path> --type [light|full]
 ```
 
-Of course, the database can also be downloaded manually:
+Of course, the database can also be downloaded and installed manually:
 
 ```bash
-wget https://zenodo.org/record/10522951/files/db-light.tar.gz
-tar -xzf db-light.tar.gz
-rm db-light.tar.gz
+wget https://zenodo.org/record/14916843/files/db-light.tar.xz
+bakta_db install -i db-light.tar.xz
 ```
 
 If required, or desired, the AMRFinderPlus DB can also be updated manually:
@@ -546,22 +545,22 @@ Due due to uncertain nature of sORF prediction, only those identified via IPS / 
 The Bakta database comprises a set of AA & DNA sequence databases as well as HMM & covariance models.
 At its core Bakta utilizes a compact read-only SQLite DB storing protein sequence digests, lengths, pre-assigned annotations and dbxrefs of UPS, IPS and PSC from:
 
-- **UPS**: UniParc / UniProtKB (289,894,428)
-- **IPS**: UniProt UniRef100 (270,638,882)
-- **PSC**: UniProt UniRef90 (119,631,901)
-- **PSCC**: UniProt UniRef50 (3,134,924)
+- **UPS**: UniParc / UniProtKB (350,631,327)
+- **IPS**: UniProt UniRef100 (330,865,009)
+- **PSC**: UniProt UniRef90 (135,274,518)
+- **PSCC**: UniProt UniRef50 (37,008,138)
 
 This allows the exact protein sequences identification via MD5 digests & sequence lengths as well as the rapid subsequent lookup of related information. Protein sequence digests are checked for hash collisions while the DB creation process. IPS & PSC have been comprehensively pre-annotated integrating annotations & database *dbxrefs* from:
 
-- NCBI nonredundant proteins (IPS: 192,288,757)
+- NCBI nonredundant proteins (UPS: 290,693,966)
 - NCBI COG DB (PSC: 3,513,643)
-- KEGG Kofams (PSC: 19,818,290)
-- SwissProt EC/GO terms (PSC: 336,656)
-- NCBI NCBIfams (PSC: 17,308,678)
-- PHROG (PSC: 11,243)
-- NCBI AMRFinderPlus (IPS: 7,611)
-- ISFinder DB (IPS: 137,670, PSC: 12,380)
-- Pfam families (PSC: 687,250)
+- KEGG Kofams (PSC: 24,267,514)
+- SwissProt EC/GO terms (PSC: 337,264)
+- NCBI NCBIfams (PSC: 21,758,901)
+- PHROG (PSC: 11,717)
+- NCBI AMRFinderPlus (IPS: 8,382)
+- ISFinder DB (IPS: 155,449, PSC: 14,481)
+- Pfam families (PSC: 659,781)
 
 To provide high quality annotations for distinct protein sequences of high importance (AMR, VF, *etc*) which cannot sufficiently be covered by the IPS/PSC approach, Bakta provides additional expert systems. For instance, AMR genes, are annotated via NCBI's AMRFinderPlus.
 An expandable alignment-based expert system supports the incorporation of high quality annotations from multiple sources. This currenlty comprises NCBI's BlastRules as well as VFDB and will be complemented with more expert annotation sources over time. Internally, this expert system is based on a Diamond DB comprising the following information in a standardized format:
@@ -577,8 +576,8 @@ An expandable alignment-based expert system supports the incorporation of high q
 
 Rfam covariance models:
 
-- ncRNA: 802
-- ncRNA cis-regulatory regions: 270
+- ncRNA: 779
+- ncRNA cis-regulatory regions: 288
 
 ori sequences:
 
@@ -589,13 +588,13 @@ To provide FAIR annotations, the database releases are SemVer versioned (w/o pat
 
 As this taxonomic-untargeted database is fairly demanding in terms of storage consumption, we also provide a lightweight DB type providing all non-coding feature information but only PSCC information from UniRef50 clusters for CDS. If download bandwiths or storage requirements become an issue or if shorter runtimes are favored over more-specific annotation, the `light` DB will do the job.
 
-Latest database version: 5.1
+Latest database version: 6.0
 DB types:
 
-- `light`: 1.4 Gb zipped, 3.4 Gb unzipped, MD5: 31b3fbdceace50930f8607f8d664d3f4
-- `full`: 37 Gb zipped, 71 Gb unzipped, MD5: f8823533b789dd315025fdcc46f1a8c1
+- `light`: 1.3 Gb zipped, 3.9 Gb unzipped, MD5: 4a6e059ded39e9c5537ef4137d2f5648
+- `full`: 30 Gb zipped, 84 Gb unzipped, MD5: 4c1115e40abfa2b464ae5dd988bdd88e
 
-All database releases are hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4247252.svg)](https://doi.org/10.5281/zenodo.4247252)
+All database releases are hosted at Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14916843.svg)](https://doi.org/10.5281/zenodo.14916843)
 
 ## Genome Submission
 
