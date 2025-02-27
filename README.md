@@ -160,7 +160,7 @@ If you're using bakta on Docker:
 docker run -v /path/to/desired-db-path:/db --entrypoint /bin/bash oschwengers/bakta:latest -c "bakta_db download --output /db --type [light|full]"
 ```
 
-As an additional data repository backup, we provide the most recent database version via our institute servers: [full](https://jlubox.uni-giessen.de/getlink/fiKeyT1huWv9vW5cXKYkZXYB/db.tar.gz), [light](https://jlubox.uni-giessen.de/getlink/fiG6AHmHA94t4v2r2vwW91WB/db-light.tar.gz). However, the bandwith is limited. Hence, please use it with caution and only if Zenodo might be temporarily uncreachable or slow. In these cases, please also download the AMRFinderPlus database as indicated above.
+As an additional data repository backup, we provide the most recent database version via our institute servers: [full](https://s3.computational.bio.uni-giessen.de/bakta-db/db-v6.0.tar.xz), [light](https://s3.computational.bio.uni-giessen.de/bakta-db/db-light-v6.0.tar.xz). However, the bandwith is limited. Hence, please use it with caution and only if Zenodo might be temporarily unreachable or slow.
 
 Update an existing database:
 
