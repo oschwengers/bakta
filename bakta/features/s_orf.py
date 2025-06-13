@@ -312,23 +312,22 @@ def search(sorfs: Sequence[dict], cluster_type: str):
     """Conduct homology search of sORFs against sORF db."""
     sorf_aa_path = cfg.tmp_path.joinpath('sorf.faa')
     orf.write_internal_faa(sorfs, sorf_aa_path)
-    diamond_output_path = cfg.tmp_path.joinpath('diamond.sorf.tsv')
-    diamond_db_path = cfg.db_path.joinpath('sorf.dmnd')
+    blastp_output_path = cfg.tmp_path.joinpath('blastp.sorf.tsv')
+    blastp_db_path = cfg.db_path.joinpath('sorfdb/sorf')
     cmd = [
-        'diamond',
         'blastp',
-        '--db', str(diamond_db_path),
-        '--query', str(sorf_aa_path),
-        '--out', str(diamond_output_path),
-        '--id', str(int(bc.MIN_SORF_IDENTITY * 100)),  # '90',
-        '--query-cover', str(int(bc.MIN_SORF_COVERAGE * 100)),  # '90'
-        '--subject-cover', str(int(bc.MIN_SORF_COVERAGE * 100)),  # '90'
-        '--max-target-seqs', '1',  # single best output
-        '--outfmt', '6', 'qseqid', 'sseqid', 'qlen', 'slen', 'length', 'pident', 'evalue', 'bitscore',
-        '--threads', str(cfg.threads),
-        '--tmpdir', str(cfg.tmp_path),  # use tmp folder
-        '--block-size', '3',  # slightly increase block size for faster executions
-        '--fast'
+        '-task', 'blastp-short',
+        '-db', str(blastp_db_path),
+        '-query', str(sorf_aa_path),
+        '-out', str(blastp_output_path),
+        '-max_target_seqs', '1',  # single best output
+        '-matrix', 'BLOSUM62',
+        '-comp_based_stats', '0',
+        '-soft_masking', 'false',
+        '-seg', 'no',
+        '-evalue', '10',
+        '-outfmt', '6 qseqid sseqid qlen slen length pident evalue bitscore',
+        '-num_threads', str(cfg.threads),
     ]
     log.debug('cmd=%s', cmd)
     proc = sp.run(
@@ -341,11 +340,11 @@ def search(sorfs: Sequence[dict], cluster_type: str):
     )
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
-        log.warning('sORF failed! diamond-error-code=%d', proc.returncode)
-        raise Exception(f'diamond error! error code: {proc.returncode}')
+        log.warning('sORF failed! blastp-error-code=%d', proc.returncode)
+        raise Exception(f'blastp error! error code: {proc.returncode}')
 
     sorf_by_aa_digest = orf.get_orf_dictionary(sorfs)
-    with diamond_output_path.open() as fh:
+    with blastp_output_path.open() as fh:
         for line in fh:
             (sorf_hash, cluster_id, query_length, subject_length, alignment_length, identity, evalue, bitscore) = line.split('\t')
             sorf = sorf_by_aa_digest[sorf_hash]
