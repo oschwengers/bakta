@@ -313,7 +313,7 @@ def search(sorfs: Sequence[dict], cluster_type: str):
     sorf_aa_path = cfg.tmp_path.joinpath('sorf.faa')
     orf.write_internal_faa(sorfs, sorf_aa_path)
     blastp_output_path = cfg.tmp_path.joinpath('blastp.sorf.tsv')
-    blastp_db_path = cfg.db_path.joinpath('sorfdb/sorf')
+    blastp_db_path = cfg.db_path.joinpath('sorf/db')
     cmd = [
         'blastp',
         '-task', 'blastp-short',
