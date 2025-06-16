@@ -119,9 +119,11 @@ python3 ${BAKTA_DB_SCRIPTS}/init-pscc.py --taxonomy nodes.dmp --uniref50 uniref5
 printf "\n8/19: build PSCC Diamond db ...\n"
 diamond makedb --in pscc.faa --db pscc
 diamond makedb --in pscc_sorf.faa --db sorf
+mkdir sorf
+makeblastdb -in pscc_sorf.faa -dbtype prot -hash_index -title sorf -out sorf/db
 mkdir db-light
 cp bakta.db db-light/
-mv pscc.dmnd sorf.dmnd db-light/
+mv pscc.dmnd sorf/ db-light/
 cd db-light
 python3 ${BAKTA_DB_SCRIPTS}/optimize-db.py --db bakta.db
 cd ..
