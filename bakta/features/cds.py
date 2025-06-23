@@ -794,7 +794,9 @@ def get_elongated_cds(cds: dict, sequence: dict, offset: int = bc.PSEUDOGENE_OFF
     }
 
     sequence_length = len(sequence['nt'])
-    if sequence['topology'] == 'circular' and elongated_cds['start'] - offset < 0:
+    if elongated_cds['start'] - offset == 0:
+        elongated_cds['start'] = 1
+    elif sequence['topology'] == 'circular' and elongated_cds['start'] - offset < 0:
         elongated_cds['start'] = sequence_length + elongated_cds['start'] - offset
         elongated_cds['edge'] = True
     elif elongated_cds['start'] - offset < 0:
