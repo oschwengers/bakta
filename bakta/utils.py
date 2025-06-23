@@ -346,7 +346,7 @@ def parse_replicon_table(replicon_table_path: Path) -> Dict[str, dict]:
             for row in reader:
                 (original_locus_id, new_locus_id, replicon_type, topology, name) = row
                 # TODO: add locus id checks
-                if(new_locus_id == '' or new_locus_id == ''):
+                if(new_locus_id == '' or new_locus_id == '-'):
                     new_locus_id = None
                 replicon_type = replicon_type.lower()
                 if(replicon_type == 'c' or 'chrom' in replicon_type):
