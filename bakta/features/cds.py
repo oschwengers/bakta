@@ -1,6 +1,7 @@
 import concurrent.futures as cf
 import copy
 import logging
+import re
 import subprocess as sp
 import sys
 import xml.etree.ElementTree as ET
@@ -28,6 +29,10 @@ from bakta.psc import DB_PSC_COL_UNIREF90
 
 
 log = logging.getLogger('CDS')
+
+
+RE_CHROM_ROTATION_GENE = re.compile(r'dna[A]', re.IGNORECASE)
+RE_PLASMID_ROTATION_GENE = re.compile(r'rep[ABC]|par[AB]', re.IGNORECASE)
 
 
 def predict(data: dict):
@@ -493,51 +498,45 @@ def revise_translational_exceptions(data: dict, cdss: Sequence[dict]):
 
 def revise_special_cases_annotated(data: dict, cdss: Sequence[dict]):
     """
-    Revise rare but known special cases as for istance supposedly truncated dnaA genes on rotated chromosome starts
-    which often appear on re-annotated genomes.
+    Revise rare but known special cases as for istance supposedly truncated dnaA genes on rotated chromosome/plasmid starts
+    which often appear on re-orientated genomes.
     """
     
     sequences = {seq['id']: seq for seq in data['sequences']}
     # look for supposedly truncated dnaA genes on rotated chromosome starts: start=1, strand=+
-    dnaA = None
-    for cds in cdss:
-        seq = sequences[cds['sequence']]
-        if(
-            seq['complete'] and
-            cds['start'] == 1 and 
-            cds['strand'] == bc.STRAND_FORWARD and 
-            cds['start_type'] == 'Edge' and 
-            cds['rbs_motif'] is None and
-            ('dnaa' in cds['product'].lower().split() or cds['gene'] == 'dnaA')):
-            dnaA = cds
-            break
-    if(dnaA is not None and 'truncated' in dnaA):
-        dnaA.pop('truncated')
-        gene = dnaA.get('gene', '-')
-        log.info(
-            'revise supposedly truncated dnaA gene on rotated chromosome start: seq=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s], aa=[%s..%s]',
-            dnaA['sequence'], dnaA['start'], dnaA['stop'], dnaA['strand'], gene, dnaA['product'], dnaA['nt'][:10], dnaA['nt'][-10:], dnaA['aa'][:10], dnaA['aa'][-10:]
-        )
-    
-    # look for supposedly truncated repA genes on rotated plasmid starts: start=1, strand=+
-    repAs = []
-    for cds in cdss:
-        seq = sequences[cds['sequence']]
-        if(
-            seq['complete'] and
-            cds['start'] == 1 and 
-            cds['strand'] == bc.STRAND_FORWARD and 
-            cds['start_type'] == 'Edge' and 
-            cds['rbs_motif'] is None and
-            ('repa' in cds['product'].lower().split() or cds['gene'] == 'repA')):
-            repAs.append(cds)
-    for repA in repAs:
-        if('truncated' in repA):
-            repA.pop('truncated')
-            gene = repA.get('gene', '-')
+    for cds in [cds for cds in cdss if sequences[cds['sequence']]['complete'] and cds['start'] == 1 and cds['strand'] == bc.STRAND_FORWARD and cds['start_type'] == 'Edge' and cds['rbs_motif'] is None]:
+        chrom_rotation_cds = None
+        chrom_rotation_gene = cds.get('gene', '-') if cds.get('gene', '-') is not None else '-'
+        if RE_CHROM_ROTATION_GENE.fullmatch(chrom_rotation_gene):
+            chrom_rotation_cds = cds
+        else:
+            for term in cds['product'].split():
+                if RE_CHROM_ROTATION_GENE.fullmatch(term):
+                    chrom_rotation_cds = cds
+                    break
+        if(chrom_rotation_cds is not None and 'truncated' in chrom_rotation_cds):
+            chrom_rotation_cds.pop('truncated')
             log.info(
-                'revise supposedly truncated repA gene on rotated plasmid start: seq=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s], aa=[%s..%s]',
-                repA['sequence'], repA['start'], repA['stop'], repA['strand'], gene, repA['product'], repA['nt'][:10], repA['nt'][-10:], repA['aa'][:10], repA['aa'][-10:]
+                'revise supposedly truncated dnaA gene on rotated chromosome start: seq=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s], aa=[%s..%s]',
+                chrom_rotation_cds['sequence'], chrom_rotation_cds['start'], chrom_rotation_cds['stop'], chrom_rotation_cds['strand'], chrom_rotation_gene, chrom_rotation_cds['product'], chrom_rotation_cds['nt'][:10], chrom_rotation_cds['nt'][-10:], chrom_rotation_cds['aa'][:10], chrom_rotation_cds['aa'][-10:]
+            )
+    
+    # look for supposedly truncated repABC/parAB genes on rotated plasmid starts: start=1, strand=+
+    for cds in [cds for cds in cdss if sequences[cds['sequence']]['complete'] and cds['start'] == 1 and cds['strand'] == bc.STRAND_FORWARD and cds['start_type'] == 'Edge' and cds['rbs_motif'] is None]:
+        plasmid_rotation_cds = None
+        plasmid_rotation_gene = cds.get('gene', '-') if cds.get('gene', '-') is not None else '-'
+        if RE_PLASMID_ROTATION_GENE.fullmatch(plasmid_rotation_gene):
+            plasmid_rotation_cds = cds
+        else:
+            for term in cds['product'].split():
+                if RE_PLASMID_ROTATION_GENE.fullmatch(term):
+                    plasmid_rotation_cds = cds
+                    break
+        if(plasmid_rotation_cds is not None  and  'truncated' in plasmid_rotation_cds):
+            plasmid_rotation_cds.pop('truncated')
+            log.info(
+                'revise supposedly truncated repABC/parAB gene on rotated plasmid start: seq=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s], aa=[%s..%s]',
+                plasmid_rotation_cds['sequence'], plasmid_rotation_cds['start'], plasmid_rotation_cds['stop'], plasmid_rotation_cds['strand'], plasmid_rotation_gene, plasmid_rotation_cds['product'], plasmid_rotation_cds['nt'][:10], plasmid_rotation_cds['nt'][-10:], plasmid_rotation_cds['aa'][:10], plasmid_rotation_cds['aa'][-10:]
             )
 
 
