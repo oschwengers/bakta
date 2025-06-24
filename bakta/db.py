@@ -258,9 +258,21 @@ def main():
         output_path = cfg.check_output_path(args.output, True)
 
         tarball_path = args.db_file
-        print('Check MD5 sum...')
+        try:
+            if(tarball_path is None):
+                raise ValueError('File path argument must be non-empty')
+            if(not tarball_path.is_file()):
+                raise ValueError(f'File path argument must be a file')
+            tarball_path = Path(args.db_file).resolve()
+            cfg.check_readability('database tarball', tarball_path)
+            cfg.check_content_size('database tarball', tarball_path)
+        except:
+            log.error('provided database tarball file not valid! path=%s', args.db_file)
+            sys.exit(f'ERROR: database tarball file ({args.db_file}) not valid!')        
+
+        print('Check file...')
         md5_sum = calc_md5_sum(tarball_path)
-        print(f'\t: {md5_sum}')
+        print(f'\tMD5 sum: {md5_sum}')
 
         print(f'Extract DB tarball: file={tarball_path}, output={output_path}')
         untar(tarball_path, output_path)
