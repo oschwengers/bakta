@@ -345,6 +345,13 @@ def parse_replicon_table(replicon_table_path: Path) -> Dict[str, dict]:
             reader = csv.reader(fh, dialect)
             for row in reader:
                 (original_locus_id, new_locus_id, replicon_type, topology, name) = row
+                original_locus_id = original_locus_id.strip()
+                if(' ' in original_locus_id):
+                    original_locus_id = original_locus_id.split(' ')[0]  # remove description
+                new_locus_id = new_locus_id.strip()
+                if(' ' in new_locus_id):
+                    new_locus_id = new_locus_id.split(' ')[0]  # remove description
+
                 # TODO: add locus id checks
                 if(new_locus_id == '' or new_locus_id == '-'):
                     new_locus_id = None
