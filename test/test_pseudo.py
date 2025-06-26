@@ -324,6 +324,26 @@ def test_compare_alignments(alignment, ref_alignment, cds, coordinates, expected
               'elongation_upstream': 300,
               'elongation_downstream': 300
             }
+        ),
+        (
+            {
+                'start': 300,  # linear starts with position 0 (offset=300)
+                'stop': 370,
+                'strand': bc.STRAND_FORWARD,
+                'edge': False
+            },
+            {
+                'nt': 'ACGT' * 200,
+                'topology': 'linear'
+            },
+            {
+                'start': 1,
+                'stop': 670,
+                'strand': bc.STRAND_FORWARD,
+                'edge': False,
+                'elongation_upstream': 300,
+                'elongation_downstream': 300
+            }
         )
     ]
 )

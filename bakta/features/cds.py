@@ -794,21 +794,25 @@ def get_elongated_cds(cds: dict, sequence: dict, offset: int = bc.PSEUDOGENE_OFF
     }
 
     sequence_length = len(sequence['nt'])
-    if sequence['topology'] == 'circular' and elongated_cds['start'] - offset < 0:
-        elongated_cds['start'] = sequence_length + elongated_cds['start'] - offset
-        elongated_cds['edge'] = True
-    elif elongated_cds['start'] - offset < 0:
+    if elongated_cds['start'] - offset < 0:
+        if sequence['topology'] == 'circular':
+            elongated_cds['start'] = sequence_length + elongated_cds['start'] - offset
+            elongated_cds['edge'] = True
+        else:
+            elongated_cds['start'] = 1
+            elongated_cds['elongation_upstream'] = cds['start']
+    elif elongated_cds['start'] - offset == 0:
         elongated_cds['start'] = 1
-        elongated_cds['elongation_upstream'] = cds['start']
     else:
         elongated_cds['start'] = elongated_cds['start'] - offset
 
-    if sequence['topology'] == 'circular' and elongated_cds['stop'] + offset > sequence_length:
-        elongated_cds['stop'] = elongated_cds['stop'] + offset - sequence_length
-        elongated_cds['edge'] = True
-    elif elongated_cds['stop'] + offset > sequence_length:
-        elongated_cds['stop'] = sequence_length
-        elongated_cds['elongation_downstream'] = sequence_length - cds['stop']
+    if elongated_cds['stop'] + offset > sequence_length:
+        if sequence['topology'] == 'circular':
+            elongated_cds['stop'] = elongated_cds['stop'] + offset - sequence_length
+            elongated_cds['edge'] = True
+        else:
+            elongated_cds['stop'] = sequence_length
+            elongated_cds['elongation_downstream'] = sequence_length - cds['stop']
     else:
         elongated_cds['stop'] = elongated_cds['stop'] + offset
 
