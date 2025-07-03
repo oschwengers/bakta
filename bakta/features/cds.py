@@ -506,7 +506,7 @@ def revise_special_cases_annotated(data: dict, cdss: Sequence[dict]):
             seq['complete'] and
             cds['start'] == 1 and 
             cds['strand'] == bc.STRAND_FORWARD and 
-            cds['start_type'] == 'Edge' and 
+            cds.get('start_type', None) == 'Edge' and 
             cds['rbs_motif'] is None and
             ('dnaa' in cds['product'].lower().split() or cds['gene'] == 'dnaA')):
             dnaA = cds
@@ -527,7 +527,7 @@ def revise_special_cases_annotated(data: dict, cdss: Sequence[dict]):
             seq['complete'] and
             cds['start'] == 1 and 
             cds['strand'] == bc.STRAND_FORWARD and 
-            cds['start_type'] == 'Edge' and 
+            cds.get('start_type', None) == 'Edge' and 
             cds['rbs_motif'] is None and
             ('repa' in cds['product'].lower().split() or cds['gene'] == 'repA')):
             repAs.append(cds)
