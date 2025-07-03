@@ -32,7 +32,7 @@ log = logging.getLogger('CDS')
 
 
 RE_CHROM_ROTATION_GENE = re.compile(r'dna[A]', re.IGNORECASE)
-RE_PLASMID_ROTATION_GENE = re.compile(r'rep[ABC]|par[AB]', re.IGNORECASE)
+RE_PLASMID_ROTATION_GENE = re.compile(r'rep[ABC](?:\d|\-[I]{1,3})?|par[AB]', re.IGNORECASE)
 
 
 def predict(data: dict):
