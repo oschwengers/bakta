@@ -279,7 +279,19 @@ def import_user_cdss(data: dict, import_path: Path):
                             start = feature.location.start + 1
                             end = feature.location.end
                             edge = False
-                            if('<' in str(feature.location.start)  or  '>' in str(feature.location.end)):
+                            if(isinstance(feature.location, SeqFeature.CompoundLocation)  and  len(feature.location.parts) == 2):
+                                strand = feature.location.strand
+                                if(strand != bc.STRAND_UNKNOWN):  # only accept equal strands -> edge feature 
+                                    strand = bc.STRAND_FORWARD if feature.location.strand == +1 else bc.STRAND_REVERSE
+                                    edge = True
+                                    edge_left, edge_right = feature.location.parts
+                                    if(strand == bc.STRAND_FORWARD):
+                                        start = edge_left.start + 1
+                                        end = edge_right.end
+                                    else:
+                                        start = edge_right.start + 1
+                                        end = edge_left.end
+                            elif('<' in str(feature.location.start)  or  '>' in str(feature.location.end)):
                                 log.debug(
                                     'skip user-provided CDS: reason=partial, seq=%s, start=%s, stop=%s, strand=%s',
                                     seq['id'], feature.location.start, feature.location.end, strand
@@ -297,18 +309,6 @@ def import_user_cdss(data: dict, import_path: Path):
                                     seq['id'], feature.location.start, feature.location.end, strand
                                 )
                                 continue
-                            elif(isinstance(feature.location, SeqFeature.CompoundLocation)  and  len(feature.location.parts) == 2):
-                                strand = feature.location.strand
-                                if(strand != bc.STRAND_UNKNOWN):  # only accept equal strands -> edge feature 
-                                    strand = bc.STRAND_FORWARD if feature.location.strand == +1 else bc.STRAND_REVERSE
-                                    edge = True
-                                    edge_left, edge_right = feature.location.parts
-                                    if(strand == bc.STRAND_FORWARD):
-                                        start = edge_left.start + 1
-                                        end = edge_right.end
-                                    else:
-                                        start = edge_right.start + 1
-                                        end = edge_left.end
 
                             user_cds = create_cds(seq, start, end, strand, edge, '', '')
                             user_cds['source'] = bc.CDS_SOURCE_USER
