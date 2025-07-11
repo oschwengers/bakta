@@ -4,8 +4,9 @@ import math
 import subprocess as sp
 
 from collections import OrderedDict
-from typing import Sequence
+from typing import Sequence, NamedTuple, Union
 
+import pyhmmer
 from Bio.Seq import Seq
 
 import bakta.config as cfg
@@ -290,6 +291,12 @@ def annotation_filter(sorfs: Sequence[dict]) -> Sequence[dict]:
             if(tmp != ''):
                 product = tmp
 
+        sorfdb = sorf.get('sorfdb', None)
+        if(sorfdb is not None):
+            tmp = sorfdb.get('product', '')
+            if(tmp != ''):
+                product = tmp
+
         if(gene is None and product is None):
             sorf['hypothetical'] = True
         else:
@@ -378,3 +385,118 @@ def search(sorfs: Sequence[dict], cluster_type: str):
             sorfs_not_found.append(sorf)
     log.info('found=%i', len(sorfs_found))
     return sorfs_found, sorfs_not_found
+
+
+class HmmerHit(NamedTuple):
+    accession: str
+    query: str
+    subject: str
+    product: Union[str, None]
+    length: int
+    aa_alignment_length: float
+    hmm_cov: float
+    evalue: float
+    score: float
+    start: int
+    stop: int
+
+def get_best_hits(results: list[HmmerHit]) -> list[HmmerHit]:
+    """
+    Return only the hit with the highest bitscore for each query.
+    :param results: list of all hits of the HMM search
+    :return: list of best hits
+    """
+    best_results: dict[str, HmmerHit] = {}
+    keep_query: set[str] = set()
+    for result in results:
+        if result.query in best_results:
+            previous_bitscore: float = best_results[result.query].score
+            if result.score > previous_bitscore:
+                best_results[result.query] = result
+                keep_query.add(result.query)
+            elif result.score == previous_bitscore:
+                if best_results[result.query].subject != result.subject:
+                    keep_query.remove(result.query)
+        else:
+            best_results[result.query] = result
+            keep_query.add(result.query)
+    return [best_results[k] for k in sorted(best_results) if k in keep_query]
+
+
+def perform_hmmsearch(proteins: pyhmmer.easel.DigitalSequenceBlock,
+                      hmm_path: str,
+                      threads: int = 1) -> list[HmmerHit]:
+    """
+    Perform a hmmsearch on the given proteins with the HMM profiles in the given file
+    :param proteins: list of proteins in pyhmmer DigitalSequenceBlock format
+    :param hmm_path: path to the pressed HMM file containing
+    :param threads: number of threads
+    :return: list of best hits
+    """
+    results: list[HmmerHit] = []
+    with pyhmmer.plan7.HMMFile(hmm_path) as hmm:
+        for top_hits in pyhmmer.hmmsearch(hmm, proteins, bit_cutoffs='gathering', cpus=threads):
+            for hit in top_hits:
+                domain_cov = (hit.best_domain.alignment.hmm_to - hit.best_domain.alignment.hmm_from + 1) / len(hit.best_domain.alignment.hmm_sequence)
+                subject = hit.best_domain.alignment.hmm_name.decode()
+                hmm_description = top_hits.query.description.decode()
+
+                results.append(
+                    HmmerHit(
+                        accession=hit.accession.decode() if hit.accession is not None else subject,
+                        query=hit.name.decode(),
+                        subject=subject,
+                        product=hmm_description,
+                        length=len(hit.best_domain.alignment.hmm_sequence),
+                        aa_alignment_length=hit.best_domain.alignment.target_to - hit.best_domain.alignment.target_from + 1,
+                        hmm_cov=domain_cov,
+                        score=hit.score,
+                        evalue=hit.evalue,
+                        start=hit.best_domain.alignment.target_from,
+                        stop=hit.best_domain.alignment.target_to
+                    )
+                )
+    return get_best_hits(results)
+
+
+def predict_sorfdb(sorfs: Sequence[dict]) -> Sequence[dict]:
+    """Detect sORFdb entries"""
+    sorfdb_hits = []
+    sorf_by_aa_digest = orf.get_orf_dictionary(sorfs)
+    alphabet: pyhmmer.easel.Alphabet = pyhmmer.easel.Alphabet.amino()
+    proteins: list[pyhmmer.easel.DigitalSequence] = [pyhmmer.easel.TextSequence(sequence=sorf['aa'], name=bytes(orf.get_orf_key(sorf), 'UTF-8')).digitize(alphabet) for sorf in sorfs]
+    block: pyhmmer.easel.DigitalSequenceBlock = pyhmmer.easel.DigitalSequenceBlock(
+        iterable=proteins, alphabet=alphabet
+    )
+
+    hmm_search_results: list[HmmerHit] = perform_hmmsearch(block, cfg.db_path.joinpath('sorfdb'), cfg.threads)
+    for hit in hmm_search_results:
+        cds = sorf_by_aa_digest[hit.query]
+        aa_cov = hit.aa_alignment_length / len(cds['aa'])
+
+        sorfdb = OrderedDict()
+        sorfdb['id'] = hit.accession
+        sorfdb['name'] = hit.subject
+        sorfdb['product'] = hit.product
+        sorfdb['length'] = hit.length
+        sorfdb['aa_cov'] = aa_cov
+        sorfdb['hmm_cov'] = hit.hmm_cov
+        sorfdb['evalue'] = hit.evalue
+        sorfdb['score'] = hit.score
+        sorfdb['start'] = hit.start
+        sorfdb['stop'] = hit.stop
+        sorfdb.setdefault('db_xrefs', [])
+        sorfdb['db_xrefs'].append(f"sORFdb:{sorfdb['id']}")
+
+        cds.setdefault('sorfdb', sorfdb)
+        cds.setdefault('db_xrefs', [])
+        cds['db_xrefs'].append(f"sORFdb:{sorfdb['id']}")
+        sorfdb_hits.append(cds)
+        log.info(
+            'sorfdb detected: seq=%s, start=%i, stop=%i, strand=%s, sorfdb-id=%s, length=%i, aa-start=%i, aa-stop=%i, aa-cov=%1.1f, hmm-cov=%1.1f, evalue=%1.1e, bitscore=%1.1f, name=%s',
+            cds['sequence'], cds['start'], cds['stop'], cds['strand'], sorfdb['id'], sorfdb['length'], sorfdb['start'],
+            sorfdb['stop'], sorfdb['aa_cov'], sorfdb['hmm_cov'], sorfdb['evalue'], sorfdb['score'], sorfdb['name']
+        )
+
+    log.info('S_ORF-w/-sorfdb=%i', len(sorfdb_hits))
+    return sorfdb_hits

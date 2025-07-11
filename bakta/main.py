@@ -389,19 +389,23 @@ def main():
                 sorf_pscs_psccs.extend(sorf_psccs)
                 print(f'\tfound PSCCs: {len(sorf_pscs_psccs)}')
 
-
         print("\tlookup annotations...")
         log.debug('lookup sORF PSCs')
         sorf_pscs_psccs.extend(sorf_ipss)
         psc.lookup(sorf_pscs_psccs)  # lookup PSC info
         log.debug('lookup sORF PSCCs')
         pscc.lookup(sorf_pscs_psccs)  # lookup PSC info
+
+        log.debug('search sORF sORFdb')
+        sorfdb_hits = s_orf.predict_sorfdb(sorfs)
+        print(f'\tfound sORFdb hits: {len(sorfdb_hits)}')
+
         print('\tfilter and combine annotations...')
         log.debug('filter sORF by annotations')
         sorfs_filtered = s_orf.annotation_filter(sorfs)
         log.debug('combine sORF annotations')
         for feat in sorfs_filtered:
-            anno.combine_annotation(feat)  # combine IPS and PSC annotations
+            anno.combine_annotation(feat)  # combine IPS, PSC and sORFdb annotations
         data['features'].extend(sorfs_filtered)
         print(f'\tfiltered sORFs: {len(sorfs_filtered)}')
 
