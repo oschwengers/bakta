@@ -244,6 +244,12 @@ def main():
         print(f"\tpredicted: {len(cdss)} ")
 
         if(len(cdss) > 0):
+            log.debug('discard too-long CDS')
+            discarded_cdss = feat_cds.filter_length(cdss)
+            print(f'\tdiscarded length: {len(discarded_cdss)}')
+            cdss = [cds for cds in cdss if 'discarded' not in cds]
+
+        if(len(cdss) > 0):
             log.debug('detect spurious CDS')
             discarded_cdss = orf.detect_spurious(cdss)
             print(f'\tdiscarded spurious: {len(discarded_cdss)}')

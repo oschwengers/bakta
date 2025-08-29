@@ -185,6 +185,24 @@ def create_cdss(genes, sequence):
     return cdss_per_sequence
 
 
+def filter_length(cdss: Sequence[dict]) -> Sequence[dict]:
+    """Filter CDS features by length."""
+    discarded_cdss = []
+    for cds in cdss:
+        if(len(cds['nt']) > bc.CDS_MAX_LENGTH):
+            discard = OrderedDict()
+            discard['type'] = bc.DISCARD_TYPE_LENGTH
+            discard['description'] = f'Predicted CDS length over suspicious length threshold ({bc.CDS_MAX_LENGTH} bp)'
+            cds['discarded'] = discard
+            discarded_cdss.append(cds)
+            log.info(
+                'discard spurious length: seq=%s, start=%i, stop=%i, strand=%s',
+                cds['sequence'], cds['start'], cds['stop'], cds['strand']
+            )
+    log.info('discarded=%i', len(discarded_cdss))
+    return discarded_cdss
+
+
 def import_user_cdss(data: dict, import_path: Path):
     """Import user-provided CDS regions.
     Only CDS region information are imported skipping any existing functional annotations.
