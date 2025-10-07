@@ -127,6 +127,10 @@ inputs:
     id: meta
     inputBinding: {prefix: --meta}
     type: boolean?
+  - doc: Predict partial genes overlapping contig ends
+    id: partial
+    inputBinding: {prefix: --partials}
+    type: boolean?
   - doc: Skip tRNA detection & annotation
     id: skip_tRNA
     inputBinding: {prefix: --skip-trna}
