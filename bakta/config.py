@@ -58,6 +58,7 @@ compliant = None
 user_proteins = None
 user_hmms = None
 meta = None
+partials = None
 regions = None
 
 # workflow configuration
@@ -165,7 +166,7 @@ def setup(args):
         taxon = None
 
     # annotation configurations
-    global complete, prodigal_tf, translation_table, keep_sequence_headers, locus, locus_tag, locus_tag_increment, gram, replicons, compliant, user_proteins, user_hmms, meta, regions
+    global complete, prodigal_tf, translation_table, keep_sequence_headers, locus, locus_tag, locus_tag_increment, gram, replicons, compliant, user_proteins, user_hmms, meta, partials, regions
     complete = args.complete
     log.info('complete=%s', complete)
     prodigal_tf = args.prodigal_tf
@@ -192,6 +193,8 @@ def setup(args):
         log.info('compliant mode! min_contig_length=%s', min_sequence_length)
     meta = args.meta
     log.info('meta=%s', meta)
+    partials = args.partials
+    log.info('partials=%s', partials)
     locus = args.locus
     if(locus is not None):
         if(locus == ''):
