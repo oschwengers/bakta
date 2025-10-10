@@ -264,6 +264,7 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
                 if(feature.get('gene', None)):
                     if(cfg.compliant):
                         if(ba.RE_GENE_SYMBOL.fullmatch(feature['gene'])):  # discard non-standard gene symbols
+                            qualifiers['gene'] = feature['gene']
                             gene_qualifier['gene'] = feature['gene']
                         else:
                             qualifiers.pop('gene', None)
