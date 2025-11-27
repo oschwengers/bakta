@@ -29,7 +29,6 @@ from bakta.psc import DB_PSC_COL_UNIREF90
 
 log = logging.getLogger('CDS')
 
-
 def predict(data: dict):
     """Predict open reading frames with Pyrodigal."""
     # create Pyrodigal trainining file if not provided by the user
@@ -60,10 +59,11 @@ def predict(data: dict):
     # predict genes on linear sequences
     linear_sequences = [seq for seq in data['sequences'] if seq['topology'] == bc.TOPOLOGY_LINEAR]
     if(len(linear_sequences) > 0):
+        prodigal_closed = not cfg.partials  # allow partial genes at contig ends at user's request
         if prodigal_metamode:
-            gene_finder = pyrodigal.GeneFinder(meta=True, metagenomic_bins=None, closed=True, mask=True)
+            gene_finder = pyrodigal.GeneFinder(meta=True, metagenomic_bins=None, closed=prodigal_closed, mask=True)
         else:
-            gene_finder = pyrodigal.GeneFinder(trainings_info, meta=False, closed=True, mask=True)
+            gene_finder = pyrodigal.GeneFinder(trainings_info, meta=False, closed=prodigal_closed, mask=True)
         sequences = [seq['nt'] for seq in linear_sequences]
         with cf.ThreadPoolExecutor(max_workers=cfg.threads) as tpe:
             for seq, genes in zip(linear_sequences, tpe.map(gene_finder.find_genes, sequences)):
