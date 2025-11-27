@@ -79,7 +79,7 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
                     'db_xrefs': [] if dbxrefs == '' else dbxrefs.split(',')
                 }
                 if(expert_system == 'user_proteins'):
-                    hit['db_xrefs'].append(f'UserProtein:{model_id}')
+                    hit['db_xrefs'].append(f'{bc.DB_XREF_USER_PROTEINS}:{model_id}')
                 cds.setdefault('expert', [])
                 cds['expert'].append(hit)
                 log.debug(

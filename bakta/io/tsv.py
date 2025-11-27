@@ -12,6 +12,7 @@ import bakta.ups as bups
 import bakta.psc as bpsc
 import bakta.pscc as bpscc
 
+from bakta.features.annotation import calc_annotation_score
 
 log = logging.getLogger('TSV')
 
@@ -92,7 +93,16 @@ def write_feature_inferences(sequences: Sequence[dict], features_by_sequence: Di
             for feat in features_by_sequence[seq['id']]:
                 if(feat['type'] in [bc.FEATURE_CDS, bc.FEATURE_SORF]):
                     score, evalue, query_cov, subject_cov, identity, accession = None, None, None, None, None, '-'
-                    if('ups' in feat or 'ips' in feat):
+                    if('expert' in feat):
+                        expert_hits = feat.get('expert', [])
+                        top_expert_hit = sorted(expert_hits,key=lambda k: (k['rank'], k.get('score', 0), calc_annotation_score(k)), reverse=True)[0]
+                        query_cov = top_expert_hit.get('query_cov', None)
+                        subject_cov = top_expert_hit.get('subject_cov', None)
+                        identity = top_expert_hit.get('identity', None)
+                        score = top_expert_hit.get('score', None)
+                        evalue = top_expert_hit.get('evalue', None)
+                        accession = [dbxref for dbxref in top_expert_hit.get('db_xrefs', []) if dbxref.split(':')[0] in [bc.DB_XREF_UNIREF, bc.DB_XREF_UNIPARC, bc.DB_XREF_IS, bc.DB_XREF_NCBI_PROTEIN, bc.DB_XREF_NCBI_FAMILIES, bc.DB_XREF_NCBI_BLASTRULES, bc.DB_XREF_VFDB, bc.DB_XREF_USER_PROTEINS, bc.DB_XREF_USER_HMMS]][0]
+                    elif('ups' in feat or 'ips' in feat):
                         query_cov = 1
                         subject_cov = 1
                         identity = 1
@@ -101,10 +111,10 @@ def write_feature_inferences(sequences: Sequence[dict], features_by_sequence: Di
                     elif('psc' in feat or 'pscc' in feat):
                         psc_type = 'psc' if 'psc' in feat else 'pscc'
                         query_cov = feat[psc_type]['query_cov']
-                        subject_cov = feat[psc_type].get('subject_cov', -1)
+                        subject_cov = feat[psc_type].get('subject_cov', None)
                         identity = feat[psc_type]['identity']
-                        score = feat[psc_type].get('score', -1)
-                        evalue = feat[psc_type].get('evalue', -1)
+                        score = feat[psc_type].get('score', None)
+                        evalue = feat[psc_type].get('evalue', None)
                         accession = f"{bc.DB_XREF_UNIREF}:{feat['psc'][bpsc.DB_PSC_COL_UNIREF90]}" if 'psc' in feat else f"{bc.DB_XREF_UNIREF}:{feat['pscc'][bpscc.DB_PSCC_COL_UNIREF50]}"
                     fh.write('\t'.join(
                         [

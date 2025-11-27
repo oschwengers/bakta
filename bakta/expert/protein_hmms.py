@@ -40,13 +40,13 @@ def search(cdss: Sequence[dict], user_hmms_path):
                         'rank': 100,
                         'id': hmm_id,
                         'length': hit_domain_lengths_sum,
-                        'aa_cov': hit_domain_lengths_sum / len(cds['aa']),
-                        'hmm_cov': hit_domain_lengths_sum / hmm_length,
+                        'query_cov': hit_domain_lengths_sum / len(cds['aa']),
+                        'subject_cov': hit_domain_lengths_sum / hmm_length,
                         'evalue': hmm_query_hit.evalue,
                         'score': hmm_query_hit.score,
                         'start': hmm_query_hit.best_domain.alignment.target_from,
                         'stop': hmm_query_hit.best_domain.alignment.target_to,
-                        'db_xrefs': [f'UserHMM:{hmm_id}'],
+                        'db_xrefs': [f'{bc.DB_XREF_USER_HMMS}:{hmm_id}'],
                         'gene': None,
                         'product': None
                     }
@@ -64,8 +64,8 @@ def search(cdss: Sequence[dict], user_hmms_path):
                     cds.setdefault('expert', [])
                     cds['expert'].append(hit)
                     log.debug(
-                        'hit: source=UserHMMs, rank=99, seq=%s, start=%i, stop=%i, strand=%s, query-cov=%0.3f, model-cov=%0.3f, hmm-id=%s, gene=%s, product=%s, evalue=%1.1e, bitscore=%f',
-                        cds['sequence'], cds['start'], cds['stop'], cds['strand'], hit['aa_cov'], hit['hmm_cov'], hmm_id, hit['gene'], hit['product'], hit['evalue'], hit['score']
+                        'hit: source=UserHMMs, rank=99, seq=%s, start=%i, stop=%i, strand=%s, query-cov=%0.3f, subject-cov=%0.3f, hmm-id=%s, gene=%s, product=%s, evalue=%1.1e, bitscore=%f',
+                        cds['sequence'], cds['start'], cds['stop'], cds['strand'], hit['query_cov'], hit['subject_cov'], hmm_id, hit['gene'], hit['product'], hit['evalue'], hit['score']
                     )
                     cds_found.add(aa_identifier)
 

@@ -57,7 +57,7 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path):
                 ) = line.split('\t')
                 cds = cds_by_hexdigest[aa_identifier]
                 hit = {
-                    'type': 'amrfinder',
+                    'type': bc.DB_XREF_AMRFINDER,
                     'rank': 95,
                     'gene': gene if gene != '' else None,
                     'product': product,
@@ -65,14 +65,14 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path):
                 }
                 if(method.lower() != 'hmm'):
                     hit['query_cov'] = int(alignment_length) / len(cds['aa'])
-                    model_cov = float(cov_ref_seq) / 100
-                    hit['model_cov'] = model_cov
+                    subject_cov = float(cov_ref_seq) / 100
+                    hit['subject_cov'] = subject_cov
                     identity = float(ident_ref_seq) / 100
                     hit['identity'] = identity
                     hit['id'] = accession_closest_seq
                     hit['db_xrefs'] = [f'{bc.DB_XREF_NCBI_PROTEIN}:{accession_closest_seq}']
                 else:
-                    model_cov = 0
+                    subject_cov = 0
                     identity = 0
                     hit['id'] = hmm_id
                     hit['db_xrefs'] = [f'{bc.DB_XREF_NCBI_FAMILIES}:{hmm_id}']
@@ -81,7 +81,7 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path):
                 cds['expert'].append(hit)
                 log.debug(
                     'hit: gene=%s, product=%s, method=%s, target-cov=%0.3f, identity=%0.3f, seq=%s, start=%i, stop=%i, strand=%s',
-                    gene, product, method, model_cov, identity, cds['sequence'], cds['start'], cds['stop'], cds['strand']
+                    gene, product, method, subject_cov, identity, cds['sequence'], cds['start'], cds['stop'], cds['strand']
                 )
                 cds_found.add(aa_identifier)
 

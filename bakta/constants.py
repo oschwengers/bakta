@@ -68,6 +68,7 @@ DB_XREF_UNIREF = 'UniRef'
 DB_XREF_REFSEQ_NRP = 'RefSeq'
 DB_XREF_NCBI_PROTEIN = 'NCBIProtein'
 DB_XREF_NCBI_FAMILIES = 'NCBIFam'
+DB_XREF_NCBI_BLASTRULES = 'BlastRules'
 DB_XREF_EC = 'EC'
 DB_XREF_COG = 'COG'
 DB_XREF_KOFAM = 'KEGG'
@@ -75,6 +76,11 @@ DB_XREF_PFAM = 'Pfam'
 DB_XREF_RFAM = 'RFAM'
 DB_XREF_IS = 'IS'
 DB_XREF_GO = 'GO'
+DB_XREF_VFDB = 'VFDB'
+DB_XREF_AMRFINDER = 'amrfinder'
+DB_XREF_USER_PROTEINS = 'UserProtein'
+DB_XREF_USER_HMMS = 'UserHMM'
+
 
 
 ############################################################################
