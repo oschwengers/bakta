@@ -534,7 +534,7 @@ def revise_special_cases_annotated(data: dict, cdss: Sequence[dict]):
                     )
                     break
                 elif RE_PLASMID_ROTATION_GENE.fullmatch(cds_gene_symbol) or any(map(lambda x: x is not None, [RE_PLASMID_ROTATION_GENE.fullmatch(term) for term in cds['product'].split()])):
-                    # look for dnaA genes on rotated plasmid starts
+                    # look for repABC|parAB genes on rotated plasmid starts
                     cds.pop('truncated')
                     log.info(
                         'revise supposedly truncated repABC/parAB gene on rotated plasmid start: seq=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s], aa=[%s..%s]',
