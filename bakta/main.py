@@ -74,7 +74,7 @@ def main():
         if(cfg.locus): print(f'\tlocus prefix: {cfg.locus}')
         if(cfg.locus_tag): print(f'\tlocus tag prefix: {cfg.locus_tag}')
         if(cfg.meta): print(f'\tmeta mode: {cfg.meta}')
-        if(cfg.partials): print(f'\tpredict partial genes: {cfg.partials}')
+        if(cfg.partial): print(f'\tpredict partial genes: {cfg.partial}')
         if(cfg.complete): print(f'\tcomplete replicons: {cfg.complete}')
         print(f'\toutput: {cfg.output_path}')
         if(cfg.force): print(f'\tforce: {cfg.force}')

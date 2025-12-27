@@ -64,7 +64,7 @@ def predict(data: dict):
     # predict genes on linear sequences
     linear_sequences = [seq for seq in data['sequences'] if seq['topology'] == bc.TOPOLOGY_LINEAR]
     if(len(linear_sequences) > 0):
-        prodigal_closed = not cfg.partials  # allow partial genes at contig ends at user's request
+        prodigal_closed = not cfg.partial  # allow partial genes at contig ends at user's request
         if prodigal_metamode:
             gene_finder = pyrodigal.GeneFinder(meta=True, metagenomic_bins=None, closed=prodigal_closed, mask=True)
         else:
