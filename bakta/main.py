@@ -95,6 +95,10 @@ def main():
         if(cfg.skip_ori): print(f'\tskip oriC/V/T: {cfg.skip_ori}')
         if(cfg.skip_filter): print(f'\tskip feature overlap filters: {cfg.skip_filter}')
         if(cfg.skip_plot): print(f'\tskip plot: {cfg.skip_plot}')
+        if(cfg.diamond_block_size_auto):
+            print(f"\tdiamond block size: auto")
+        elif(cfg.diamond_block_size is not None):
+            print(f"\tdiamond block size: {cfg.diamond_block_size}")
         print()
     
     if(cfg.debug):
