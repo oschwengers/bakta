@@ -29,7 +29,7 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
         '--outfmt', '6', 'qseqid', 'sseqid', 'qlen', 'slen', 'length', 'pident', 'evalue', 'bitscore', 'stitle',
         '--threads', str(cfg.threads),
         '--tmpdir', str(cfg.tmp_path),  # use tmp folder
-        '--block-size', '4',  # increase block size for faster executions
+        '--block-size', str(cfg.diamond_block_size_resolved),
         '--index-chunks', '1',  # set index chunks to 1 for faster executions
         '--sensitive'
     ]
