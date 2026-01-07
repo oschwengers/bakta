@@ -20,15 +20,14 @@ log = logging.getLogger('INSDC')
 
 
 def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
-    sequence_to_features_map = defaultdict(list)
+    sequence_feature_map = defaultdict(list)
     if len(features) > 0:
-        seq_field = 'sequence' if 'sequence' in features[0] else 'contig'  # <1.10.0 compatibility
+        sequence_id_key = 'sequence' if 'sequence' in features[0] else 'contig'  # <1.10.0 compatibility
         for feature in features:
-            sequence_to_features_map[feature[seq_field]].append(feature)
-
+            sequence_feature_map[feature[sequence_id_key]].append(feature)
     sequence_list = []
     for seq in data['sequences']:
-        sequence_features = sequence_to_features_map[seq['id']] if features else []
+        sequence_features = sequence_feature_map[seq['id']]
         comment = (
             'Annotated with Bakta',
             f"Software: v{cfg.version}\n",
