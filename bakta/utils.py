@@ -93,6 +93,7 @@ def parse_arguments():
     arg_group_annotation.add_argument('--proteins', action='store', default=None, dest='proteins', help='Fasta file of trusted protein sequences for CDS annotation')
     arg_group_annotation.add_argument('--hmms', action='store', default=None, dest='hmms', help='HMM file of trusted hidden markov models in HMMER format for CDS annotation')
     arg_group_annotation.add_argument('--meta', action='store_true', help='Run in metagenome mode. This only affects CDS prediction.')
+    arg_group_annotation.add_argument('--partial', action='store_true', help='Predict partial (truncated) genes spanning linear sequence ends')
 
     arg_group_workflow = parser.add_argument_group('Workflow')
     arg_group_workflow.add_argument('--skip-trna', action='store_true', dest='skip_trna', help='Skip tRNA detection & annotation')

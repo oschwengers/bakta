@@ -1,6 +1,7 @@
 import logging
 import re
 
+from collections import defaultdict
 from datetime import date
 from pathlib import Path
 from typing import Sequence, Tuple
@@ -19,11 +20,14 @@ log = logging.getLogger('INSDC')
 
 
 def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
+    sequence_feature_map = defaultdict(list)
+    if len(features) > 0:
+        sequence_id_key = 'sequence' if 'sequence' in features[0] else 'contig'  # <1.10.0 compatibility
+        for feature in features:
+            sequence_feature_map[feature[sequence_id_key]].append(feature)
     sequence_list = []
     for seq in data['sequences']:
-        sequence_features = []
-        if len(features) > 0:
-            sequence_features = [feat for feat in features if feat['sequence'] == seq['id']] if 'sequence' in features[0] else [feat for feat in features if feat['contig'] == seq['id']]  # <1.10.0 compatibility
+        sequence_features = sequence_feature_map[seq['id']]
         comment = (
             'Annotated with Bakta',
             f"Software: v{cfg.version}\n",
