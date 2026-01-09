@@ -302,19 +302,7 @@ def import_user_cdss(data: dict, import_path: Path):
                             start = feature.location.start + 1
                             end = feature.location.end
                             edge = False
-                            if(isinstance(feature.location, SeqFeature.CompoundLocation)  and  len(feature.location.parts) == 2):
-                                strand = feature.location.strand
-                                if(strand != bc.STRAND_UNKNOWN):  # only accept equal strands -> edge feature 
-                                    strand = bc.STRAND_FORWARD if feature.location.strand == +1 else bc.STRAND_REVERSE
-                                    edge = True
-                                    edge_left, edge_right = feature.location.parts
-                                    if(strand == bc.STRAND_FORWARD):
-                                        start = edge_left.start + 1
-                                        end = edge_right.end
-                                    else:
-                                        start = edge_right.start + 1
-                                        end = edge_left.end
-                            elif('<' in str(feature.location.start)  or  '>' in str(feature.location.end)):
+                            if('<' in str(feature.location.start)  or  '>' in str(feature.location.end)):
                                 log.debug(
                                     'skip user-provided CDS: reason=partial, seq=%s, start=%s, stop=%s, strand=%s',
                                     seq['id'], feature.location.start, feature.location.end, strand
@@ -326,13 +314,19 @@ def import_user_cdss(data: dict, import_path: Path):
                                     seq['id'], feature.location.start, feature.location.end, strand
                                 )
                                 continue
-                            elif('ribosomal_slippage' in feature.qualifiers):
-                                log.debug(
-                                    'skip user-provided CDS: reason=ribosomal slippage, seq=%s, start=%i, stop=%i, strand=%s',
-                                    seq['id'], feature.location.start, feature.location.end, strand
-                                )
-                                continue
-
+                            elif(isinstance(feature.location, SeqFeature.CompoundLocation)  and  len(feature.location.parts) == 2):
+                                strand = feature.location.strand
+                                if(strand != bc.STRAND_UNKNOWN):  # only accept equal strands -> edge features or compound locations 
+                                    strand = bc.STRAND_FORWARD if feature.location.strand == +1 else bc.STRAND_REVERSE
+                                    edge = None
+                                    edge_left, edge_right = feature.location.parts
+                                    if(strand == bc.STRAND_FORWARD):
+                                        start = edge_left.start + 1
+                                        end = edge_right.end
+                                    else:
+                                        start = edge_right.start + 1
+                                        end = edge_left.end
+                                    edge = start > end  # real edge feature -> otherwise compound location
                             user_cds = create_cds(seq, start, end, strand, edge, '', '')
                             user_cds['source'] = bc.CDS_SOURCE_USER
                             try:
@@ -342,13 +336,43 @@ def import_user_cdss(data: dict, import_path: Path):
                                 log.error('user-provided CDS: CDS out of range! seq=%s, start=%i, stop=%i', user_cds['sequence'], user_cds['start'], user_cds['stop'])
                                 raise ValueError(f"User-provided CDS out of range! sequence={user_cds['sequence']}, start={user_cds['start']}, stop={user_cds['stop']}")
                             try:
-                                aa = str(Seq(nt).translate(table=cfg.translation_table, cds=True))
+                                if('ribosomal_slippage' in feature.qualifiers):  # import cases of ribosomal slippage
+                                    aa = str(feature.qualifiers['translation'][0])
+                                    user_cds['db_xrefs'].append(so.SO_TRANSLATIONAL_FRAMESHIFT.id)
+                                    user_cds['exception'] = {
+                                        'type': 'ribosomal_slippage',
+                                        'aa': 'X',
+                                        'start': -1,
+                                        'stop': -1
+                                    }      
+                                    log.debug(
+                                        'user-provided CDS: extract ribosomal slippage aa. seq=%s, start=%i, stop=%i, aa=[%s..%s]',
+                                        seq['id'], start, end, aa[:10], aa[-10:]
+                                    )
+                                elif('transl_except' in feature.qualifiers):  # import cases of translational exceptions
+                                    if('aa:sec' in feature.qualifiers['transl_except'][0].lower()):
+                                        aa = str(feature.qualifiers['translation'][0]).upper()
+                                        selenocysteine_pos = aa.find('U') + 1
+                                        if(user_cds['strand'] == bc.STRAND_FORWARD):
+                                            selenocysteine_codon_start = (user_cds['start'] - 1) + selenocysteine_pos * 3 - 2
+                                            selenocysteine_codon_stop = selenocysteine_codon_start + 2
+                                        else:
+                                            selenocysteine_codon_stop = user_cds['stop'] - (selenocysteine_pos * 3 - 3)
+                                            selenocysteine_codon_start = selenocysteine_codon_stop - 2
+                                        user_cds['exception'] = {
+                                            'type': 'selenocysteine',
+                                            'aa': 'Sec',
+                                            'start': selenocysteine_codon_start,
+                                            'stop': selenocysteine_codon_stop,
+                                            'codon_position': selenocysteine_pos
+                                        }
+                                else:
+                                    aa = str(Seq(nt).translate(table=cfg.translation_table, cds=True))
                                 user_cds['aa'] = aa
                                 user_cds['aa_digest'], user_cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
                             except:
-                                log.error('user-provided CDS: CDS could not be translated into a valid amino acid sequence! seq=%s, start=%i, stop=%i, cds=%s', user_cds['sequence'], user_cds['start'], user_cds['stop'], nt)
+                                log.error('user-provided CDS: CDS could not be translated into a valid amino acid sequence! seq=%s, start=%i, stop=%i, strand=%s, edge=%s, cds=%s', user_cds['sequence'], user_cds['start'], user_cds['stop'], user_cds['strand'], user_cds.get('edge', False), nt)
                                 raise ValueError(f"User-provided CDS could not be translated into a valid amino acid sequence! sequence={user_cds['sequence']}, start={user_cds['start']}, stop={user_cds['stop']}, cds={nt}")
-                            
                             log.info(
                                 'user-provided CDS: seq=%s, start=%i, stop=%i, strand=%s, nt=[%s..%s], aa=[%s..%s]',
                                 user_cds['sequence'], user_cds['start'], user_cds['stop'], user_cds['strand'], nt[:10], nt[-10:], aa[:10], aa[-10:]
@@ -493,7 +517,7 @@ def revise_translational_exceptions(data: dict, cdss: Sequence[dict]):
                             'start': cds_a['stop'] - 2 if strand == bc.STRAND_FORWARD else cds_b['start'],
                             'stop': cds_a['stop'] if strand == bc.STRAND_FORWARD else cds_b['start'] + 2,
                             'codon_position': aa.find('U') + 1
-                        }                    
+                        }
                         cdss.append(seleno_cds)
                         log.info(
                             'selenocysteine CDS detected: seq=%s, start=%i, stop=%i, strand=%s, frame=%i, exception=[%i..%i], nt=[%s..%s], aa=[%s..%s], aa-hexdigest=%s',

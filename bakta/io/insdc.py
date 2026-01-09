@@ -166,11 +166,14 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
                             qualifiers['EC_number'] = ec_number
                 if('exception' in feature):
                     ex = feature['exception']
-                    pos = f"{ex['start']}..{ex['stop']}"
-                    if(feature['strand'] == bc.STRAND_REVERSE):
-                        pos = f"complement({pos})"
-                    qualifiers['transl_except']=f"(pos:{pos},aa:{ex['aa']})"
-                    qualifiers['note'].append(f"codon on position {ex['codon_position']} is a {ex['type']} codon")
+                    if(ex['type'] == 'selenocysteine'):
+                        pos = f"{ex['start']}..{ex['stop']}"
+                        if(feature['strand'] == bc.STRAND_REVERSE):
+                            pos = f"complement({pos})"
+                        qualifiers['transl_except']=f"(pos:{pos},aa:{ex['aa']})"
+                        qualifiers['note'].append(f"codon on position {ex['codon_position']} is a {ex['type']} codon")
+                    elif(ex['type'] == 'ribosomal_slippage'):
+                        qualifiers[bc.INSDC_FEAUTRE_CDS_RIBOSOMAL_SLIPPAGE] = None
                 if(bc.FEATURE_SIGNAL_PEPTIDE in feature):
                     sigpep_qualifiers = {}
                     sigpep_qualifiers['locus_tag'] = feature['locus']

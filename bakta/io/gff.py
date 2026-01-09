@@ -270,14 +270,17 @@ def write_features(data: dict, features_by_sequence: Dict[str, dict], gff3_path:
                         fh.write(f"{seq_id}\t{source}\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     if('exception' in feat):
                         ex = feat['exception']
-                        pos = f"{ex['start']}..{ex['stop']}"
-                        if(feat['strand'] == bc.STRAND_REVERSE):
-                            pos = f"complement({pos})"
-                        annotations['transl_except']=f"(pos:{pos},aa:{ex['aa']})"
-                        notes = annotations.get('Note', [])
-                        notes.append(f"codon on position {ex['codon_position']} is a {ex['type']} codon")
-                        if('Notes' not in annotations):
-                            annotations['Note'] = notes
+                        if(ex['type'] == 'selenocysteine'):
+                            pos = f"{ex['start']}..{ex['stop']}"
+                            if(feat['strand'] == bc.STRAND_REVERSE):
+                                pos = f"complement({pos})"
+                            annotations['transl_except']=f"(pos:{pos},aa:{ex['aa']})"
+                            notes = annotations.get('Note', [])
+                            notes.append(f"codon on position {ex['codon_position']} is a {ex['type']} codon")
+                            if('Notes' not in annotations):
+                                annotations['Note'] = notes
+                        elif(ex['type'] == 'ribosomal_slippage'):
+                            annotations[bc.INSDC_FEAUTRE_CDS_RIBOSOMAL_SLIPPAGE] = True
                     annotations = encode_annotations(annotations)
                     fh.write(f"{seq_id}\t{source}\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
                     if(bc.FEATURE_SIGNAL_PEPTIDE in feat):

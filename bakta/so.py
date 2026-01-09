@@ -33,6 +33,8 @@ SO_CDS = SO('CDS', 'SO:0000316')
 SO_SORF = SO('sORF', 'SO:0002028')
 SO_SIGNAL_PEPTIDE = SO('signal_peptide', 'SO:0000418')
 
+SO_TRANSLATIONAL_FRAMESHIFT = SO('translational_frameshift', 'SO:0001210')
+
 SO_TRNA = SO('tRNA', 'SO:0000253')
 SO_TRNA_ALA = SO('alanyl_tRNA', 'SO:0000254')
 SO_TRNA_GLN = SO('glycyl_tRNA', 'SO:0000261')
