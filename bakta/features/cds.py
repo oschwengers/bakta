@@ -382,7 +382,7 @@ def import_user_cdss(data: dict, import_path: Path):
             log.error('user-provided CDS: regions/features file GenBank format not valid!', exc_info=True)
             sys.exit(f'ERROR: User-provided regions/features file GenBank format not valid!')
     else:
-        log.warn('user-provided regions/features file suffix not detected! suffix=%s, path=%s', str(file_suffices), str(import_path))
+        log.warning('user-provided regions/features file suffix not detected! suffix=%s, path=%s', str(file_suffices), str(import_path))
     
     return user_cdss
 
