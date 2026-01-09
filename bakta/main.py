@@ -264,8 +264,8 @@ def main():
         
         if(cfg.regions):
             log.debug('import user-provided CDS regions')
-            imported_cdss = feat_cds.import_user_cdss(data, cfg.regions)
-            print(f'\timported CDS regions: {len(imported_cdss)}')
+            imported_cdss, no_skipped = feat_cds.import_user_cdss(data, cfg.regions)
+            print(f'\tuser regions: {len(imported_cdss)} imported, {no_skipped} skipped')
             cdss.extend(imported_cdss)
 
         if(len(cdss) > 0):

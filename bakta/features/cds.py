@@ -225,6 +225,7 @@ def import_user_cdss(data: dict, import_path: Path):
         a list of CDS features - without functional annotations.
     """
     user_cdss = []
+    no_skipped_features = 0
     if(cfg.keep_sequence_headers):
         sequences_by_id = {seq['id']: seq for seq in data['sequences']}  # use ID as it's not altered -> no 'orig_id' field
     else:
@@ -270,7 +271,12 @@ def import_user_cdss(data: dict, import_path: Path):
                                 log.error('user-provided CDS out of range! seq=%s, start=%i, stop=%i', user_cds['sequence'], user_cds['start'], user_cds['stop'])
                                 raise ValueError(f"User-provided CDS out of range! sequence={user_cds['sequence']}, start={user_cds['start']}, stop={user_cds['stop']}")
                             try:
-                                aa = str(Seq(nt).translate(table=cfg.translation_table, cds=True))
+                                try:
+                                    aa = str(Seq(nt).translate(table=cfg.translation_table, cds=True))
+                                except:  # skip uncommon translations
+                                    log.warning('user-provided CDS: CDS could not be translated into a valid amino acid sequence! seq=%s, start=%i, stop=%i, strand=%s, edge=%s, cds=%s', user_cds['sequence'], user_cds['start'], user_cds['stop'], user_cds['strand'], user_cds.get('edge', False), nt)
+                                    no_skipped_features += 1
+                                    continue
                                 user_cds['aa'] = aa
                                 user_cds['aa_digest'], user_cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
                             except:
@@ -367,7 +373,12 @@ def import_user_cdss(data: dict, import_path: Path):
                                             'codon_position': selenocysteine_pos
                                         }
                                 else:
-                                    aa = str(Seq(nt).translate(table=cfg.translation_table, cds=True))
+                                    try:
+                                        aa = str(Seq(nt).translate(table=cfg.translation_table, cds=True))
+                                    except:  # skip uncommon translations
+                                        log.warning('user-provided CDS: CDS could not be translated into a valid amino acid sequence! seq=%s, start=%i, stop=%i, strand=%s, edge=%s, cds=%s', user_cds['sequence'], user_cds['start'], user_cds['stop'], user_cds['strand'], user_cds.get('edge', False), nt)
+                                        no_skipped_features += 1
+                                        continue
                                 user_cds['aa'] = aa
                                 user_cds['aa_digest'], user_cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
                             except:
@@ -384,7 +395,7 @@ def import_user_cdss(data: dict, import_path: Path):
     else:
         log.warning('user-provided regions/features file suffix not detected! suffix=%s, path=%s', str(file_suffices), str(import_path))
     
-    return user_cdss
+    return user_cdss, no_skipped_features
 
 
 def predict_pfam(cdss: Sequence[dict]) -> Sequence[dict]:
