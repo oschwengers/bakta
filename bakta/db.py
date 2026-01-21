@@ -115,7 +115,10 @@ def fetch_db_versions():
 
 def download(db_url: str, tarball_path: Path):
     try:
-        with tarball_path.open('wb') as fh_out, requests.get(db_url, stream=True) as resp:
+        headers = {
+            'User-Agent': f'bakta/{cfg.version} (contact: github.com/oschwengers/bakta)'
+        }
+        with tarball_path.open('wb') as fh_out, requests.get(db_url, headers=headers, stream=True) as resp:
             total_length = resp.headers.get('content-length')
             if(total_length is not None):  # content length header is set
                 total_length = int(total_length)
