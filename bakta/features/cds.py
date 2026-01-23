@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pyrodigal
 import pyhmmer
+from pyhmmer.easel import AA
 
 from Bio import SeqIO
 from Bio import SeqFeature
@@ -403,19 +404,19 @@ def predict_pfam(cdss: Sequence[dict]) -> Sequence[dict]:
     pfam_hits = []
     cds_with_pfams_hits = {}
     orf_by_aa_digest = orf.get_orf_dictionary(cdss)
-    alphabet: pyhmmer.easel.Alphabet = pyhmmer.easel.Alphabet.amino()
-    proteins: list[pyhmmer.easel.DigitalSequence] = [ pyhmmer.easel.TextSequence(sequence=cds['aa'], name=bytes(orf.get_orf_key(cds), 'UTF-8')).digitize(alphabet) for cds in cdss ]
-    with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('pfam')) as hmm:
+    alphabet: AA = pyhmmer.easel.Alphabet.amino()
+    proteins: DigitalSequenceBlock[AA] = pyhmmer.easel.TextSequenceBlock(pyhmmer.easel.TextSequence(sequence=cds['aa'], name=orf.get_orf_key(cds)) for cds in cdss).digitize(alphabet)
+    with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('pfam'), alphabet=alphabet) as hmm:
         for top_hits in pyhmmer.hmmsearch(hmm, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
             for hit in top_hits:
-                aa_identifier = hit.name.decode()
+                aa_identifier = hit.name
                 cds = orf_by_aa_digest[aa_identifier]
                 domain_cov = (hit.best_domain.alignment.hmm_to - hit.best_domain.alignment.hmm_from + 1) / len(hit.best_domain.alignment.hmm_sequence)
                 aa_cov = (hit.best_domain.alignment.target_to - hit.best_domain.alignment.target_from + 1) / len(cds['aa'])
 
                 pfam = OrderedDict()
-                pfam['id'] = hit.best_domain.alignment.hmm_accession.decode()
-                pfam['name'] = hit.best_domain.alignment.hmm_name.decode()
+                pfam['id'] = hit.best_domain.alignment.hmm_accession
+                pfam['name'] = hit.best_domain.alignment.hmm_name
                 pfam['length'] = len(hit.best_domain.alignment.hmm_sequence)
                 pfam['aa_cov'] = aa_cov
                 pfam['hmm_cov'] = domain_cov
