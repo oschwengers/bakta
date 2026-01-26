@@ -60,6 +60,7 @@ def lookup(features: Sequence[dict]):
 
 def fetch_db_ups_result(conn: sqlite3.Connection, feature: dict):
     c = conn.cursor()
+    print(f"Type: {type(feature['aa_digest'])}, Value: {feature['aa_digest']}")
     c.execute('select * from ups where hash=?', (feature['aa_digest'],))
     rec = c.fetchone()
     c.close()
