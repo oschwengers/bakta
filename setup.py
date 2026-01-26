@@ -31,7 +31,7 @@ setup(
         'requests >= 2.25.1',
         'alive-progress >= 3.0.1',
         'PyYAML >= 6.0',
-        'pyrodigal >= 3.5.0',
+        'pyrodigal >= 3.7.0',
         'pyhmmer >= 0.12.0',
         'pycirclize >= 1.7.0'
     ],
