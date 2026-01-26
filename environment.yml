@@ -15,7 +15,7 @@ dependencies:
   - aragorn>=1.2.41
   - infernal>=1.1.4
   - piler-cr
-  - pyhmmer>=0.10.15
+  - pyhmmer>=0.10.15,<0.12.0
   - diamond>=2.1.10
   - blast>=2.14.0
   - ncbi-amrfinderplus>=4.0.3
