@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Dict, Sequence
 
 import pyhmmer
-from pyhmmer.easel import AA
+from pyhmmer.easel import AA, DigitalSequenceBlock, TextSequenceBlock, TextSequence
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -18,8 +18,8 @@ def detect_spurious(orfs: Sequence[dict]):
     """Detect spurious ORFs with AntiFam"""
     discarded_orfs = []
     orf_by_aa_digest = get_orf_dictionary(orfs)
-    alphabet: AA = pyhmmer.easel.Alphabet.amino()
-    proteins: DigitalSequenceBlock[AA] = pyhmmer.easel.TextSequenceBlock(pyhmmer.easel.TextSequence(sequence=orf['aa'], name=get_orf_key(orf)) for orf in orfs).digitize(alphabet)
+    alphabet: "AA" = pyhmmer.easel.Alphabet.amino()
+    proteins: "DigitalSequenceBlock[AA]" = TextSequenceBlock(TextSequence(sequence=orf['aa'], name=get_orf_key(orf)) for orf in orfs).digitize(alphabet)
     with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('antifam'), alphabet=alphabet) as hmm:
         for top_hits in pyhmmer.hmmsearch(hmm, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
             for hit in top_hits:

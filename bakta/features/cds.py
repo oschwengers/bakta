@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pyrodigal
 import pyhmmer
-from pyhmmer.easel import AA
+from pyhmmer.easel import AA, DigitalSequenceBlock, TextSequenceBlock, TextSequence
 
 from Bio import SeqIO
 from Bio import SeqFeature
@@ -404,8 +404,8 @@ def predict_pfam(cdss: Sequence[dict]) -> Sequence[dict]:
     pfam_hits = []
     cds_with_pfams_hits = {}
     orf_by_aa_digest = orf.get_orf_dictionary(cdss)
-    alphabet: AA = pyhmmer.easel.Alphabet.amino()
-    proteins: DigitalSequenceBlock[AA] = pyhmmer.easel.TextSequenceBlock(pyhmmer.easel.TextSequence(sequence=cds['aa'], name=orf.get_orf_key(cds)) for cds in cdss).digitize(alphabet)
+    alphabet: "AA" = pyhmmer.easel.Alphabet.amino()
+    proteins: "DigitalSequenceBlock[AA]" = TextSequenceBlock(TextSequence(sequence=cds['aa'], name=orf.get_orf_key(cds)) for cds in cdss).digitize(alphabet)
     with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('pfam'), alphabet=alphabet) as hmm:
         for top_hits in pyhmmer.hmmsearch(hmm, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
             for hit in top_hits:
