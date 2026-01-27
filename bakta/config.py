@@ -76,6 +76,11 @@ skip_ori = None
 skip_filter = None
 skip_plot = None
 
+# Diamond blastp block size configuration
+diamond_block_size = None          # float | None
+diamond_block_size_auto = False    # bool
+diamond_block_size_resolved = None # float | None
+
 run_start = datetime.now()
 run_end = None
 
@@ -299,6 +304,19 @@ def setup(args):
     skip_plot = args.skip_plot
     log.info('skip-plot=%s', skip_plot)
 
+    # Diamond blastp block size configuration
+    global diamond_block_size, diamond_block_size_auto
+    diamond_block_size = args.diamond_block_size
+    log.info('diamond_block_size=%s', diamond_block_size)
+    diamond_block_size_auto = bool(getattr(args, "diamond_block_size_auto", False))
+    log.info('diamond_block_size_auto=%s', diamond_block_size_auto)
+    diamond_block_size_resolved = resolve_diamond_block_size(default=3.0)
+    log.info(
+        "diamond_block_size_resolved=%s (mode=%s)",
+        diamond_block_size_resolved,
+        "manual" if diamond_block_size is not None else ("auto" if diamond_block_size_auto else "default"),
+    )
+
 
 def check_readability(file_name: str, file_Path: Path):
     if(not os.access(str(file_Path), os.R_OK)):
@@ -438,3 +456,141 @@ def check_tmp_path(args: Namespace) -> Path:
         tmp_path = Path(tempfile.mkdtemp()).resolve()
     log.info('tmp-path=%s', tmp_path)
     return tmp_path
+
+
+def _read_first_existing(paths: list[str]) -> str | None:
+    for p in paths:
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                return f.read().strip()
+        except OSError:
+            continue
+    return None
+
+def _slurm_mem_limit_gb() -> float | None:
+    """
+    Best-effort memory limit (GiB) for the current job step.
+
+    Priority:
+      1) cgroup v2/v1 (if visible)
+      2) SLURM_MEM_PER_NODE (MB)
+      3) SLURM_MEM_PER_CPU (MB) * SLURM_CPUS_PER_TASK
+      4) total system RAM (GiB)
+
+    Returns:
+      float GiB, or None if cannot be determined.
+    """
+    # --- 1) cgroup (bytes) ---
+    # cgroup v2
+    v2 = _read_first_existing([
+        "/sys/fs/cgroup/memory.max",
+        # sometimes inside containers:
+        "/sys/fs/cgroup/user.slice/memory.max",
+    ])
+    if v2 and v2 != "max":
+        try:
+            b = int(v2)
+            if b > 0:
+                return b / (1024**3)
+        except ValueError:
+            pass
+
+    # cgroup v1
+    v1 = _read_first_existing([
+        "/sys/fs/cgroup/memory/memory.limit_in_bytes",
+        "/sys/fs/cgroup/memory.limit_in_bytes",
+    ])
+    if v1:
+        try:
+            b = int(v1)
+            # Some systems use a huge sentinel value for "unlimited"
+            if 0 < b < (1 << 60):
+                return b / (1024**3)
+        except ValueError:
+            pass
+
+    # --- 2) SLURM env (MB) ---
+    # On SCC cluster: SLURM_MEM_PER_NODE is set and is in MB (e.g. 6144 for 6G).
+    mem_per_node_mb = os.environ.get("SLURM_MEM_PER_NODE")
+    if mem_per_node_mb:
+        try:
+            mem_mb = float(mem_per_node_mb)
+
+            # If multiple tasks share the node allocation, approximate per-task memory.
+            ntasks_per_node = os.environ.get("SLURM_NTASKS_PER_NODE")
+            if ntasks_per_node:
+                try:
+                    n = int(ntasks_per_node)
+                    if n > 0:
+                        mem_mb /= n
+                except ValueError:
+                    pass
+            else:
+                # If SLURM_NTASKS is set and this is a single-node job, also divide.
+                ntasks = os.environ.get("SLURM_NTASKS")
+                nnodes = os.environ.get("SLURM_JOB_NUM_NODES") or os.environ.get("SLURM_NNODES")
+                try:
+                    if ntasks and nnodes and int(nnodes) == 1 and int(ntasks) > 0:
+                        mem_mb /= int(ntasks)
+                except ValueError:
+                    pass
+
+            return mem_mb / 1024.0  # MB -> GiB
+        except ValueError:
+            pass
+
+    mem_per_cpu_mb = os.environ.get("SLURM_MEM_PER_CPU")
+    if mem_per_cpu_mb:
+        try:
+            mem_mb = float(mem_per_cpu_mb)
+            cpus_per_task = int(os.environ.get("SLURM_CPUS_PER_TASK", "1"))
+            if cpus_per_task > 0:
+                mem_mb *= cpus_per_task
+            return mem_mb / 1024.0
+        except ValueError:
+            pass
+
+    # --- 3) Fallback: total RAM (GiB) ---
+    try:
+        pagesize = os.sysconf("SC_PAGE_SIZE")
+        pages = os.sysconf("SC_PHYS_PAGES")
+        return (pagesize * pages) / (1024**3)
+    except (ValueError, OSError, AttributeError):
+        return None
+    
+
+def resolve_diamond_block_size(default: float = 3.0) -> float:
+    """
+    Returns the DIAMOND --block-size value to use (billions of letters).
+
+    Priority:
+      1) user-specified --diamond-block-size
+      2) if --diamond-block-size-auto: compute from job memory (Slurm/cgroup via _slurm_mem_limit_gb)
+      3) fallback to provided default (keeps Bakta behavior stable)
+
+    Memory rule (DIAMOND docs): RAM ~ 6x block size (GB).
+    We apply a safety factor and subtract a small fixed headroom.
+    """
+    # 1) explicit user override
+    if diamond_block_size is not None:
+        return float(diamond_block_size)
+
+    # 2) auto mode
+    if diamond_block_size_auto:
+        mem_gb = _slurm_mem_limit_gb()  # includes cgroup attempt + SLURM env + total RAM fallback
+        if mem_gb and mem_gb > 0:
+            # Leave some headroom for everything else.
+            reserve_gb = 1.0
+            usable_gb = max(1.0, mem_gb - reserve_gb)
+
+            # DIAMOND: mem ~ 6x block-size (GB); also keep extra headroom via 0.9 factor
+            block = (usable_gb * 0.9) / 6.0
+
+            # keep it sane; DIAMOND notes >20 not recommended; and 0.4 is common in sensitive modes
+            block = max(0.4, min(20.0, block))
+
+            # Optional: make value stable-ish (avoid long floats)
+            return float(round(block, 2))
+
+    # 3) fallback
+    return float(default)

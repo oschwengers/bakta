@@ -559,21 +559,31 @@ def revise_special_cases_annotated(data: dict, cdss: Sequence[dict]):
         for cds in seq_cdss:
             # look for supposedly truncated genes on rotated sequences
             if cds['start'] == 1  and  cds['strand'] == bc.STRAND_FORWARD  and  'truncated' in cds  and  cds['start_type'] == 'Edge'  and  cds['rbs_motif'] is None:
-                cds_gene_symbol = cds.get('gene', '-')
-                if RE_CHROM_ROTATION_GENE.fullmatch(cds_gene_symbol) or any(map(lambda x: x is not None, [RE_CHROM_ROTATION_GENE.fullmatch(term) for term in cds['product'].split()])):
+                cds_gene_symbol = cds.get('gene', '-') or '-'
+                cds_product = cds.get('product', '') or ''
+
+                # Defensive: ensure strings (some edge cases may have None)
+                if not isinstance(cds_gene_symbol, str):
+                    cds_gene_symbol = str(cds_gene_symbol)
+                if not isinstance(cds_product, str):
+                    cds_product = str(cds_product)
+
+                product_terms = cds_product.split() if cds_product else []
+
+                if RE_CHROM_ROTATION_GENE.fullmatch(cds_gene_symbol) or any(RE_CHROM_ROTATION_GENE.fullmatch(term) is not None for term in product_terms):
                     # look for dnaA genes on rotated chromosome starts
                     cds.pop('truncated')
                     log.info(
                         'revise supposedly truncated dnaA gene on rotated chromosome start: seq=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s], aa=[%s..%s]',
-                        cds['sequence'], cds['start'], cds['stop'], cds['strand'], cds_gene_symbol, cds['product'], cds['nt'][:10], cds['nt'][-10:], cds['aa'][:10], cds['aa'][-10:]
+                        cds['sequence'], cds['start'], cds['stop'], cds['strand'], cds_gene_symbol, cds_product, cds['nt'][:10], cds['nt'][-10:], cds['aa'][:10], cds['aa'][-10:]
                     )
                     break
-                elif RE_PLASMID_ROTATION_GENE.fullmatch(cds_gene_symbol) or any(map(lambda x: x is not None, [RE_PLASMID_ROTATION_GENE.fullmatch(term) for term in cds['product'].split()])):
+                elif RE_PLASMID_ROTATION_GENE.fullmatch(cds_gene_symbol) or any(RE_PLASMID_ROTATION_GENE.fullmatch(term) is not None for term in product_terms):
                     # look for repABC|parAB genes on rotated plasmid starts
                     cds.pop('truncated')
                     log.info(
                         'revise supposedly truncated repABC/parAB gene on rotated plasmid start: seq=%s, start=%i, stop=%i, strand=%s, gene=%s, product=%s, nt=[%s..%s], aa=[%s..%s]',
-                        cds['sequence'], cds['start'], cds['stop'], cds['strand'], cds_gene_symbol, cds['product'], cds['nt'][:10], cds['nt'][-10:], cds['aa'][:10], cds['aa'][-10:]
+                        cds['sequence'], cds['start'], cds['stop'], cds['strand'], cds_gene_symbol, cds_product, cds['nt'][:10], cds['nt'][-10:], cds['aa'][:10], cds['aa'][-10:]
                     )
                     break
 
@@ -600,7 +610,7 @@ def predict_pseudo_candidates(hypotheticals: Sequence[dict]) -> Sequence[dict]:
         '--outfmt', '6', 'qseqid', 'sseqid', 'qlen', 'slen', 'length', 'pident', 'evalue', 'bitscore', 'qstart', 'qend', 'sstart', 'send', 'full_sseq',
         '--threads', str(cfg.threads),
         '--tmpdir', str(cfg.tmp_path),
-        '--block-size', '3',  # slightly increase block size for faster executions
+        '--block-size', str(cfg.diamond_block_size_resolved),
         '--fast'
     ]
     log.debug('cmd=%s', cmd)
@@ -694,7 +704,7 @@ def detect_pseudogenes(candidates: Sequence[dict], cdss: Sequence[dict], data: d
             '--outfmt', '5',
             '--threads', str(cfg.threads),
             '--tmpdir', str(cfg.tmp_path),  # use tmp folder
-            '--block-size', '3',  # slightly increase block size for faster executions
+            '--block-size', str(cfg.diamond_block_size_resolved),
             '--query-gencode', str(cfg.translation_table),
             '--strand', 'plus',
             '--frameshift', '15',

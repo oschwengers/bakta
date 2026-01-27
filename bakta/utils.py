@@ -110,6 +110,22 @@ def parse_arguments():
     arg_group_workflow.add_argument('--skip-filter', action='store_true', dest='skip_filter', help='Skip feature overlap filters')
     arg_group_workflow.add_argument('--skip-plot', action='store_true', dest='skip_plot', help='Skip generation of circular genome plots')
 
+    # NEW: DIAMOND performance knobs (mutually exclusive)
+    arg_group_diamond = parser.add_argument_group('Performance / DIAMOND')
+    diamond_mx = arg_group_diamond.add_mutually_exclusive_group()
+    diamond_mx.add_argument('--diamond-block-size', action='store', type=float, default=None, dest='diamond_block_size', metavar='B',
+        help=(
+            'DIAMOND --block-size value (billions of letters). '
+            'Approx. memory use ~6x B (GB). Overrides Bakta default.'
+        )
+    )
+    diamond_mx.add_argument('--diamond-block-size-auto', action='store_true', default=False, dest='diamond_block_size_auto',
+        help=(
+            'Automatically choose DIAMOND --block-size based on available memory '
+            '(e.g. SLURM/cgroup/available RAM).'
+        )
+    )
+
     arg_group_general = parser.add_argument_group('General')
     arg_group_general.add_argument('--help', '-h', action='help', help='Show this help message and exit')
     arg_group_general.add_argument('--verbose', '-v', action='store_true', help='Print verbose information')
