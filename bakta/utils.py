@@ -93,6 +93,7 @@ def parse_arguments():
     arg_group_annotation.add_argument('--proteins', action='store', default=None, dest='proteins', help='Fasta file of trusted protein sequences for CDS annotation')
     arg_group_annotation.add_argument('--hmms', action='store', default=None, dest='hmms', help='HMM file of trusted hidden markov models in HMMER format for CDS annotation')
     arg_group_annotation.add_argument('--meta', action='store_true', help='Run in metagenome mode. This only affects CDS prediction.')
+    arg_group_annotation.add_argument('--partial', action='store_true', help='Predict partial (truncated) genes spanning linear sequence ends')
 
     arg_group_workflow = parser.add_argument_group('Workflow')
     arg_group_workflow.add_argument('--skip-trna', action='store_true', dest='skip_trna', help='Skip tRNA detection & annotation')
@@ -345,6 +346,13 @@ def parse_replicon_table(replicon_table_path: Path) -> Dict[str, dict]:
             reader = csv.reader(fh, dialect)
             for row in reader:
                 (original_locus_id, new_locus_id, replicon_type, topology, name) = row
+                original_locus_id = original_locus_id.strip()
+                if(' ' in original_locus_id):
+                    original_locus_id = original_locus_id.split(' ')[0]  # remove description
+                new_locus_id = new_locus_id.strip()
+                if(' ' in new_locus_id):
+                    new_locus_id = new_locus_id.split(' ')[0]  # remove description
+
                 # TODO: add locus id checks
                 if(new_locus_id == '' or new_locus_id == '-'):
                     new_locus_id = None

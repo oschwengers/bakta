@@ -74,6 +74,7 @@ def main():
         if(cfg.locus): print(f'\tlocus prefix: {cfg.locus}')
         if(cfg.locus_tag): print(f'\tlocus tag prefix: {cfg.locus_tag}')
         if(cfg.meta): print(f'\tmeta mode: {cfg.meta}')
+        if(cfg.partial): print(f'\tpredict partial genes: {cfg.partial}')
         if(cfg.complete): print(f'\tcomplete replicons: {cfg.complete}')
         print(f'\toutput: {cfg.output_path}')
         if(cfg.force): print(f'\tforce: {cfg.force}')
@@ -244,6 +245,12 @@ def main():
         print(f"\tpredicted: {len(cdss)} ")
 
         if(len(cdss) > 0):
+            log.debug('discard too-long CDS')
+            discarded_cdss = feat_cds.filter_length(cdss)
+            print(f'\tdiscarded length: {len(discarded_cdss)}')
+            cdss = [cds for cds in cdss if 'discarded' not in cds]
+
+        if(len(cdss) > 0):
             log.debug('detect spurious CDS')
             discarded_cdss = orf.detect_spurious(cdss)
             print(f'\tdiscarded spurious: {len(discarded_cdss)}')
@@ -257,8 +264,8 @@ def main():
         
         if(cfg.regions):
             log.debug('import user-provided CDS regions')
-            imported_cdss = feat_cds.import_user_cdss(data, cfg.regions)
-            print(f'\timported CDS regions: {len(imported_cdss)}')
+            imported_cdss, no_skipped = feat_cds.import_user_cdss(data, cfg.regions)
+            print(f'\tuser regions: {len(imported_cdss)} imported, {no_skipped} skipped')
             cdss.extend(imported_cdss)
 
         if(len(cdss) > 0):

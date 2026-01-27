@@ -140,7 +140,7 @@ def main():
         aa['locus'] = aa['id']
         aa['sequence'] = '-'
         aa['start'] = mock_start
-        aa['stop'] = -1
+        aa['stop'] = mock_start + aa['length'] - 1
         aa['strand'] = bc.STRAND_UNKNOWN
         aa['frame'] = 1
         mock_start += 100
@@ -220,7 +220,7 @@ def map_hypothetical_columns(feat: dict) -> Sequence[str]:
 
 def annotate_aa(aas: Sequence[dict]):
     for aa in aas:
-        aa['aa_digest'], aa['aa_hexdigest'] = bu.calc_aa_hash(aa['sequence'])
+        aa['aa_digest'], aa['aa_hexdigest'] = bu.calc_aa_hash(aa['aa'])
     if(cfg.db_info['type'] == 'full'):
         log.debug('lookup AA UPS/IPS')
         aas_ups, aas_not_found = ups.lookup(aas)

@@ -25,7 +25,7 @@ log = logging.getLogger('IO')
 
 def main():
     # parse options and arguments
-    parser = bu.init_parser(sub_command='_proteins')
+    parser = bu.init_parser(sub_command='_io')
     parser.add_argument('input', metavar='<input>', help='Bakta annotations in JSON format')
     
     arg_group_io = parser.add_argument_group('Input / Output')

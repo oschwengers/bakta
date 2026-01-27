@@ -29,6 +29,7 @@ MIN_SORF_IDENTITY = 0.9  # min sORF identity for PSC detection
 MIN_HMM_EVALUE = 1e-6  # min evalue for CDS HMM searches
 HYPOTHETICAL_PROTEIN = 'hypothetical protein'  # hypothetical protein product description
 CDS_MAX_OVERLAPS = 30  # max overlap [bp] allowed for user-provided/de novo-predicted CDS overlaps
+CDS_MAX_LENGTH = 50000 * 3  # max length [bp] allowed for predicted CDS
 CDS_SOURCE_USER = 'user-provided'
 
 
@@ -67,6 +68,7 @@ DB_XREF_UNIREF = 'UniRef'
 DB_XREF_REFSEQ_NRP = 'RefSeq'
 DB_XREF_NCBI_PROTEIN = 'NCBIProtein'
 DB_XREF_NCBI_FAMILIES = 'NCBIFam'
+DB_XREF_NCBI_BLASTRULES = 'BlastRules'
 DB_XREF_EC = 'EC'
 DB_XREF_COG = 'COG'
 DB_XREF_KOFAM = 'KEGG'
@@ -74,6 +76,11 @@ DB_XREF_PFAM = 'Pfam'
 DB_XREF_RFAM = 'RFAM'
 DB_XREF_IS = 'IS'
 DB_XREF_GO = 'GO'
+DB_XREF_VFDB = 'VFDB'
+DB_XREF_AMRFINDER = 'amrfinder'
+DB_XREF_USER_PROTEINS = 'UserProtein'
+DB_XREF_USER_HMMS = 'UserHMM'
+
 
 
 ############################################################################
@@ -132,6 +139,7 @@ INSDC_FEATURE_REPEAT_TYPE = 'rpt_type'  # /rpt_type=<repeat_type>  # 'direct'
 INSDC_FEATURE_REPEAT_UNIT_RANGE = 'rpt_unit_range'  # /rpt_unit_range=<base_range>
 INSDC_FEATURE_REPEAT_UNIT_SEQ = 'rpt_unit_seq'  # /rpt_unit_seq="text"
 INSDC_FEATURE_CDS = 'CDS'
+INSDC_FEAUTRE_CDS_RIBOSOMAL_SLIPPAGE = 'ribosomal_slippage'
 INSDC_FEATURE_PSEUDO = 'pseudo'
 INSDC_FEATURE_PSEUDOGENE = 'pseudogene'
 INSDC_FEATURE_PSEUDOGENE_TYPE_UNITARY = 'unitary'
@@ -208,6 +216,7 @@ PLOT_COG = 'cog'
 ############################################################################
 # Discard types
 ############################################################################
+DISCARD_TYPE_LENGTH = 'length'
 DISCARD_TYPE_SPURIOUS = 'spurious'
 DISCARD_TYPE_OVERLAP = 'overlap'
 DISCARD_TYPE_RECODING = 'recoding'

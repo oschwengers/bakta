@@ -22,10 +22,10 @@ hints:
   SoftwareRequirement:
     packages:
       bakta:
-        version: [ "1.11.0" ]
+        version: [ "1.11.4" ]
         specs: ["https://github.com/oschwengers/bakta"]
   DockerRequirement:
-    dockerPull: oschwengers/bakta:v1.11.0
+    dockerPull: oschwengers/bakta:v1.11.4
 
 #baseCommand: []
 
@@ -126,6 +126,10 @@ inputs:
   - doc: Run in metagenome mode
     id: meta
     inputBinding: {prefix: --meta}
+    type: boolean?
+  - doc: Predict partial genes overlapping contig ends
+    id: partial
+    inputBinding: {prefix: --partial}
     type: boolean?
   - doc: Skip tRNA detection & annotation
     id: skip_tRNA
