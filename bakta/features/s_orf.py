@@ -315,8 +315,7 @@ def search(sorfs: Sequence[dict], cluster_type: str):
     diamond_output_path = cfg.tmp_path.joinpath('diamond.sorf.tsv')
     diamond_db_path = cfg.db_path.joinpath('sorf.dmnd')
     cmd = [
-        'diamond',
-        'blastp',
+        'diamond', 'blastp',
         '--db', str(diamond_db_path),
         '--query', str(sorf_aa_path),
         '--out', str(diamond_output_path),
@@ -324,11 +323,22 @@ def search(sorfs: Sequence[dict], cluster_type: str):
         '--query-cover', str(int(bc.MIN_SORF_COVERAGE * 100)),  # '90'
         '--subject-cover', str(int(bc.MIN_SORF_COVERAGE * 100)),  # '90'
         '--max-target-seqs', '1',  # single best output
+        '--matrix', 'BLOSUM62',
+        '--masking', '0',
+        '--soft-masking', '0',
+        '--motif-masking', '0',
+        '--comp-based-stats', '0',
+        '--evalue', '1',
         '--outfmt', '6', 'qseqid', 'sseqid', 'qlen', 'slen', 'length', 'pident', 'evalue', 'bitscore',
         '--threads', str(cfg.threads),
         '--tmpdir', str(cfg.tmp_path),  # use tmp folder
         '--block-size', '3',  # slightly increase block size for faster executions
-        '--fast'
+        '--ultra-sensitive',
+        '--shape-mask', '11111',
+        '--id2', '1',
+        '--ungapped-evalue', '1',
+        '--ungapped-evalue-short', '1',
+        '--gapped-filter-evalue', '1',
     ]
     log.debug('cmd=%s', cmd)
     proc = sp.run(

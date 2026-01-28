@@ -1,6 +1,5 @@
 import logging
 import subprocess as sp
-import sqlite3
 
 from concurrent.futures import ThreadPoolExecutor
 from typing import Sequence, Tuple
@@ -8,6 +7,7 @@ from typing import Sequence, Tuple
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.features.orf as orf
+import bakta.utils as bu
 
 
 ############################################################################
@@ -108,25 +108,21 @@ def lookup(features: Sequence[dict], pseudo: bool = False):
     no_psc_lookups = 0
     try:
         rec_futures = []
-        with sqlite3.connect(f"file:{cfg.db_path.joinpath('bakta.db')}?mode=ro&nolock=1&cache=shared", uri=True, check_same_thread=False) as conn:
-            conn.execute('PRAGMA omit_readlock;')
-            conn.row_factory = sqlite3.Row
-            with ThreadPoolExecutor(max_workers=max(10, cfg.threads)) as tpe:  # use min 10 threads for IO bound non-CPU lookups
-                for feature in features:
-                    uniref90_id = None
-                    if(pseudo):  # if pseudogene use pseudogene info 
-                        uniref90_id = feature[bc.PSEUDOGENE]['inference'][DB_PSC_COL_UNIREF90]
-                    else:
-                        if('psc' in feature):
-                            uniref90_id = feature['psc'].get(DB_PSC_COL_UNIREF90, None)
-                        elif('ips' in feature):
-                            uniref90_id = feature['ips'].get(DB_PSC_COL_UNIREF90, None)
-
-                    if(uniref90_id is not None):
-                        if(bc.DB_PREFIX_UNIREF_90 in uniref90_id):
-                            uniref90_id = uniref90_id[9:]  # remove 'UniRef90_' prefix
-                        future = tpe.submit(fetch_db_psc_result, conn, uniref90_id)
-                        rec_futures.append((feature, future))
+        with ThreadPoolExecutor(max_workers=max(10, cfg.threads)) as tpe:  # use min 10 threads for IO bound non-CPU lookups
+            for feature in features:
+                uniref90_id = None
+                if(pseudo):  # if pseudogene use pseudogene info 
+                    uniref90_id = feature[bc.PSEUDOGENE]['inference'][DB_PSC_COL_UNIREF90]
+                else:
+                    if('psc' in feature):
+                        uniref90_id = feature['psc'].get(DB_PSC_COL_UNIREF90, None)
+                    elif('ips' in feature):
+                        uniref90_id = feature['ips'].get(DB_PSC_COL_UNIREF90, None)
+                if(uniref90_id is not None):
+                    if(bc.DB_PREFIX_UNIREF_90 in uniref90_id):
+                        uniref90_id = uniref90_id[9:]  # remove 'UniRef90_' prefix
+                    future = tpe.submit(fetch_db_psc_result, uniref90_id)
+                    rec_futures.append((feature, future))
 
         for (feature, future) in rec_futures:
             rec = future.result()
@@ -153,12 +149,13 @@ def lookup(features: Sequence[dict], pseudo: bool = False):
     log.info('looked-up=%i', no_psc_lookups)
 
 
-def fetch_db_psc_result(conn: sqlite3.Connection, uniref90_id: str):
-    c = conn.cursor()
-    c.execute('select * from psc where uniref90_id=?', (uniref90_id,))
-    rec = c.fetchone()
-    c.close()
-    return rec
+def fetch_db_psc_result(uniref90_id: str):
+    with bu.get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('select * from psc where uniref90_id=?', (uniref90_id,))
+        rec = c.fetchone()
+        c.close()
+        return rec
 
 
 def parse_annotation(rec) -> dict:

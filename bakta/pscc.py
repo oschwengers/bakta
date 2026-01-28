@@ -1,6 +1,5 @@
 import logging
 import subprocess as sp
-import sqlite3
 
 from concurrent.futures import ThreadPoolExecutor
 from typing import Sequence, Tuple
@@ -8,6 +7,7 @@ from typing import Sequence, Tuple
 import bakta.config as cfg
 import bakta.constants as bc
 import bakta.features.orf as orf
+import bakta.utils as bu
 
 
 ############################################################################
@@ -96,25 +96,22 @@ def lookup(features: Sequence[dict], pseudo: bool = False):
     no_pscc_lookups = 0
     try:
         rec_futures = []
-        with sqlite3.connect(f"file:{cfg.db_path.joinpath('bakta.db')}?mode=ro&nolock=1&cache=shared", uri=True, check_same_thread=False) as conn:
-            conn.execute('PRAGMA omit_readlock;')
-            conn.row_factory = sqlite3.Row
-            with ThreadPoolExecutor(max_workers=max(10, cfg.threads)) as tpe:  # use min 10 threads for IO bound non-CPU lookups
-                for feature in features:
-                    uniref50_id = None
-                    if(pseudo):  # if pseudogene use pseudogene info
-                        if('psc' in feature[bc.PSEUDOGENE]):
-                            uniref50_id = feature[bc.PSEUDOGENE]['psc'].get(DB_PSCC_COL_UNIREF50, None)
-                    else:
-                        if('psc' in feature):
-                            uniref50_id = feature['psc'].get(DB_PSCC_COL_UNIREF50, None)
-                        elif('pscc' in feature):
-                            uniref50_id = feature['pscc'].get(DB_PSCC_COL_UNIREF50, None)
-                    if(uniref50_id is not None):
-                        if(bc.DB_PREFIX_UNIREF_50 in uniref50_id):
-                            uniref50_id = uniref50_id[9:]  # remove 'UniRef50_' prefix
-                        future = tpe.submit(fetch_db_pscc_result, conn, uniref50_id)
-                        rec_futures.append((feature, future))
+        with ThreadPoolExecutor(max_workers=max(10, cfg.threads)) as tpe:  # use min 10 threads for IO bound non-CPU lookups
+            for feature in features:
+                uniref50_id = None
+                if(pseudo):  # if pseudogene use pseudogene info
+                    if('psc' in feature[bc.PSEUDOGENE]):
+                        uniref50_id = feature[bc.PSEUDOGENE]['psc'].get(DB_PSCC_COL_UNIREF50, None)
+                else:
+                    if('psc' in feature):
+                        uniref50_id = feature['psc'].get(DB_PSCC_COL_UNIREF50, None)
+                    elif('pscc' in feature):
+                        uniref50_id = feature['pscc'].get(DB_PSCC_COL_UNIREF50, None)
+                if(uniref50_id is not None):
+                    if(bc.DB_PREFIX_UNIREF_50 in uniref50_id):
+                        uniref50_id = uniref50_id[9:]  # remove 'UniRef50_' prefix
+                    future = tpe.submit(fetch_db_pscc_result, uniref50_id)
+                    rec_futures.append((feature, future))
 
         for (feature, future) in rec_futures:
             rec = future.result()
@@ -140,12 +137,13 @@ def lookup(features: Sequence[dict], pseudo: bool = False):
     log.info('looked-up=%i', no_pscc_lookups)
 
 
-def fetch_db_pscc_result(conn: sqlite3.Connection, uniref50_id: str):
-    c = conn.cursor()
-    c.execute('select * from pscc where uniref50_id=?', (uniref50_id,))
-    rec = c.fetchone()
-    c.close()
-    return rec
+def fetch_db_pscc_result(uniref50_id: str):
+    with bu.get_db_connection() as conn:
+        c = conn.cursor()
+        c.execute('select * from pscc where uniref50_id=?', (uniref50_id,))
+        rec = c.fetchone()
+        c.close()
+        return rec
 
 
 def parse_annotation(rec) -> dict:

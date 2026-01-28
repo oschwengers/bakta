@@ -9,6 +9,8 @@ import re
 import shutil
 import sys
 import subprocess as sp
+import sqlite3
+import threading
 
 from argparse import Namespace
 from datetime import datetime
@@ -48,6 +50,9 @@ DEPENDENCY_DIAMOND = (Version(2, 1, 10), Version(VERSION_MAX_DIGIT, VERSION_MAX_
 DEPENDENCY_BLASTN = (Version(2, 14, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Blastn', ('blastn', '-version'), ['--skip-ori'])
 DEPENDENCY_AMRFINDERPLUS = (Version(4, 0, 3), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'AMRFinderPlus', ('amrfinder', '--version'), ['--skip-cds'])
 DEPENDENCY_PYCIRCLIZE = (Version(1, 7, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'pyCirclize', (sys.executable, '-c', 'import pycirclize; print(pycirclize.__version__)'), ['--skip-plot'])
+
+
+_local = threading.local()  # # init thread-local storage for DB connections
 
 
 def init_parser(sub_command: str=''):
@@ -507,3 +512,23 @@ def extract_feature_sequence(feature: dict, sequence: dict) -> str:
     if(feature['strand'] == bc.STRAND_REVERSE):
         nt = str(Seq(nt).reverse_complement())
     return nt
+
+
+def get_db_connection():
+    if not hasattr(_local, "connection"):
+        uri_path = cfg.db_path.joinpath('bakta.db').absolute().resolve().as_posix()
+        db_uri = f"file:{uri_path}?immutable=1&mode=ro"
+        # immutable=1: disables locking/coordination for NAS speed
+        # mode=ro: explicitly read-only
+
+        conn = sqlite3.connect(db_uri, uri=True, check_same_thread=False)
+
+        # performance tuning
+        conn.execute('PRAGMA journal_mode = OFF')
+        conn.execute('PRAGMA cache_size = 4000')  # 4000 * 4Kb ~ 16Mb cache per thread
+        conn.execute(f'PRAGMA mmap_size = {1 * 1024 * 1024 * 1024}')  # 1Gb memory mapping
+        conn.row_factory = sqlite3.Row
+
+        _local.connection = conn
+
+    return _local.connection
