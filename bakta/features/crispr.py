@@ -52,7 +52,7 @@ def predict_crispr(data: dict, sequences_path: Path):
             array_id = None
             skip_lines = True
             crispr_array = None
-            gap_count = 0
+            repeat_gap_total_count = 0
             for line in fh:
                 line = line.strip()
                 if(line == ''):
@@ -69,7 +69,7 @@ def predict_crispr(data: dict, sequences_path: Path):
                 elif(skip_lines is False):
                     if(output_section == 'DETAIL'):
                         if(line[0:5] == 'Array'):
-                            gap_count = 0
+                            repeat_gap_total_count = 0
                             array_id = line.split()[1]
                             crispr_array = OrderedDict()
                             crispr_array['type'] = bc.FEATURE_CRISPR
@@ -87,20 +87,21 @@ def predict_crispr(data: dict, sequences_path: Path):
                                 repeat_length = int(m.group(2))
                                 repeat_seq = m.group(6)
                                 spacer_seq = m.group(7)
+                                repeat_gaps = repeat_seq.count('-')
                                 crispr_repeat = OrderedDict()
                                 crispr_repeat['strand'] = bc.STRAND_UNKNOWN
-                                crispr_repeat['start'] = position - gap_count
-                                crispr_repeat['stop'] = position + repeat_length - 1 - gap_count
+                                crispr_repeat['start'] = position - repeat_gap_total_count
+                                crispr_repeat['stop'] = position - repeat_gap_total_count + repeat_length - repeat_gaps - 1
                                 crispr_array['repeats'].append(crispr_repeat)
                                 log.debug('repeat: sequence-id=%s, array-id=%s, start=%i, stop=%i', sequence_id, array_id, crispr_repeat['start'], crispr_repeat['stop'])
-                                gap_count += repeat_seq.count('-')  # correct wrong PILER-CR detail positions by gaps
+                                repeat_gap_total_count += repeat_gaps  # correct wrong PILER-CR detail positions by gaps
                                 if(spacer_seq is not None):
                                     spacer_seq = spacer_seq.upper()
                                     spacer_length = len(spacer_seq)
                                     crispr_spacer = OrderedDict()
                                     crispr_spacer['strand'] = bc.STRAND_UNKNOWN
-                                    crispr_spacer['start'] = position + repeat_length - gap_count
-                                    crispr_spacer['stop'] = position + repeat_length + spacer_length - 1 - gap_count
+                                    crispr_spacer['start'] = position + repeat_length - repeat_gap_total_count
+                                    crispr_spacer['stop'] = position + repeat_length - repeat_gap_total_count + spacer_length - 1
                                     crispr_spacer['sequence'] = spacer_seq
                                     crispr_array['spacers'].append(crispr_spacer)
                                     spacer_genome_seq = bu.extract_feature_sequence(crispr_spacer, sequences[sequence_id])
