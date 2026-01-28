@@ -3,6 +3,7 @@ import logging
 from typing import Sequence
 
 import pyhmmer
+from pyhmmer.easel import AA, DigitalSequenceBlock, TextSequenceBlock, TextSequence
 
 import bakta.config as cfg
 import bakta.constants as bc
@@ -16,17 +17,16 @@ def search(cdss: Sequence[dict], user_hmms_path):
     """Detect Pfam-A entries"""
     cds_found = set()
     orf_by_aa_digest = orf.get_orf_dictionary(cdss)
-    alphabet: pyhmmer.easel.Alphabet = pyhmmer.easel.Alphabet.amino()
-    proteins: list[pyhmmer.easel.DigitalSequence] = [ pyhmmer.easel.TextSequence(sequence=cds['aa'], name=bytes(orf.get_orf_key(cds), 'UTF-8')).digitize(alphabet) for cds in cdss ]
-    with pyhmmer.plan7.HMMFile(user_hmms_path) as hmms_fh:
-        hmms = list(hmms_fh)
-        for hmm_query_hits in pyhmmer.hmmsearch(hmms, proteins, bit_cutoffs='trusted', cpus=cfg.threads):
-            hmm_id = hmm_query_hits.query.accession.decode()
+    alphabet: "AA" = pyhmmer.easel.Alphabet.amino()
+    proteins: "DigitalSequenceBlock[AA]" = TextSequenceBlock(TextSequence(sequence=cds['aa'], name=orf.get_orf_key(cds)) for cds in cdss).digitize(alphabet)
+    with pyhmmer.plan7.HMMFile(user_hmms_path, alphabet=alphabet) as hmms_fh:
+        for hmm_query_hits in pyhmmer.hmmsearch(hmms_fh, proteins, bit_cutoffs='trusted', cpus=cfg.threads):
+            hmm_id = hmm_query_hits.query.accession
             hmm_length = hmm_query_hits.query.M
-            hmm_description = hmm_query_hits.query.description.decode()
+            hmm_description = hmm_query_hits.query.description
             hmms_description_fields = hmm_description.split('~~~')
             for hmm_query_hit in hmm_query_hits.reported:
-                aa_identifier = hmm_query_hit.name.decode()
+                aa_identifier = hmm_query_hit.name
                 cds = orf_by_aa_digest[aa_identifier]
                 if hmm_query_hit.evalue > bc.MIN_HMM_EVALUE:
                     log.debug(
