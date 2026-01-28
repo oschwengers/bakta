@@ -118,7 +118,7 @@ Bakta requires the following 3rd party software tools which must be installed an
 - PILER-CR (1.06) <https://doi.org/10.1186/1471-2105-8-18> <http://www.drive5.com/pilercr>
 - Pyrodigal (3.5.0) <https://doi.org/10.21105/joss.04296> <https://github.com/althonos/pyrodigal>
 - PyHMMER (0.12.0) <https://doi.org/10.21105/joss.04296> <https://github.com/althonos/pyhmmer>
-- Diamond (2.1.10) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
+- Diamond (2.1.21) <https://doi.org/10.1038/nmeth.3176> <https://github.com/bbuchfink/diamond>
 - Blast+ (2.17.0) <https://www.ncbi.nlm.nih.gov/pubmed/2231712> <https://blast.ncbi.nlm.nih.gov>
 - AMRFinderPlus (4.2.7) <https://github.com/ncbi/amr>
 - pyCirclize (1.7.0) https://github.com/moshi4/pyCirclize
