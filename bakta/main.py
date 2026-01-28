@@ -308,7 +308,9 @@ def main():
             if(cfg.user_proteins):
                 log.debug('conduct expert system: user aa seqs')
                 user_aa_path = cfg.tmp_path.joinpath('user-proteins.faa')
-                exp_aa_seq.write_user_protein_sequences(user_aa_path)
+                no_user_proteins, no_skipped_user_proteins = exp_aa_seq.write_user_protein_sequences(user_aa_path)
+                if(no_skipped_user_proteins > 0):
+                    print(f'\t\tWARNING: skipped incorrectly formatted user proteins: {no_skipped_user_proteins}, imported: {no_user_proteins}')
                 user_aa_found = exp_aa_seq.search(cdss, cds_aa_path, 'user_proteins', user_aa_path)
                 print(f'\t\tuser protein sequences: {len(user_aa_found)}')
 

@@ -93,11 +93,16 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
 
 
 def write_user_protein_sequences(aa_fasta_path: Path):
+    no_skipped_proteins = 0
     user_proteins = []
     try:
         with xopen(str(cfg.user_proteins), threads=0) as fh_in:
             for record in SeqIO.parse(fh_in, 'fasta'):
-                user_proteins.append(parse_user_protein_sequences_fasta(record))
+                try:
+                    user_protein = parse_user_protein_sequences_fasta(record)
+                    user_proteins.append(user_protein)
+                except ValueError:
+                    no_skipped_proteins += 1
     except Exception as e:
         log.error('provided user proteins file Fasta format not valid!', exc_info=True)
         sys.exit(f'ERROR: User proteins file Fasta format not valid!')
@@ -107,7 +112,12 @@ def write_user_protein_sequences(aa_fasta_path: Path):
             for record in SeqIO.parse(fh_in, 'genbank'):
                 for feature in record.features:
                     if(feature.type.lower() == 'cds'  and  bc.INSDC_FEATURE_PSEUDO not in feature.qualifiers  and  bc.INSDC_FEATURE_PSEUDOGENE not in feature.qualifiers):
-                        user_proteins.append(parse_user_protein_sequences_genbank(feature))
+                        try:
+                            user_protein = parse_user_protein_sequences_genbank(feature)
+                            user_proteins.append(user_protein)
+                        except ValueError:
+                            no_skipped_proteins += 1
+                            log.warning('skipped incorrectly formatted user protein!')
     except Exception as e:
         log.error('provided user proteins file GenBank format not valid!', exc_info=True)
         sys.exit(f'ERROR: User proteins file GenBank format not valid!')
@@ -126,8 +136,9 @@ def write_user_protein_sequences(aa_fasta_path: Path):
             log.error('cannot write user protein file!', exc_info=True)
             sys.exit(f'ERROR: Cannot write user protein file!')
     else:
-        log.error('no user proteins detected!', exc_info=True)
-        sys.exit(f'ERROR: No user proteins detected in file!')
+        log.warning('no valid user proteins detected!', exc_info=True)
+
+    return (len(user_proteins), no_skipped_proteins)
 
 
 def parse_user_protein_sequences_fasta(record):
@@ -153,22 +164,19 @@ def parse_user_protein_sequences_fasta(record):
         if(cols[5] != ''):
             db_xrefs = cols[5].split(',')
     else:
-        log.error(
-            'wrong description format in Fasta user protein file! description=%s',
-            record.description
-        )
-        raise ValueError(f'Wrong description format in Fasta user protein file! description={record.description}')
+        log.warning('wrong description format in FASTA user protein file! id=%s, description=%s', record.id, record.description)
+        raise ValueError(f'Wrong description format in FASTA user protein file!')
 
     gene = gene.strip()
     product = product.strip()
     if(product == ''):
-        log.error('missing product in Fasta user protein file!')
-        raise ValueError('Missing product in Fasta user protein file!')
+        log.warning('missing product in FASTA user protein file! id=%s, description=%s', record.id, record.description)
+        raise ValueError('Missing product in FASTA user protein file!')
 
     for db_xref in db_xrefs:
         if(':' not in db_xref):
-            log.error('wrong dbxref format in Fasta user protein file!')
-            raise ValueError(f'Wrong dbxref format in Fasta user protein file! dbxref={db_xref}')
+            log.warning('wrong dbxref format in FASTA user protein file! id=%s, dbxref=%s', record.id, db_xref)
+            raise ValueError(f'Wrong dbxref format in FASTA user protein file!')
     seq = str(record.seq).upper()
     return (model_id, min_id, min_query_cov, min_model_cov, gene, product, db_xrefs, seq)
 
@@ -182,7 +190,7 @@ def parse_user_protein_sequences_genbank(feature: dict):
     model_ids = q.get('locus_tag', [])
     model_id = model_ids[0] if len(model_ids) > 0 else None
     if(model_id is None):
-        log.error('missing locus_tag in GenBank user protein file!')
+        log.warning('missing locus_tag in GenBank user protein file!')
         raise ValueError('Missing locus_tag in GenBank user protein file!')
 
     genes = q.get('gene', [])
@@ -191,13 +199,13 @@ def parse_user_protein_sequences_genbank(feature: dict):
     products = q.get('product', [])
     product = products[0].strip() if len(products) > 0 else None
     if(product is None or product == ''):
-        log.error('missing product in GenBank user protein file!')
+        log.warning('missing product in GenBank user protein file!')
         raise ValueError('Missing product in GenBank user protein file!')
 
     db_xrefs = q.get('db_xref', [])
     for db_xref in db_xrefs:
         if(':' not in db_xref):
-            log.error('wrong dbxref format in Fasta user protein file!')
+            log.warning('wrong dbxref format in Fasta user protein file! dbxref=%s', db_xref)
             raise ValueError(f'Wrong dbxref format in Fasta user protein file! dbxref={db_xref}')
     ecs = q.get('EC_number', [])
     for ec in ecs:
@@ -206,7 +214,7 @@ def parse_user_protein_sequences_genbank(feature: dict):
     seqs = q.get('translation', [])
     seq = str(seqs[0]).upper() if len(seqs) > 0 else None
     if(seq is None):
-        log.error('missing sequence translation in GenBank user protein file!')
+        log.warning('missing sequence translation in GenBank user protein file!')
         raise ValueError('Missing sequence translation in GenBank user protein file!')
 
     return (model_id, min_id, min_query_cov, min_model_cov, gene, product, db_xrefs, seq)
