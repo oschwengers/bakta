@@ -20,8 +20,7 @@ def search(cdss: Sequence[dict], user_hmms_path):
     alphabet: "AA" = pyhmmer.easel.Alphabet.amino()
     proteins: "DigitalSequenceBlock[AA]" = TextSequenceBlock(TextSequence(sequence=cds['aa'], name=orf.get_orf_key(cds)) for cds in cdss).digitize(alphabet)
     with pyhmmer.plan7.HMMFile(user_hmms_path, alphabet=alphabet) as hmms_fh:
-        #hmms = list(hmms_fh)
-        for hmm_query_hits in pyhmmer.hmmsearch(hmms, proteins, bit_cutoffs='trusted', cpus=cfg.threads):
+        for hmm_query_hits in pyhmmer.hmmsearch(hmms_fh, proteins, bit_cutoffs='trusted', cpus=cfg.threads):
             hmm_id = hmm_query_hits.query.accession
             hmm_length = hmm_query_hits.query.M
             hmm_description = hmm_query_hits.query.description
