@@ -406,8 +406,8 @@ def predict_pfam(cdss: Sequence[dict]) -> Sequence[dict]:
     orf_by_aa_digest = orf.get_orf_dictionary(cdss)
     alphabet: "AA" = pyhmmer.easel.Alphabet.amino()
     proteins: "DigitalSequenceBlock[AA]" = TextSequenceBlock(TextSequence(sequence=cds['aa'], name=orf.get_orf_key(cds)) for cds in cdss).digitize(alphabet)
-    with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('pfam'), alphabet=alphabet) as hmm:
-        for top_hits in pyhmmer.hmmsearch(hmm, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
+    with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('pfam'), alphabet=alphabet) as hmm_fh:
+        for top_hits in pyhmmer.hmmsearch(hmm_fh, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
             for hit in top_hits:
                 aa_identifier = hit.name
                 cds = orf_by_aa_digest[aa_identifier]
