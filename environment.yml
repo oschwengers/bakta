@@ -13,7 +13,7 @@ dependencies:
   - pyrodigal>=3.7.0
   - trnascan-se>=2.0.11
   - aragorn>=1.2.41
-  - infernal>=1.1.4
+  - infernal>=1.1.5
   - piler-cr
   - pyhmmer>=0.12.0
   - diamond>=2.1.21

@@ -114,7 +114,7 @@ Bakta requires the following 3rd party software tools which must be installed an
 
 - tRNAscan-SE (2.0.11) <https://doi.org/10.1101/614032> <http://lowelab.ucsc.edu/tRNAscan-SE>
 - Aragorn (1.2.41) <http://dx.doi.org/10.1093/nar/gkh152> <http://130.235.244.92/ARAGORN>
-- INFERNAL (1.1.4) <https://dx.doi.org/10.1093%2Fbioinformatics%2Fbtt509> <http://eddylab.org/infernal>
+- INFERNAL (1.1.5) <https://dx.doi.org/10.1093%2Fbioinformatics%2Fbtt509> <http://eddylab.org/infernal>
 - PILER-CR (1.06) <https://doi.org/10.1186/1471-2105-8-18> <http://www.drive5.com/pilercr>
 - Pyrodigal (3.5.0) <https://doi.org/10.21105/joss.04296> <https://github.com/althonos/pyrodigal>
 - PyHMMER (0.12.0) <https://doi.org/10.21105/joss.04296> <https://github.com/althonos/pyhmmer>
