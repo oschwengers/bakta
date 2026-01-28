@@ -11,7 +11,7 @@ import bakta.so as so
 import bakta.utils as bu
 
 
-RE_CRISPR = re.compile(r'(\d{1,8})\s+(\d{2})\s+(\d{1,3}\.\d)\s+(?:(\d{1,2})\s+)?([ATGCN]+)?\s+([ATGCN\.-]+)\s*(?:([ATGCN]+))?')
+RE_CRISPR = re.compile(r'(\d{1,8})\s+(\d{2})\s+(\d{1,3}\.\d)\s+(?:(\d{1,2})\s+)?([ATGCNMRWSYKVHDBN]+)?\s+([ATGCNMRWSYKVHDBN\.-]+)\s*(?:([ATGCNMRWSYKVHDBN]+))?')
 
 
 log = logging.getLogger('CRISPR')
@@ -91,7 +91,7 @@ def predict_crispr(data: dict, sequences_path: Path):
                             crispr_repeat['start'] = position - gap_count
                             crispr_repeat['stop'] = position + repeat_length - 1 - gap_count
                             crispr_array['repeats'].append(crispr_repeat)
-                            log.debug('repeat: array-id=%s, start=%i, stop=%i', array_id, crispr_repeat['start'], crispr_repeat['stop'])
+                            log.debug('repeat: sequence-id=%s, array-id=%s, start=%i, stop=%i', sequence_id, array_id, crispr_repeat['start'], crispr_repeat['stop'])
                             gap_count += repeat_seq.count('-')  # correct wrong PILER-CR detail positions by gaps
                             if(spacer_seq is not None):
                                 spacer_seq = spacer_seq.upper()
@@ -103,7 +103,7 @@ def predict_crispr(data: dict, sequences_path: Path):
                                 crispr_spacer['sequence'] = spacer_seq
                                 crispr_array['spacers'].append(crispr_spacer)
                                 spacer_genome_seq = bu.extract_feature_sequence(crispr_spacer, sequences[sequence_id])
-                                log.debug('spacer: array-id=%s, start=%i, stop=%i, genome-seq=%s, spacer-seq=%s', array_id, crispr_spacer['start'], crispr_spacer['stop'], spacer_genome_seq, spacer_seq)
+                                log.debug('spacer: sequence-id=%s, array-id=%s, start=%i, stop=%i, genome-seq=%s, spacer-seq=%s', sequence_id, array_id, crispr_spacer['start'], crispr_spacer['stop'], spacer_genome_seq, spacer_seq)
                                 assert spacer_seq == spacer_genome_seq  # assure PILER-CR provided sequence equals sequence extracted from genome
                 elif(output_section == 'POSITION'):
                     if(line[0] == '>'):
