@@ -47,7 +47,7 @@ DEPENDENCY_PILERCR = (Version(1, 6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGI
 DEPENDENCY_PYRODIGAL = (Version(3, 5, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Pyrodigal', (sys.executable, '-c', 'import pyrodigal; print(pyrodigal.__version__)'), ['--skip-cds'])
 DEPENDENCY_PYHMMER = (Version(0, 10, 15), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Pyhmmer', (sys.executable, '-c', 'import pyhmmer; print(pyhmmer.__version__)'), ['--skip-cds', '--skip-sorf'])
 DEPENDENCY_DIAMOND = (Version(2, 1, 10), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Diamond', ('diamond', 'help'), ['--skip-cds', '--skip-sorf'])
-DEPENDENCY_BLASTN = (Version(2, 14, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Blastn', ('blastn', '-version'), ['--skip-ori'])
+DEPENDENCY_BLASTN = (Version(2, 17, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Blastn', ('blastn', '-version'), ['--skip-ori'])
 DEPENDENCY_AMRFINDERPLUS = (Version(4, 2, 7), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'AMRFinderPlus', ('amrfinder', '--version'), ['--skip-cds'])
 DEPENDENCY_PYCIRCLIZE = (Version(1, 7, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'pyCirclize', (sys.executable, '-c', 'import pycirclize; print(pycirclize.__version__)'), ['--skip-plot'])
 
