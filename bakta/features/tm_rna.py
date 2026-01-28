@@ -79,6 +79,9 @@ def predict_tm_rnas(data: dict, sequences_path: Path):
                         'stop': start + tag_stop - 1,
                         'aa': tag_aa.replace('*', '')
                     }
+                    if (strand == bc.STRAND_REVERSE):
+                        tmrna['tag']['start'] = stop - tag_stop + 1
+                        tmrna['tag']['stop'] = stop - tag_start + 1
 
                     nt = bu.extract_feature_sequence(tmrna, sequences[sequence_id])  # extract nt sequences
                     tmrna['nt'] = nt
