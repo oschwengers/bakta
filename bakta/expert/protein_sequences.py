@@ -28,6 +28,7 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
         '--max-target-seqs', '1',  # single best output
         '--outfmt', '6', 'qseqid', 'sseqid', 'qlen', 'slen', 'length', 'pident', 'evalue', 'bitscore', 'stitle',
         '--threads', str(cfg.threads),
+        '--load-threads', str(min(cfg.threads, 8)),  # limit load threads to max 8
         '--tmpdir', str(cfg.tmp_path),  # use tmp folder
         '--block-size', '4',  # increase block size for faster executions
         '--index-chunks', '1',  # set index chunks to 1 for faster executions

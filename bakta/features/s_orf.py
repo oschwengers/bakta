@@ -331,6 +331,7 @@ def search(sorfs: Sequence[dict], cluster_type: str):
         '--evalue', '1',
         '--outfmt', '6', 'qseqid', 'sseqid', 'qlen', 'slen', 'length', 'pident', 'evalue', 'bitscore',
         '--threads', str(cfg.threads),
+        '--load-threads', str(min(cfg.threads, 8)),  # limit load threads to max 8
         '--tmpdir', str(cfg.tmp_path),  # use tmp folder
         '--block-size', '3',  # slightly increase block size for faster executions
         '--ultra-sensitive',

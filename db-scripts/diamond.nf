@@ -46,6 +46,7 @@ process diamond {
         --max-target-seqs 1 \
         -b4 \
         --threads ${task.cpus} \
+        --load-threads ${task.cpus} \
         --out diamond.tsv \
         --outfmt 6 qseqid sseqid stitle length pident qlen slen evalue \
         --fast
