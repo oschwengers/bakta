@@ -22,10 +22,9 @@ SO_CIS_REG_THERMOMETER = SO('RNA_thermometer', 'SO:0002168')
 SO_CIS_REG_FRAMESHIFT = SO('cis_regulatory_frameshift_element', 'SO:0001427')
 SO_CIS_REG_RECODING_STIMULATION_REGION = SO('recoding_stimulatory_region', 'SO:1001268')
 SO_CIS_REG_RIBOSOME_BINDING_SITE = SO('ribosome_entry_site', 'SO:0000139')
-
-SO_TERMINATOR = SO('terminator', 'SO:0000141')
-SO_TERMINATOR_RHO_DEPENDENT = SO('rho_dependent_bacterial_terminator', 'SO:0000981')
-SO_TERMINATOR_RHO_INDEPENDENT = SO('rho_independent_bacterial_terminator', 'SO:0000982')
+SO_CIS_REG_TERMINATOR = SO('terminator', 'SO:0000141')
+SO_CIS_REG_TERMINATOR_RHO_DEPENDENT = SO('rho_dependent_bacterial_terminator', 'SO:0000981')
+SO_CIS_REG_TERMINATOR_RHO_INDEPENDENT = SO('rho_independent_bacterial_terminator', 'SO:0000982')
 
 SO_GENE = SO('gene', 'SO:0000704')
 SO_PSEUDO_GENE = SO('pseudogene', 'SO:0000336')
