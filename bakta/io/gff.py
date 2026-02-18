@@ -315,6 +315,19 @@ def write_features(data: dict, features_by_sequence: Dict[str, dict], gff3_path:
                     fh.write(f"{seq_id}\tBakta\t{so.SO_CDS.name}\t{start}\t{stop}\t.\t{feat['strand']}\t0\t{annotations}\n")
                     if(bc.FEATURE_SIGNAL_PEPTIDE in feat):
                         write_signal_peptide(fh, feat)
+                elif(feat['type'] == bc.FEATURE_TERMINATOR):
+                    annotations = {
+                        'ID': feat['id'],
+                        'Name': feat['product'],
+                        'product': feat['product'],
+                        'Dbxref': feat['db_xrefs']
+                    }
+                    if(cfg.compliant):
+                        annotations['inference'] = 'profile:TranstermHP:2.0'
+                        annotations['Dbxref'], annotations['Note'] = insdc.revise_dbxref_insdc(feat['db_xrefs'])  # remove INSDC invalid DbXrefs
+                        annotations[bc.INSDC_FEATURE_REGULATORY_CLASS] = insdc.select_regulatory_class(feat)
+                    annotations = encode_annotations(annotations)
+                    fh.write(f"{seq_id}\tTranstermHP\t{so.SO_REGULATORY_REGION.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_GAP):
                     annotations = {
                         'ID': feat['id'],

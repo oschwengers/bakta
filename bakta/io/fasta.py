@@ -97,7 +97,7 @@ def write_ffn(features: Sequence[dict], ffn_path: Path):
     log.info('write feature nucleotide sequences: path=%s', ffn_path)
     with ffn_path.open('wt') as fh:
         for feat in features:
-            if(feat['type'] in [bc.FEATURE_T_RNA, bc.FEATURE_TM_RNA, bc.FEATURE_R_RNA, bc.FEATURE_NC_RNA, bc.FEATURE_NC_RNA_REGION, bc.FEATURE_CRISPR, bc.FEATURE_CDS, bc.FEATURE_SORF, bc.FEATURE_ORIC, bc.FEATURE_ORIV, bc.FEATURE_ORIT]):
+            if(feat['type'] in [bc.FEATURE_T_RNA, bc.FEATURE_TM_RNA, bc.FEATURE_R_RNA, bc.FEATURE_NC_RNA, bc.FEATURE_NC_RNA_REGION, bc.FEATURE_CRISPR, bc.FEATURE_CDS, bc.FEATURE_SORF, bc.FEATURE_TERMINATOR, bc.FEATURE_ORIC, bc.FEATURE_ORIV, bc.FEATURE_ORIT]):
                 identifier = feat['locus'] if 'locus' in feat else feat['id']
                 if(feat.get('product', '') != ''):
                     fh.write(f">{identifier} {feat['product']}\n{feat['nt']}\n")

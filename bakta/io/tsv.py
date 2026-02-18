@@ -133,8 +133,8 @@ def write_feature_inferences(sequences: Sequence[dict], features_by_sequence: Di
                         ])
                     )
                     fh.write('\n')
-                elif(feat['type'] in [bc.FEATURE_T_RNA, bc.FEATURE_R_RNA, bc.FEATURE_NC_RNA, bc.FEATURE_NC_RNA_REGION]):
-                    accession = '-' if feat['type'] == bc.FEATURE_T_RNA else [xref for xref in feat['db_xrefs'] if bc.DB_XREF_RFAM in xref][0]
+                elif(feat['type'] in [bc.FEATURE_T_RNA, bc.FEATURE_R_RNA, bc.FEATURE_NC_RNA, bc.FEATURE_NC_RNA_REGION, bc.FEATURE_TERMINATOR]):
+                    accession = '-' if feat['type'] in [bc.FEATURE_T_RNA, bc.FEATURE_TERMINATOR] else [xref for xref in feat['db_xrefs'] if bc.DB_XREF_RFAM in xref][0]
                     fh.write('\t'.join(
                         [
                             feat['sequence'] if 'sequence' in feat else feat['contig'],  # <1.10.0 compatibility

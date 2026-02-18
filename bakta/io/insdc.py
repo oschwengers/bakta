@@ -215,6 +215,12 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
                 insdc_feature_type = bc.INSDC_FEATURE_REGULATORY
                 qualifiers['note'].append(feature['product'])
                 qualifiers.pop('product', None)
+            elif(feature['type'] == bc.FEATURE_TERMINATOR):
+                qualifiers['inference'] = 'profile:TranstermHP:2.0'
+                qualifiers[bc.INSDC_FEATURE_REGULATORY_CLASS] = select_regulatory_class(feature)
+                insdc_feature_type = bc.INSDC_FEATURE_REGULATORY
+                qualifiers['note'].append(feature['product'])
+                qualifiers.pop('product', None)
             elif(feature['type'] == bc.FEATURE_CRISPR):
                 qualifiers[bc.INSDC_FEATURE_REPEAT_FAMILY] = 'CRISPR'
                 qualifiers[bc.INSDC_FEATURE_REPEAT_TYPE] = 'direct'
@@ -335,7 +341,9 @@ def select_regulatory_class(feature: dict) -> str:
             feature_class = so.SO(feature_class[0], feature_class[1])
             feature['class'] = feature_class
 
-        if(feature_class.id == so.SO_CIS_REG_ATTENUATOR.id):
+        if(feature_class.id == so.SO_CIS_REG_TERMINATOR.id):
+            return bc.INSDC_FEATURE_REGULATORY_CLASS_TERMINATOR
+        elif(feature_class.id == so.SO_CIS_REG_ATTENUATOR.id):
             return bc.INSDC_FEATURE_REGULATORY_CLASS_ATTENUATOR
         elif(feature_class.id == so.SO_CIS_REG_RIBOSWITCH.id):
             return bc.INSDC_FEATURE_REGULATORY_CLASS_RIBOSWITCH
