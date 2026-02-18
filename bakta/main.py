@@ -26,6 +26,7 @@ import bakta.features.crispr as crispr
 import bakta.features.orf as orf
 import bakta.features.cds as feat_cds
 import bakta.features.s_orf as s_orf
+import bakta.features.terminators as terminators
 import bakta.features.gaps as gaps
 import bakta.features.ori as ori
 import bakta.db as db
@@ -256,17 +257,17 @@ def main():
             print(f'\tdiscarded spurious: {len(discarded_cdss)}')
             cdss = [cds for cds in cdss if 'discarded' not in cds]
         
-        if(len(cdss) > 0):
-            log.debug('revise translational exceptions')
-            no_revised = feat_cds.revise_translational_exceptions(data, cdss)
-            print(f'\trevised translational exceptions: {no_revised}')
-            cdss = [cds for cds in cdss if 'discarded' not in cds]
+        # if(len(cdss) > 0):
+        #     log.debug('revise translational exceptions')
+        #     no_revised = feat_cds.revise_translational_exceptions(data, cdss)
+        #     print(f'\trevised translational exceptions: {no_revised}')
+        #     cdss = [cds for cds in cdss if 'discarded' not in cds]
         
-        if(cfg.regions):
-            log.debug('import user-provided CDS regions')
-            imported_cdss, no_skipped = feat_cds.import_user_cdss(data, cfg.regions)
-            print(f'\tuser regions: {len(imported_cdss)} imported, {no_skipped} skipped')
-            cdss.extend(imported_cdss)
+        # if(cfg.regions):
+        #     log.debug('import user-provided CDS regions')
+        #     imported_cdss, no_skipped = feat_cds.import_user_cdss(data, cfg.regions)
+        #     print(f'\tuser regions: {len(imported_cdss)} imported, {no_skipped} skipped')
+        #     cdss.extend(imported_cdss)
 
         if(len(cdss) > 0):
             if(cfg.db_info['type'] == 'full'):
@@ -294,51 +295,51 @@ def main():
             psc.lookup(cdss)  # lookup PSC info
             pscc.lookup(cdss)  # lookup PSCC info
 
-            print('\tconduct expert systems...')  # conduct expert systems annotation
-            cds_aa_path = cfg.tmp_path.joinpath('cds.expert.faa')
-            orf.write_internal_faa(cdss, cds_aa_path)
-            log.debug('conduct expert system: amrfinder')
-            expert_amr_found = exp_amr.search(cdss, cds_aa_path)
-            print(f'\t\tamrfinder: {len(expert_amr_found)}')
-            log.debug('conduct expert system: aa seqs')
-            diamond_db_path = cfg.db_path.joinpath('expert-protein-sequences.dmnd')
-            expert_aa_found = exp_aa_seq.search(cdss, cds_aa_path, 'expert_proteins', diamond_db_path)
-            print(f'\t\tprotein sequences: {len(expert_aa_found)}')
+            # print('\tconduct expert systems...')  # conduct expert systems annotation
+            # cds_aa_path = cfg.tmp_path.joinpath('cds.expert.faa')
+            # orf.write_internal_faa(cdss, cds_aa_path)
+            # log.debug('conduct expert system: amrfinder')
+            # expert_amr_found = exp_amr.search(cdss, cds_aa_path)
+            # print(f'\t\tamrfinder: {len(expert_amr_found)}')
+            # log.debug('conduct expert system: aa seqs')
+            # diamond_db_path = cfg.db_path.joinpath('expert-protein-sequences.dmnd')
+            # expert_aa_found = exp_aa_seq.search(cdss, cds_aa_path, 'expert_proteins', diamond_db_path)
+            # print(f'\t\tprotein sequences: {len(expert_aa_found)}')
 
-            if(cfg.user_proteins):
-                log.debug('conduct expert system: user aa seqs')
-                user_aa_path = cfg.tmp_path.joinpath('user-proteins.faa')
-                no_user_proteins, no_skipped_user_proteins = exp_aa_seq.write_user_protein_sequences(user_aa_path)
-                if(no_skipped_user_proteins > 0):
-                    print(f'\t\tWARNING: skipped incorrectly formatted user proteins: {no_skipped_user_proteins}, imported: {no_user_proteins}')
-                user_aa_found = exp_aa_seq.search(cdss, cds_aa_path, 'user_proteins', user_aa_path)
-                print(f'\t\tuser protein sequences: {len(user_aa_found)}')
+            # if(cfg.user_proteins):
+            #     log.debug('conduct expert system: user aa seqs')
+            #     user_aa_path = cfg.tmp_path.joinpath('user-proteins.faa')
+            #     no_user_proteins, no_skipped_user_proteins = exp_aa_seq.write_user_protein_sequences(user_aa_path)
+            #     if(no_skipped_user_proteins > 0):
+            #         print(f'\t\tWARNING: skipped incorrectly formatted user proteins: {no_skipped_user_proteins}, imported: {no_user_proteins}')
+            #     user_aa_found = exp_aa_seq.search(cdss, cds_aa_path, 'user_proteins', user_aa_path)
+            #     print(f'\t\tuser protein sequences: {len(user_aa_found)}')
 
-            if(cfg.user_hmms):
-                log.debug('conduct expert system: user HMM')
-                user_hmm_found = exp_aa_hmms.search(cdss, cfg.user_hmms)
-                print(f'\t\tuser HMM sequences: {len(user_hmm_found)}')
+            # if(cfg.user_hmms):
+            #     log.debug('conduct expert system: user HMM')
+            #     user_hmm_found = exp_aa_hmms.search(cdss, cfg.user_hmms)
+            #     print(f'\t\tuser HMM sequences: {len(user_hmm_found)}')
 
             print('\tcombine annotations and mark hypotheticals...')
             log.debug('combine CDS annotations')
             for cds in cdss:
                 anno.combine_annotation(cds)  # combine IPS & PSC annotations and mark hypotheticals
 
-            hypotheticals = [cds for cds in cdss if 'hypothetical' in cds and 'edge' not in cds and cds.get('start_type', 'Edge') != 'Edge']
-            if(len(hypotheticals) > 0  and  not cfg.skip_pseudo):
-                if(cfg.db_info['type'] == 'full'):
-                    print('\tdetect pseudogenes...')
-                    log.debug('search pseudogene candidates')
-                    pseudo_candidates = feat_cds.predict_pseudo_candidates(hypotheticals)
-                    print(f'\t\tcandidates: {len(pseudo_candidates)}')
-                    pseudogenes = feat_cds.detect_pseudogenes(pseudo_candidates, cdss, data) if len(pseudo_candidates) > 0 else []
-                    psc.lookup(pseudogenes, pseudo=True)
-                    pscc.lookup(pseudogenes, pseudo=True)
-                    for pseudogene in pseudogenes:
-                        anno.combine_annotation(pseudogene)
-                    print(f'\t\tverified: {len(pseudogenes)}')
-                else:
-                    print(f'\tskip pseudogene detection with light db version')
+            # hypotheticals = [cds for cds in cdss if 'hypothetical' in cds and 'edge' not in cds and cds.get('start_type', 'Edge') != 'Edge']
+            # if(len(hypotheticals) > 0  and  not cfg.skip_pseudo):
+            #     if(cfg.db_info['type'] == 'full'):
+            #         print('\tdetect pseudogenes...')
+            #         log.debug('search pseudogene candidates')
+            #         pseudo_candidates = feat_cds.predict_pseudo_candidates(hypotheticals)
+            #         print(f'\t\tcandidates: {len(pseudo_candidates)}')
+            #         pseudogenes = feat_cds.detect_pseudogenes(pseudo_candidates, cdss, data) if len(pseudo_candidates) > 0 else []
+            #         psc.lookup(pseudogenes, pseudo=True)
+            #         pscc.lookup(pseudogenes, pseudo=True)
+            #         for pseudogene in pseudogenes:
+            #             anno.combine_annotation(pseudogene)
+            #         print(f'\t\tverified: {len(pseudogenes)}')
+            #     else:
+            #         print(f'\tskip pseudogene detection with light db version')
             hypotheticals = [cds for cds in cdss if 'hypothetical' in cds]
             if(len(hypotheticals) > 0):
                 log.debug('analyze hypotheticals')
@@ -413,6 +414,18 @@ def main():
             anno.combine_annotation(feat)  # combine IPS and PSC annotations
         data['features'].extend(sorfs_filtered)
         print(f'\tfiltered sORFs: {len(sorfs_filtered)}')
+    
+    ############################################################################
+    # Rho-independent terminator detection
+    ############################################################################
+    if(cfg.skip_terminator):
+        print('skip terminator detection...')
+    else:
+        print('predict terminators...')
+        log.debug('start terminator prediction')
+        rho_indepenent_terminators = terminators.predict_terminators(data, sequences_path)
+        data['features'].extend(rho_indepenent_terminators)
+        print(f"\tfound: {len(rho_indepenent_terminators)}")
 
     ############################################################################
     # gap annotation
@@ -525,6 +538,7 @@ def main():
     print(f"\t\thypotheticals: {len([cds for cds in cdss if 'hypothetical' in cds])}")
     print(f"\t\tpseudogenes: {len([cds for cds in cdss if 'pseudogene' in cds])}")
     print(f"\tsORFs: {len([feat for feat in features if feat['type'] == bc.FEATURE_SORF])}")
+    print(f"\tterminators: {len([feat for feat in features if feat['type'] == bc.FEATURE_TERMINATOR])}")
     print(f"\tgaps: {len([feat for feat in features if feat['type'] == bc.FEATURE_GAP])}")
     print(f"\toriCs/oriVs: {len([feat for feat in features if (feat['type'] == bc.FEATURE_ORIC or feat['type'] == bc.FEATURE_ORIV)])}")
     print(f"\toriTs: {len([feat for feat in features if feat['type'] == bc.FEATURE_ORIT])}")
@@ -618,6 +632,7 @@ def main():
         fh_out.write(f"pseudogenes: {len([cds for cds in cdss if 'pseudogene' in cds])}\n")
         fh_out.write(f"hypotheticals: {len([cds for cds in cdss if 'hypothetical' in cds])}\n")
         fh_out.write(f"sORFs: {len([feat for feat in features if feat['type'] == bc.FEATURE_SORF])}\n")
+        fh_out.write(f"terminators: {len([feat for feat in features if feat['type'] == bc.FEATURE_TERMINATOR])}\n")
         fh_out.write(f"gaps: {len([feat for feat in features if feat['type'] == bc.FEATURE_GAP])}\n")
         fh_out.write(f"oriCs: {len([feat for feat in features if feat['type'] == bc.FEATURE_ORIC])}\n")
         fh_out.write(f"oriVs: {len([feat for feat in features if feat['type'] == bc.FEATURE_ORIV])}\n")

@@ -45,6 +45,7 @@ DEPENDENCY_ARAGORN = (Version(1, 2, 41), Version(VERSION_MAX_DIGIT, VERSION_MAX_
 DEPENDENCY_CMSCAN = (Version(1, 1, 5), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'CMscan', ('cmscan', '-h'), ['--skip-rrna', '--skip-ncrna', '--skip-ncrna-region'])
 DEPENDENCY_PILERCR = (Version(1, 6), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'PilerCR', ('pilercr', '-options'), ['--skip-crispr'])
 DEPENDENCY_PYRODIGAL = (Version(3, 7, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Pyrodigal', (sys.executable, '-c', 'import pyrodigal; print(pyrodigal.__version__)'), ['--skip-cds'])
+DEPENDENCY_TRANSTERMHP = (Version(2, 9, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'TransTermHP', ('transterm', '-h'), ['--skip-cds', '--skip-sorf'])
 DEPENDENCY_PYHMMER = (Version(0, 12, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Pyhmmer', (sys.executable, '-c', 'import pyhmmer; print(pyhmmer.__version__)'), ['--skip-cds', '--skip-sorf'])
 DEPENDENCY_DIAMOND = (Version(2, 1, 22), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Diamond', ('diamond', 'help'), ['--skip-cds', '--skip-sorf'])
 DEPENDENCY_BLASTN = (Version(2, 17, 0), Version(VERSION_MAX_DIGIT, VERSION_MAX_DIGIT, VERSION_MAX_DIGIT), VERSION_REGEX, 'Blastn', ('blastn', '-version'), ['--skip-ori'])
@@ -110,6 +111,7 @@ def parse_arguments():
     arg_group_workflow.add_argument('--skip-cds', action='store_true', dest='skip_cds', help='Skip CDS detection & annotation')
     arg_group_workflow.add_argument('--skip-pseudo', action='store_true', dest='skip_pseudo', help='Skip pseudogene detection & annotation')
     arg_group_workflow.add_argument('--skip-sorf', action='store_true', dest='skip_sorf', help='Skip sORF detection & annotation')
+    arg_group_workflow.add_argument('--skip-terminator', action='store_true', dest='skip_terminator', help='Skip terminator detection & annotation')
     arg_group_workflow.add_argument('--skip-gap', action='store_true', dest='skip_gap', help='Skip gap detection & annotation')
     arg_group_workflow.add_argument('--skip-ori', action='store_true', dest='skip_ori', help='Skip oriC/oriT detection & annotation')
     arg_group_workflow.add_argument('--skip-filter', action='store_true', dest='skip_filter', help='Skip feature overlap filters')
@@ -159,9 +161,13 @@ def read_tool_output(dependency):
     except FileNotFoundError:
         log.error('dependency not found! tool=%s', tool)
         sys.exit(f"ERROR: {tool} not found or not executable! Please make sure {tool} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
-    except sp.CalledProcessError:
-        log.error('dependency check failed! tool=%s', tool)
-        sys.exit(f"ERROR: {tool} could not be executed! Please make sure {tool} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
+    except sp.CalledProcessError as e:
+        if(e.returncode == 3  and  dependency is DEPENDENCY_TRANSTERMHP):
+            tool_output = str(e.output)
+            log.warning(f'{tool} returned with error code 3, which is expected.')
+        else:
+            log.error('dependency check failed! tool=%s', tool)
+            sys.exit(f"ERROR: {tool} could not be executed! Please make sure {tool} is installed and executable or skip requiring workflow steps via via '{' '.join(skip_options)}'.")
     version_match = version_regex.search(tool_output)
     try:
         if version_match is None:
@@ -254,6 +260,7 @@ def test_dependencies():
             sys.exit(f"ERROR: AMRFinderPlus database not installed! Please, install AMRFinderPlus's internal database by executing: 'amrfinder_update --database {amrfinderplus_db_path}'. This must be done only once.")
 
     if((cfg.skip_cds is not None and cfg.skip_cds is False) or (cfg.skip_sorf is not None and cfg.skip_sorf is False)):
+        test_dependency(DEPENDENCY_TRANSTERMHP)
         test_dependency(DEPENDENCY_PYHMMER)
         test_dependency(DEPENDENCY_DIAMOND)
 
