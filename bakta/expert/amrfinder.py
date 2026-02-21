@@ -44,7 +44,8 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path):
     if(proc.returncode != 0):
         log.debug('stdout=\'%s\', stderr=\'%s\'', proc.stdout, proc.stderr)
         log.warning('AMR expert system failed! amrfinder-error-code=%d', proc.returncode)
-        raise Exception(f"amrfinder error! error code: {proc.returncode}. Please, try 'amrfinder_update --force_update --database {amrfinderplus_db_path}' to update AMRFinderPlus's internal database.")
+        log.warning("Continuing without AMR annotations. Try 'amrfinder_update --force_update --database %s' to update AMRFinderPlus's internal database.", amrfinderplus_db_path)
+        return set()
 
     cds_found = set()
     cds_by_hexdigest = orf.get_orf_dictionary(cdss)
