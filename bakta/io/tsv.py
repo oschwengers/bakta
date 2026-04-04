@@ -25,6 +25,8 @@ def write_features(sequences: Sequence[dict], features_by_sequence: Dict[str, di
         fh.write('# Annotated with Bakta\n')
         fh.write(f'# Software: v{cfg.version}\n')
         fh.write(f"# Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}\n")
+        if cfg.amrfinderplus_db_version:
+            fh.write(f'# AMRFinderPlus database: {cfg.amrfinderplus_db_version}\n')
         fh.write(f'# DOI: {bc.BAKTA_DOI}\n')
         fh.write(f'# URL: {bc.BAKTA_URL}\n')
         fh.write('#Sequence Id\tType\tStart\tStop\tStrand\tLocus Tag\tGene\tProduct\tDbXrefs\n')
@@ -85,6 +87,8 @@ def write_feature_inferences(sequences: Sequence[dict], features_by_sequence: Di
         fh.write('# Annotated with Bakta\n')
         fh.write(f'# Software: v{cfg.version}\n')
         fh.write(f"# Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}\n")
+        if cfg.amrfinderplus_db_version:
+            fh.write(f'# AMRFinderPlus database: {cfg.amrfinderplus_db_version}\n')
         fh.write(f'# DOI: {bc.BAKTA_DOI}\n')
         fh.write(f'# URL: {bc.BAKTA_URL}\n')
         fh.write('#Sequence Id\tType\tStart\tStop\tStrand\tLocus Tag\tScore\tEvalue\tQuery Cov\tSubject Cov\tId\tAccession\n')

@@ -62,6 +62,7 @@ def main():
         print('Options and arguments:')
         print(f'\tinput: {cfg.genome_path}')
         print(f"\tdb: {cfg.db_path}, version {cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}")
+        if cfg.amrfinderplus_db_path: print(f'\tamrfinderplus db: {cfg.amrfinderplus_db_path}, version {cfg.amrfinderplus_db_version}')
         if(cfg.replicons): print(f'\treplicon table: {cfg.replicons}')
         if(cfg.prodigal_tf): print(f'\tprodigal training file: {cfg.prodigal_tf}')
         if(cfg.regions): print(f'\tregion table: {cfg.regions}')

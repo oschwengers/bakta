@@ -30,6 +30,8 @@ debug = None
 version = bakta.__version__
 db_path = None
 db_info = None
+amrfinderplus_db_path = None
+amrfinderplus_db_version = None
 tmp_path = None
 genome_path = None
 min_sequence_length = None
@@ -96,7 +98,9 @@ def setup(args):
 
     # input / output path configurations
     global db_path, db_info, tmp_path, genome_path, min_sequence_length, prefix, output_path, force
+    global amrfinderplus_db_path, amrfinderplus_db_version
     db_path = check_db_path(args)
+    check_amrfinderplus_db(args)
     tmp_path = check_tmp_path(args)
 
     try:
@@ -422,6 +426,24 @@ def check_user_proteins(args: Namespace):
             sys.exit(f'ERROR: user proteins file ({user_proteins}) not valid!')
     else:
         return None
+
+
+def check_amrfinderplus_db(args: Namespace):
+    global amrfinderplus_db_path, amrfinderplus_db_version
+    amrfinderplus_db_name = getattr(args, 'amrfinder_db', 'latest')
+    amrfinderplus_db_base = db_path.joinpath('amrfinderplus-db')
+    amrfinderplus_db_path = amrfinderplus_db_base.joinpath(amrfinderplus_db_name)
+    if not amrfinderplus_db_path.exists():
+        log.error('AMRFinderPlus database version not found: path=%s', amrfinderplus_db_path)
+        sys.exit(f"ERROR: AMRFinderPlus database version '{amrfinderplus_db_name}' not found! Valid options are folder names in: {amrfinderplus_db_base}")
+    # Resolve symlinks to determine actual version
+    amrfinderplus_db_resolved = amrfinderplus_db_path.resolve()
+    version_txt = amrfinderplus_db_resolved.joinpath('version.txt')
+    if version_txt.is_file():
+        amrfinderplus_db_version = version_txt.read_text().strip()
+    else:
+        amrfinderplus_db_version = amrfinderplus_db_resolved.name
+    log.info('amrfinderplus-db: path=%s, version=%s', amrfinderplus_db_path, amrfinderplus_db_version)
 
 
 def check_tmp_path(args: Namespace) -> Path:
