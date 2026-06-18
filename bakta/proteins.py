@@ -194,6 +194,25 @@ def map_aa_columns(feat: dict) -> Sequence[str]:
     gene = feat.get('gene', None)
     if(gene is None):
         gene = ''
+
+    cog_ids = []
+    cog_cats = []
+    for dbxref in feat['db_xrefs']:
+        if dbxref.startswith('COG:'):
+            value = dbxref.replace('COG:', '')
+            if value.startswith('COG') and len(value) > 3:
+                cog_ids.append(value)
+            else:
+                cog_cats.append(value)
+
+    cog_value = ''
+    if cog_ids and cog_cats:
+        cog_value = f'{cog_ids[0]},{cog_cats[0]}'
+    elif cog_ids:
+        cog_value = ','.join(cog_ids)
+    elif cog_cats:
+        cog_value = ','.join(cog_cats)
+
     return [
         feat['id'],
         str(feat['length']),
@@ -201,12 +220,11 @@ def map_aa_columns(feat: dict) -> Sequence[str]:
         feat['product'],
         ','.join([dbxref.replace('EC:', '') for dbxref in feat['db_xrefs'] if 'EC:' in dbxref]),
         ','.join([dbxref for dbxref in feat['db_xrefs'] if 'GO:' in dbxref]),
-        ','.join([dbxref.replace('COG:', '') for dbxref in feat['db_xrefs'] if 'COG:' in dbxref]),
+        cog_value,
         ','.join([dbxref.replace('RefSeq:', '') for dbxref in feat['db_xrefs'] if 'RefSeq:' in dbxref]),
         ','.join([dbxref.replace('UniParc:', '') for dbxref in feat['db_xrefs'] if 'UniParc:' in dbxref]),
         ','.join([dbxref.replace('UniRef:', '') for dbxref in feat['db_xrefs'] if 'UniRef' in dbxref])
     ]
-
 
 def map_hypothetical_columns(feat: dict) -> Sequence[str]:
     return [
