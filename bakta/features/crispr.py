@@ -106,7 +106,12 @@ def predict_crispr(data: dict, sequences_path: Path):
                                     crispr_array['spacers'].append(crispr_spacer)
                                     spacer_genome_seq = bu.extract_feature_sequence(crispr_spacer, sequences[sequence_id])
                                     log.debug('spacer: sequence-id=%s, array-id=%s, start=%i, stop=%i, genome-seq=%s, spacer-seq=%s', sequence_id, array_id, crispr_spacer['start'], crispr_spacer['stop'], spacer_genome_seq, spacer_seq)
-                                    assert spacer_seq == spacer_genome_seq  # assure PILER-CR provided sequence equals sequence extracted from genome
+                                    if(spacer_seq != spacer_genome_seq):  # assure PILER-CR provided sequence equals sequence extracted from genome
+                                        log.debug('spacer seqs: pilercr-sequence=%s, genome-seq=%s', spacer_seq, spacer_genome_seq)
+                                        log.warning('CRISPRs failed! pilercr-error-code=%d', proc.returncode)
+                                        print(f"\tWARNING: PILER-CR crashed (error code={proc.returncode}). No CRISPR arrays will be reported!")
+                                        crispr_arrays = {}
+                                        break
                     elif(output_section == 'POSITION'):
                         if(line[0] == '>'):
                             sequence_id = line[1:]
@@ -117,13 +122,21 @@ def predict_crispr(data: dict, sequences_path: Path):
                             else:
                                 (array_id, sequence, position, length, copies, repeat_length, spacer_length, distance, repeat_consensus) = cols
                             crispr_array = crispr_arrays[array_id]
+                            
+                            if(len(crispr_array['repeats']) > 1 + int(copies)):
+                                log.debug('no repeats: repeats=%i, copies=%i', len(crispr_array['repeats']), int(copies))
+                                log.warning('CRISPRs failed! pilercr-error-code=%d', proc.returncode)
+                                print(f"\tWARNING: PILER-CR crashed (error code={proc.returncode}). No CRISPR arrays will be reported!")
+                                crispr_arrays = {}
+                                break
+                            assert (len(crispr_array['repeats']) - int(copies)) <= 1, print(f"len(reps)={len(crispr_array['repeats'])}, int(copies)={int(copies)}")
+                            
                             positions = [seq['start'] for seq in crispr_array['spacers']] + [seq['stop'] for seq in crispr_array['spacers']] + [seq['start'] for seq in crispr_array['repeats']] + [seq['stop'] for seq in crispr_array['repeats']]
                             crispr_array['start'] = min(positions)
                             crispr_array['stop'] = max(positions)
                             crispr_array['product'] = f'CRISPR array with {copies} repeats of length {repeat_length}, consensus sequence {repeat_consensus} and spacer length {spacer_length}'
                             crispr_array['spacer_length'] = int(spacer_length)
                             crispr_array['repeat_length'] = int(repeat_length)
-                            assert (len(crispr_array['repeats']) - int(copies)) <= 1, print(f"len(reps)={len(crispr_array['repeats'])}, int(copies)={int(copies)}")
                             crispr_array['repeat_consensus'] = repeat_consensus
                             crispr_array['db_xrefs'] = [so.SO_CRISPR.id]
 
