@@ -194,6 +194,10 @@ def map_aa_columns(feat: dict) -> Sequence[str]:
     gene = feat.get('gene', None)
     if(gene is None):
         gene = ''
+
+    cogs = [dbxref.replace('COG:', '') for dbxref in feat['db_xrefs'] if 'COG:' in dbxref]
+    cog_list = sorted([cog for cog in cogs if 'COG' in cog])
+    cog_list.extend(sorted([cog for cog in cogs if 'COG' not in cog]))
     return [
         feat['id'],
         str(feat['length']),
@@ -201,7 +205,7 @@ def map_aa_columns(feat: dict) -> Sequence[str]:
         feat['product'],
         ','.join([dbxref.replace('EC:', '') for dbxref in feat['db_xrefs'] if 'EC:' in dbxref]),
         ','.join([dbxref for dbxref in feat['db_xrefs'] if 'GO:' in dbxref]),
-        ','.join([dbxref.replace('COG:', '') for dbxref in feat['db_xrefs'] if 'COG:' in dbxref]),
+        ','.join(cog_list),
         ','.join([dbxref.replace('RefSeq:', '') for dbxref in feat['db_xrefs'] if 'RefSeq:' in dbxref]),
         ','.join([dbxref.replace('UniParc:', '') for dbxref in feat['db_xrefs'] if 'UniParc:' in dbxref]),
         ','.join([dbxref.replace('UniRef:', '') for dbxref in feat['db_xrefs'] if 'UniRef' in dbxref])
