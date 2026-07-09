@@ -24,7 +24,7 @@ jobs:
         python-version: ['3.13']
     steps:
     - uses: actions/checkout@v7
-    - uses: mamba-org/setup-micromamba@v1
+    - uses: mamba-org/setup-micromamba@v3
       with:
         micromamba-version: 'latest'
         environment-name: 'bakta'
