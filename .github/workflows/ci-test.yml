@@ -23,7 +23,7 @@ jobs:
         os: ['ubuntu-latest']  #, 'macos-latest']
         python-version: ['3.13']
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
     - uses: mamba-org/setup-micromamba@v1
       with:
         micromamba-version: 'latest'
