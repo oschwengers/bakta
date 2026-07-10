@@ -127,6 +127,42 @@ def test_database_ok(db, tmpdir):
     assert proc.returncode == 0
 
 
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        (['--amrfinder-db', 'nonexistent-version']),  # non-existing version
+    ]
+)
+def test_amrfinder_db_failing_parameter(parameters, tmpdir):
+    # test --amrfinder-db arguments
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--force', '--skip-plot'] +
+        parameters +
+        SKIP_PARAMETERS +
+        ['test/data/NC_002127.1.fna']
+    )
+    assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'parameters',
+    [
+        ([]),  # default (latest)
+        (['--amrfinder-db', 'latest']),  # explicit latest
+        (['--amrfinder-db', '2025-12-03.1']),  # specific version
+    ]
+)
+def test_amrfinder_db_ok(parameters, tmpdir):
+    # test --amrfinder-db arguments
+    proc = run(
+        ['bin/bakta', '--db', 'test/db', '--output', tmpdir, '--force', '--skip-plot'] +
+        parameters +
+        SKIP_PARAMETERS +
+        ['test/data/NC_002127.1.fna']
+    )
+    assert proc.returncode == 0
+
+
 def test_output_failing():
     # test database arguments
     proc = run(

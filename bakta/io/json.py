@@ -37,6 +37,7 @@ def write_json(data: dict, features: Sequence[dict], json_path: Path):
         'version': f"{cfg.db_info['major']}.{cfg.db_info['minor']}",
         'type': cfg.db_info['type']
     }
+    version['amrfinderplus_db'] = cfg.amrfinderplus_db_version
     data['version'] = version
 
     with json_path.open('wt') as fh:

@@ -37,6 +37,7 @@ def main():
     
     arg_group_io = parser.add_argument_group('Input / Output')
     arg_group_io.add_argument('--db', '-d', action='store', default=None, help='Database path (default = <bakta_path>/db). Can also be provided as BAKTA_DB environment variable.')
+    arg_group_io.add_argument('--amrfinder-db', action='store', default='latest', dest='amrfinder_db', help='AMRFinderPlus database version to use (default = latest). Value must correspond to a folder name in the amrfinderplus-db directory (e.g. 2023-11-15.1, latest).')
     arg_group_io.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
     arg_group_io.add_argument('--prefix', '-p', action='store', default=None, help='Prefix for output files')
     arg_group_io.add_argument('--force', '-f', action='store_true', help='Force overwriting existing output folder')
@@ -85,6 +86,7 @@ def main():
     
     cfg.check_db_path(args)
     cfg.db_info = db.check(cfg.db_path)
+    cfg.check_amrfinderplus_db(args)
     cfg.check_tmp_path(args)
     cfg.check_user_proteins(args)
     cfg.check_threads(args)
