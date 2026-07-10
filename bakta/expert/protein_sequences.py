@@ -96,32 +96,35 @@ def search(cdss: Sequence[dict], cds_fasta_path: Path, expert_system: str, db_pa
 def write_user_protein_sequences(aa_fasta_path: Path):
     no_skipped_proteins = 0
     user_proteins = []
-    try:
-        with xopen(str(cfg.user_proteins), threads=0) as fh_in:
-            for record in SeqIO.parse(fh_in, 'fasta'):
-                try:
-                    user_protein = parse_user_protein_sequences_fasta(record)
-                    user_proteins.append(user_protein)
-                except ValueError:
-                    no_skipped_proteins += 1
-    except Exception as e:
-        log.error('provided user proteins file Fasta format not valid!', exc_info=True)
-        sys.exit(f'ERROR: User proteins file Fasta format not valid!')
-
-    try:
-        with xopen(str(cfg.user_proteins), threads=0) as fh_in:
-            for record in SeqIO.parse(fh_in, 'genbank'):
-                for feature in record.features:
-                    if(feature.type.lower() == 'cds'  and  bc.INSDC_FEATURE_PSEUDO not in feature.qualifiers  and  bc.INSDC_FEATURE_PSEUDOGENE not in feature.qualifiers):
-                        try:
-                            user_protein = parse_user_protein_sequences_genbank(feature)
-                            user_proteins.append(user_protein)
-                        except ValueError:
-                            no_skipped_proteins += 1
-                            log.warning('skipped incorrectly formatted user protein!')
-    except Exception as e:
-        log.error('provided user proteins file GenBank format not valid!', exc_info=True)
-        sys.exit(f'ERROR: User proteins file GenBank format not valid!')
+    file_suffixes = [sfx.lower() for sfx in cfg.user_proteins.suffixes]
+    if(any([sfx in ['.fa', '.faa', '.fasta'] for sfx in file_suffixes])):
+        try:
+            with xopen(str(cfg.user_proteins), threads=0) as fh_in:
+                for record in SeqIO.parse(fh_in, 'fasta'):
+                    try:
+                        user_protein = parse_user_protein_sequences_fasta(record)
+                        user_proteins.append(user_protein)
+                    except ValueError:
+                        print(f'ValueError during read fasta record {record.id}')
+                        no_skipped_proteins += 1
+        except Exception as e:
+            log.error('provided user proteins file Fasta format not valid!', exc_info=True)
+            sys.exit(f'ERROR: User proteins file Fasta format not valid!')
+    elif(any([sfx in ['.gb', '.gbk', '.gbff' ,'.genbank'] for sfx in file_suffixes])):
+        try:
+            with xopen(str(cfg.user_proteins), threads=0) as fh_in:
+                for record in SeqIO.parse(fh_in, 'genbank'):
+                    for feature in record.features:
+                        if(feature.type.lower() == 'cds'  and  bc.INSDC_FEATURE_PSEUDO not in feature.qualifiers  and  bc.INSDC_FEATURE_PSEUDOGENE not in feature.qualifiers):
+                            try:
+                                user_protein = parse_user_protein_sequences_genbank(feature)
+                                user_proteins.append(user_protein)
+                            except ValueError:
+                                no_skipped_proteins += 1
+                                log.warning('skipped incorrectly formatted user protein!')
+        except Exception as e:
+            log.error('provided user proteins file GenBank format not valid!', exc_info=True)
+            sys.exit(f'ERROR: User proteins file GenBank format not valid!')
 
     if(len(user_proteins) > 0):
         try:
