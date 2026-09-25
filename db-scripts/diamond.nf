@@ -10,11 +10,11 @@ params.scov = 80
 params.block = 1000
 
 process diamond {
-    errorStrategy 'finish'
-    maxRetries 3
+    errorStrategy 'retry'
+    maxRetries 5
     cpus 8
     memory '32 GB'
-    conda 'diamond=2.1.8'
+    time { 12.h * task.attempt }
 
     input:
     path('input.faa')

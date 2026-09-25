@@ -9,11 +9,11 @@ params.dom = false
 params.block = 100000
 
 process hmmsearch {
-    errorStrategy 'ignore'
-    maxRetries 3
+    errorStrategy 'retry'
+    maxRetries 5
     cpus 1
     memory { 1.GB * task.attempt }
-    conda 'hmmer=3.4'
+    time { 12.h * task.attempt }
 
     input:
     path('input.faa')

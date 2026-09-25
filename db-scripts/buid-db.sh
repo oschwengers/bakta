@@ -21,7 +21,10 @@ cd db
 exec 9>.build.lock
 if ! flock -n 9; then
     printf "Another buid-db.sh build is already running against %s -- aborting.\n" "$(pwd)" >&2
-    exit 1
+    # Distinct from a genuine failure (exit 1): callers that auto-resubmit on
+    # failure (e.g. a PBS orchestrator job) should treat this as "another
+    # instance already has it covered", not as something to retry.
+    exit 99
 fi
 
 # Every numbered step below is guarded by a .stepNN.done marker, touched only
@@ -72,7 +75,7 @@ else
         cmpress -F "${rRNA_name}"
         rm "${rRNA_name}"
     done
-    touch .step01.done
+    date > .step01.done
 fi
 
 
@@ -117,7 +120,7 @@ else
         awk -F ' ' '{print $1 "\t" $NF}' rfam2go > rfam-go.tsv
         rm rfam2go
     fi
-    touch .step02.done
+    date > .step02.done
 fi
 
 
@@ -154,7 +157,7 @@ else
         cmpress -F "${NCRNA_REGIONS_NAME}"
         rm rfam-regions.raw.txt rfam-regions.txt rfam-regions.uniq.txt ncRNA-regions.blocklist "${NCRNA_REGIONS_NAME}"
     done
-    touch .step03.done
+    date > .step03.done
 fi
 rm -f Rfam.cm
 
@@ -179,7 +182,7 @@ else
     fi
     rm -f antifam antifam-archaea
     rm -rf antifam-dir/
-    touch .step04.done
+    date > .step04.done
 fi
 
 
@@ -249,25 +252,31 @@ printf "\n8/19: download UniProt UniRef50 ...\n"
 if have_outputs .step08.done; then
     printf "    already built, skipping.\n"
 else
-    if [ ! -s uniref50.xml.gz ]; then
-        wget -c https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref50/uniref50.xml.gz
-    fi
-    if ! have_outputs uniparc_active.fasta; then
-        printf "\n8/19: download UniParc active sequences (200 parts, resumable) ...\n"
-        for i in {1..200}; do
-            part="uniparc_active_p${i}.fasta.gz"
-            if [ ! -s "${part}" ]; then
-                wget -c "https://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/${part}"
-            fi
-        done
-        printf "\n8/19: merging UniParc parts ...\n"
-        rm -f uniparc_active.fasta.partial
-        for i in {1..200}; do
-            pigz -dc "uniparc_active_p${i}.fasta.gz" >> uniparc_active.fasta.partial
-        done
-        mv uniparc_active.fasta.partial uniparc_active.fasta
-        rm -f uniparc_active_p*.fasta.gz
-    fi
+    wget -c https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref50/uniref50.xml.gz
+    printf "\n8/19: download and merge UniParc active sequences (200 parts, resumable) ...\n"
+    # Each part is merged and deleted immediately, one at a time, so at
+    # most one ~1.2GB compressed part sits on disk alongside the growing
+    # merged fasta -- downloading all 200 parts (~250GB) before merging
+    # would nearly double peak disk usage for no benefit. This whole block
+    # is gated only by the .uniparc_parts.merged manifest (not by whether
+    # uniparc_active.fasta is merely non-empty, since it grows incrementally
+    # and would look "done" long before all 200 parts are in it). wget -c
+    # runs unconditionally so a truncated leftover from an earlier
+    # interrupted download is resumed and completed rather than silently
+    # treated as a finished part.
+    touch .uniparc_parts.merged
+    for i in {1..200}; do
+        grep -qx "${i}" .uniparc_parts.merged && continue
+        part="uniparc_active_p${i}.fasta.gz"
+        wget -c "https://ftp.expasy.org/databases/uniprot/current_release/uniparc/fasta/active/${part}"
+        pigz -dc "${part}" >> uniparc_active.fasta
+        echo "${i}" >> .uniparc_parts.merged
+        rm -f "${part}"
+    done
+    # .uniparc_parts.merged is deliberately NOT removed here: if the python
+    # step below fails, a retry must still see the merge as complete rather
+    # than starting the 200-part loop over and re-appending already-merged
+    # parts on top of the existing uniparc_active.fasta.
     printf "\n8/19: read UniRef90 entries and build Protein Sequence Cluster sequence and information databases:\n"
     python3 ${BAKTA_DB_SCRIPTS}/init-pscc.py --taxonomy nodes.dmp --uniref50 uniref50.xml.gz --uniparc uniparc_active.fasta --db bakta.db --pscc pscc.faa --pscc_sorf pscc_sorf.faa ${BAKTA_TAXON_ARGS}
     printf "\n8/19: build PSCC Diamond db ...\n"
@@ -278,7 +287,7 @@ else
     mv pscc.dmnd sorf.dmnd db-light/
     (cd db-light && python3 ${BAKTA_DB_SCRIPTS}/optimize-db.py --db bakta.db)
     rm uniref50.xml.gz
-    touch .step08.done
+    date > .step08.done
 fi
 
 
@@ -292,16 +301,14 @@ printf "\n9/19: download UniProt UniRef90 ...\n"
 if have_outputs .step09.done; then
     printf "    already built, skipping.\n"
 else
-    if [ ! -s uniref90.xml.gz ]; then
-        wget -c https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref90/uniref90.xml.gz
-    fi
+    wget -c https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref90/uniref90.xml.gz
     printf "\n9/19: read UniRef90 entries and build Protein Sequence Cluster sequence and information databases:\n"
     python3 ${BAKTA_DB_SCRIPTS}/init-psc.py --taxonomy nodes.dmp --uniref90 uniref90.xml.gz --uniparc uniparc_active.fasta --db bakta.db --psc psc.faa --psc_sorf sorf.faa ${BAKTA_TAXON_ARGS}
     printf "\n9/19: build PSC Diamond db ...\n"
     diamond makedb --in psc.faa --db psc
     diamond makedb --in sorf.faa --db sorf
     rm uniref90.xml.gz
-    touch .step09.done
+    date > .step09.done
 fi
 
 
@@ -314,13 +321,11 @@ printf "\n10/19: download UniProt UniRef100 ...\n"
 if have_outputs .step10.done; then
     printf "    already built, skipping.\n"
 else
-    if [ ! -s uniref100.xml.gz ]; then
-        wget -c https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref100/uniref100.xml.gz
-    fi
+    wget -c https://ftp.expasy.org/databases/uniprot/current_release/uniref/uniref100/uniref100.xml.gz
     printf "\n10/19: read, filter and store UniRef100 entries ...:\n"
     python3 ${BAKTA_DB_SCRIPTS}/init-ups-ips.py --taxonomy nodes.dmp --uniref100 uniref100.xml.gz --uniparc uniparc_active.fasta --db bakta.db --ips ips.faa ${BAKTA_TAXON_ARGS}
     rm uniref100.xml.gz uniparc_active.fasta
-    touch .step10.done
+    date > .step10.done
 fi
 
 
@@ -334,33 +339,33 @@ printf "\n11/19: download NCBI COG clusters and RefSeq nonredundant proteins ...
 if have_outputs .step11.done; then
     printf "    already built, skipping.\n"
 else
-    if [ ! -s cog-24.def.tab ]; then
-        wget -c https://ftp.ncbi.nih.gov/pub/COG/COG2024/data/cog-24.def.tab  # COG IDs and functional class
-    fi
-    if [ ! -s cog-24.cog.csv ]; then
-        wget -c https://ftp.ncbi.nih.gov/pub/COG/COG2024/data/cog-24.cog.csv  # Mapping GenBank IDs -> COG IDs
-    fi
+    wget -c https://ftp.ncbi.nih.gov/pub/COG/COG2024/data/cog-24.def.tab  # COG IDs and functional class
+    wget -c https://ftp.ncbi.nih.gov/pub/COG/COG2024/data/cog-24.cog.csv  # Mapping GenBank IDs -> COG IDs
     mkdir -p refseq-nrp
+    touch .refseq_files.merged
     for refseq_domain in bacteria archaea; do
         refseq_url=https://ftp.ncbi.nih.gov/refseq/release/${refseq_domain}
         wget -qO- "${refseq_url}/" | sed -n "s/.*href=\"\(${refseq_domain}\.wp_protein\.[0-9]*\.protein\.faa\.gz\)\".*/\1/p" > "refseq-nrp/${refseq_domain}.files.txt"
+        # Each file is downloaded, merged and deleted immediately (like the
+        # UniParc loop above) so only one file sits on disk at a time instead
+        # of the whole RefSeq release alongside the merged fasta.
         while read -r refseq_file; do
-            [ -s "refseq-nrp/${refseq_file}" ] || wget -c -O "refseq-nrp/${refseq_file}" "${refseq_url}/${refseq_file}"
+            grep -qx "${refseq_file}" .refseq_files.merged && continue
+            wget -c -O "refseq-nrp/${refseq_file}" "${refseq_url}/${refseq_file}"
+            pigz -dc "refseq-nrp/${refseq_file}" | seqtk seq -CU >> refseq-nrp.trimmed.faa
+            echo "${refseq_file}" >> .refseq_files.merged
+            rm -f "refseq-nrp/${refseq_file}"
         done < "refseq-nrp/${refseq_domain}.files.txt"
     done
-    printf "\n11/19: merging RefSeq nonredundant proteins ...\n"
-    rm -f refseq-nrp.trimmed.faa.partial
-    for refseq_domain in bacteria archaea; do
-        while read -r refseq_file; do
-            pigz -dc "refseq-nrp/${refseq_file}" | seqtk seq -CU >> refseq-nrp.trimmed.faa.partial
-        done < "refseq-nrp/${refseq_domain}.files.txt"
-    done
-    mv refseq-nrp.trimmed.faa.partial refseq-nrp.trimmed.faa
     rm -rf refseq-nrp
+    # .refseq_files.merged is deliberately kept for the same reason as
+    # .uniparc_parts.merged above: if the python step below fails, a retry
+    # must not re-merge already-processed files on top of the existing
+    # refseq-nrp.trimmed.faa.
     printf "\n11/19: annotate IPSs and PSCs ...\n"
     python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-nrp-cog.py --db bakta.db --nrp refseq-nrp.trimmed.faa --cog-ids cog-24.def.tab --nrp-cog-mapping cog-24.cog.csv
-    rm refseq-nrp.trimmed.faa
-    touch .step11.done
+    rm refseq-nrp.trimmed.faa .refseq_files.merged
+    date > .step11.done
 fi
 
 
@@ -374,12 +379,8 @@ printf "\n12/19: download KEGG kofams HMM models...\n"
 if have_outputs .step12.done; then
     printf "    already built, skipping.\n"
 else
-    if [ ! -s ko_list.gz ]; then
-        wget -c https://www.genome.jp/ftp/db/kofam/ko_list.gz
-    fi
-    if [ ! -s profiles.tar.gz ]; then
-        wget -c https://www.genome.jp/ftp/db/kofam/profiles.tar.gz
-    fi
+    wget -c https://www.genome.jp/ftp/db/kofam/ko_list.gz
+    wget -c https://www.genome.jp/ftp/db/kofam/profiles.tar.gz
     zcat ko_list.gz | grep full | awk '{ if($5>=0.77) print $0}' > hmms.kofam.selected.tsv
     cut -f1 hmms.kofam.selected.tsv > hmms.ids.txt
     rm -rf profiles
@@ -390,10 +391,10 @@ else
     hmmpress -f kofams
     printf "\n12/19: annotate PSCs...\n"
     mkdir -p work/tblout work/domtblout
-    nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in psc.faa --db kofams --no_tc --out hmmsearch.kofam.tblout
+    nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf -resume --in psc.faa --db kofams --no_tc --out hmmsearch.kofam.tblout
     python3 ${BAKTA_DB_SCRIPTS}/annotate-kofams.py --db bakta.db --hmms hmms.kofam.selected.tsv --hmm-results hmmsearch.kofam.tblout
     rm -rf profiles ko_list.gz profiles.tar.gz kofam* hmmsearch.kofam.* hmms*
-    touch .step12.done
+    date > .step12.done
 fi
 
 
@@ -407,13 +408,11 @@ printf "\n13/19: download UniProt/SwissProt ...\n"
 if have_outputs .step13.done; then
     printf "    already built, skipping.\n"
 else
-    if [ ! -s uniprot_sprot.xml.gz ]; then
-        wget -c https://ftp.expasy.org/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
-    fi
+    wget -c https://ftp.expasy.org/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.xml.gz
     printf "\n13/19: annotate IPSs and PSCs ...\n"
     python3 ${BAKTA_DB_SCRIPTS}/annotate-swissprot.py --taxonomy nodes.dmp --xml uniprot_sprot.xml.gz --db bakta.db ${BAKTA_TAXON_ARGS}
     rm uniprot_sprot.xml.gz
-    touch .step13.done
+    date > .step13.done
 fi
 
 
@@ -426,12 +425,8 @@ printf "\n14/19: download NCBIfams HMM models...\n"
 if have_outputs .step14.done; then
     printf "    already built, skipping.\n"
 else
-    if [ ! -s hmm_PGAP.LIB ]; then
-        wget -c https://ftp.ncbi.nlm.nih.gov/hmm/current/hmm_PGAP.LIB
-    fi
-    if [ ! -s hmm_PGAP.tsv ]; then
-        wget -c https://ftp.ncbi.nlm.nih.gov/hmm/current/hmm_PGAP.tsv
-    fi
+    wget -c https://ftp.ncbi.nlm.nih.gov/hmm/current/hmm_PGAP.LIB
+    wget -c https://ftp.ncbi.nlm.nih.gov/hmm/current/hmm_PGAP.tsv
     grep -v "(Provisional)" hmm_PGAP.tsv > hmms.non-prov.tsv
     grep exception hmms.non-prov.tsv > hmms.ncbi.selected.tsv || true
     grep equivalog hmms.non-prov.tsv >> hmms.ncbi.selected.tsv || true
@@ -440,10 +435,10 @@ else
     hmmpress -f ncbifams
     printf "\n14/19: annotate PSCs...\n"
     mkdir -p work/tblout work/domtblout
-    nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in psc.faa --db ncbifams --block 10000 --out hmmsearch.ncbifams.tblout
+    nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf -resume --in psc.faa --db ncbifams --block 10000 --out hmmsearch.ncbifams.tblout
     python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-fams.py --db bakta.db --hmms hmms.ncbi.selected.tsv --hmm-results hmmsearch.ncbifams.tblout
     rm ncbifams* hmms.* hmm_PGAP.* hmmsearch.ncbifams.tblout
-    touch .step14.done
+    date > .step14.done
 fi
 
 
@@ -457,12 +452,8 @@ printf "\n15/19: download PHROGs ...\n"
 if have_outputs .step15.done; then
     printf "    already built, skipping.\n"
 else
-    if [ ! -s FAA_phrog.tar.gz ]; then
-        wget -c https://phrogs.lmge.uca.fr/downloads_from_website/FAA_phrog.tar.gz
-    fi
-    if [ ! -s phrog_annot_v4.tsv ]; then
-        wget -c https://phrogs.lmge.uca.fr/downloads_from_website/phrog_annot_v4.tsv
-    fi
+    wget -c https://phrogs.lmge.uca.fr/downloads_from_website/FAA_phrog.tar.gz
+    wget -c https://phrogs.lmge.uca.fr/downloads_from_website/phrog_annot_v4.tsv
     rm -rf FAA_phrog
     tar -xzf FAA_phrog.tar.gz
     rm -f phrogs-raw.faa
@@ -471,10 +462,10 @@ else
     diamond makedb --in phrogs.faa --db phrog
     printf "\n15/19: annotate PSCs...\n"
     python3 ${BAKTA_DB_SCRIPTS}/extract-hypotheticals.py --psc psc.faa --db bakta.db --hypotheticals hypotheticals.faa
-    nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in hypotheticals.faa --db phrog.dmnd --block 100000 --id 90 --qcov 80 --scov 80 --out diamond.phrog.psc.tsv
+    nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf -resume --in hypotheticals.faa --db phrog.dmnd --block 100000 --id 90 --qcov 80 --scov 80 --out diamond.phrog.psc.tsv
     python3 ${BAKTA_DB_SCRIPTS}/annotate-phrogs.py --db bakta.db --annotation phrog_annot_v4.tsv --psc-alignments diamond.phrog.psc.tsv
     rm -r FAA_phrog.tar.gz phrog_annot_v4.tsv FAA_phrog phrogs-raw.faa phrogs.faa phrog.dmnd hypotheticals.faa diamond.phrog.psc.tsv
-    touch .step15.done
+    date > .step15.done
 fi
 
 
@@ -487,13 +478,11 @@ printf "\n16/19: download AMR gene WP_* annotations from NCBI Pathogen AMR db ..
 if have_outputs .step16.done; then
     printf "    already built, skipping.\n"
 else
-    if [ ! -s ReferenceGeneCatalog.txt ]; then
-        wget -c https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/latest/ReferenceGeneCatalog.txt
-    fi
+    wget -c https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/latest/ReferenceGeneCatalog.txt
     printf "\n16/19: annotate PSCs...\n"
     python3 ${BAKTA_DB_SCRIPTS}/annotate-ncbi-amr.py --db bakta.db --genes ReferenceGeneCatalog.txt
     rm ReferenceGeneCatalog.txt
-    touch .step16.done
+    date > .step16.done
 fi
 
 
@@ -507,17 +496,15 @@ printf "\n17/19: download & extract ISfinder protein sequences ...\n"
 if have_outputs .step17.done; then
     printf "    already built, skipping.\n"
 else
-    if [ ! -s IS.faa ]; then
-        wget -c https://github.com/oschwengers/ISfinder-sequences/raw/2e9162bd5e3448c86ec1549a55315e498bef72fc/IS.faa
-    fi
+    wget -c https://github.com/oschwengers/ISfinder-sequences/raw/2e9162bd5e3448c86ec1549a55315e498bef72fc/IS.faa
     python3 ${BAKTA_DB_SCRIPTS}/extract-is.py --input IS.faa --output is.transposase.faa
     printf "\n17/19: annotate IPSs/PCSs ...\n"
     diamond makedb --in is.transposase.faa --db is
-    nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in ips.faa --db is.dmnd --block 100000 --id 95 --qcov 90 --scov 90 --out diamond.is.ips.tsv
-    nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf --in psc.faa --db is.dmnd --block 100000 --id 90 --qcov 80 --scov 80 --out diamond.is.psc.tsv
+    nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf -resume --in ips.faa --db is.dmnd --block 100000 --id 95 --qcov 90 --scov 90 --out diamond.is.ips.tsv
+    nextflow run ${BAKTA_DB_SCRIPTS}/diamond.nf -resume --in psc.faa --db is.dmnd --block 100000 --id 90 --qcov 80 --scov 80 --out diamond.is.psc.tsv
     python3 ${BAKTA_DB_SCRIPTS}/annotate-is.py --db bakta.db --ips-alignments diamond.is.ips.tsv --psc-alignments diamond.is.psc.tsv
     rm is.transposase.faa is.dmnd diamond.is.ips.tsv diamond.is.psc.tsv
-    touch .step17.done
+    date > .step17.done
 fi
 
 
@@ -532,9 +519,7 @@ printf "\n18/19: download HMM models from Pfam ...\n"
 if have_outputs .step18.done; then
     printf "    already built, skipping.\n"
 else
-    if [ ! -s Pfam-A.hmm.dat.gz ]; then
-        wget -c https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.dat.gz
-    fi
+    wget -c https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.dat.gz
     python3 ${BAKTA_DB_SCRIPTS}/extract-pfam.py --pfam Pfam-A.hmm.dat.gz --family pfam.families.tsv --non-family pfam.non-families.tsv
     if [ ! -s Pfam-A.hmm ]; then
         if [ ! -s Pfam-A.hmm.gz ]; then
@@ -548,13 +533,13 @@ else
     hmmpress -f pfam
     python3 ${BAKTA_DB_SCRIPTS}/extract-hypotheticals.py --psc psc.faa --db bakta.db --hypotheticals hypotheticals.faa
     mkdir -p work/tblout work/domtblout
-    nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf --in hypotheticals.faa --db pfam-families --block 10000 --out hmmsearch.pfam-families.tblout
+    nextflow run ${BAKTA_DB_SCRIPTS}/hmmsearch.nf -resume --in hypotheticals.faa --db pfam-families --block 10000 --out hmmsearch.pfam-families.tblout
     python3 ${BAKTA_DB_SCRIPTS}/annotate-pfam.py --db bakta.db --hmms pfam-families --hmm-results hmmsearch.pfam-families.tblout
     # `pfam.h3*` (the non-family Pfam HMMs) are a runtime bakta asset and are
     # kept; only the family HMMs used for this step's own hmmsearch, and the
     # intermediate tsv/source files, are discarded here.
     rm -f pfam-families* pfam pfam.families.tsv pfam.non-families.tsv Pfam-A.hmm.dat.gz Pfam-A.hmm hmmsearch.pfam-families.tblout hypotheticals.faa
-    touch .step18.done
+    date > .step18.done
 fi
 
 
@@ -568,9 +553,7 @@ printf "\n19/19: download AA sequences for expert annotation system ...\n"
 if have_outputs .step19.done; then
     printf "    already built, skipping.\n"
 else
-    if [ ! -s 4.2.2.tgz ]; then
-        wget -c https://ftp.ncbi.nlm.nih.gov/pub/blastrules/4.2.2.tgz
-    fi
+    wget -c https://ftp.ncbi.nlm.nih.gov/pub/blastrules/4.2.2.tgz
     rm -rf 4.2.2
     tar -xzf 4.2.2.tgz
     if [ ! -s VFDB_setA_pro.fas ]; then
@@ -587,7 +570,7 @@ else
     rm -r 4.2.2/ 4.2.2.tgz IS.faa VFDB_setA_pro.fas expert-protein-sequences.faa
     : "${BAKTA_ARCHAEAL_EXPERT_PROTEINS:?Set BAKTA_ARCHAEAL_EXPERT_PROTEINS to a curated archaeal protein FASTA.}"
     diamond makedb --in "${BAKTA_ARCHAEAL_EXPERT_PROTEINS}" --db expert-protein-sequences-archaea
-    touch .step19.done
+    date > .step19.done
 fi
 
 # The light database keeps its PSCC SQLite snapshot but requires the same
@@ -599,4 +582,4 @@ ls -l bakta.db
 python3 ${BAKTA_DB_SCRIPTS}/optimize-db.py --db bakta.db --tmp /var/scratch/
 ls -l bakta.db
 rm -f psc.faa sorf.faa nodes.dmp
-touch .build.done
+date > .build.done
