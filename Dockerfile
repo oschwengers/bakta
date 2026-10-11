@@ -1,4 +1,16 @@
-FROM alpine:3.12
+FROM mambaorg/micromamba:2-debian13-slim AS build
+
+COPY --chown=$MAMBA_USER:$MAMBA_USER environment.yml /tmp/environment.yml
+COPY --chown=$MAMBA_USER:$MAMBA_USER . /tmp/source/
+RUN micromamba install -y -n base -f /tmp/environment.yml \
+    && /opt/conda/bin/python -m pip install --no-cache-dir --no-deps /tmp/source/ \
+    && micromamba clean --all --force-pkgs-dirs --yes \
+    && find /opt/conda \( -name '*.a' -o -name '*.a.*' \) -delete \
+    && find /opt/conda/lib/python3*/site-packages -type d -name tests -prune -exec rm -rf {} + \
+    && rm -rf /opt/conda/pkgs /opt/conda/include /opt/conda/man /opt/conda/share/doc /opt/conda/share/man /opt/conda/share/info /opt/conda/share/locale /opt/conda/share/easel /opt/conda/etc/conda/test-files
+
+
+FROM debian:trixie-slim
 
 LABEL org.opencontainers.image.authors="oliver.schwengers@computational.bio.uni-giessen.de,lukas.jelonek@computational.bio.uni-giessen.de"
 LABEL org.opencontainers.image.url='https://github.com/oschwengers/bakta'
@@ -6,46 +18,19 @@ LABEL org.opencontainers.image.documentation='https://github.com/oschwengers/bak
 LABEL org.opencontainers.image.title='Bakta'
 LABEL org.opencontainers.image.description='Rapid & standardized annotation of bacterial genomes, MAGs & plasmids'
 
-RUN apk update && apk add wget tar bash \
-    && wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
-    && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.32-r0/glibc-2.32-r0.apk \
-    && apk add glibc-2.32-r0.apk \
-    && rm glibc-2.32-r0.apk \
-    && wget --no-iri -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
-    && touch /root/.bashrc \
-    && ./bin/micromamba shell init -s bash -r /opt/conda  \
-    && cp /root/.bashrc /opt/conda/bashrc
+COPY --from=build --chown=root:root /opt/conda /opt/conda
+COPY --from=build /usr/bin/micromamba /usr/bin/micromamba
+# keep the env on the PATH in login shells, where /etc/profile resets it
+RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh
 
-COPY environment.yml /tmp/
+# the conda env needs no activation scripts, so putting it on the PATH enables it
+# for every process, including --entrypoint overrides and workflow managers like nextflow
+ENV PATH=/opt/conda/bin:$PATH \
+    CONDA_PREFIX=/opt/conda \
+    MAMBA_ROOT_PREFIX=/opt/conda \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    MPLCONFIGDIR=/tmp/matplotlib
 
-SHELL ["bash", "-l" ,"-c"]
-
-RUN source /opt/conda/bashrc && micromamba activate \
-    && micromamba install -y -n base -f /tmp/environment.yml \
-    && micromamba clean --all --yes
-
-COPY . /tmp/source/
-
-RUN source /opt/conda/bashrc && micromamba activate \
-    && python3 -m pip install --no-cache /tmp/source/ \
-    && echo '#!/bin/bash' > /entrypoint.sh \
-    && echo 'bakta "$@"' >> /entrypoint.sh \
-    && chmod +x /entrypoint.sh \
-    \
-    # replace bash with a wrapper that initializes the micromamba env
-    # everytime it is not initialized.
-    # with this approach we can initialize the env automatically, even
-    # in non-interactive, no-login sessions, e.g. when nextflow uses
-    # containers
-    && mv /bin/bash /bin/bash.orig \
-    && echo '#!/bin/bash.orig' >> /bin/bash \
-    && echo 'if [[ -z $MAMBA_INITIALIZED ]]' >> /bin/bash \
-    && echo 'then' >> /bin/bash \
-    && echo 'source /opt/conda/bashrc' >> /bin/bash \
-    && echo 'micromamba activate' >> /bin/bash \
-    && echo 'export MAMBA_INITIALIZED=1' >> /bin/bash \
-    && echo 'fi' >> /bin/bash \
-    && echo '/bin/bash.orig "$@"' >> /bin/bash \
-    && chmod +x /bin/bash
-
-ENTRYPOINT ["/entrypoint.sh"]
+COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["docker-entrypoint.sh"]

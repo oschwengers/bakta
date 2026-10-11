@@ -10,12 +10,30 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v7
-      - name: Build & push to Docker Hub
-        uses: docker/build-push-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: oschwengers/bakta
-          tag_with_ref: true
-          tags: latest
-          add_git_labels: true
+      - name: Extract image tags
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: oschwengers/bakta
+          tags: |
+            type=ref,event=tag
+            type=ref,event=branch
+            type=raw,value=latest
+      - name: Build & push to Docker Hub
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          provenance: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: |
+            org.opencontainers.image.created=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
