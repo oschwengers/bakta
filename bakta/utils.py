@@ -72,6 +72,7 @@ def parse_arguments():
 
     arg_group_io = parser.add_argument_group('Input / Output')
     arg_group_io.add_argument('--db', '-d', action='store', default=None, help='Database path (default = <bakta_path>/db). Can also be provided as BAKTA_DB environment variable.')
+    arg_group_io.add_argument('--amrfinder-db', action='store', default='latest', dest='amrfinder_db', help='AMRFinderPlus database version to use (default = latest). Value must correspond to a folder name in the amrfinderplus-db directory (e.g. 2023-11-15.1, latest).')
     arg_group_io.add_argument('--min-contig-length', '-m', action='store', type=int, default=1, dest='min_contig_length', help='Minimum contig/sequence size (default = 1; 200 in compliant mode)')
     arg_group_io.add_argument('--prefix', '-p', action='store', default=None, help='Prefix for output files')
     arg_group_io.add_argument('--output', '-o', action='store', default=os.getcwd(), help='Output directory (default = current working directory)')
@@ -242,12 +243,11 @@ def test_dependencies():
 
         # test if AMRFinderPlus db is installed
         amrfinderplus_db_path = cfg.db_path.joinpath('amrfinderplus-db')
-        amrfinderplus_db_latest_path = amrfinderplus_db_path.joinpath('latest')
         process = sp.run(
             [
                 'amrfinder',
                 '--debug',
-                '--database', str(amrfinderplus_db_latest_path)
+                '--database', str(cfg.amrfinderplus_db_path)
             ], capture_output=True)
         if('No valid AMRFinder database found' in process.stderr.decode()):
             log.error('AMRFinderPlus database not installed')

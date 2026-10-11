@@ -109,6 +109,7 @@ def main():
         'major': data['version']['db']['version'].split('.')[0],
         'minor': data['version']['db']['version'].split('.')[1]
     }
+    cfg.amrfinderplus_db_version = data['version'].get('amrfinderplus_db', None)
     cfg.translation_table = data['genome']['translation_table']
     cfg.run_start = datetime.strptime(data['run']['start'], '%Y-%m-%d %H:%M:%S')
     cfg.run_end = datetime.strptime(data['run']['end'], '%Y-%m-%d %H:%M:%S')
@@ -193,6 +194,7 @@ def main():
         fh_out.write('\nBakta:\n')
         fh_out.write(f'Software: v{cfg.version}\n')
         fh_out.write(f"Database: v{cfg.db_info['major']}.{cfg.db_info['minor']}, {cfg.db_info['type']}\n")
+        fh_out.write(f'AMRFinderPlus database: {cfg.amrfinderplus_db_version}\n')
         fh_out.write('DOI: 10.1099/mgen.0.000685\n')
         fh_out.write('URL: github.com/oschwengers/bakta\n')
 
