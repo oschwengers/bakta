@@ -568,7 +568,7 @@ def main():
     tsv_path = cfg.output_path.joinpath(f'{cfg.prefix}.inference.tsv')
     tsv.write_feature_inferences(data['sequences'], features_by_sequence, tsv_path)
 
-    if(cfg.skip_plot  or  cfg.meta):
+    if(cfg.skip_plot):
         print('\tskip generation of circular genome plot...')
     else:
         print('\tcircular genome plot...')
