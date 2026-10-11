@@ -16,7 +16,14 @@ dependencies:
   - infernal>=1.1.5
   - piler-cr
   - pyhmmer>=0.12.0
+  - hmmer>=3.4
+  - meme>=5.5
   - diamond==2.2.0
   - blast>=2.17.0
   - ncbi-amrfinderplus>=4.2.7
   - pycirclize>=1.7.0
+  # Test dependencies
+  - pytest>=8
+  - pip
+  - pip:
+    - pytest-dependency>=0.6

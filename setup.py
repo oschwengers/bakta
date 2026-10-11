@@ -13,8 +13,8 @@ with open(path.join(setup_dir, 'README.md'), encoding='utf-8') as f:
 setup(
     name='bakta',
     version=bakta.__version__,
-    description='Bakta: rapid & standardized annotation of bacterial genomes, MAGs & plasmids',
-    keywords=['bioinformatics', 'annotation', 'bacteria', 'plasmids'],
+    description='Bakta: rapid & standardized annotation of prokaryotic genomes, MAGs & plasmids',
+    keywords=['bioinformatics', 'annotation', 'bacteria', 'archaea', 'plasmids'],
     long_description=long_description,
     long_description_content_type='text/markdown',
     license='GPLv3',

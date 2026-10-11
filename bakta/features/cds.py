@@ -489,16 +489,21 @@ def revise_translational_exceptions(data: dict, cdss: Sequence[dict]):
             if(
                 cds_a['strand'] == cds_b['strand'] and  # up- and downstream ORFs on the same strand
                 cds_a['frame'] == cds_b['frame'] and  # up- and downstream ORFs on the same frame
-                upstream_stop_codon == 'TGA' and  # tRNAScan-SE 2.0 only predicts tRNA-Sec with UCA anticodons, therefore we can only detect TGA stop codons
+                upstream_stop_codon in bc.DOMAIN_PROFILES[cfg.domain or bc.DOMAIN_BACTERIA]['recoding_codons'] and
                 (cds_b['start'] - cds_a['stop']) < 100):  # up- and downstream ORFs in close proximity
                 cds_pairs = cds_pairs_per_sequence[cds_a['sequence']]
-                cds_pairs.append((cds_a, cds_b))
+                cds_pairs.append((cds_a, cds_b, upstream_stop_codon))
 
     recoding_regions = [ncrna_region for ncrna_region in data['features'] if ncrna_region['type'] == bc.FEATURE_NC_RNA_REGION  and  ncrna_region['class'] == so.SO_CIS_REG_RECODING_STIMULATION_REGION]  #  Selenocysteine insertion sequences
     for recoding_region in recoding_regions:
-        if('selenocysteine' in recoding_region.get('product', '').lower()):
+        product = recoding_region.get('product', '').lower()
+        recoding_profile = bc.DOMAIN_PROFILES[cfg.domain or bc.DOMAIN_BACTERIA]
+        recoding_type = next((value for codon, value in recoding_profile['recoding_codons'].items() if value in product), None)
+        if(recoding_type is not None):
             cds_pairs = cds_pairs_per_sequence[recoding_region['sequence']]
-            for cds_a, cds_b in cds_pairs:  # find CDS pair around recoding region
+            for cds_a, cds_b, stop_codon in cds_pairs:  # find CDS pair around recoding region
+                if(recoding_profile['recoding_codons'][stop_codon] != recoding_type):
+                    continue
                 strand = cds_a['strand']
                 if(
                     strand == recoding_region['strand'] and  # everything is on the same strand
@@ -519,16 +524,16 @@ def revise_translational_exceptions(data: dict, cdss: Sequence[dict]):
                         aa[-1] == '*' and  # ends with stop *
                         aa[1:-1].count('*') == 1  # contains exactly 1 additional stop (*) somewhere in between
                         ):
-                        aa = aa.replace('*', 'U', 1)  # replace internal stop codon by U -> selenocysteine
+                        aa = aa.replace('*', 'U' if recoding_type == 'selenocysteine' else 'O', 1)
                         aa = aa[:-1]  # remove stop asterisk
                         seleno_cds['aa'] = aa
                         seleno_cds['aa_digest'], seleno_cds['aa_hexdigest'] = bu.calc_aa_hash(aa)
                         seleno_cds['exception'] = {
-                            'type': 'selenocysteine',
-                            'aa': 'Sec',
+                            'type': recoding_type,
+                            'aa': 'Sec' if recoding_type == 'selenocysteine' else 'Pyl',
                             'start': cds_a['stop'] - 2 if strand == bc.STRAND_FORWARD else cds_b['start'],
                             'stop': cds_a['stop'] if strand == bc.STRAND_FORWARD else cds_b['start'] + 2,
-                            'codon_position': aa.find('U') + 1
+                            'codon_position': aa.find('U' if recoding_type == 'selenocysteine' else 'O') + 1
                         }
                         cdss.append(seleno_cds)
                         log.info(

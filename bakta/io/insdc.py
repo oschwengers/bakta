@@ -114,8 +114,10 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
             elif(feature['type'] == bc.FEATURE_ORIC or feature['type'] == bc.FEATURE_ORIV):
                 # TODO: Add fuzzy positions for oriC/oriV
                 insdc_feature_type = bc.INSDC_FEATURE_ORIGIN_REPLICATION
-                qualifiers['inference'] = 'similar to DNA sequence'
+                qualifiers['inference'] = feature.get('inference', 'similar to DNA sequence')
                 qualifiers['note'].append(feature['product'])
+                if('attributes' in feature):
+                    qualifiers['note'].extend([f"Ori-Finder-Arch {key}: {value}" for key, value in feature['attributes'].items()])
                 if('product' in qualifiers):
                     qualifiers['note'] = feature['product']
                     del qualifiers['product']
@@ -234,7 +236,18 @@ def build_biopython_sequence_list(data: dict, features: Sequence[dict]):
 
             start = feature['start'] - 1
             stop = feature['stop']
-            if('edge' in feature):
+            if(feature['type'] == bc.FEATURE_T_RNA and 'intron' in feature and 'edge' not in feature):
+                intron = feature['intron']
+                intron_start = intron['start'] - 1
+                intron_stop = intron['stop']
+                if(start < intron_start < intron_stop < stop):
+                    left_exon = FeatureLocation(start, intron_start, strand=strand)
+                    right_exon = FeatureLocation(intron_stop, stop, strand=strand)
+                    feature_location = CompoundLocation([right_exon, left_exon] if strand == -1 else [left_exon, right_exon])
+                else:
+                    log.warning('ignore invalid tRNA intron coordinates: locus=%s, intron=%s..%s', feature.get('locus'), intron['start'], intron['stop'])
+                    feature_location = FeatureLocation(start, stop, strand=strand)
+            elif('edge' in feature):
                 fl_1 = FeatureLocation(start, seq['length'], strand=strand)
                 fl_2 = FeatureLocation(0, stop, strand=strand)
                 if(feature['strand'] == bc.STRAND_REVERSE):

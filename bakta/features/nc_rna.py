@@ -34,7 +34,8 @@ def predict_nc_rnas(data: dict, sequences_path: Path):
     if(data['stats']['size'] >= 1000000):
         cmd.append('-Z')
         cmd.append(str(2 * data['stats']['size'] // 1000000))
-    cmd.append(str(cfg.db_path.joinpath('ncRNA-genes')))
+    database = 'ncRNA-genes-archaea' if cfg.domain == bc.DOMAIN_ARCHAEA else 'ncRNA-genes'
+    cmd.append(str(cfg.db_path.joinpath(database)))
     cmd.append(str(sequences_path))
     log.debug('cmd=%s', cmd)
     proc = sp.run(

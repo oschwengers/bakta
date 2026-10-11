@@ -20,7 +20,8 @@ def detect_spurious(orfs: Sequence[dict]):
     orf_by_aa_digest = get_orf_dictionary(orfs)
     alphabet: "AA" = pyhmmer.easel.Alphabet.amino()
     proteins: "DigitalSequenceBlock[AA]" = TextSequenceBlock(TextSequence(sequence=orf['aa'], name=get_orf_key(orf)) for orf in orfs).digitize(alphabet)
-    with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath('antifam'), alphabet=alphabet) as hmm_fh:
+    antifam_name = 'antifam-archaea' if cfg.domain == bc.DOMAIN_ARCHAEA else 'antifam'
+    with pyhmmer.plan7.HMMFile(cfg.db_path.joinpath(antifam_name), alphabet=alphabet) as hmm_fh:
         for top_hits in pyhmmer.hmmsearch(hmm_fh, proteins, bit_cutoffs='gathering', cpus=cfg.threads):
             for hit in top_hits:
                 orf = orf_by_aa_digest[hit.name]

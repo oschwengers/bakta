@@ -50,12 +50,31 @@ FILE_NAMES = [
         'rRNA.i1m',
         'rRNA.i1p',
         'sorf.dmnd'
+]
+ARCHAEAL_FILE_NAMES = [
+        'antifam-archaea.h3f',
+        'antifam-archaea.h3i',
+        'antifam-archaea.h3m',
+        'antifam-archaea.h3p',
+        'ncRNA-genes-archaea.i1f',
+        'ncRNA-genes-archaea.i1i',
+        'ncRNA-genes-archaea.i1m',
+        'ncRNA-genes-archaea.i1p',
+        'ncRNA-regions-archaea.i1f',
+        'ncRNA-regions-archaea.i1i',
+        'ncRNA-regions-archaea.i1m',
+        'ncRNA-regions-archaea.i1p',
+        'rRNA-archaea.i1f',
+        'rRNA-archaea.i1i',
+        'rRNA-archaea.i1m',
+        'rRNA-archaea.i1p',
+        'expert-protein-sequences-archaea.dmnd'
     ]
 FILE_PERMISSIONS = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IROTH
 DIR_PERMISSIONS = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH
 
 
-def check(db_path: Path) -> dict:
+def check(db_path: Path, domain: str = bc.DOMAIN_BACTERIA) -> dict:
     """Check if database directory exists, is accessible and contains necessary files."""
 
     if(db_path is None):
@@ -91,7 +110,20 @@ def check(db_path: Path) -> dict:
         log.error('wrong database version detected! required=%i, detected=%i', bakta.__db_schema_version__, db_info['major'])
         sys.exit(f"ERROR: wrong database version detected!\nBakta version {cfg.version} requires database version {bakta.__db_schema_version__}.x, but {db_info['major']}.{db_info['minor']} was detected. Please, update Bakta or download a compatible database version from https://doi.org/10.5281/zenodo.4247253")
 
-    required_db_files = FILE_NAMES
+    # New database builds contain both profiles. Require only the selected
+    # profile here so existing bacterial database releases remain usable.
+    profile_files = {
+        'ncRNA-genes.i1f', 'ncRNA-genes.i1i', 'ncRNA-genes.i1m', 'ncRNA-genes.i1p',
+        'ncRNA-regions.i1f', 'ncRNA-regions.i1i', 'ncRNA-regions.i1m', 'ncRNA-regions.i1p',
+        'rRNA.i1f', 'rRNA.i1i', 'rRNA.i1m', 'rRNA.i1p'
+    }
+    required_db_files = [file_name for file_name in FILE_NAMES if file_name not in profile_files and file_name != 'expert-protein-sequences.dmnd']
+    if domain == bc.DOMAIN_ARCHAEA:
+        required_db_files = [file_name for file_name in required_db_files if file_name not in {'oric.fna', 'orit.fna'}]
+        required_db_files.extend(ARCHAEAL_FILE_NAMES)
+    else:
+        required_db_files.extend(profile_files)
+        required_db_files.append('expert-protein-sequences.dmnd')
     required_db_files.append('psc.dmnd' if db_info['type'] == 'full' else 'pscc.dmnd')
     for file_name in required_db_files:
         path = db_path.joinpath(file_name)

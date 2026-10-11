@@ -16,7 +16,9 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--taxonomy', action='store', help='Path to NCBI taxonomy node.dmp file.')
 parser.add_argument('--xml', action='store', help='Path to SwissProt xml file.')
 parser.add_argument('--db', action='store', help='Path to Bakta sqlite3 db file.')
+parser.add_argument('--taxon', action='append', default=None, help='NCBI root taxon to include; repeat for multiple domains (default: 2, Bacteria).')
 args = parser.parse_args()
+taxa = args.taxon or ['2']
 
 
 taxonomy_path = Path(args.taxonomy).resolve()
@@ -81,7 +83,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
             tax_id = tax_property.get('id') if tax_property is not None else '1'
             org_name = elem_org.find('./{*}name[@type="scientific"]')
             org_name = org_name.text.lower() if org_name is not None else ''
-            if(is_taxon_child(tax_id, '2', taxonomy) or 'phage' in org_name):
+            if(any(is_taxon_child(tax_id, taxon, taxonomy) for taxon in taxa) or 'phage' in org_name):
                 seq = elem.find('./{*}sequence').text.upper()
                 seq_hash = hashlib.md5(seq.encode())
                 seq_hash_hexdigest = seq_hash.hexdigest()

@@ -20,7 +20,9 @@ parser.add_argument('--uniparc', action='store', help='Path to UniParc fasta fil
 parser.add_argument('--db', action='store', help='Path to Bakta sqlite3 db file.')
 parser.add_argument('--pscc', action='store', help='Path to PSCC fasta file.')
 parser.add_argument('--pscc_sorf', action='store', help='Path to sORF PSCC fasta file.')
+parser.add_argument('--taxon', action='append', default=None, help='NCBI root taxon to include; repeat for multiple domains (default: 2, Bacteria).')
 args = parser.parse_args()
+taxa = args.taxon or ['2']
 
 PSCC_MIN_MEMBER_COUNT = 10
 MAX_SORF_LENGTH = 30
@@ -99,7 +101,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn, xopen(s
                 rep_member_organism = rep_member_organism.get('value') if rep_member_organism is not None else ''
                 rep_member_tax_id = rep_member_dbref.find('./{*}property[@type="NCBI taxonomy"]')
                 rep_member_tax_id = rep_member_tax_id.get('value') if rep_member_tax_id is not None else 1
-                if(is_taxon_child(common_tax_id, '2', taxonomy) or is_taxon_child(rep_member_tax_id, '2', taxonomy) or 'phage' in rep_member_organism.lower()):
+                if(any(is_taxon_child(common_tax_id, taxon, taxonomy) or is_taxon_child(rep_member_tax_id, taxon, taxonomy) for taxon in taxa) or 'phage' in rep_member_organism.lower()):
                     uniref50_id = elem.attrib['id'][9:]  # remove 'UniRef50_' prefix
                     product = rep_member_dbref.find('./{*}property[@type="protein name"]')
                     if(product is not None):

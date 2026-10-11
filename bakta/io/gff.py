@@ -87,6 +87,10 @@ def write_features(data: dict, features_by_sequence: Dict[str, dict], gff3_path:
                         fh.write(f"{seq_id}\ttRNAscan-SE\tgene\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{gene_annotations}\n")
                     annotations = encode_annotations(annotations)
                     fh.write(f"{seq_id}\ttRNAscan-SE\t{so.SO_TRNA.name}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    if('intron' in feat):
+                        intron = feat['intron']
+                        intron_annotations = encode_annotations({'ID': f"{feat['locus']}.intron", 'Parent': feat['locus']})
+                        fh.write(f"{seq_id}\ttRNAscan-SE\tintron\t{intron['start']}\t{intron['stop']}\t.\t{feat['strand']}\t.\t{intron_annotations}\n")
                 elif(feat['type'] == bc.FEATURE_TM_RNA):
                     annotations = {
                         'ID': feat['locus'],
@@ -328,14 +332,17 @@ def write_features(data: dict, features_by_sequence: Dict[str, dict], gff3_path:
                         'ID': feat['id'],
                         'Name': feat['product']
                     }
+                    source = 'Ori-Finder-Arch' if feat.get('inference', '').startswith('ab initio prediction:Ori-Finder-Arch') else 'BLAST+'
                     if(cfg.compliant):
                         annotations['Note'] = feat['product']
                     else:
                         annotations['product'] = feat['product']
-                        annotations['inference'] = 'similar to DNA sequence'
+                        annotations['inference'] = feat.get('inference', 'similar to DNA sequence')
+                        if('attributes' in feat):
+                            annotations.update({f"ori_{key}": value for key, value in feat['attributes'].items()})
                     annotations = encode_annotations(annotations)
                     feat_type = bc.INSDC_FEATURE_ORIGIN_REPLICATION if cfg.compliant else so.SO_ORIC.name
-                    fh.write(f"{seq_id}\tBLAST+\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
+                    fh.write(f"{seq_id}\t{source}\t{feat_type}\t{start}\t{stop}\t.\t{feat['strand']}\t.\t{annotations}\n")
                 elif(feat['type'] == bc.FEATURE_ORIV):
                     annotations = {
                         'ID': feat['id'],

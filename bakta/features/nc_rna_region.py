@@ -33,7 +33,8 @@ def predict_nc_rna_regions(data: dict, sequences_path: Path):
     if(data['stats']['size'] >= 1000000):
         cmd.append('-Z')
         cmd.append(str(2 * data['stats']['size'] // 1000000))
-    cmd.append(str(cfg.db_path.joinpath('ncRNA-regions')))
+    database = 'ncRNA-regions-archaea' if cfg.domain == bc.DOMAIN_ARCHAEA else 'ncRNA-regions'
+    cmd.append(str(cfg.db_path.joinpath(database)))
     cmd.append(str(sequences_path))
     log.debug('cmd=%s', cmd)
     proc = sp.run(

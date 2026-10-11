@@ -28,6 +28,7 @@ import bakta.features.cds as feat_cds
 import bakta.features.s_orf as s_orf
 import bakta.features.gaps as gaps
 import bakta.features.ori as ori
+import bakta.features.ori_arch as ori_arch
 import bakta.db as db
 import bakta.utils as bu
 import bakta.ups as ups
@@ -55,7 +56,7 @@ def main():
     # - test binary dependencies
     ############################################################################
     cfg.setup(args)  # check parameters and prepare global configuration
-    cfg.db_info = db.check(cfg.db_path)
+    cfg.db_info = db.check(cfg.db_path, cfg.domain)
     bu.test_dependencies()
     if(cfg.verbose):
         print(f'Bakta v{cfg.version}')
@@ -68,6 +69,7 @@ def main():
         if(cfg.user_proteins): print(f'\tuser proteins: {cfg.user_proteins}')
         if(cfg.user_hmms): print(f'\tuser hmms: {cfg.user_hmms}')
         print(f'\ttranslation table: {cfg.translation_table}')
+        print(f'\tdomain: {cfg.domain}')
         if(cfg.taxon): print(f'\ttaxon: {cfg.taxon}')
         if(cfg.plasmid): print(f'\tplasmid: {cfg.plasmid}')
         if(cfg.gram != '?'): print(f'\tgram: {cfg.gram}')
@@ -142,6 +144,7 @@ def main():
             'taxon': cfg.taxon,
             'complete': cfg.complete or complete_genome,
             'gram': cfg.gram,
+            'domain': cfg.domain,
             'translation_table': cfg.translation_table
         },
         'stats': {
@@ -297,11 +300,15 @@ def main():
             print('\tconduct expert systems...')  # conduct expert systems annotation
             cds_aa_path = cfg.tmp_path.joinpath('cds.expert.faa')
             orf.write_internal_faa(cdss, cds_aa_path)
-            log.debug('conduct expert system: amrfinder')
-            expert_amr_found = exp_amr.search(cdss, cds_aa_path)
-            print(f'\t\tamrfinder: {len(expert_amr_found)}')
+            if(cfg.domain == bc.DOMAIN_BACTERIA):
+                log.debug('conduct expert system: amrfinder')
+                expert_amr_found = exp_amr.search(cdss, cds_aa_path)
+                print(f'\t\tamrfinder: {len(expert_amr_found)}')
+            else:
+                print('\t\tskip bacterial AMRFinderPlus expert system for archaeal profile')
             log.debug('conduct expert system: aa seqs')
-            diamond_db_path = cfg.db_path.joinpath('expert-protein-sequences.dmnd')
+            expert_db_name = 'expert-protein-sequences-archaea.dmnd' if cfg.domain == bc.DOMAIN_ARCHAEA else 'expert-protein-sequences.dmnd'
+            diamond_db_path = cfg.db_path.joinpath(expert_db_name)
             expert_aa_found = exp_aa_seq.search(cdss, cds_aa_path, 'expert_proteins', diamond_db_path)
             print(f'\t\tprotein sequences: {len(expert_aa_found)}')
 
@@ -436,15 +443,18 @@ def main():
     else:
         print('detect oriCs/oriVs...')
         log.debug('detect oriC/V')
-        oriCs = ori.predict_oris(data, sequences_path, bc.FEATURE_ORIC)
+        oriCs = ori_arch.predict_orics(data, sequences_path) if cfg.domain == bc.DOMAIN_ARCHAEA else ori.predict_oris(data, sequences_path, bc.FEATURE_ORIC)
         data['features'].extend(oriCs)
         print(f'\tfound: {len(oriCs)}')
 
-        print('detect oriTs...')
-        log.debug('detect oriT')
-        oriTs = ori.predict_oris(data, sequences_path, bc.FEATURE_ORIT)
-        data['features'].extend(oriTs)
-        print(f'\tfound: {len(oriTs)}')
+        if(cfg.domain == bc.DOMAIN_ARCHAEA):
+            print('skip oriT detection for archaeal profile...')
+        else:
+            print('detect oriTs...')
+            log.debug('detect oriT')
+            oriTs = ori.predict_oris(data, sequences_path, bc.FEATURE_ORIT)
+            data['features'].extend(oriTs)
+            print(f'\tfound: {len(oriTs)}')
 
     ############################################################################
     # Filter overlapping features

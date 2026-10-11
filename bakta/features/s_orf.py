@@ -25,6 +25,7 @@ def extract(data: dict):
     orfs = []
     for seq in data['sequences']:
         nt_seq = Seq(seq['nt'])
+        start_codons = bc.DOMAIN_PROFILES[cfg.domain or bc.DOMAIN_BACTERIA]['sorf_start_codons']
         for strand, strand_nt_seq in [(bc.STRAND_FORWARD, nt_seq), (bc.STRAND_REVERSE, nt_seq.reverse_complement())]:  # strands +/-
             for frame in range(3):  # frames 1/2/3 -> 0, 1, 2
                 seq_frame = strand_nt_seq[frame:]
@@ -35,12 +36,15 @@ def extract(data: dict):
                     seq_frame = seq_frame[:-residue]
 
                 aa_seq = str(seq_frame.translate(table=cfg.translation_table, stop_symbol='*', to_stop=False, cds=False))
-                aa_start = aa_seq.find('M')
-                aa_end = aa_seq.find('*', aa_start)
-                while aa_start > -1 and aa_end > -1:
+                start_positions = [pos for pos in range(0, len(seq_frame) - 2, 3) if str(seq_frame[pos:pos + 3]).upper() in start_codons]
+                for nt_start in start_positions:
+                    aa_start = nt_start // 3
+                    aa_end = aa_seq.find('*', aa_start)
+                    if(aa_end == -1):
+                        continue
                     orf_length = aa_end - aa_start
                     if(orf_length >= bc.MIN_SORF_LENGTH and orf_length < bc.MAX_SORF_LENGTH):  # get all CDS starts (M)
-                        aa = aa_seq[aa_start:aa_end]
+                        aa = 'M' + aa_seq[aa_start + 1:aa_end]
                         (aa_digest, aa_hexdigest) = bu.calc_aa_hash(aa)
                         if(strand == bc.STRAND_FORWARD):
                             dna_start = aa_start * 3 + frame + 1  # +1: 0 based idx to 1 based
@@ -71,9 +75,6 @@ def extract(data: dict):
                             'seq=%s, start=%i, stop=%i, strand=%s, frame=%i, aa-length=%i, aa=%s, nt=[%s..%s]',
                             seq['id'], sorf['start'], sorf['stop'], strand, frame, len(aa), aa, nt[:10], nt[-10:]
                         )
-                    aa_start = aa_seq.find('M', aa_start + 1)
-                    if(aa_start > aa_end):
-                        aa_end = aa_seq.find('*', aa_start)
 
     log.info('predicted=%i', len(orfs))
     return orfs

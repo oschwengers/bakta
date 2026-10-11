@@ -49,7 +49,7 @@ def predict_t_rnas(data: dict, sequences_path: Path):
     fasta_output_path = cfg.tmp_path.joinpath('trna.fasta')
     cmd = [
         'tRNAscan-SE',
-        '-B',
+        '-A' if cfg.domain == bc.DOMAIN_ARCHAEA else '-B',
         '--output', str(txt_output_path),
         '--fasta', str(fasta_output_path),
         '--thread', str(cfg.threads),
@@ -100,6 +100,11 @@ def predict_t_rnas(data: dict, sequences_path: Path):
                 trna[bc.PSEUDOGENE] = True
 
             trna['score'] = float(score)
+            # Archaeal tRNAs can contain introns. Preserve their coordinates so
+            # writers and downstream consumers do not silently discard them.
+            intron_begin, bounds_end = int(intron_begin), int(bounds_end)
+            if(intron_begin > 0 and bounds_end > 0):
+                trna['intron'] = {'start': min(intron_begin, bounds_end), 'stop': max(intron_begin, bounds_end)}
 
             nt = bu.extract_feature_sequence(trna, sequences[sequence_id])  # extract nt sequences
             trna['nt'] = nt

@@ -16,11 +16,31 @@ HIT_COVERAGE_TRUNCATED = 0.8
 
 log = logging.getLogger('R_RNA')
 
+R_RNA_PROFILES = {
+    bc.DOMAIN_BACTERIA: {
+        'database': 'rRNA',
+        'models': {
+            'RF00001': ('5S', 'rrf', 119, 'K01985', so.SO_RRNA_5S.id),
+            'RF00177': ('16S', 'rrs', 1533, 'K01977', so.SO_RRNA_16S.id),
+            'RF02541': ('23S', 'rrl', 2925, 'K01980', so.SO_RRNA_23S.id)
+        }
+    },
+    bc.DOMAIN_ARCHAEA: {
+        'database': 'rRNA-archaea',
+        'models': {
+            'RF00001': ('5S', 'rrf', 119, 'K01985', so.SO_RRNA_5S.id),
+            'RF01959': ('16S', 'rrs', 1477, 'K01977', so.SO_RRNA_16S.id),
+            'RF02540': ('23S', 'rrl', 2990, 'K01980', so.SO_RRNA_23S.id)
+        }
+    }
+}
+
 
 def predict_r_rnas(data: dict, sequences_path: Path):
     """Search for ribosomal RNA sequences."""
 
     output_path = cfg.tmp_path.joinpath('rrna.tsv')
+    profile = R_RNA_PROFILES[cfg.domain or bc.DOMAIN_BACTERIA]
     cmd = [
         'cmscan',
         '--noali',
@@ -34,7 +54,7 @@ def predict_r_rnas(data: dict, sequences_path: Path):
     if(data['stats']['size'] >= 1000000):
         cmd.append('-Z')
         cmd.append(str(2 * data['stats']['size'] // 1000000))
-    cmd.append(str(cfg.db_path.joinpath('rRNA')))
+    cmd.append(str(cfg.db_path.joinpath(profile['database'])))
     cmd.append(str(sequences_path))
     log.debug('cmd=%s', cmd)
     proc = sp.run(
@@ -74,25 +94,15 @@ def predict_r_rnas(data: dict, sequences_path: Path):
                 else:
                     truncated = None
 
-                db_xrefs = [f'{bc.DB_XREF_GO}:0005840', f'{bc.DB_XREF_GO}:0003735']
-                if(accession == 'RF00001'):
-                    rrna_tag = '5S'
-                    db_xrefs += [f'{bc.DB_XREF_RFAM}:RF00001', f'{bc.DB_XREF_KOFAM}:K01985', so.SO_RRNA_5S.id]
-                    consensus_length = 119
-                elif(accession == 'RF00177'):
-                    rrna_tag = '16S'
-                    db_xrefs += [f'{bc.DB_XREF_RFAM}:RF00177', f'{bc.DB_XREF_KOFAM}:K01977', so.SO_RRNA_16S.id]
-                    consensus_length = 1533
-                elif(accession == 'RF02541'):
-                    rrna_tag = '23S'
-                    db_xrefs += [f'{bc.DB_XREF_RFAM}:RF02541', f'{bc.DB_XREF_KOFAM}:K01980', so.SO_RRNA_23S.id]
-                    consensus_length = 2925
-                else:
+                model = profile['models'].get(accession)
+                if(model is None):
                     log.warning(
                         'unknown rRNA detected! accession=%s, seq=%s, start=%i, stop=%i, strand=%s, length=%i, truncated=%s, score=%1.1f, evalue=%1.1e',
                         accession, sequence_id, start, stop, strand, length, truncated, score, evalue
                     )
                     continue
+                rrna_tag, rrna_gene, consensus_length, kofam_id, so_id = model
+                db_xrefs = [f'{bc.DB_XREF_GO}:0005840', f'{bc.DB_XREF_GO}:0003735', f'{bc.DB_XREF_RFAM}:{accession}', f'{bc.DB_XREF_KOFAM}:{kofam_id}', so_id]
 
                 coverage = length / consensus_length
                 if(coverage < HIT_COVERAGE_TRUNCATED):
@@ -110,12 +120,7 @@ def predict_r_rnas(data: dict, sequences_path: Path):
                     rrna['start'] = start
                     rrna['stop'] = stop
                     rrna['strand'] = bc.STRAND_FORWARD if strand == '+' else bc.STRAND_REVERSE
-                    if(accession == 'RF00001'):
-                        rrna['gene'] = 'rrf'
-                    elif(accession == 'RF00177'):
-                        rrna['gene'] = 'rrs'
-                    elif(accession == 'RF02541'):
-                        rrna['gene'] = 'rrl'
+                    rrna['gene'] = rrna_gene
                     rrna['product'] = f'{rrna_tag} ribosomal RNA'
 
                     if(truncated):

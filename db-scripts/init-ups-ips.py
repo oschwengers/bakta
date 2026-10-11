@@ -20,7 +20,9 @@ parser.add_argument('--uniref100', action='store', help='Path to UniRef xml file
 parser.add_argument('--uniparc', action='store', help='Path to UniParc fasta file.')
 parser.add_argument('--db', action='store', help='Path to Bakta sqlite3 db file.')
 parser.add_argument('--ips', action='store', help='Path to IPS fasta file.')
+parser.add_argument('--taxon', action='append', default=None, help='NCBI root taxon to include; repeat for multiple domains (default: 2, Bacteria).')
 args = parser.parse_args()
+taxa = args.taxon or ['2']
 
 DISCARDED_PRODUCTS = [
     'hypothetical protein',
@@ -98,7 +100,7 @@ with sqlite3.connect(str(db_path), isolation_level='EXCLUSIVE') as conn:
                     rep_member_tax_id = rep_member_tax_id.get('value') if rep_member_tax_id is not None else 1
 
                     # filter for bacterial or phage protein sequences
-                    if(is_taxon_child(common_tax_id, '2', taxonomy) or is_taxon_child(rep_member_tax_id, '2', taxonomy) or 'phage' in rep_member_organism.lower()):
+                    if(any(is_taxon_child(common_tax_id, taxon, taxonomy) or is_taxon_child(rep_member_tax_id, taxon, taxonomy) for taxon in taxa) or 'phage' in rep_member_organism.lower()):
                         uniref100_id = elem.attrib['id'][10:]
                         seq_representative = elem.find('./{*}representativeMember/{*}sequence')
                         seq = seq_representative.text.upper()

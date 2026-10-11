@@ -1,5 +1,5 @@
 
-import java.nio.file.Paths
+nextflow.enable.dsl=2
 
 params.in = 'psc.faa'
 params.out = 'hmmsearch.tblout'
@@ -8,44 +8,50 @@ params.no_tc = false
 params.dom = false
 params.block = 100000
 
-def pathInput = Paths.get(params.in).toAbsolutePath().normalize()
-def pathDb = Paths.get(params.db).toAbsolutePath().normalize()
-def pathOutput = Paths.get(params.out).toAbsolutePath().normalize()
-def pathDomOutput = Paths.get(params.dom_out).toAbsolutePath().normalize()
-def useTC = params.no_tc ? false : true
-def useDom = params.dom ? true : false
-
-print("run hmmsearch")
-print("query: ${pathInput}")
-print("DB: ${pathDb}")
-print("Output: ${pathOutput}")
-print("Output Domain: ${pathDomOutput}")
-print("TC: ${useTC}")
-
-chAAs = Channel.fromPath( pathInput )
-    .splitFasta( by: params.block, file: true )
-
 process hmmsearch {
-    errorStrategy 'ignore'
-    maxRetries 3
+    errorStrategy 'retry'
+    maxRetries 5
     cpus 1
     memory { 1.GB * task.attempt }
-    conda 'hmmer=3.4'
+    time { 12.h * task.attempt }
 
     input:
-    path('input.faa') from chAAs
+    path('input.faa')
 
     output:
-    path('hmm.tblout') into chHmmResults
-    path('hmm.dom.tblout') optional true  into chHmmDomResults
+    path('hmm.tblout'), emit: tblout
+    path('hmm.dom.tblout'), optional: true, emit: domtblout
 
-    String paramTC = useTC ? "--cut_tc" : "-E 1E-10"
-    String paramDom = useDom ? "--domtblout hmm.dom.tblout" : ""
     script:
+    def pathDb = java.nio.file.Paths.get(params.db).toAbsolutePath().normalize()
+    def useTC = params.no_tc ? false : true
+    def useDom = params.dom ? true : false
+    def paramTC = useTC ? "--cut_tc" : "-E 1E-10"
+    def paramDom = useDom ? "--domtblout hmm.dom.tblout" : ""
     """
-    hmmsearch ${paramTC} -o /dev/null --noali --tblout hmm.tblout ${paramDom} --cpu ${task.cpus} ${pathDb} input.faa
+    hmmsearch ${paramTC} -o /dev/null --noali --tblout hmm.tblout ${paramDom} --cpu ${task.cpus} "${pathDb}" input.faa
     """
 }
 
-chHmmResults.collectFile( sort: false, name: pathOutput, skip: 3, keepHeader: true, storeDir: '.', tempDir: "${workDir}/tblout")
-chHmmDomResults.collectFile( sort: false, name: pathDomOutput, skip: 3, keepHeader: true, storeDir: '.', tempDir: "${workDir}/domtblout")
+workflow {
+    def pathInput = java.nio.file.Paths.get(params.in).toAbsolutePath().normalize()
+    def pathDb = java.nio.file.Paths.get(params.db).toAbsolutePath().normalize()
+    def pathOutput = java.nio.file.Paths.get(params.out).toAbsolutePath().normalize()
+    def pathDomOutput = java.nio.file.Paths.get(params.dom_out).toAbsolutePath().normalize()
+    def useTC = params.no_tc ? false : true
+
+    println("run hmmsearch")
+    println("query: ${pathInput}")
+    println("DB: ${pathDb}")
+    println("Output: ${pathOutput}")
+    println("Output Domain: ${pathDomOutput}")
+    println("TC: ${useTC}")
+
+    chAAs = Channel.fromPath( pathInput )
+        .splitFasta( by: params.block, file: true )
+
+    hmmsearch(chAAs)
+
+    hmmsearch.out.tblout.collectFile( sort: false, name: pathOutput, skip: 3, keepHeader: true, storeDir: '.')
+    hmmsearch.out.domtblout.collectFile( sort: false, name: pathDomOutput, skip: 3, keepHeader: true, storeDir: '.')
+}

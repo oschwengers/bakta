@@ -12,9 +12,13 @@
 [![Galaxy Toolshed - Tool Version](https://img.shields.io/galaxytoolshed/v/bakta/iuc/bakta?label=usegalaxy.eu)](https://usegalaxy.eu/root?tool_id=bakta)
 [![Static Badge](https://img.shields.io/badge/bio.tools-v1.12.1-blue?link=https%3A%2F%2Fbio.tools%2Fbakta)](https://bio.tools/bakta)
 
-# Bakta: rapid & standardized annotation of bacterial genomes, MAGs & plasmids
+# Bakta: rapid & standardized annotation of prokaryotic genomes, MAGs & plasmids
 
-Bakta is a tool for the rapid & standardized annotation of bacterial genomes and plasmids from both isolates and MAGs. It provides **dbxref**-rich, **sORF**-including and taxon-independent annotations in machine-readable `JSON` & bioinformatics standard file formats for automated downstream analysis.
+Bakta is a tool for the rapid & standardized annotation of bacterial and archaeal genomes and plasmids from both isolates and MAGs. It provides **dbxref**-rich, **sORF**-including and taxon-independent annotations in machine-readable `JSON` & bioinformatics standard file formats for automated downstream analysis.
+
+Archaeal annotation is selected with `--domain archaea`. The shared Bakta database contains both bacterial and archaeal profile assets; this option selects the archaeal tRNA/rRNA/ncRNA covariance models, archaeal/domain-neutral AntiFam and expert-protein references, and Ori-Finder-Arch plus MEME/FIMO for oriC prediction. AMRFinderPlus and oriT prediction are intentionally not run in this profile. Install the standalone Ori-Finder-Arch binary with `scripts/install-ori-finder-arch.sh` after activating the environment; the script downloads the upstream v1.0.0 release into `$CONDA_PREFIX/bin` and verifies its SHA-256 checksum.
+
+The remaining database curation and validation work is tracked in [the archaeal support plan](docs/archaeal-support-plan.md). Every database build requires curated inputs through `BAKTA_ARCHAEAL_EXPERT_PROTEINS` and `BAKTA_ARCHAEAL_ANTIFAM_HMM`; these prevent bacterial expert/AntiFam data from being used implicitly.
 
 ## Contents
 
@@ -63,8 +67,8 @@ Bakta annotates ncRNA cis-regulatory regions, oriC/oriV/oriT and assembly gaps a
 - **GFF3 & INSDC conform annotations**
 Bakta writes GFF3 and INSDC-compliant (Genbank & EMBL) annotation files ready for submission (checked via [GenomeTools GFF3Validator](http://genometools.org/cgi-bin/gff3validator.cgi), [table2asn_GFF](https://www.ncbi.nlm.nih.gov/genbank/genomes_gff/#run) and [ENA Webin-CLI](https://github.com/enasequence/webin-cli) for GFF3 and EMBL file formats, respectively for representative genomes of all ESKAPE species).
 
-- **Bacteria & plasmids only**
-Bakta was designed to annotate bacteria (isolates & MAGs) and plasmids, only. This decision by design has been made in order to tweak the annotation process regarding tools, preferences & databases and to streamline further development & maintenance of the software.
+- **Bacterial and archaeal profiles**
+The default bacterial profile supports isolates, MAGs, and plasmids. The archaeal profile is selected with `--domain archaea`; it uses domain-specific RNA models, protein references, recoding rules, and origin prediction while preserving the same standard output formats.
 
 - **Reasoning**
 By annotating bacterial genomes in a standardized, taxonomy-independent, high-throughput and local manner, Bakta aims at a well-balanced tradeoff between fully featured but computationally demanding pipelines like [PGAP](https://github.com/ncbi/pgap) and rapid highly customizable offline tools like [Prokka](https://github.com/tseemann/prokka). Indeed, Bakta is heavily inspired by Prokka (kudos to [Torsten Seemann](https://github.com/tseemann)) and many command line options are compatible for the sake of interoperability and user convenience. Hence, if Bakta does not fit your needs, please consider trying Prokka.
@@ -377,7 +381,7 @@ Exemplary annotation result files for several genomes (mostly ESKAPE species) ar
 
 ```bash
 usage: bakta [--db DB] [--min-contig-length MIN_CONTIG_LENGTH] [--prefix PREFIX] [--output OUTPUT] [--force]
-             [--genus GENUS] [--species SPECIES] [--strain STRAIN] [--plasmid PLASMID]
+             [--domain {bacteria,archaea}] [--genus GENUS] [--species SPECIES] [--strain STRAIN] [--plasmid PLASMID]
              [--complete] [--prodigal-tf PRODIGAL_TF] [--translation-table {11,4,25}] [--gram {+,-,?}]
              [--locus LOCUS] [--locus-tag LOCUS_TAG] [--locus-tag-increment {1,5,10}] [--keep-contig-headers] [--compliant]
              [--replicons REPLICONS] [--regions REGIONS] [--proteins PROTEINS] [--hmms HMMS] [--meta]
@@ -401,7 +405,9 @@ Input / Output:
                         Output directory (default = current working directory)
   --force, -f           Force overwriting existing output folder (except for current working directory)
 
-Organism:
+Domain:
+  --domain {bacteria,archaea}
+                        Annotation domain: bacteria/archaea (default = bacteria)
   --genus GENUS         Genus name
   --species SPECIES     Species name
   --strain STRAIN       Strain name
@@ -413,7 +419,7 @@ Annotation:
                         Path to existing Prodigal training file to use for CDS prediction
   --translation-table {11,4,25}
                         Translation table: 11/4/25 (default = 11)
-  --gram {+,-,?}        Gram type for signal peptide predictions: +/-/? (default = ?)
+  --gram {+,-,?}        Gram type for signal peptide predictions: +/-/? (default = ?; ignored for --domain archaea)
   --locus LOCUS         Locus prefix (default = 'contig')
   --locus-tag LOCUS_TAG
                         Locus tag prefix (default = autogenerated)

@@ -28,6 +28,7 @@ COPY . /tmp/source/
 
 RUN source /opt/conda/bashrc && micromamba activate \
     && python3 -m pip install --no-cache /tmp/source/ \
+    && /tmp/source/scripts/install-ori-finder-arch.sh /opt/conda/bin \
     && echo '#!/bin/bash' > /entrypoint.sh \
     && echo 'bakta "$@"' >> /entrypoint.sh \
     && chmod +x /entrypoint.sh \

@@ -1,5 +1,5 @@
 
-import java.nio.file.*
+nextflow.enable.dsl=2
 
 params.in = 'psc.faa'
 params.out = 'diamond.tsv'
@@ -9,37 +9,25 @@ params.qcov = 80
 params.scov = 80
 params.block = 1000
 
-def pathInput = Paths.get(params.in).toAbsolutePath().normalize()
-def pathDb = Paths.get(params.db).toAbsolutePath().normalize()
-def pathOutput = Paths.get(params.out).toAbsolutePath().normalize()
-
-print("run diamond")
-print("query: ${pathInput}")
-print("DB: ${pathDb}")
-print("Output: ${pathOutput}")
-
-Channel.fromPath( pathInput )
-    .splitFasta( by: params.block, file: true )
-    .set( { chAAs } )
-
 process diamond {
-    errorStrategy 'finish'
-    maxRetries 3
+    errorStrategy 'retry'
+    maxRetries 5
     cpus 8
     memory '32 GB'
-    conda 'diamond=2.1.8'
+    time { 12.h * task.attempt }
 
     input:
-    file('input.faa') from chAAs
+    path('input.faa')
 
     output:
-    file('diamond.tsv') into chDiamondResults
+    path('diamond.tsv')
 
     script:
+    def pathDb = java.nio.file.Paths.get(params.db).toAbsolutePath().normalize()
     """
     diamond blastp \
         --query input.faa \
-        --db ${pathDb} \
+        --db "${pathDb}" \
         --id ${params.id} \
         --query-cover ${params.qcov} \
         --subject-cover ${params.scov} \
@@ -53,4 +41,20 @@ process diamond {
     """
 }
 
-chDiamondResults.collectFile( sort: false, name: pathOutput, storeDir: '.')
+workflow {
+    def pathInput = java.nio.file.Paths.get(params.in).toAbsolutePath().normalize()
+    def pathDb = java.nio.file.Paths.get(params.db).toAbsolutePath().normalize()
+    def pathOutput = java.nio.file.Paths.get(params.out).toAbsolutePath().normalize()
+
+    println("run diamond")
+    println("query: ${pathInput}")
+    println("DB: ${pathDb}")
+    println("Output: ${pathOutput}")
+
+    chAAs = Channel.fromPath( pathInput )
+        .splitFasta( by: params.block, file: true )
+
+    diamond(chAAs)
+
+    diamond.out.collectFile( sort: false, name: pathOutput, storeDir: '.')
+}
