@@ -76,6 +76,31 @@ def export_sequences(sequences: Sequence[dict], fasta_path: Path, description: b
                 fh.write('\n')
 
 
+def split_sequences(sequences: Sequence[dict], no_chunks: int) -> Sequence[Sequence[dict]]:
+    """Split sequences into chunks of roughly equal size, keeping their order."""
+    target = sum([seq['length'] for seq in sequences]) / no_chunks
+    split, chunk, size = [], [], 0
+    for seq in sequences:
+        chunk.append(seq)
+        size += seq['length']
+        if(size >= target and len(split) < no_chunks - 1):
+            split.append(chunk)
+            chunk, size = [], 0
+    if(len(chunk) > 0):
+        split.append(chunk)
+    return split
+
+
+def concat(parts: Sequence[Path], path: Path, skip: int=0):
+    """Concatenate tool output files in order, keeping one copy of the header."""
+    with path.open('wt') as fh_out:
+        for i, part in enumerate(parts):
+            with part.open() as fh_in:
+                for j, line in enumerate(fh_in):
+                    if(i == 0 or j >= skip):
+                        fh_out.write(line)
+
+
 def wrap_sequence(sequence: str):
     lines = []
     for i in range(0, len(sequence), FASTA_LINE_WRAPPING):

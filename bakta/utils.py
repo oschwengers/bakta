@@ -209,6 +209,18 @@ def check_version(tool, min: int, max:int ) -> bool:
             return True
 
 
+def run_tool(cmd: Sequence[str]):
+    """Run one external tool process."""
+    return sp.run(
+        cmd,
+        cwd=str(cfg.tmp_path),
+        env=cfg.env,
+        stdout=sp.PIPE,
+        stderr=sp.PIPE,
+        universal_newlines=True
+    )
+
+
 def test_dependency(dependency):
     """Test the proper installation of the required 3rd party executable."""
     version = read_tool_output(dependency)
