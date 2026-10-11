@@ -1,4 +1,4 @@
-__version__ = '1.12.1'
+__version__ = '1.12.2'
 __db_schema_version__ = 6
 
 import warnings
