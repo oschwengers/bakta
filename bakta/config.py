@@ -185,6 +185,8 @@ def setup(args):
     translation_table = args.translation_table
     log.info('translation_table=%s', translation_table)
     gram = args.gram
+    if gram != bc.GRAM_UNKNOWN:
+        log.warning('--gram is deprecated and no longer has any effect on annotation results')
     log.info('gram=%s', gram)
     compliant = args.compliant
     log.info('compliant=%s', compliant)
