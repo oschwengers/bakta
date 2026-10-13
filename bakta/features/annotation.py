@@ -643,33 +643,34 @@ def mark_as_hypothetical(feature: dict):
     feature['product'] = bc.HYPOTHETICAL_PROTEIN
 
 
-def get_adjacent_genes(feature: dict, features: Sequence[dict], neighbors=3):
-    for idx, feat in enumerate(features):
-        if feat['locus'] == feature['locus']:
-            upstream_genes = []
-            if(idx >= 1):
-                start = idx - neighbors
-                if(start < 0 ):
-                    start = 0
-                upstream_genes = features[start:idx]
-            downstream_genes = []
-            if(idx + 1 < len(features)):
-                end = idx + 1 + neighbors
-                if(end > len(features)):
-                    end = len(features)
-                downstream_genes = features[idx+1:end]
-            upstream_genes.extend(downstream_genes)
-            for gene in upstream_genes:
-                log.debug(
-                    'extracted neighbor genes: seq=%s, start=%i, stop=%i, gene=%s, product=%s',
-                    gene['sequence'], gene['start'], gene['stop'], gene.get('gene', '-'), gene.get('product', '-')
-                )
-            return upstream_genes
-    return []
+def get_adjacent_genes(feature: dict, features: Sequence[dict], locus_index: dict, neighbors=3):
+    idx = locus_index.get(feature['locus'])
+    if idx is None:
+        return []
+    upstream_genes = []
+    if(idx >= 1):
+        start = idx - neighbors
+        if(start < 0 ):
+            start = 0
+        upstream_genes = features[start:idx]
+    downstream_genes = []
+    if(idx + 1 < len(features)):
+        end = idx + 1 + neighbors
+        if(end > len(features)):
+            end = len(features)
+        downstream_genes = features[idx+1:end]
+    upstream_genes.extend(downstream_genes)
+    for gene in upstream_genes:
+        log.debug(
+            'extracted neighbor genes: seq=%s, start=%i, stop=%i, gene=%s, product=%s',
+            gene['sequence'], gene['start'], gene['stop'], gene.get('gene', '-'), gene.get('product', '-')
+        )
+    return upstream_genes
 
 
 def select_gene_symbols(features: Sequence[dict]):
     improved_genes = []
+    locus_index = {feat['locus']: idx for idx, feat in enumerate(features)}
     for feat in [f for f in features if len(f.get('genes', [])) > 1]:  # all CDS/sORF with multiple gene symbols
         old_gene_symbol = feat['gene']
         gene_symbol_prefixes = set([symbol[:3] for symbol in feat['genes'] if len(symbol) > 3])
@@ -690,7 +691,7 @@ def select_gene_symbols(features: Sequence[dict]):
                 'select gene symbol: seq=%s, start=%i, stop=%i, gene=%s, genes=%s, product=%s',
                 feat['sequence'], feat['start'], feat['stop'], feat.get('gene', '-'), ','.join(feat['genes']), feat.get('product', '-')
             )
-            adjacent_genes = get_adjacent_genes(feat, features, neighbors=3)
+            adjacent_genes = get_adjacent_genes(feat, features, locus_index, neighbors=3)
             adjacent_gene_symbol_lists = [gene.get('genes', []) for gene in adjacent_genes]
             adjacent_gene_symbols = [item for sublist in adjacent_gene_symbol_lists for item in sublist]  # flatten lists
             adjacent_gene_symbol_prefixes = [gene_symbol[:3] for gene_symbol in adjacent_gene_symbols if len(gene_symbol) > 3]  # extract gene symbol prefixes, e.g. tra for traI, traX, traM
