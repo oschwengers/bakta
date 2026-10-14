@@ -47,6 +47,7 @@ def combine_annotation(feature: dict):
     ips = feature.get('ips', None)
     psc = feature.get('psc', None)
     pscc = feature.get('pscc', None)
+    sorfdb = feature.get('sorfdb', None)
     expert_hits = feature.get('expert', [])
 
     gene = None
@@ -74,6 +75,12 @@ def combine_annotation(feature: dict):
         if(psc_product):
             product = psc_product
         for db_xref in pseudogene_psc['db_xrefs']:
+            db_xrefs.add(db_xref)
+    if(sorfdb):
+        sorfdb_product = sorfdb.get('product', None)
+        if(sorfdb_product):
+            product = sorfdb_product
+        for db_xref in sorfdb['db_xrefs']:
             db_xrefs.add(db_xref)
     if(pscc):
         pscc_product = pscc.get('product', None)
@@ -451,6 +458,11 @@ def calc_cds_annotation_score(cds: dict) -> int:
     if(psc):
         score += 1
         score += calc_annotation_score(psc)
+
+    sorfdb = cds.get('sorfdb', None)
+    if(sorfdb):
+        score += 1
+        score += calc_annotation_score(sorfdb)
     log.debug(
         'cds score: seq=%s, start=%i, stop=%i, gene=%s, product=%s, score=%i',
         cds['sequence'], cds['start'], cds['stop'], cds.get('gene', '-'), cds.get('product', '-'), score
